@@ -236,3 +236,92 @@ p {
     background-color: #f9f9f9;
     font-weight: bold;
 }
+/*ààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààà*/
+/* Card styles for featured books */
+#featured-books .card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    /* Stack content vertically */
+    justify-content: space-between;
+    /* Distribute space */
+    height: 100%;
+    /* Full height for cards */
+    overflow: hidden;
+    /* Prevent content overflow */
+}
+
+#featured-books .card:hover {
+    transform: translateY(-5px);
+}
+
+#featured-books .card img {
+    height: 250px;
+    object-fit: cover;
+    width: 100%;
+    /* Responsive width */
+}
+
+#featured-books .card-body {
+    padding: 1rem;
+    flex-grow: 1;
+    /* Allow body to fill available space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Space out content and button */
+}
+
+#featured-books .btn {
+    margin-top: auto;
+    /* Push button to the bottom */
+    align-self: center;
+    /* Center align button */
+}
+
+/* Carousel customization */
+.carousel-inner .row {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.carousel-control-prev {
+    left: -30px !important;
+}
+
+.carousel-control-next {
+    right: -30px !important;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(100%);
+    /* Make icons white */
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Semi-transparent background */
+    border-radius: 50%;
+    background-size: 100%;
+    /* Adjust size */
+}
+
+.carousel-inner img {
+    width: 100%;
+    /* Full width */
+    height: auto;
+    /* Maintain aspect ratio */
+    object-fit: cover;
+    /* Crop if necessary */
+    max-height: 300px;
+    /* Set consistent max height */
+}
+
+.carousel-item {
+    height: 450px;
+    /* Matches image height */
+
+}
