@@ -1,0 +1,53 @@
+/* Swiper Container */
+.swiper-container {
+    width: 100%;              /* Take up full width */
+    height: auto;             /* Maintain height of the slides */
+    margin: 0 auto;           /* Center the carousel */
+    padding: 0;               /* Remove extra padding */
+    overflow: hidden;         /* Prevent overflow */
+}
+
+/* Swiper Slides */
+.swiper-slide {
+    width: 18%;               /* Each slide will take up 18% of the container width */
+    margin: 0 10px;           /* Space between slides */
+}
+
+/* Center the navigation buttons vertically and position on the sides */
+.swiper-button-next,
+.swiper-button-prev {
+    position: absolute;
+    top: 50%;                  /* Center buttons vertically */
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
+    padding: 10px;
+    border-radius: 50%;
+    z-index: 10;               /* Ensure buttons are on top */
+}
+
+.swiper-button-next {
+    right: 10px;               /* Position next button on the right */
+}
+
+.swiper-button-prev {
+    left: 10px;                /* Position prev button on the left */
+}
+
+/* Ensure swiper cards are contained */
+.card {
+    width: 100%;               /* Make sure each card takes up the full width of the slide */
+    height: auto;              /* Ensure the height adjusts with content */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .swiper-slide {
+        width: 32%;             /* Show 3 slides on medium screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .swiper-slide {
+        width: 90%;             /* Show 1 slide on small screens */
+    }
+}
