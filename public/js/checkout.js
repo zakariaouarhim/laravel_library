@@ -7,11 +7,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (this.checked) {
                 creditCardInfo.style.display = "block";
             }
+           
         });
 
         cashOnDeliveryRadio.addEventListener("change", function () {
             if (this.checked) {
                 creditCardInfo.style.display = "none";
+                
             }
         });
     });

@@ -106,16 +106,17 @@
                         <h2 class="fs-5 m-0">وسيلة الدفع</h2>
                     </div>
                     <div class="card-body">
+                        
+                        <div class="form-check mb-3 text-end">
+                            <input class="form-check-input me-2" type="radio" name="paymentMethod" id="cashOnDelivery" checked>
+                            <label class="form-check-label" for="cashOnDelivery">
+                                الدفع عند الاستلام
+                            </label>
+                        </div>
                         <div class="form-check mb-3 text-end">
                             <input class="form-check-input me-2" type="radio" name="paymentMethod" id="creditCard" required>
                             <label class="form-check-label" for="creditCard">
                                 بطاقة ائتمان
-                            </label>
-                        </div>
-                        <div class="form-check mb-3 text-end">
-                            <input class="form-check-input me-2" type="radio" name="paymentMethod" id="cashOnDelivery">
-                            <label class="form-check-label" for="cashOnDelivery">
-                                الدفع عند الاستلام
                             </label>
                         </div>
 
