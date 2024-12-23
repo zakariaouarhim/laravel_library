@@ -14,21 +14,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick-theme.css">
 
+     <!-- Include jQuery -->
+     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+
     <!-- Include Slick Carousel -->
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.min.js"></script>
 
     <!-- Include Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- jQuery first -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <!-- Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <!-- Bootstrap 4 JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <!-- Bootstrap 4 CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Corrected favicon link -->
+    <link rel="icon" href="{{ asset('images/logo.svg') }}">
 
 </head>
 
@@ -76,11 +72,10 @@
 
                 <!-- Static Links -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#bookCarousel2" >الأكثر مبيعًا</a>
-
+                    <a class="nav-link" href="#bestsellers">الأكثر مبيعًا</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#bookCarousel">الإصدارات الحديثة</a>
+                    <a class="nav-link" href="#new-releases">الإصدارات الحديثة</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#collections">المجموعات</a>
@@ -118,7 +113,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">عنوان الكتاب 1</h5>
                                     <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="{{ route('moredetail.page') }}" class="btn btn-primary">تفاصيل أكثر</a>
+                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
                                 </div>
                             </div>
                         </div>
@@ -128,7 +123,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">عنوان الكتاب 2</h5>
                                     <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="{{ route('moredetail.page') }}" class="btn btn-primary">تفاصيل أكثر</a>
+                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
                                 </div>
                             </div>
                         </div>
@@ -138,7 +133,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">عنوان الكتاب 3</h5>
                                     <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="{{ route('moredetail.page') }}" class="btn btn-primary">تفاصيل أكثر</a>
+                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +143,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">عنوان الكتاب 4</h5>
                                     <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="{{ route('moredetail.page') }}" class="btn btn-primary">تفاصيل أكثر</a>
+                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
                                 </div>
                             </div>
                         </div>
@@ -158,7 +153,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">عنوان الكتاب 5</h5>
                                     <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="{{ route('moredetail.page') }}" class="btn btn-primary">تفاصيل أكثر</a>
+                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
                                 </div>
                             </div>
                         </div>
@@ -174,7 +169,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">عنوان الكتاب 6</h5>
                                     <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="{{ route('moredetail.page') }}" class="btn btn-primary">تفاصيل أكثر</a>
+                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
                                 </div>
                             </div>
                         </div>
@@ -226,7 +221,7 @@
 <!-- second carousel  -->
 
 <!-- Featured Books -->
-<section id="featured-books2" class="py-5">
+<section id="featured-books" class="py-5">
     <div class="container">
         <h2 class="text-center mb-4">الاكثر مبيعا</h2>
         <div id="bookCarousel2" class="carousel slide" data-bs-ride="carousel">
@@ -318,124 +313,51 @@
 
  <!-- end second carousel  -->
 
-<!-- second categories -->
-<div class="categories-section text-center">
-  
-  <div class="category-grid d-flex justify-content-center flex-wrap">
-    <!-- بطاقة الفئة -->
-    <div class="category-card">
-      <img src="{{ asset('images/novels.svg') }}" alt="روايات" class="category-icon">
-      <h3>فلسفة</h3>
-      <p>اكتشف أروع الروايات من الأدب العربي والعالمي.</p>
-    </div>
-    <div class="category-card">
-      <img src="{{ asset('images/novels.svg') }}" alt="كتب دينية" class="category-icon">
-      <h3> كتب الفكر</h3>
-      <p>تعرف على الكتب التي تقربك من الإيمان.</p>
-    </div>
-    <div class="category-card">
-      <img src="{{ asset('images/novels.svg') }}" alt="تنمية ذاتية" class="category-icon">
-      <h3>علم النفس</h3>
-      <p>كتب تحفزك لتحقيق أفضل نسخة من نفسك.</p>
-    </div>
-    <div class="category-card">
-      <img src="{{ asset('images/novels.svg') }}" alt="قصص الأطفال" class="category-icon">
-      <h3> علم الاجتماع</h3>
-      <p>قصص ممتعة ومفيدة للصغار.</p>
-    </div>
-  </div>
-</div>
-<!-- end second categories -->
 <!-- ********************************** carousel number 3 ************************************************** -->
 
-<section id="featured-books3" class="py-5">
-    <div class="container">
-        <h2 class="text-center mb-4">ENGLISH BOOKS </h2>
-        <div id="bookCarousel3" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="row">
-                        <div class="col-6 col-md-2">
-                            <div class="card">
-                                <img src="{{ asset('images/book7.png') }}" class="card-img-top" alt="Book 1">
-                                <div class="card-body">
-                                    <h5 class="card-title">عنوان الكتاب 1</h5>
-                                    <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <div class="card">
-                                <img src="{{ asset('images/book8.png') }}" class="card-img-top" alt="Book 2">
-                                <div class="card-body">
-                                    <h5 class="card-title">عنوان الكتاب 2</h5>
-                                    <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <div class="card">
-                                <img src="{{ asset('images/book9.png') }}" class="card-img-top" alt="Book 3">
-                                <div class="card-body">
-                                    <h5 class="card-title">عنوان الكتاب 3</h5>
-                                    <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <div class="card">
-                                <img src="{{ asset('images/book10.png') }}" class="card-img-top" alt="Book 4">
-                                <div class="card-body">
-                                    <h5 class="card-title">عنوان الكتاب 4</h5>
-                                    <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <div class="card">
-                                <img src="{{ asset('images/book11.png') }}" class="card-img-top" alt="Book 5">
-                                <div class="card-body">
-                                    <h5 class="card-title">عنوان الكتاب 5</h5>
-                                    <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div>
-                <div class="carousel-item">
-                    <div class="row">
-                        <!-- Repeat similar book cards here -->
-                        <div class="col-6 col-md-2">
-                            <div class="card">
-                                <img src="{{ asset('images/book12.png') }}" class="card-img-top" alt="Book 6">
-                                <div class="card-body">
-                                    <h5 class="card-title">عنوان الكتاب 6</h5>
-                                    <p class="card-text">وصف مختصر للكتاب 5</p>
-                                    <a href="#" class="btn btn-primary">تفاصيل أكثر</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Controls -->
-            <button class="carousel-control-prev" type="button" data-bs-target="#bookCarousel3" data-bs-slide="prev" >
-                <span class="carousel-control-prev-icon" aria-hidden="true" ></span>
-                <span class="visually-hidden">السابق</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#bookCarousel3" data-bs-slide="next" >
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">التالي</span>
-            </button>
+
+<!-- Bootstrap 4 CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+        <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="{{ asset('images/book6.png') }}" alt="Card image cap">
+            <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
         </div>
     </div>
-</section>
+    </div>
+    <div class="carousel-item">
+      <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="{{ asset('images/book6.png') }}" alt="Card image cap">
+            <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+    </div>
+    <div class="carousel-item">
+      <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="{{ asset('images/book6.png') }}" alt="Card image cap">
+            <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+    </div>
+  </div>
+  <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+  <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+</div>
 
 <!-- end third carousel  --> 
 
@@ -456,5 +378,4 @@
 
 </body>
 </html>
-
 

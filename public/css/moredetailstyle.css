@@ -5,6 +5,7 @@ body {
     margin: 0;
     padding: 0;
     direction: rtl;
+    text-align: right;
 }
 
 h1,
@@ -48,7 +49,6 @@ p {
     position: relative;
     width: 100%;
     max-width: 300px;
-    /* Reduced size */
     margin: 0 auto;
 }
 
@@ -195,7 +195,6 @@ p {
     cursor: pointer;
     background-color: #f9f9f9;
     border: none;
-    outline: none;
     font-size: 16px;
     font-weight: bold;
     color: #555;
@@ -209,14 +208,6 @@ p {
 
 .tabs-content {
     padding: 20px;
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
 }
 
 .details-table {
@@ -236,27 +227,7 @@ p {
     background-color: #f9f9f9;
     font-weight: bold;
 }
-/*ààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààà*/
-/* Card styles for featured books */
-#featured-books .card {
-    border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    /* Stack content vertically */
-    justify-content: space-between;
-    /* Distribute space */
-    height: 100%;
-    /* Full height for cards */
-    overflow: hidden;
-    /* Prevent content overflow */
-}
-
-#featured-books .card:hover {
-    transform: translateY(-5px);
-}
-
+/**********************************/
 #featured-books .card img {
     height: 250px;
     object-fit: cover;
@@ -289,11 +260,13 @@ p {
 }
 
 .carousel-control-prev {
-    left: -30px !important;
+    left: auto;
+    right: 0;
 }
 
 .carousel-control-next {
-    right: -30px !important;
+    right: auto;
+    left: 0;
 }
 
 .carousel-control-prev-icon,
@@ -302,7 +275,7 @@ p {
     /* Make icons white */
     width: 40px;
     height: 40px;
-    background-color: rgba(0, 0, 0, 0.5);
+
     /* Semi-transparent background */
     border-radius: 50%;
     background-size: 100%;
@@ -320,8 +293,6 @@ p {
     /* Set consistent max height */
 }
 
-.carousel-item {
-    height: 450px;
-    /* Matches image height */
 
-}
+
+

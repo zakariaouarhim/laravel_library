@@ -50,16 +50,22 @@ header {
 
 /* Dropdown menu styles */
 .dropdown-menu {
-    background-color: var(--color-primary);
+    background-color: var(--color-primary, #ffffff);
+    /* Fallback to white if not set */
     border: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-item {
-    color: var(--color-dark);
+    color: var(--color-dark, #000000);
+    /* Fallback to black if not set */
+    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Smooth hover effect */
 }
 
 .dropdown-item:hover {
-    background-color: var(--color-secondary);
+    background-color: var(--color-secondary, #007bff);
+    /* Fallback to Bootstrap's blue */
     color: white;
+    /* Text turns white */
 }
