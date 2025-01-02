@@ -53,7 +53,7 @@
                 </li>
             </ul>
             
-             <div class="d-flex">
+            <div class="d-flex">
                 <!-- Cart Icon -->
                 <a href="{{ route('checkout.page') }}" class="nav-link position-relative">
                     <i class="bi bi-cart-fill text-white fs-4"></i>
@@ -62,78 +62,39 @@
                         <span class="visually-hidden">عدد العناصر في السلة</span>
                     </span>
                 </a>
-                <!-- Account Icon -->
-                <a href="#" class="nav-link ms-3" data-bs-toggle="modal" data-bs-target="#accountModal">
-                    <i class="bi bi-person-circle text-white fs-4"></i>
-                </a>
-
-            </div>
-        </div>
-    </div>
-</nav>
-<!-- Account Modal -->
-<div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">تسجيل الدخول أو إنشاء حساب</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Tabs for Login and Register -->
-                <ul class="nav nav-tabs" id="accountTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">تسجيل الدخول</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">إنشاء حساب</button>
-                    </li>
-                </ul>
-                <div class="tab-content mt-3">
-                    <!-- Login Form -->
-                    <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
-                        <form method="POST" action="{{ route('login') }}">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="emailLogin" class="form-label">البريد الإلكتروني</label>
-                                <input type="email" class="form-control" id="emailLogin" name="email" required>
+                <!-- Account Dropdown -->
+                <div class="nav-item dropdown ">
+                    <a href="#" class="nav-link ms-3  dropdown-toggle-no-caret" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle text-white fs-4"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="accountDropdown" style="min-width: 250px;">
+                        <!-- تسجيل and الدخول as Buttons -->
+                        
+                        <li class="mb-3">
+                            <a href="{{ route('login2.page') }}" class="btn btn-primary w-100"> تسجيل الدخول </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <!-- تعقب طلباتي with Input Field -->
+                        <li class="mb-3">
+                            <label for="trackOrderInput" class="form-label">تعقب طلباتي</label>
+                            <div class="input-group">
+                                <input type="text" id="trackOrderInput" class="form-control" placeholder="رقم الطلب أو البريد الإلكتروني">
+                                <button class="btn btn-outline-secondary" type="button">بحث</button>
                             </div>
-                            <div class="mb-3">
-                                <label for="passwordLogin" class="form-label">كلمة المرور</label>
-                                <input type="password" class="form-control" id="passwordLogin" name="password" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">تسجيل الدخول</button>
-                        </form>
-                    </div>
-                    <!-- Register Form -->
-                    <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
-                        <form method="POST" action="{{ route('register') }}">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="nameRegister" class="form-label">الاسم الكامل</label>
-                                <input type="text" class="form-control" id="nameRegister" name="name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="emailRegister" class="form-label">البريد الإلكتروني</label>
-                                <input type="email" class="form-control" id="emailRegister" name="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="passwordRegister" class="form-label">كلمة المرور</label>
-                                <input type="password" class="form-control" id="passwordRegister" name="password" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="passwordRegister" class="form-label">تأكيد كلمة المرور </label>
-                                <input type="password" class="form-control" id="passwordRegister" name="password" required>
-                            </div>
-                            <button type="submit" class="btn btn-success w-100">إنشاء حساب</button>
-                        </form>
-                    </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <!-- Other Account Links -->
+                        <li><a class="dropdown-item" href="$">حسابي</a></li>
+                        <li><a class="dropdown-item" href="$}">الطلبات</a></li>
+                        <li><a class="dropdown-item" href="$">طلبات الإسترجاع</a></li>
+                        <li><a class="dropdown-item" href="$">قائمة الأمانيات</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</nav>
 
+<!-- Bootstrap JS and Icons -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Include Bootstrap Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">

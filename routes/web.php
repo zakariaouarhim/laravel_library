@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Usercontroller;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,12 +20,17 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/', function () {
-    return view('index3');
-});
-Route::get('/', function () {
-    return view('index2');
-});
+
+Route::get('/Dashbord_Admin/dashboard', function () {
+    return view('Dashbord_Admin.dashboard');
+})->name('Dashbord_Admin.dashboard');
+
+Route::get('/Dashbord_Admin/Product', function () {
+    return view('Dashbord_Admin.product');
+})->name('Dashbord_Admin.product');
+
+
+
 Route::get('/moredetail', function () {
     return view('moredetail');
 })->name('moredetail.page');
@@ -31,6 +38,11 @@ Route::get('/moredetail', function () {
 Route::get('/index', function () {
     return view('index');
 })->name('index.page');
+
+Route::get('/login2', function () {
+    return view('login2');
+})->name('login2.page');
+
 
 Route::get('/index2', function () {
     return view('index2');
@@ -50,4 +62,9 @@ Route::get('/', function () {
 
 Auth::routes();
 
+Route::resource('orders', OrderController::class);
+
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser');
+Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin');
