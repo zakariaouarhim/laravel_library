@@ -42,3 +42,34 @@
         margin-right: 0;
     }
 }
+/* Ensure table cells have consistent padding and alignment */
+#productsTable td,
+#productsTable th {
+    padding: 12px;
+    /* Add padding for better spacing */
+    vertical-align: middle;
+    /* Vertically center the content */
+    text-align: center;
+    /* Center-align text */
+}
+
+/* Ensure images have a fixed size */
+#productsTable img {
+    width: 80px;
+    /* Set a fixed width for images */
+    height: 120px;
+    /* Set a fixed height for images */
+    object-fit: cover;
+    /* Ensure images maintain aspect ratio */
+}
+
+/* Add spacing for action buttons */
+#productsTable .action-buttons {
+    white-space: nowrap;
+    /* Prevent buttons from wrapping */
+}
+
+#productsTable .action-buttons .btn {
+    margin: 2px;
+    /* Add spacing between buttons */
+}

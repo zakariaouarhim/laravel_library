@@ -86,7 +86,12 @@ class Usercontroller extends Controller
             // For example: Auth::loginUsingId($user->id);
 
             // Redirect to the home page or dashboard
-            return redirect()->route('index.page')->with('success', 'Login successful');
+            if ($user->role=="admin") {
+                return redirect()->route('Dashbord_Admin.dashboard')->with('success', 'Login successful');
+            }else {
+                return redirect()->route('index.page')->with('success', 'Login successful');
+            }
+            
         } else {
             // Invalid credentials
             return back()->with('fail', 'Invalid email or password');

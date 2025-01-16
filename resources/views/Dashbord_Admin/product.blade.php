@@ -49,10 +49,15 @@
                   <th scope="col">اسم المنتج</th>
                   <th scope="col">الوصف</th>
                   <th scope="col">السعر</th>
+                  <th scope="col">المؤلف</th>
+                  <th scope="col">عدد الصفحات</th>
+                  <th scope="col">اللغة</th>
+                  <th scope="col">ISBN</th>
                   <th scope="col">الإجراءات</th>
                 </tr>
               </thead>
               <tbody id="productsTableBody">
+                <!-- Rows will be dynamically inserted here -->
               </tbody>
             </table>
           </div>
@@ -62,6 +67,7 @@
 
     <!-- Add Product Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1">
+      <meta name="csrf-token" content="{{ csrf_token() }}">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -80,7 +86,36 @@
               </div>
               <div class="mb-3">
                 <label class="form-label">السعر</label>
-                <input type="number" class="form-control" id="productPrice" step="0.01" required>
+                <input type="number" class="form-control" id="productPrice" step="1" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">عدد الصفحات</label>
+                <input type="number" class="form-control" id="productPrice" step="1" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label"> اللغة</label>
+                <input type="text" class="form-control" id="productPrice"  required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">دار النشر </label>
+                <input type="text" class="form-control" id="productPrice"  required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ISBN </label>
+                <input type="text" class="form-control" id="productPrice"  required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">الفئة</label>
+                <select name="categorie" id="categorie"  class="form-select">
+                  <option value="روايات">روايات</option>
+                  <option value="كتب دينية">كتب دينية</option>
+                  <option value="تنمية ذاتية">تنمية ذاتية</option>
+                  <option value="قصص الأطفال">قصص الأطفال</option>
+                  <option value="فلسفة">فلسفة</option>
+                  <option value="كتب الفكر">كتب الفكر</option>
+                  <option value="علم النفس">علم النفس</option>
+                  <option value="علم الاجتماع">علم الاجتماع</option>
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">صورة المنتج</label>
@@ -95,6 +130,63 @@
         </div>
       </div>
     </div>
+    <!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">تعديل المنتج</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editProductForm">
+          <input type="hidden" id="productId" />
+          <div class="mb-3">
+            <label class="form-label">اسم المنتج</label>
+            <input type="text" class="form-control" id="editProductName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">المؤلف</label>
+            <input type="text" class="form-control" id="editAuthor" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">الوصف</label>
+            <textarea class="form-control" id="editProductDescription" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">السعر</label>
+            <input type="number" class="form-control" id="editProductPrice" step="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">عدد الصفحات</label>
+            <input type="number" class="form-control" id="editProductPageNum" step="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">اللغة</label>
+            <input type="text" class="form-control" id="editProductLangue" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">دار النشر</label>
+            <input type="text" class="form-control" id="editProductPublishingHouse" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">ISBN</label>
+            <input type="text" class="form-control" id="editProductISBN" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">صورة المنتج</label>
+            <input type="file" class="form-control" id="editProductImage" accept="image/*">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-primary" onclick="saveProduct()">حفظ التعديلات</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>

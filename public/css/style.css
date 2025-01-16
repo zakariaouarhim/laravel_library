@@ -16,47 +16,61 @@ body {
 }
 
 /**/
+#featured-books {
+  padding: 2rem 0;
+  overflow: visible;
+  /* Allow cards to overflow for hover effect */
+}
+
 #featured-books .card {
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  height: 100%;
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
-  /* Stack content vertically */
-  justify-content: space-between;
-  /* Distribute space */
-  height: 100%;
-  /* Full height for cards */
-  overflow: hidden;
-  /* Prevent content overflow */
+  background: #fff;
+  position: relative;
+  z-index: 1;
 }
 
 #featured-books .card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2;
 }
 
 #featured-books .card img {
   height: 250px;
-  object-fit: cover;
   width: 100%;
-  /* Responsive width */
+  object-fit: cover;
+  border-top-left-radius: calc(0.25rem - 1px);
+  border-top-right-radius: calc(0.25rem - 1px);
 }
 
 #featured-books .card-body {
-  padding: 1rem;
-  flex-grow: 1;
-  /* Allow body to fill available space */
+  padding: 1.25rem;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* Space out content and button */
+  background: #fff;
 }
-
+#featured-books .card-title {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+#featured-books .card-text {
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
 #featured-books .btn {
   margin-top: auto;
-  /* Push button to the bottom */
   align-self: center;
-  /* Center align button */
+  padding: 0.5rem 1.5rem;
+  width: auto;
 }
 
 /* Carousel customization */
@@ -64,6 +78,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: stretch;
+  padding: 1rem 0;
 }
 
 .carousel-control-prev {
@@ -100,10 +115,22 @@ body {
   /* Set consistent max height */
 }
 
-.carousel-item {
-  height: 450px;
-  /* Matches image height */
+.carousel-inner {
+  display: flex;
+  overflow: visible;
+  /* Hide overflow to create a sliding effect */
+  position: relative;
+}
 
+/* Carousel Items */
+.carousel-item {
+  flex: 0 0 100%;
+  /* Each item takes full width by default */
+  transition: transform 0.5s ease-in-out;
+  /* Smooth sliding transition */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .nav-tabs .nav-link.active {

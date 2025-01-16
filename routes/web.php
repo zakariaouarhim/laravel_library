@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Usercontroller;
+use App\Http\Controllers\BookController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,35 +16,27 @@ use App\Http\Controllers\Usercontroller;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
+// Dashboard Routes
 Route::get('/Dashbord_Admin/dashboard', function () {
     return view('Dashbord_Admin.dashboard');
 })->name('Dashbord_Admin.dashboard');
 
-Route::get('/Dashbord_Admin/Product', function () {
-    return view('Dashbord_Admin.product');
-})->name('Dashbord_Admin.product');
+Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
+Route::get('/Dashbord_Admin/Product/data', [BookController::class, 'getProducts']);
+Route::get('/Dashbord_Admin/Product/{id}', [BookController::class, 'getProductById']); 
+Route::put('/Dashbord_Admin/Product/{id}', [BookController::class, 'updateProduct']);
 
 
 
-Route::get('/moredetail', function () {
-    return view('moredetail');
-})->name('moredetail.page');
+// Other Routes
 
-Route::get('/index', function () {
-    return view('index');
-})->name('index.page');
+
+Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetail.page');
 
 Route::get('/login2', function () {
     return view('login2');
 })->name('login2.page');
-
 
 Route::get('/index2', function () {
     return view('index2');
@@ -56,15 +50,15 @@ Route::get('/checkout', function () {
     return view('checkout');
 })->name('checkout.page');
 
-Route::get('/', function () {
-    return view('index');
-});
+// Root and Index Routes
+Route::get('/', [BookController::class, 'index']);
+Route::get('/index', [BookController::class, 'index'])->name('index.page');
 
+// Authentication Routes
 Auth::routes();
 
+// Resource and Custom Routes
 Route::resource('orders', OrderController::class);
-
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser');
 Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin');
+Route::get('/books', [BookController::class, 'index']);
