@@ -20,7 +20,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">
+              <a class="nav-link" href="{{ route('client.index') }}">
                 <span data-feather="users"></span>
                 الزبائن
               </a>

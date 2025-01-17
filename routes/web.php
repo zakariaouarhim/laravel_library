@@ -21,13 +21,15 @@ use Illuminate\Http\Request;
 Route::get('/Dashbord_Admin/dashboard', function () {
     return view('Dashbord_Admin.dashboard');
 })->name('Dashbord_Admin.dashboard');
-
+Route::resource('orders', OrderController::class);
 Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
 Route::get('/Dashbord_Admin/Product/data', [BookController::class, 'getProducts']);
 Route::get('/Dashbord_Admin/Product/{id}', [BookController::class, 'getProductById']); 
 Route::put('/Dashbord_Admin/Product/{id}', [BookController::class, 'updateProduct']);
+Route::post('/Dashbord_Admin/Product/add', [BookController::class, 'addProduct'])->name('product.add');
 
-
+Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
+Route::resource('client', Usercontroller::class);
 
 // Other Routes
 
@@ -58,7 +60,7 @@ Route::get('/index', [BookController::class, 'index'])->name('index.page');
 Auth::routes();
 
 // Resource and Custom Routes
-Route::resource('orders', OrderController::class);
+
 Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser');
 Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin');
 Route::get('/books', [BookController::class, 'index']);

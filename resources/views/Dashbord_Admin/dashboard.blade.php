@@ -12,7 +12,7 @@
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
 
       <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
-      <link rel="stylesheet" href="{{ asset('css/bootstrap.rtl.min.css') }}">
+      
       <!-- Favicon -->
       <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
   </head>

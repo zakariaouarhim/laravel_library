@@ -14,13 +14,15 @@ async function fetchProducts() {
   }
 }
 async function AddProduct() {
-  productName=document.getElementById("productName");
-  productDescription=document.getElementById("productDescription");
-  productPrice=document.getElementById("productPrice");
-  productNumPages=document.getElementById("productNumPages");
-  productLanguage=document.getElementById("productLanguage");
-  ProductPublishingHouse=document.getElementById("ProductPublishingHouse");
-  productIsbn=document.getElementById("productIsbn");
+  var productName=document.getElementById("productName");
+  var productDescription=document.getElementById("productDescription");
+  var productPrice=document.getElementById("productPrice");
+  var productNumPages=document.getElementById("productNumPages");
+  var productLanguage=document.getElementById("productLanguage");
+  var ProductPublishingHouse=document.getElementById("ProductPublishingHouse");
+  var productIsbn=document.getElementById("productIsbn");
+  var productcategorie=document.getElementById("Productcategorie");
+  var productimage="images/books/"+productName+".jpg";
   
 }
 

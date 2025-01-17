@@ -10,7 +10,7 @@
     
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/product.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.rtl.min.css') }}">
+    
     
   </head>
   <body>
@@ -66,70 +66,78 @@
     </div>
 
     <!-- Add Product Modal -->
+    
+      
+      <form id="addproductform" method="POST" action="{{ route('product.add') }}" enctype="multipart/form-data">
+    @csrf
     <div class="modal fade" id="addProductModal" tabindex="-1">
-      <meta name="csrf-token" content="{{ csrf_token() }}">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">إضافة منتج جديد</h5>
-            <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <form id="productForm">
-              <div class="mb-3">
-                <label class="form-label">اسم المنتج</label>
-                <input type="text" class="form-control" id="productName" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">الوصف</label>
-                <textarea class="form-control" id="productDescription" rows="3" required></textarea>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">السعر</label>
-                <input type="number" class="form-control" id="productPrice" step="1" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">عدد الصفحات</label>
-                <input type="number" class="form-control" id="productPrice" step="1" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label"> اللغة</label>
-                <input type="text" class="form-control" id="productPrice"  required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">دار النشر </label>
-                <input type="text" class="form-control" id="productPrice"  required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">ISBN </label>
-                <input type="text" class="form-control" id="productPrice"  required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">الفئة</label>
-                <select name="categorie" id="categorie"  class="form-select">
-                  <option value="روايات">روايات</option>
-                  <option value="كتب دينية">كتب دينية</option>
-                  <option value="تنمية ذاتية">تنمية ذاتية</option>
-                  <option value="قصص الأطفال">قصص الأطفال</option>
-                  <option value="فلسفة">فلسفة</option>
-                  <option value="كتب الفكر">كتب الفكر</option>
-                  <option value="علم النفس">علم النفس</option>
-                  <option value="علم الاجتماع">علم الاجتماع</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">صورة المنتج</label>
-                <input type="file" class="form-control" id="productImage" accept="image/*" required>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-            <button type="button" class="btn btn-primary" onclick="saveProduct()">حفظ</button>
-          </div>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">إضافة منتج جديد</h5>
+                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">اسم المنتج</label>
+                        <input type="text" class="form-control" id="productName" name="productName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الكاتب </label>
+                        <input type="text" class="form-control" id="productauthor" name="productauthor" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الوصف</label>
+                        <textarea class="form-control" id="productDescription" rows="3" name="productDescription" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">السعر</label>
+                        <input type="number" class="form-control" id="productPrice" step="1" name="productPrice" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">عدد الصفحات</label>
+                        <input type="number" class="form-control" id="productNumPages" step="1" name="productNumPages" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">اللغة</label>
+                        <input type="text" class="form-control" id="productLanguage" name="productLanguage" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">دار النشر</label>
+                        <input type="text" class="form-control" id="ProductPublishingHouse" name="ProductPublishingHouse" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ISBN</label>
+                        <input type="text" class="form-control" id="productIsbn" name="productIsbn" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الفئة</label>
+                        <select name="Productcategorie" id="Productcategorie" class="form-select" required>
+                            <option value="1">روايات</option>
+                            <option value="2">كتب دينية</option>
+                            <option value="3">التنمية البشرية وتنمية وتطوير الذات</option>
+                            <option value="4">قصص الأطفال</option>
+                            <option value="5">فلسفة</option>
+                            <option value="6">كتب الفكر</option>
+                            <option value="7">علم النفس</option>
+                            <option value="8">علم الاجتماع</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">صورة المنتج</label>
+                        <input type="file" class="form-control" id="productImage" accept="image/*" name="productImage" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
+</form>
+
+    
     <!-- Edit Product Modal -->
 <div class="modal fade" id="editProductModal" tabindex="-1">
   <meta name="csrf-token" content="{{ csrf_token() }}">

@@ -1,0 +1,97 @@
+/* General Styling */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Page Title */
+h1 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Search Bar */
+#searchInput {
+    margin-bottom: 15px;
+    border-radius: 25px;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+}
+
+/* Table Styling */
+.table-responsive {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.table {
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.table th {
+    background-color: #343a40;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+}
+
+.table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.table td img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 25px;
+    padding: 5px 15px;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #084298;
+    border-color: #084298;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #b02a37;
+    border-color: #b02a37;
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 15px;
+}
+
+.modal-header {
+    background-color: #343a40;
+    color: #fff;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer .btn {
+    min-width: 100px;
+}

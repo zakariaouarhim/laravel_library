@@ -111,5 +111,8 @@ class Usercontroller extends Controller
         return back()->with('fail', 'An error occurred during login. Please try again.');
     }
 }
-   
+   public function index()
+    {
+        return view('Dashbord_Admin.client');
+    }
 }
