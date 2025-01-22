@@ -36,48 +36,76 @@
 
     <!--begin of the carousel-->
     <section id="featured-books" class="py-5"> 
-        <h2 class="text-center mb-4">كتب مميزة</h2>
-        @if ($books->isEmpty())
-            <div class="alert alert-info text-center">لا توجد كتب متاحة حاليًا.</div>
-        @else
-            <div id="bookCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-                
-
-                <!-- Carousel Inner -->
-                <div class="carousel-inner">
-                    @foreach ($books as $index => $book)
-                    
-                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                            <div class="row justify-content-center">
-                                <div class="col-md-4 col-sm-6 col-12">
-                                    <div class="card">
-                                        <img src="{{ asset($book->image) }}" class="card-img-top" alt="{{ $book->title }}" loading="lazy">
-                                        <div class="card-body text-center">
-                                            <h5 class="card-title">{{ $book->title }}</h5>
-                                            <p class="card-text">{{ $book->author }}</p>
-                                            <p class="card-text">{{ $book->price }} ر.س</p>
-                                            <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="btn btn-primary">شراء</a>
+    <h2 class="text-center mb-4">كتب مميزة</h2>
+    @if ($books->isEmpty())
+        <div class="alert alert-info text-center">لا توجد كتب متاحة حاليًا.</div>
+    @else
+        <div id="bookCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+            <!-- Carousel Inner -->
+            <div class="carousel-inner">
+                @foreach ($books as $index => $book)
+                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                        <div class="row justify-content-center">
+                            <!-- Wider Card Column -->
+                            <div class="col-md-6 col-sm-8 col-12">
+                                <!-- Updated Card Structure -->
+                                <div class="card border-light">
+                                    <!-- Clickable image linking to moredetail page -->
+                                    <div class="card-header">
+                                        <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">
+                                            <img src="{{ asset($book->image) }}" class="card-img-top" alt="{{ $book->title }}" loading="lazy">
+                                        </a>
+                                    </div>
+                                    <!-- Card body with book details -->
+                                    <div class="card-body border-top border-light">
+                                        <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="h5">{{ $book->title }}</a>
+                                        <h6 class="font-weight-light text-gray mt-2">{{ $book->author }}</h6>
+                                        <!-- Rating section (optional) -->
+                                        <div class="d-flex mt-3">
+                                            <i class="star fas fa-star text-warning mr-1"></i>
+                                            <i class="star fas fa-star text-warning mr-1"></i>
+                                            <i class="star fas fa-star text-warning mr-1"></i>
+                                            <i class="star fas fa-star text-warning mr-1"></i>
+                                            <i class="star fas fa-star text-warning"></i>
+                                            <span class="badge badge-pill badge-gray ml-2">4.7</span>
+                                        </div>
+                                    </div>
+                                    <!-- Card footer with price and Add to Cart button -->
+                                    <div class="card-footer border-top border-light p-4">
+                                        <!-- Price Section -->
+                                        <div class="text-center mb-3">
+                                            <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
+                                                {{ $book->price + 50 }}  <!-- Example: Original price -->
+                                            </span>
+                                            <span class="h5 mb-0 text-danger">{{ $book->price }} ر.س</span> <!-- Discounted price -->
+                                        </div>
+                                        <!-- Add to Cart Button -->
+                                        <div class="text-center">
+                                            <button class="btn btn-primary" type="button" onclick="addToCart({{ $book->id }})">
+                                                <i class="fas fa-cart-plus"></i> أضف إلى السلة
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
+                                <!-- End of Updated Card Structure -->
                             </div>
                         </div>
-                        
-                    @endforeach
-                </div>
-                
-                <!-- Carousel Controls -->
-                <button class="carousel-control-prev custom-prev" type="button" data-bs-target="#bookCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">السابق</span>
-                </button>
-                <button class="carousel-control-next custom-next" type="button" data-bs-target="#bookCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">التالي</span>
-                </button>
+                    </div>
+                @endforeach
             </div>
-        @endif
-    </section>
+            
+            <!-- Carousel Controls -->
+            <button class="carousel-control-prev custom-prev" type="button" data-bs-target="#bookCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">السابق</span>
+            </button>
+            <button class="carousel-control-next custom-next" type="button" data-bs-target="#bookCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">التالي</span>
+            </button>
+        </div>
+    @endif
+</section>
    
     <!-- first categories -->
     <div class="categories-section text-center">
@@ -190,6 +218,7 @@
 
         
     <script src="{{ asset('js/scripts.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}"></script>
     <footer>
         @include('footer')
     </footer>

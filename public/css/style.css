@@ -16,6 +16,53 @@ body {
 }
 
 /**/
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.card-body a {
+  color: #333;
+  text-decoration: none;
+}
+
+.card-body a:hover {
+  color: #007bff;
+}
+
+.card-footer {
+  background-color: #f8f9fa;
+}
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.btn-primary i {
+  margin-right: 8px;
+  /* Add space between icon and text */
+}
+
+
 #featured-books {
   padding: 2rem 0;
   overflow: visible;

@@ -128,3 +128,27 @@ document.addEventListener('DOMContentLoaded', function () {
     setupSwipe(document.getElementById('bookCarousel2'));
     setupSwipe(document.getElementById('bookCarousel3'));
 });
+
+
+function addToCart(bookId) {
+    fetch(`/add-to-cart/${bookId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Add CSRF token for Laravel
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تمت إضافة الكتاب إلى السلة بنجاح!');
+            // Update the cart count in the header
+            document.getElementById('cartCount').innerText = data.cartCount;
+        } else {
+            alert('حدث خطأ أثناء إضافة الكتاب إلى السلة.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}

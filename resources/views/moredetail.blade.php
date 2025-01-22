@@ -123,6 +123,7 @@
     
     <script src="{{ asset('js/scripts.js') }}"></script>
     <script src="{{ asset('js/moredetail.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}"></script>
     
     <br> <br>
     <footer>

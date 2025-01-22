@@ -55,6 +55,7 @@ Route::get('/checkout', function () {
 // Root and Index Routes
 Route::get('/', [BookController::class, 'index']);
 Route::get('/index', [BookController::class, 'index'])->name('index.page');
+Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add.to.cart');
 
 // Authentication Routes
 Auth::routes();
