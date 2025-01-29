@@ -58,7 +58,7 @@
                 <a href="javascript:void(0);" class="nav-link position-relative" onclick="showCartModal()">
                     <i class="bi bi-cart-fill text-white fs-4"></i>
                     <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        0 <!-- Example cart count, replace dynamically -->
+                      {{ $cartCount ?? 0 }} <!-- Example cart count, replace dynamically -->
                     </span>
                 </a>
 
@@ -81,13 +81,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
                             </div>
                             <div class="modal-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <img src="images/book.jpg" alt="book image" class="img-fluid" style="width: 50px;">
-                                    <div>
-                                        <p class="mb-0">الأب الغني والأب الفقير</p>
-                                        <span>306.15 MAD x 1</span>
-                                    </div>
-                                </div>
+                                <!-- Dynamically populated cart items will go here -->
                             </div>
                             <div class="modal-footer d-flex justify-content-between">
                                 <button class="btn btn-primary">إتمام الشراء ✔️</button>
@@ -95,7 +89,8 @@
                             </div>
                         </div>
                     </div>
-                </div>                
+                </div>
+             
                 <!-- Account Dropdown -->
                 <div class="nav-item dropdown ms-3">
                     <a href="#" class="nav-link dropdown-toggle" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -130,25 +130,38 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// Initialize an empty array to store cart items
+let cartItems = [];
+
+// Function to add book to the cart
 function addToCart(bookId) {
-    fetch(`/add-to-cart/${bookId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Add CSRF token for Laravel
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('تمت إضافة الكتاب إلى السلة بنجاح!');
-            // Update the cart count in the header
-            document.getElementById('cartCount').innerText = data.cartCount;
-        } else {
-            alert('حدث خطأ أثناء إضافة الكتاب إلى السلة.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
+    console.log('Adding book to cart:', bookId); // Debugging
+
+    // Find the clicked button and get book data from data attributes
+    let button = document.querySelector(`button[onclick="addToCart(${bookId})"]`);
+    let bookTitle = button.getAttribute('data-title');
+    let bookPrice = button.getAttribute('data-price');
+    let bookImage = button.getAttribute('data-image');
+    
+
+    // Add book details to the cartItems array
+    cartItems.push({
+        id: bookId,
+        title: bookTitle,
+        price: bookPrice,
+        image: bookImage
     });
+    console.log(cartItems); // Debugging - Check if the array is updated
+    // Update the cart count (for the header)
+    document.getElementById('cartCount').innerText = cartItems.length;
+
+    // Optionally, show a success toast
+    document.querySelector('.toast-body').textContent = 
+        `تمت إضافة "${bookTitle}" بسعر ${bookPrice} ر.س بنجاح إلى السلة`;
+    let toastElement = document.getElementById('cartSuccessToast');
+    let toast = new bootstrap.Toast(toastElement);
+    toast.show();
 }
+
+
+

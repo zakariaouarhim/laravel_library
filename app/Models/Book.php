@@ -13,11 +13,16 @@ class Book extends Model
         'title', 'author', 'price', 'image', 'category_id', 'description'
     ];
     
+     // Relationship with CartItem
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
 
     // Define relationships (optional)
     public function category()
     {
-       // return $this->belongsTo(Category::class, 'category_id');
+       return $this->belongsTo(Category::class, 'category_id');
     }
     
 }

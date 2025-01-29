@@ -191,6 +191,15 @@ body {
 }
 
 /**/
+#cartSuccessToast {
+  position: fixed;
+  top: 80px;
+  /* Adjust this value so it doesn’t block buttons */
+  right: 20px;
+  z-index: 1050;
+  /* Lower than modal (1070 in Bootstrap) but high enough */
+}
+/**/
 body {
   font-family: 'Arial', 'Helvetica', sans-serif;
   background-color: #f4f4f4;

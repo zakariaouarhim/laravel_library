@@ -50,7 +50,7 @@
                     <div class="input-group" style="max-width: 120px;">
                         <input type="number" class="form-control text-center" value="1" min="1" aria-label="عدد النسخ">
                     </div>
-                    <button class="btn btn-primary ms-3" id="addToCartButton" aria-label="أضف الكتاب للسلة">أضف إلى السلة</button>
+                    <button class="btn btn-primary ms-3" id="addToCartButton" aria-label="أضف الكتاب للسلة" onclick="addToCart({{ $book->id }})">أضف إلى السلة</button>
                 </div>
 
                 <div class="row g-2">

@@ -17,6 +17,8 @@
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 </head>
 
 <body>
@@ -36,6 +38,7 @@
 
     <!--begin of the carousel-->
     <section id="featured-books" class="py-5"> 
+        @csrf
     <h2 class="text-center mb-4">كتب مميزة</h2>
     @if ($books->isEmpty())
         <div class="alert alert-info text-center">لا توجد كتب متاحة حاليًا.</div>
@@ -81,7 +84,7 @@
                                         </div>
                                         <!-- Add to Cart Button -->
                                         <div class="text-center">
-                                            <button class="btn btn-primary" type="button" onclick="addToCart({{ $book->id }})">
+                                            <button class="btn btn-primary" type="button" data-title="{{ $book->title }}" data-price="{{ $book->price }}" data-image="{{ asset($book->image) }}" aria-label="أضف الكتاب للسلة"  onclick="addToCart({{ $book->id }})">
                                                 <i class="fas fa-cart-plus"></i> أضف إلى السلة
                                             </button>
                                         </div>
@@ -106,7 +109,23 @@
         </div>
     @endif
 </section>
-   
+ <!-- Success Modal -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+        <div id="cartSuccessToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    تمت الإضافة
+                </strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                تمت إضافة الكتاب إلى السلة بنجاح
+            </div>
+        </div>
+    </div>
+
+ 
     <!-- first categories -->
     <div class="categories-section text-center">
     <h2 class="section-title">اكتشف حسب الفئة</h2>
@@ -225,6 +244,7 @@
         
     
     
+
 
 
 </body>
