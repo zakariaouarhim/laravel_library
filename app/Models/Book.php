@@ -18,7 +18,10 @@ class Book extends Model
     {
         return $this->hasMany(CartItem::class);
     }
-
+    public function getImageUrlAttribute()
+    {
+        return asset($this->image);
+    }
     // Define relationships (optional)
     public function category()
     {

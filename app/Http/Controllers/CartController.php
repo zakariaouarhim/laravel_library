@@ -10,70 +10,106 @@ use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    public function addToCart($bookId)
-{
-    \Log::info('Adding book to cart:', ['bookId' => $bookId]); // Debugging
-
+    public function addToCart($bookId, Request $request)
+    {
     try {
-        // Fetch the book by ID
-        $book = Book::find($bookId);
+        $book = Book::findOrFail($bookId);
+        $cart = session()->get('cart', []);
 
-        if (!$book) {
-            \Log::error('Book not found:', ['bookId' => $bookId]); // Debugging
-            return response()->json(['success' => false, 'message' => 'Book not found']);
+        $itemData = [
+            'id' => $book->id,
+            'title' => $request->input('title') ?? $book->title,
+            'price' => $request->input('price') ?? $book->price,
+            'image' => $request->input('image') ?? $book->image,
+            'quantity' => 1
+        ];
+
+        if(isset($cart[$bookId])) {
+            $cart[$bookId]['quantity']++;
+        } else {
+            $cart[$bookId] = $itemData;
         }
 
-        // Get the current user
-        $user = Auth::user();
+        session()->put('cart', $cart);
 
-        if ($user) {
-            \Log::info('User is logged in:', ['userId' => $user->id]); // Debugging
-
-            // Find or create a cart for the user
-            $cart = Cart::firstOrCreate(['user_id' => $user->id]);
-
-            // Add the book to the cart (or update the quantity if it already exists)
-            $cartItem = CartItem::updateOrCreate(
-                ['cart_id' => $cart->id, 'book_id' => $book->id],
+        // Sync with database if authenticated
+        if(Auth::check()) {
+            $userCart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+            CartItem::updateOrCreate(
+                ['cart_id' => $userCart->id, 'book_id' => $bookId],
                 ['quantity' => \DB::raw('quantity + 1')]
             );
-
-            // Get the updated cart count
-            $cartCount = $cart->items()->count();
-        } else {
-            \Log::info('User is not logged in, using session.'); // Debugging
-
-            // If the user is not logged in, use the session
-            $cart = session()->get('cart', []);
-
-            if (isset($cart[$bookId])) {
-                $cart[$bookId]['quantity']++;
-            } else {
-                $cart[$bookId] = [
-                    'title' => $book->title,
-                    'price' => $book->price,
-                    'quantity' => 1,
-                    'image' => $book->image
-                ];
-            }
-
-            // Save the updated cart in the session
-            session()->put('cart', $cart);
-
-            // Get the updated cart count
-            $cartCount = count($cart);
         }
 
-        \Log::info('Cart updated successfully:', ['cartCount' => $cartCount]); // Debugging
-
-        // Return a success response with the updated cart count
         return response()->json([
             'success' => true,
-            'cartCount' => $cartCount
+            'cartCount' => count($cart),
+            'cart' => $cart
         ]);
+
     } catch (\Exception $e) {
-        \Log::error('Error adding book to cart:', ['error' => $e->getMessage()]); // Debugging
-        return response()->json(['success' => false, 'message' => 'An error occurred']);
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
+    }
+
+    public function getCart()
+    {
+    try {
+        $cart = session()->get('cart', []);
+
+        // Merge with database cart if authenticated
+        if (Auth::check()) {
+            $userCart = Cart::with('items.book')->where('user_id', Auth::id())->first();
+            
+            if ($userCart) {
+                foreach ($userCart->items as $item) {
+                    $bookId = $item->book_id;
+                    if (isset($cart[$bookId])) {
+                        $cart[$bookId]['quantity'] += $item->quantity;
+                    } else {
+                        $cart[$bookId] = [
+                            'id' => $bookId,
+                            'title' => $item->book->title,
+                            'price' => $item->book->price,
+                            'image' => asset($item->book->image), // Use the accessor here
+                            'quantity' => $item->quantity
+                        ];
+                    }
+                }
+                session()->put('cart', $cart);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'cart' => $cart,
+            'cartCount' => count($cart)
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+    }
+
+    public function removeFromCart(Request $request)
+{
+    $cart = session()->get('cart', []);
+
+    if (isset($cart[$request->id])) {
+        unset($cart[$request->id]);
+        session()->put('cart', $cart);
+    }
+
+    return response()->json([
+        'success' => true,
+        'cartCount' => count($cart) // Update cart count in the UI
+    ]);
 }
+
 }

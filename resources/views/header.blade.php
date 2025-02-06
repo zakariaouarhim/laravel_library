@@ -58,7 +58,7 @@
                 <a href="javascript:void(0);" class="nav-link position-relative" onclick="showCartModal()">
                     <i class="bi bi-cart-fill text-white fs-4"></i>
                     <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                      {{ $cartCount ?? 0 }} <!-- Example cart count, replace dynamically -->
+                        {{ session('cart') ? count(session('cart')) : 0 }}
                     </span>
                 </a>
 
@@ -84,7 +84,7 @@
                                 <!-- Dynamically populated cart items will go here -->
                             </div>
                             <div class="modal-footer d-flex justify-content-between">
-                                <button class="btn btn-primary">إتمام الشراء ✔️</button>
+                                <button class="btn btn-primary" onclick="window.location='{{ route('checkout.page') }}'">إتمام الشراء ✔️</button>
                                 <button class="btn btn-outline-warning">سلّة التسوق</button>
                             </div>
                         </div>

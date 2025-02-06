@@ -16,6 +16,8 @@
     
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     <header>
@@ -50,7 +52,8 @@
                     <div class="input-group" style="max-width: 120px;">
                         <input type="number" class="form-control text-center" value="1" min="1" aria-label="عدد النسخ">
                     </div>
-                    <button class="btn btn-primary ms-3" id="addToCartButton" aria-label="أضف الكتاب للسلة" onclick="addToCart({{ $book->id }})">أضف إلى السلة</button>
+                    
+                    <button class="btn btn-primary ms-3" id="addToCartButton" aria-label="أضف الكتاب للسلة" data-book-id="{{ $book->id }}" data-title="{{ $book->title }}" data-price="{{ $book->price }}" data-image="{{ $book->image }}"    onclick="addToCart({{ $book->id }})">أضف إلى السلة</button>
                 </div>
 
                 <div class="row g-2">

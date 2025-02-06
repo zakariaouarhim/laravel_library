@@ -110,22 +110,25 @@
     @endif
 </section>
  <!-- Success Modal -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
-        <div id="cartSuccessToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-success text-white">
-                <strong class="me-auto">
-                    <i class="fas fa-shopping-cart me-2"></i>
-                    تمت الإضافة
-                </strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                تمت إضافة الكتاب إلى السلة بنجاح
-            </div>
-        </div>
-    </div>
 
- 
+ <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <strong class="me-auto">السلة</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-primary text-white">
+            <strong class="me-auto">إشعار</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
     <!-- first categories -->
     <div class="categories-section text-center">
     <h2 class="section-title">اكتشف حسب الفئة</h2>

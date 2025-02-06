@@ -130,38 +130,52 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-// Initialize an empty array to store cart items
-let cartItems = [];
-
-// Function to add book to the cart
+// Update addToCart function
 function addToCart(bookId) {
-    console.log('Adding book to cart:', bookId); // Debugging
-
-    // Find the clicked button and get book data from data attributes
-    let button = document.querySelector(`button[onclick="addToCart(${bookId})"]`);
-    let bookTitle = button.getAttribute('data-title');
-    let bookPrice = button.getAttribute('data-price');
-    let bookImage = button.getAttribute('data-image');
     
+    fetch(`/add-to-cart/${bookId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            updateCartCount(data.cartCount);
+            showCartToast('تمت الإضافة بنجاح');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+    console.log('Cart Item Image:', item.image); // Should show full URL
+}
 
-    // Add book details to the cartItems array
-    cartItems.push({
-        id: bookId,
-        title: bookTitle,
-        price: bookPrice,
-        image: bookImage
-    });
-    console.log(cartItems); // Debugging - Check if the array is updated
-    // Update the cart count (for the header)
-    document.getElementById('cartCount').innerText = cartItems.length;
+// Add these helper functions
+function updateCartCount(count) {
+    document.getElementById('cartCount').textContent = count;
+}
 
-    // Optionally, show a success toast
-    document.querySelector('.toast-body').textContent = 
-        `تمت إضافة "${bookTitle}" بسعر ${bookPrice} ر.س بنجاح إلى السلة`;
-    let toastElement = document.getElementById('cartSuccessToast');
-    let toast = new bootstrap.Toast(toastElement);
+function showCartToast(message) {
+    const toast = new bootstrap.Toast(document.getElementById('cartToast'));
+    document.getElementById('cartToast').textContent = message;
     toast.show();
 }
 
+// Initialize cart count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/get-cart')
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                updateCartCount(data.cartCount);
+            }
+        });
+});
 
 
+document.getElementById('cartDetailsModal').addEventListener('hidden.bs.modal', function () {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.paddingRight = '';
+});

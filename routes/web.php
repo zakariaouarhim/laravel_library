@@ -33,6 +33,10 @@ Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->n
 Route::resource('client', Usercontroller::class);
 
 // Other Routes
+// 
+Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add.to.cart');
+Route::get('/get-cart', [CartController::class, 'getCart'])->name('get.cart');
+Route::post('/remove-from-cart', [CartController::class, 'removeFromCart'])->name('cart.remove');
 
 
 Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetail.page');
