@@ -37,7 +37,17 @@ Route::resource('client', Usercontroller::class);
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add.to.cart');
 Route::get('/get-cart', [CartController::class, 'getCart'])->name('get.cart');
 Route::post('/remove-from-cart', [CartController::class, 'removeFromCart'])->name('cart.remove');
+/////////////
+Route::post('/checkout/store', function (Request $request) {
+    session()->put('checkout_cart', json_decode($request->cart_data, true)); // Store cart data in session
+    return redirect()->route('checkout.page'); // Redirect to checkout page
+})->name('checkout.store');
 
+Route::get('/checkout', function () {
+    $cart = session()->get('checkout_cart', []); // Retrieve cart data
+    return view('checkout', compact('cart'));
+})->name('checkout.page');
+/////////////
 
 Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetail.page');
 

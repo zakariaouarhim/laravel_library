@@ -81,15 +81,22 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
                             </div>
                             <div class="modal-body">
-                                <!-- Dynamically populated cart items will go here -->
+                                <form id="checkoutForm" action="{{ route('checkout.store') }}" method="POST">
+                                    @csrf
+                                    <div id="cartItemsContainer">
+                                        <!-- Cart items will be inserted dynamically -->
+                                    </div>
+                                    <input type="hidden" name="cart_data" id="cartDataInput">
+                                </form>
                             </div>
                             <div class="modal-footer d-flex justify-content-between">
-                                <button class="btn btn-primary" onclick="window.location='{{ route('checkout.page') }}'">إتمام الشراء ✔️</button>
+                                <button class="btn btn-primary" onclick="submitCheckoutForm()">إتمام الشراء ✔️</button>
                                 <button class="btn btn-outline-warning">سلّة التسوق</button>
                             </div>
                         </div>
                     </div>
                 </div>
+
              
                 <!-- Account Dropdown -->
                 <div class="nav-item dropdown ms-3">

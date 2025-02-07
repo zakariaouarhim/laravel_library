@@ -3,13 +3,22 @@ function showCartModal() {
     fetch('/get-cart')
         .then(response => response.json())
         .then(data => {
-            const modalBody = document.querySelector('#cartDetailsModal .modal-body');
+            const modalBody = document.querySelector('#cartItemsContainer');
             modalBody.innerHTML = '';
 
             if (!data.success || Object.keys(data.cart).length === 0) {
                 modalBody.innerHTML = '<p>سلّة التسوق فارغة</p>';
             } else {
+                let cartArray = [];
                 Object.values(data.cart).forEach(item => {
+                    cartArray.push({
+                        id: item.id,
+                        title: item.title,
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.image
+                    });
+
                     const itemHTML = `
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <img src="/${item.image}" alt="${item.title}" class="img-thumbnail" style="width: 80px; height: 100px;">
@@ -24,21 +33,29 @@ function showCartModal() {
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
-                `;
+                    `;
 
                     modalBody.innerHTML += itemHTML;
                 });
+
+                // Store cart data in hidden input
+                document.getElementById('cartDataInput').value = JSON.stringify(cartArray);
             }
 
-            // Initialize and show modal
+            // Show modal
             new bootstrap.Modal(document.getElementById('cartDetailsModal')).show();
-            
         })
         .catch(error => {
             console.error('Error:', error);
             showCartToast('حدث خطأ أثناء تحميل السلة');
         });
 }
+
+// Function to submit checkout form
+function submitCheckoutForm() {
+    document.getElementById('checkoutForm').submit();
+}
+
 
 // Toast notification function
 function showCartToast(message) {
