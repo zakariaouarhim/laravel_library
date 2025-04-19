@@ -73,7 +73,7 @@
                 </div>
 
                 <!-- Cart Details Modal -->
-                <div class="modal fade" id="cartDetailsModal" tabindex="-1" aria-labelledby="cartDetailsLabel" aria-hidden="true">
+                <div class="modal fade" id="cartDetailsModal" tabindex="-1" aria-labelledby="cartDetailsLabel" aria-hidden="false">
                     <div class="modal-dialog">
                         <div class="modal-content p-3">
                             <div class="modal-header">
@@ -90,7 +90,7 @@
                                 </form>
                             </div>
                             <div class="modal-footer d-flex justify-content-between">
-                                <button class="btn btn-primary" onclick="submitCheckoutForm()">إتمام الشراء ✔️</button>
+                                <button class="btn btn-primary" id="checkoutButton" onclick="submitCheckoutForm()">إتمام الشراء ✔️</button>
                                 <button class="btn btn-outline-warning">سلّة التسوق</button>
                             </div>
                         </div>

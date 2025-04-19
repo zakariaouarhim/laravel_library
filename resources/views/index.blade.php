@@ -84,7 +84,7 @@
                                         </div>
                                         <!-- Add to Cart Button -->
                                         <div class="text-center">
-                                            <button class="btn btn-primary" type="button" data-title="{{ $book->title }}" data-price="{{ $book->price }}" data-image="{{ asset($book->image) }}" aria-label="أضف الكتاب للسلة"  onclick="addToCart({{ $book->id }})">
+                                            <button class="btn btn-primary" type="button" data-title="{{ $book->title }}" data-price="{{ $book->price }}" data-image="{{ asset($book->image) }}" aria-label="أضف الكتاب للسلة"  onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
                                                 <i class="fas fa-cart-plus"></i> أضف إلى السلة
                                             </button>
                                         </div>

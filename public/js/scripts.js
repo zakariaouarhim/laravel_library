@@ -131,24 +131,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 // Update addToCart function
-function addToCart(bookId) {
+function addToCart(bookId, bookTitle, bookPrice, bookImage) {
     
+
+     console.log("Parameters:", { bookId, bookTitle, bookPrice, bookImage });
     fetch(`/add-to-cart/${bookId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
         },
+        body: JSON.stringify({
+            title: bookTitle,
+            price: bookPrice,
+            image: bookImage
+        })
     })
     .then(response => response.json())
     .then(data => {
         if(data.success) {
             updateCartCount(data.cartCount);
-            showCartToast('تمت الإضافة بنجاح');
+            showCartToast(`تمت إضافة ${bookTitle} إلى السلة`);
+            // Update the cart modal if it's open
+            if(document.getElementById('cartDetailsModal').classList.contains('show')) {
+                showCartModal();
+            }
         }
     })
-    .catch(error => console.error('Error:', error));
-    console.log('Cart Item Image:', item.image); // Should show full URL
+    .catch(error => {
+        console.error('Error:', error);
+        showCartToast('حدث خطأ أثناء الإضافة إلى السلة');
+    });
 }
 
 // Add these helper functions

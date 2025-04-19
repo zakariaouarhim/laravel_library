@@ -47,6 +47,9 @@ Route::get('/checkout', function () {
     $cart = session()->get('checkout_cart', []); // Retrieve cart data
     return view('checkout', compact('cart'));
 })->name('checkout.page');
+
+
+
 /////////////
 
 Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetail.page');
