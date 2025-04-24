@@ -96,3 +96,105 @@ function removeFromCart(itemId) {
     })
     .catch(error => console.error('Error:', error));
 }
+
+
+
+///////////////////////////////
+document.addEventListener('DOMContentLoaded', function() {
+    const lettersContainer = document.getElementById('letters-container');
+    if (!lettersContainer) return; // Exit if element not found
+    
+    const arabicLetters = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
+    
+    // Create letters dynamically
+    function createLetters() {
+        // Initial batch of letters
+        for (let i = 0; i < 60; i++) {
+            createLetter();
+        }
+        
+        // Continue adding letters over time
+        setInterval(createLetter, 500);
+    }
+    
+    function createLetter() {
+        const letter = document.createElement('div');
+        letter.className = 'letter';
+        
+        const randomLetter = arabicLetters[Math.floor(Math.random() * arabicLetters.length)];
+        letter.textContent = randomLetter;
+        
+        // Random positioning and animation properties
+        const size = Math.random() * 40 + 20; // Size between 20px and 60px
+        const leftPos = Math.random() * 100; // Position from left 0% to 100%
+        const duration = Math.random() * 15 + 10; // Animation duration between 10s and 25s
+        const delay = Math.random() * 10; // Delay between 0s and 10s
+        const opacity = Math.random() * 0.4 + 0.1; // Opacity between 0.1 and 0.5
+        
+        letter.style.fontSize = `${size}px`;
+        letter.style.left = `${leftPos}%`;
+        letter.style.animationDuration = `${duration}s`;
+        letter.style.animationDelay = `${delay}s`;
+        letter.style.opacity = opacity;
+        
+        lettersContainer.appendChild(letter);
+        
+        // Remove the letter after animation completes to prevent memory issues
+        setTimeout(() => {
+            if (letter.parentNode === lettersContainer) {
+                lettersContainer.removeChild(letter);
+            }
+        }, (duration + delay) * 1000);
+    }
+    
+    // Start the animation when the page loads
+    createLetters();
+});
+
+// header.js
+function searchBooks(query) {
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = '';
+    resultsContainer.style.display = 'none';
+
+    if (!query.trim()) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch(`/search-books?query=${encodeURIComponent(query)}`, {
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            if (data.books.length === 0) {
+                resultsContainer.innerHTML = '<div class="text-center p-2">لم يتم العثور على نتائج</div>';
+            } else {
+                data.books.forEach(book => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-result-item';
+                    resultItem.innerHTML = `
+                        <img src="${book.image}" class="me-2" style="width: 40px; height: 50px;">
+                        <span style="color:#000000;">${book.title}</span>
+                    `;
+                    resultItem.onclick = () => window.location.href = `/moredetail/${book.id}`;
+                    resultsContainer.appendChild(resultItem);
+                });
+            }
+            resultsContainer.style.display = 'block';
+        } else {
+            throw new Error(data.message || 'Unknown error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        resultsContainer.innerHTML = '<div class="text-center p-2" style="color:#000000;">حدث خطأ أثناء البحث</div>';
+        resultsContainer.style.display = 'block';
+    });
+}

@@ -1,53 +1,64 @@
-/* Swiper Container */
-.swiper-container {
-    width: 100%;              /* Take up full width */
-    height: auto;             /* Maintain height of the slides */
-    margin: 0 auto;           /* Center the carousel */
-    padding: 0;               /* Remove extra padding */
-    overflow: hidden;         /* Prevent overflow */
+@import url('https://fonts.googleapis.com/css2?family=Amiri&display=swap');
+.header-section {
+    background: linear-gradient(135deg, #5de1e6 0%, #00796B 100%);
+    position: relative;
 }
 
-/* Swiper Slides */
-.swiper-slide {
-    width: 18%;               /* Each slide will take up 18% of the container width */
-    margin: 0 10px;           /* Space between slides */
-}
-
-/* Center the navigation buttons vertically and position on the sides */
-.swiper-button-next,
-.swiper-button-prev {
+.letters-background {
     position: absolute;
-    top: 50%;                  /* Center buttons vertically */
-    transform: translateY(-50%);
-    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
-    padding: 10px;
-    border-radius: 50%;
-    z-index: 10;               /* Ensure buttons are on top */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
 }
 
-.swiper-button-next {
-    right: 10px;               /* Position next button on the right */
+.letter {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 30px;
+    animation: fallDown linear infinite;
 }
 
-.swiper-button-prev {
-    left: 10px;                /* Position prev button on the left */
-}
+@keyframes fallDown {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+    }
 
-/* Ensure swiper cards are contained */
-.card {
-    width: 100%;               /* Make sure each card takes up the full width of the slide */
-    height: auto;              /* Ensure the height adjusts with content */
-}
+    10% {
+        opacity: 1;
+    }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .swiper-slide {
-        width: 32%;             /* Show 3 slides on medium screens */
+    90% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translateY(calc(100vh + 50px)) rotate(360deg);
+        opacity: 0;
     }
 }
 
-@media (max-width: 480px) {
-    .swiper-slide {
-        width: 90%;             /* Show 1 slide on small screens */
-    }
+/* Optional glass effect for the search container */
+.container {
+    padding: 20px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Make form elements stand out */
+.form-control {
+    border: none;
+    border-radius: 30px 0 0 30px;
+    padding: 12px 20px;
+}
+
+.btn-dark {
+    border-radius: 0 30px 30px 0;
+    padding-left: 25px;
+    padding-right: 25px;
 }

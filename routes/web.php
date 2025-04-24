@@ -66,6 +66,7 @@ Route::get('/index3', function () {
     return view('index3');
 })->name('index3.page');
 
+
 Route::get('/checkout', function () {
     return view('checkout');
 })->name('checkout.page');
@@ -74,6 +75,8 @@ Route::get('/checkout', function () {
 Route::get('/', [BookController::class, 'index']);
 Route::get('/index', [BookController::class, 'index'])->name('index.page');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add.to.cart');
+// search route
+Route::get('/search-books', [BookController::class, 'searchBooks'])->name('search.books');
 
 // Authentication Routes
 Auth::routes();

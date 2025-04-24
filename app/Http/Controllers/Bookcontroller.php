@@ -112,4 +112,50 @@ class Bookcontroller extends Controller
         return redirect()->route('Dashbord_Admin.product')->with('success', 'Product added successfully!');
 
     }
+    // BookController.php
+
+public function searchBooks(Request $request)
+{
+    $query = $request->input('query');
+    
+    try {
+        // First try exact match
+        $books = Book::where('title', 'LIKE', "%{$query}%")
+                    ->orWhere('author', 'LIKE', "%{$query}%")
+                    ->get();
+        
+        // If no results, try n-gram approach
+        if ($books->isEmpty()) {
+            // Generate 3-letter sequences for query
+            $tokens = [];
+            for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
+                $tokens[] = mb_substr($query, $i, 3);
+            }
+            
+            // Filter using n-grams
+            $allBooks = Book::all();
+            $matchingBooks = $allBooks->filter(function($book) use ($tokens) {
+                $matchCount = 0;
+                foreach ($tokens as $token) {
+                    if (mb_stripos($book->title, $token) !== false || 
+                        mb_stripos($book->author, $token) !== false) {
+                        $matchCount++;
+                    }
+                }
+                // If at least 50% of the tokens match, consider it a match
+                return $matchCount >= count($tokens) * 0.5;
+            })->take(10);
+            
+            $books = $matchingBooks->values();
+        }
+        
+        return response()->json([
+            'success' => true,
+            'books' => $books
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Error in searchBooks:', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
+    }
+}
 }

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
 
     <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Scheherazade+New&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
@@ -24,18 +25,64 @@
 <body>
     @include('header')
 
-    <!-- Header with Search Bar -->
-    <header class="header-section text-white text-center py-5" style="background: url('{{ asset('images/header-banner.svg') }}') no-repeat center center; background-size: cover; height: 400px;">
-        <div class="container">
+    <!-- Header with Animated Arabic Letters Background -->
+    <header class="header-section text-white text-center py-5">
+        <!-- Background with falling Arabic letters -->
+        <div class="letters-background" id="letters-container"></div>
+        
+        <!-- Content container with search -->
+        <div class="container search-container">
             <h1 class="display-4 fw-bold">ابحث عن كتابك المفضل</h1>
             <p class="lead">ابحث في مجموعتنا الكبيرة من الكتب عبر الأنواع والتصنيفات.</p>
             <form class="d-flex justify-content-center mt-4">
-                <input type="text" class="form-control w-50 me-2" placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع">
+                <input 
+                type="text"
+                id="searchInput"
+                class="form-control w-50 me-2" 
+                placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع"
+                oninput="searchBooks(this.value)">
+                
                 <button type="submit" class="btn btn-dark">بحث</button>
+                <!-- Search Results Container -->
+                <div id="searchResults" class="search-results" style="display: none; position: absolute; top: 100%; left: 25%; width: 50%; z-index: 1000; background-color: white; color: black; border-radius: 0 0 4px 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: right;">
+                    <!-- Search results will be inserted here dynamically -->
+                </div>
             </form>
         </div>
     </header>
-
+ <!-- Category buttons below the search bar -->
+    <div class="categories-wrapper">
+        <div class="category-rows">
+            
+            
+            <!-- First row of smaller categories -->
+            <div class="category-row">
+                <button class="category-btn small">روايات</button>
+                <button class="category-btn small">تربية الأطفال والناشئين</button>
+                <button class="category-btn small">كوميكس</button>
+                <button class="category-btn small">صحة نفسية</button>
+                
+                <button class="category-btn small">أدب وتراث</button>
+                <button class="category-btn small">مطبخ وأطعمة شرقية</button>
+                <button class="category-btn small">اقتصاد</button>
+            </div>
+            
+            
+            <!-- Third row of smaller categories -->
+            <div class="category-row">
+                <button class="category-btn small">تراث</button>
+                <button class="category-btn small">أدب رسائل</button>
+                
+                <button class="category-btn small">كتب علمية وموسوعات</button>
+                <button class="category-btn small">تنمية ذاتية وعلم نفسي</button>
+                <button class="category-btn small">أطعمة رمضان <span class="category-icon">♥</span></button>
+                <button class="category-btn small">كتب دينية</button>
+                <button class="category-btn small">المزيد</button>
+            </div>
+            
+            
+        </div>
+    </div>
     <!--begin of the carousel-->
     <section id="featured-books" class="py-5"> 
         @csrf
