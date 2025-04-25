@@ -77,7 +77,7 @@ header {
     /* Use the teal/blue gradient from the original design */
     background: linear-gradient(135deg, #5de1e6 0%, #5de1e6 100%);
     position: relative;
-    height: 400px;
+    height: 500px;
 }
 
 .header-section::before {
@@ -206,7 +206,7 @@ body {
 }
 
 .category-btn {
-    background-color: rgba(121, 36, 89, 0.8);
+    background-color: #5de1e6;
     color: white;
     border: none;
     border-radius: 8px;
@@ -226,18 +226,18 @@ body {
 }
 
 .category-btn.featured {
-    background-color: rgba(121, 36, 89, 0.9);
+    background-color: #5de1e6;
     padding: 12px 20px;
     font-size: 1rem;
     min-width: 160px;
 }
 
 .category-btn.small {
-    background-color: rgba(70, 45, 75, 0.8);
+    background-color: #00695C;
 }
 
 .category-btn:hover {
-    background-color: rgba(140, 55, 108, 0.9);
+    background-color: #004D40;
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }

@@ -49,8 +49,12 @@
                 </div>
             </form>
         </div>
-    </header>
- <!-- Category buttons below the search bar -->
+        <BR></BR>
+        <br>
+        <br>
+        <br>
+        <!-- Category buttons below the search bar -->
+        
     <div class="categories-wrapper">
         <div class="category-rows">
             
@@ -83,6 +87,8 @@
             
         </div>
     </div>
+    </header>
+ 
     <!--begin of the carousel-->
     <section id="featured-books" class="py-5"> 
         @csrf
