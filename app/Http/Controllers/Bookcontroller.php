@@ -4,15 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Book;
+use App\Models\Category;
 
 class Bookcontroller extends Controller
 {
-    public function index(){
-        $books= Book::all();
-        
-
-        return view('index', compact('books'));
-    }
+   
     public function show($id)
     {
     $book = Book::findOrFail($id);
@@ -158,4 +154,24 @@ public function searchBooks(Request $request)
         return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
     }
 }
+
+/////////////////////////////category methode
+public function index(){
+        $books= Book::all();
+        $categorie = Category::whereNull('parent_id')
+        ->with('children')
+        ->take(13)
+        ->get();
+
+        return view('index', compact('books','categorie'));
+    }
+
+public function byCategory(Category $category)
+    {
+        // Fetch books belonging to the selected category
+        $books = $category->books()->paginate(12); // Paginate results for better performance
+
+        return view('by-category', compact('books', 'category'));
+    }
+
 }

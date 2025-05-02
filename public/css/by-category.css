@@ -1,0 +1,197 @@
+:root {
+    --primary-color: #2C4B79;
+    --secondary-color: #5A84C3;
+    --accent-color: #F0F4FA;
+    --text-color: #333;
+    --light-gray: #f8f9fa;
+    --border-color: #e9ecef;
+}
+
+body {
+    font-family: 'Tajawal', sans-serif;
+    background-color: #fff;
+    color: var(--text-color);
+}
+
+/* Header with Breadcrumb */
+.page-header {
+    background-color: var(--accent-color);
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.breadcrumb-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--text-color);
+}
+
+.home-icon {
+    margin-left: 5px;
+    color: var(--primary-color);
+}
+
+/* Category Title */
+.category-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 30px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.category-title::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background-color: var(--secondary-color);
+    bottom: 0;
+    right: 0;
+}
+
+/* Book Cards */
+.book-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.book-image {
+    height: 250px;
+    object-fit: contain;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.book-details {
+    padding: 15px;
+}
+
+.book-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.book-author,
+.book-publisher,
+.book-isbn {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-author i,
+.book-publisher i,
+.book-isbn i {
+    width: 16px;
+    text-align: center;
+    color: var(--secondary-color);
+    margin-left: 5px;
+}
+
+.book-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.view-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+    font-weight: 500;
+}
+
+.view-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Pagination */
+.pagination {
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.page-link {
+    color: var(--primary-color);
+    border-color: var(--border-color);
+    margin: 0 3px;
+    border-radius: 4px;
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.page-link:hover {
+    color: #fff;
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 50px 0;
+}
+
+.empty-state p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.empty-state .btn {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 10px 25px;
+    font-weight: 500;
+}
+
+.empty-state .btn:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .book-image {
+        height: 200px;
+    }
+}

@@ -5,6 +5,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Usercontroller;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Http\Request;
 
 /*
@@ -70,6 +71,11 @@ Route::get('/index3', function () {
 Route::get('/checkout', function () {
     return view('checkout');
 })->name('checkout.page');
+
+
+///////////category////////////
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+Route::get('/categories/{category}', [BookController::class, 'byCategory'])->name('by-category');
 
 // Root and Index Routes
 Route::get('/', [BookController::class, 'index']);

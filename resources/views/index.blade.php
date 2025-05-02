@@ -59,29 +59,14 @@
         <div class="category-rows">
             
             
-            <!-- First row of smaller categories -->
-            <div class="category-row">
-                <button class="category-btn small">روايات</button>
-                <button class="category-btn small">تربية الأطفال والناشئين</button>
-                <button class="category-btn small">كوميكس</button>
-                <button class="category-btn small">صحة نفسية</button>
-                
-                <button class="category-btn small">أدب وتراث</button>
-                <button class="category-btn small">مطبخ وأطعمة شرقية</button>
-                <button class="category-btn small">اقتصاد</button>
-            </div>
             
-            
-            <!-- Third row of smaller categories -->
             <div class="category-row">
-                <button class="category-btn small">تراث</button>
-                <button class="category-btn small">أدب رسائل</button>
-                
-                <button class="category-btn small">كتب علمية وموسوعات</button>
-                <button class="category-btn small">تنمية ذاتية وعلم نفسي</button>
-                <button class="category-btn small">أطعمة رمضان <span class="category-icon">♥</span></button>
-                <button class="category-btn small">كتب دينية</button>
-                <button class="category-btn small">المزيد</button>
+                 @foreach ($categorie as $category)
+                    
+               
+                <button class="category-btn small">{{ $category->name }}</button>
+                 @endforeach
+                <button class="category-btn small" onclick="window.location.href='{{ route('categories.index') }}'">المزيد</button>
             </div>
             
             
@@ -115,16 +100,22 @@
                                     <!-- Card body with book details -->
                                     <div class="card-body border-top border-light">
                                         <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="h5">{{ $book->title }}</a>
-                                        <h6 class="font-weight-light text-gray mt-2">{{ $book->author }}</h6>
+                                        
                                         <!-- Rating section (optional) -->
-                                        <div class="d-flex mt-3">
-                                            <i class="star fas fa-star text-warning mr-1"></i>
-                                            <i class="star fas fa-star text-warning mr-1"></i>
-                                            <i class="star fas fa-star text-warning mr-1"></i>
-                                            <i class="star fas fa-star text-warning mr-1"></i>
-                                            <i class="star fas fa-star text-warning"></i>
-                                            <span class="badge badge-pill badge-gray ml-2">4.7</span>
-                                        </div>
+                                        <p class="book-author">
+                                            <i class="fas fa-user-edit me-1"></i> {{ $book->author }}
+                                        </p>
+                                         @if(isset($book->Publishing_House) && $book->Publishing_House)
+                                        <p class="book-publisher">
+                                            <i class="fas fa-building me-1"></i> {{ $book->Publishing_House }}
+                                        </p>
+                                        @endif
+                                        @if(isset($book->ISBN) && $book->ISBN)
+                                        <p class="book-isbn">
+                                            <i class="fas fa-barcode me-1"></i> {{ $book->ISBN }}
+                                        </p>
+                                        @endif
+                                        
                                     </div>
                                     <!-- Card footer with price and Add to Cart button -->
                                     <div class="card-footer border-top border-light p-4">
