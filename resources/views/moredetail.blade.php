@@ -59,19 +59,28 @@
                 <div class="row g-2">
                     <div class="col-sm-4">
                         <div class="p-2 border rounded">
-                            <span class="fw-bold">اللغة:</span> {{ $book->Langue }}
+                            <span class="fw-bold"><i class="fas fa-globe-africa me-2"></i>اللغة: </span> {{ $book->Langue }}
                         </div>
                     </div>
                     <div class="col-sm-4">
                         <div class="p-2 border rounded">
-                            <span class="fw-bold">عدد الصفحات:</span> {{ $book->Page_Num }}
+                            <span class="fw-bold"><i class="fas fa-book-open me-2"></i>عدد الصفحات:</span> {{ $book->Page_Num }}
                         </div>
                     </div>
                     <div class="col-sm-4">
                         <div class="p-2 border rounded">
-                            <span class="fw-bold">دار النشر:</span> {{ $book->Publishing_House }} 
+                            <span class="fw-bold"><i class="fas fa-building me-2"></i>دار النشر:</span> {{ $book->Publishing_House }} 
                         </div>
                     </div>
+                    <div class="delivery-option d-flex align-items-center">
+                        <i class="fas fa-truck me-3 text-primary"></i>
+                        <div>
+                            <strong>توصيل سريع</strong>
+                            <p class="mb-0 text-muted">يصلك خلال 2-5 أيام عمل</p>
+                        </div>
+                    </div>
+                        
+
                 </div>
             </div>
         </div>
@@ -80,10 +89,17 @@
         <div class="mt-5">
             <ul class="nav nav-tabs" id="bookDetailsTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">الوصف</button>
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                        <i class="fas fa-info-circle me-2"></i>الوصف</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="false">تفاصيل إضافية</button>
+                    <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="false">
+                        <i class="fas fa-list-ul me-2"></i>تفاصيل إضافية</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">
+                        <i class="fas fa-star me-2"></i>التقييمات
+                    </button>
                 </li>
             </ul>
             <div class="tab-content border rounded-bottom p-3" id="bookDetailsTabsContent">
@@ -100,8 +116,127 @@
                             <th>تاريخ النشر</th>
                             <td>{{ $book->created_at }}</td>
                         </tr>
+                        <tr>
+                            <th>الوزن</th>
+                            <td>350 جرام</td>
+                        </tr>
+                        <tr>
+                            <th>الأبعاد</th>
+                            <td>14 × 21 سم</td>
+                        </tr>
+                        <tr>
+                            <th>نوع الغلاف</th>
+                            <td>غلاف ورقي</td>
+                        </tr>
                     </table>
                 </div>
+                
+                 <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                    <div class="review-summary mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <div class="average-rating">
+                                    <h2 class="display-4 fw-bold">4.8</h2>
+                                    <div class="stars mb-2">
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    </div>
+                                    <p class="text-muted">من 24 تقييم</p>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="rating-bars">
+                                    <div class="rating-bar d-flex align-items-center mb-2">
+                                        <div class="rating-text me-2">5 <i class="fas fa-star text-warning"></i></div>
+                                        <div class="progress flex-grow-1">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="rating-count ms-2">18</div>
+                                    </div>
+                                    <div class="rating-bar d-flex align-items-center mb-2">
+                                        <div class="rating-text me-2">4 <i class="fas fa-star text-warning"></i></div>
+                                        <div class="progress flex-grow-1">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 17%" aria-valuenow="17" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="rating-count ms-2">4</div>
+                                    </div>
+                                    <div class="rating-bar d-flex align-items-center mb-2">
+                                        <div class="rating-text me-2">3 <i class="fas fa-star text-warning"></i></div>
+                                        <div class="progress flex-grow-1">
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 8%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="rating-count ms-2">2</div>
+                                    </div>
+                                    <div class="rating-bar d-flex align-items-center mb-2">
+                                        <div class="rating-text me-2">2 <i class="fas fa-star text-warning"></i></div>
+                                        <div class="progress flex-grow-1">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="rating-count ms-2">0</div>
+                                    </div>
+                                    <div class="rating-bar d-flex align-items-center">
+                                        <div class="rating-text me-2">1 <i class="fas fa-star text-warning"></i></div>
+                                        <div class="progress flex-grow-1">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="rating-count ms-2">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="user-reviews">
+                        <div class="review-item mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar me-3">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">م</div>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">محمد أحمد</h5>
+                                    <div class="stars">
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-auto text-muted">منذ 3 أيام</div>
+                            </div>
+                            <p>كتاب رائع بكل المقاييس، استمتعت بقراءته كثيراً وأنصح الجميع باقتنائه!</p>
+                        </div>
+                        <div class="review-item mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar me-3">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">س</div>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">سارة علي</h5>
+                                    <div class="stars">
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="far fa-star text-warning"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-auto text-muted">منذ أسبوع</div>
+                            </div>
+                            <p>أسلوب المؤلف جميل ومميز، لكن كنت أتمنى لو كان هناك تفاصيل أكثر في بعض الفصول.</p>
+                        </div>
+                    </div>
+                    <div class="add-review-cta text-center mt-4">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-pencil-alt me-2"></i>أضف تقييمك للكتاب
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
             </div>
         </div>
     </div>

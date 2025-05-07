@@ -62,9 +62,7 @@
             
             <div class="category-row">
                  @foreach ($categorie as $category)
-                    
-               
-                <button class="category-btn small">{{ $category->name }}</button>
+                <button class="category-btn small" onclick="window.location.href='{{ route('by-category', ['category' => $category->id]) }}'" >{{ $category->name }}</button>
                  @endforeach
                 <button class="category-btn small" onclick="window.location.href='{{ route('categories.index') }}'">المزيد</button>
             </div>
@@ -91,8 +89,13 @@
                             <div class="col-md-6 col-sm-8 col-12">
                                 <!-- Updated Card Structure -->
                                 <div class="card border-light">
+                                    <div class="quick-actions">
+                                            <button class="action-btn" title="إضافة للمفضلة"><i class="far fa-heart"></i></button>
+                                            <button class="action-btn" title="إضافة للسلة"><i class="fas fa-shopping-cart"></i></button>
+                                        </div>
                                     <!-- Clickable image linking to moredetail page -->
                                     <div class="card-header">
+                                        
                                         <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">
                                             <img src="{{ asset($book->image) }}" class="card-img-top" alt="{{ $book->title }}" loading="lazy">
                                         </a>
@@ -105,16 +108,7 @@
                                         <p class="book-author">
                                             <i class="fas fa-user-edit me-1"></i> {{ $book->author }}
                                         </p>
-                                         @if(isset($book->Publishing_House) && $book->Publishing_House)
-                                        <p class="book-publisher">
-                                            <i class="fas fa-building me-1"></i> {{ $book->Publishing_House }}
-                                        </p>
-                                        @endif
-                                        @if(isset($book->ISBN) && $book->ISBN)
-                                        <p class="book-isbn">
-                                            <i class="fas fa-barcode me-1"></i> {{ $book->ISBN }}
-                                        </p>
-                                        @endif
+                                        
                                         
                                     </div>
                                     <!-- Card footer with price and Add to Cart button -->

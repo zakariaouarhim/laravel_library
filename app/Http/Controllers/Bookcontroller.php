@@ -170,8 +170,9 @@ public function byCategory(Category $category)
     {
         // Fetch books belonging to the selected category
         $books = $category->books()->paginate(12); // Paginate results for better performance
+        $categories = Category::all();
 
-        return view('by-category', compact('books', 'category'));
+        return view('by-category', compact('books', 'category','categories'));
     }
 
 }

@@ -4,6 +4,7 @@
     --color-secondary: #90E0EF;
     --color-accent: #48CAE4;
     --color-dark: #03045E;
+    --transition-speed: 0.3s;
 }
 
 body {
@@ -202,6 +203,51 @@ body {
     padding: 15px;
 }
 
+.quick-actions {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all var(--transition-speed);
+}
+
+.card:hover .quick-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.action-btn {
+  background-color: white;
+  color: #6c757d;
+  /* Default color */
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-speed);
+}
+
+.action-btn:hover {
+  color: #2C4B79;
+  /* Change to your primary color */
+  transform: scale(1.1);
+}
+/* Ensure the card header is positioned relatively */
+.card-header {
+  position: relative;
+  overflow: visible;
+  /* Prevent buttons from being clipped */
+}
 /**/
 body {
   font-family: 'Arial', 'Helvetica', sans-serif;
