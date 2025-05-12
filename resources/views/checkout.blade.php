@@ -23,7 +23,17 @@
 </head>
 <body>
     @include('header')
-    
+    <!-- Cart Toast Component -->
+<div class="toast-container position-relative w-100 d-flex justify-content-start px-3">
+    <div id="cartToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <!-- Toast message will be inserted here -->
+        </div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="إغلاق"></button>
+      </div>
+    </div>
+  </div>
     <div class="container checkout-section py-5">
         <form id="checkoutForm" action=" route('checkout.submit') }}" method="POST">
             @csrf
@@ -54,36 +64,46 @@
                             // Calculate total
                             $total = $subtotal + $shipping - $discount;
                             @endphp
-                            <span class="text-muted">{{ count($cart) }} منتجات</span>
+                            <span class="text-muted" id="countcart">{{ count($cart) }} منتجات</span>
                         </div>
-                        <div class="card-body">
+                        <form id="checkoutForm2" action="{{ route('checkout.store') }}" method="POST">
+                        <div class="card-body" id="cartContent">
                             
                             @if(count($cart) > 0)
                             <h3 class="mb-4">مراجعة الطلب</h3>
                             <div class="cart-items">
                                 @foreach($cart as $id => $item)
-                                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom" id="element{{ $id }}" data-item-id="{{ $id }}">
                                         <img src="{{ asset($item['image']) }}" 
-                                             class="img-fluid rounded me-3" 
-                                             style="width: 80px; height: 110px; object-fit: cover;"
-                                             onerror="this.src='{{ asset('images/placeholder-book.jpg') }}'">
+                                            class="img-fluid rounded me-3" 
+                                            style="width: 80px; height: 110px; object-fit: cover;"
+                                            onerror="this.src='{{ asset('images/placeholder-book.jpg') }}'">
                                         <div class="flex-grow-1">
                                             <h3 class="fs-6 mb-1">{{ $item['title'] }}</h3>
                                             <div class="d-flex align-items-center">
                                                 <label class="me-2">الكمية:</label>
-                                                <input type="number" 
-                                                       name="quantity[{{ $id }}]" 
-                                                       class="form-control form-control-sm quantity-input" 
-                                                       style="width: 70px;" 
-                                                       value="{{ $item['quantity'] }}" 
-                                                       min="1"
-                                                       data-price="{{ $item['price'] }}">
+                                                <div class="quantity-control-group">
+                                                    <button type="button" class="quantity-btn quantity-decrease">-</button>
+                                                    <input type="number" 
+                                                        name="quantity[{{ $id }}]" 
+                                                        class="quantity-input" 
+                                                        value="{{ $item['quantity'] }}" 
+                                                        min="1"
+                                                        data-price="{{ $item['price'] }}">
+                                                    <button type="button" class="quantity-btn quantity-increase">+</button>
+                                                </div>
+                                                
                                             </div>
                                         </div>
-                                        <div>
-                                            <span class="fw-bold text-primary">{{ number_format($item['price'] * $item['quantity'], 2) }} ر.س</span>
+                                        
+                                        <div class="d-flex align-items-center">
+                                            <span class="fw-bold text-primary me-3">{{ number_format($item['price'] * $item['quantity'], 2) }} ر.س</span>
+                                            <button type="button" class="delete-item-btn" title="حذف المنتج" onclick="removeFromCart2({{ $id }})" >
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
                                         </div>
                                     </div>
+                                    
                                 @endforeach
                             </div>
                             @else
@@ -95,6 +115,7 @@
                             @endif
                         </div>
                     </div>
+                </form>
 
                     <!-- Shipping Information Section -->
                     <div class="card shadow-sm mb-4">
@@ -260,7 +281,7 @@
             </div>
         </form>
     </div>
-
+    
     @include('footer')
 
     <!-- Scripts -->

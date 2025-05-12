@@ -49,6 +49,7 @@ Route::get('/checkout', function () {
     return view('checkout', compact('cart'));
 })->name('checkout.page');
 
+Route::post('/remove-from-cart/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 
 
 /////////////

@@ -111,5 +111,23 @@ class CartController extends Controller
         'cartCount' => count($cart) // Update cart count in the UI
     ]);
 }
+public function getCartHtml()
+{
+    $cart = session()->get('cart', []);
+    return view('partials.cart-items', compact('cart'))->render();
+}
+
+public function removeItem(Request $request, $id)
+{
+    $cart = session('checkout_cart', []);
+    unset($cart[$id]); // Remove the item by ID
+    session(['checkout_cart' => $cart]); // Update the session
+
+    return response()->json([
+        'success' => true,
+        'cartCount' => count($cart),
+        'message' => 'تم حذف المنتج من السلة بنجاح'
+    ]);
+}
 
 }

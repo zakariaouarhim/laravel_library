@@ -18,6 +18,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     @include('header')
@@ -186,7 +188,9 @@
                                     </div>
                                     <div class="quick-actions">
                                         <button class="action-btn" title="إضافة للمفضلة"><i class="far fa-heart"></i></button>
-                                        <button class="action-btn" title="إضافة للسلة"><i class="fas fa-shopping-cart"></i></button>
+                                        <button class="action-btn" title="إضافة للسلة"  onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
                                     </div>
                                     <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="book-image-wrapper">
                                         <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" class="book-image" alt="{{ $book->title }}">
@@ -198,11 +202,7 @@
                                         <p class="book-author">
                                             <i class="fas fa-user-edit"></i> {{ $book->author }}
                                         </p>
-                                        @if(isset($book->Publishing_House) && $book->Publishing_House)
-                                        <p class="book-publisher">
-                                            <i class="fas fa-building"></i> {{ $book->Publishing_House }}
-                                        </p>
-                                        @endif
+                                        
                                         <div class="book-price-block">
                                             <p class="book-price">{{ $book->price }} <span class="currency">ر.س</span></p>
                                             @if($book->original_price ?? 0 > $book->price)
@@ -236,12 +236,33 @@
                 @endif
             </div>
         </div>
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <!-- Success toast -->
+        <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">السلة</strong>
+                <small class="text-muted toast-time">الآن</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        <div class="toast-body" id="successToastMessage"></div>
+    </div>
+        
+        <!-- Notification toast -->
+        <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">إشعار</strong>
+            <small class="text-muted toast-time">الآن</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="notificationToastMessage"></div>
+    </div>
+        </div>
     </div>
    
     @include('footer')
     
     <!-- Scripts -->
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap @5.3.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/scripts.js') }}"></script>
     <script src="{{ asset('js/by-category.js') }}"></script>

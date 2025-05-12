@@ -103,8 +103,6 @@
     <!-- JS -->
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/category.js') }}"></script>
-    <script>
-        
-    </script>
+    
 </body>
 </html>

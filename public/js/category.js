@@ -1,4 +1,3 @@
-
 function toggleChildCategories(event, categoryId) {
             event.preventDefault();
             const childContainer = document.getElementById(`child-categories-${categoryId}`);

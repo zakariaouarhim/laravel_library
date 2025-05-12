@@ -91,7 +91,9 @@
                                 <div class="card border-light">
                                     <div class="quick-actions">
                                             <button class="action-btn" title="إضافة للمفضلة"><i class="far fa-heart"></i></button>
-                                            <button class="action-btn" title="إضافة للسلة"><i class="fas fa-shopping-cart"></i></button>
+                                            <button class="action-btn" title="إضافة للسلة"  onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
                                         </div>
                                     <!-- Clickable image linking to moredetail page -->
                                     <div class="card-header">

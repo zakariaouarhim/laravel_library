@@ -170,8 +170,8 @@ function updateCartCount(count) {
 }
 
 function showCartToast(message) {
+    document.getElementById('successToastMessage').textContent = message;
     const toast = new bootstrap.Toast(document.getElementById('cartToast'));
-    document.getElementById('cartToast').textContent = message;
     toast.show();
 }
 
