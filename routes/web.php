@@ -50,6 +50,8 @@ Route::get('/checkout', function () {
 })->name('checkout.page');
 
 Route::post('/remove-from-cart/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
+Route::post('/update-cart-quantity', [CartController::class, 'updateQuantity'])
+    ->name('cart.update-quantity');
 
 
 /////////////

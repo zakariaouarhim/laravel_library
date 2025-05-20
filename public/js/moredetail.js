@@ -9,17 +9,54 @@
             const quantityInput = document.querySelector('input[aria-label="عدد النسخ"]');
 
             // Add click event to "Add to Cart" button
-            addToCartButton.addEventListener('click', function() {
-                const bookTitle = document.getElementById('book-title').textContent;
-                const quantity = quantityInput.value;
-                const price = document.querySelector('.fs-4.text-primary.fw-bold').textContent;
-
-                // Optional: You can enhance this with AJAX to actually add to cart
-                // For now, we'll just show the toast
-                document.querySelector('.toast-body').textContent = 
-                    `تمت إضافة "${bookTitle}" (  ${quantity} نسخة) بسعر ${price} بنجاح إلى السلة`;
-
-                // Show the toast
-                cartSuccessToast.show();
-            });
+           
         });
+
+        function addToCart(bookId) {
+            const quantityInput = document.querySelector('input[aria-label="عدد النسخ"]');
+            const quantity = quantityInput.value;
+            const button = document.getElementById('addToCartButton');
+            
+            // Get book details from data attributes
+            const title = button.getAttribute('data-title');
+            const price = button.getAttribute('data-price');
+            const image = button.getAttribute('data-image');
+        
+            // Disable button during request
+            button.disabled = true;
+            
+            fetch('/add-to-cart/' + bookId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    quantity: quantity,
+                    title: title,
+                    price: price,
+                    image: image
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update header cart count
+                    const cartCount = document.getElementById('cartCount');
+                    if (cartCount) cartCount.textContent = data.cartCount;
+                    
+                    // Show success toast
+                    const toastBody = document.querySelector('#cartSuccessToast .toast-body');
+                    toastBody.textContent = `تمت إضافة "${title}" (${quantity} نسخ) بسعر ${price} ر.س بنجاح`;
+                    const toast = new bootstrap.Toast(document.getElementById('cartSuccessToast'));
+                    toast.show();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء إضافة المنتج للسلة');
+            })
+            .finally(() => {
+                button.disabled = false;
+            });
+        }

@@ -43,7 +43,7 @@
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <h2 class="fs-5 m-0">سلة التسوق</h2>
-                           @php $cart = session('checkout_cart');
+                           @php $cart = session('cart');
                             if ($cart=="") {
                                  $cart = $cart ?? [];
                             }
@@ -81,26 +81,35 @@
                                         <div class="flex-grow-1">
                                             <h3 class="fs-6 mb-1">{{ $item['title'] }}</h3>
                                             <div class="d-flex align-items-center">
-                                                <label class="me-2">الكمية:</label>
-                                                <div class="quantity-control-group">
-                                                    <button type="button" class="quantity-btn quantity-decrease">-</button>
-                                                    <input type="number" 
-                                                        name="quantity[{{ $id }}]" 
-                                                        class="quantity-input" 
-                                                        value="{{ $item['quantity'] }}" 
-                                                        min="1"
-                                                        data-price="{{ $item['price'] }}">
-                                                    <button type="button" class="quantity-btn quantity-increase">+</button>
-                                                </div>
+                                                <span class="fw-bold text-primary me-3">{{ number_format($item['price'] * $item['quantity'], 2) }} ر.س</span>
+                                                
+                                               
                                                 
                                             </div>
                                         </div>
                                         
                                         <div class="d-flex align-items-center">
-                                            <span class="fw-bold text-primary me-3">{{ number_format($item['price'] * $item['quantity'], 2) }} ر.س</span>
+                                            <label class="me-2">الكمية:</label>
+                                                <div class="quantity-control-group">
+                                                    <button type="button" class="quantity-btn quantity-decrease">-</button>
+                                                    <input type="number" 
+                                                        id="quantity"
+                                                        name="quantity[{{ $id }}]" 
+                                                        class="quantity-input" 
+                                                        value="{{ $item['quantity'] }}" 
+                                                        min="1"
+                                                        data-price="{{ $item['price'] }}"
+                                                        readonly>
+                                                    <button type="button" class="quantity-btn quantity-increase">+</button>
+                                                </div>
+                                            <!-- Edit and Save Buttons -->
+                                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-btn" onclick="enableQuantityInput()">
+                                                <i class="bi bi-pencil"></i></i></button>
+                                                
                                             <button type="button" class="delete-item-btn" title="حذف المنتج" onclick="removeFromCart2({{ $id }})" >
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
+                                            
                                         </div>
                                     </div>
                                     
@@ -285,6 +294,12 @@
     @include('footer')
 
     <!-- Scripts -->
+    <script>
+        // Define global routes for JavaScript
+        window.routes = {
+            updateCartQuantity: "{{ route('cart.update-quantity') }}"
+        };
+    </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6/jquery.inputmask.min.js"></script>
     <script src="{{ asset('js/checkout.js') }}"></script>

@@ -21,7 +21,7 @@ class CartController extends Controller
             'title' => $request->input('title') ?? $book->title,
             'price' => $request->input('price') ?? $book->price,
             'image' => $request->input('image') ?? $book->image,
-            'quantity' => 1
+            'quantity' => $request->input('quantity', 1) // Get quantity from request
         ];
 
         if(isset($cart[$bookId])) {
@@ -119,15 +119,39 @@ public function getCartHtml()
 
 public function removeItem(Request $request, $id)
 {
-    $cart = session('checkout_cart', []);
+    $cart = session('cart', []);
     unset($cart[$id]); // Remove the item by ID
-    session(['checkout_cart' => $cart]); // Update the session
+    session(['cart' => $cart]); // Update the session
 
     return response()->json([
         'success' => true,
         'cartCount' => count($cart),
         'message' => 'تم حذف المنتج من السلة بنجاح'
     ]);
+}
+public function updateQuantity(Request $request)
+{
+    $validated = $request->validate([
+        'id' => 'required|integer',
+        'quantity' => 'required|integer|min:1'
+    ]);
+
+    $cart = session()->get('cart', []);
+
+    if (isset($cart[$validated['id']])) {
+        $cart[$validated['id']]['quantity'] = $validated['quantity'];
+        session()->put('cart', $cart);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث الكمية بنجاح'
+        ]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'المنتج غير موجود في السلة'
+    ], 404);
 }
 
 }

@@ -53,6 +53,7 @@ class Bookcontroller extends Controller
             $product->Langue = $request->input('Langue');
             $product->Publishing_House = $request->input('Publishing_House');
             $product->ISBN = $request->input('ISBN');
+            $product->Quantity = $request->input('Quantity');
             $product->save();
 
             return response()->json(['message' => 'Product updated successfully!']);
@@ -174,5 +175,7 @@ public function byCategory(Category $category)
 
         return view('by-category', compact('books', 'category','categories'));
     }
+
+   
 
 }

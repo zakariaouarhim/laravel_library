@@ -11,7 +11,7 @@ class Book extends Model
     use HasFactory,Searchable;
      // Define fillable attributes
     protected $fillable = [
-        'title', 'author', 'price', 'image', 'category_id', 'description'
+        'title', 'author', 'price', 'image', 'category_id', 'description','Quantity'
     ];
     
      // Relationship with CartItem

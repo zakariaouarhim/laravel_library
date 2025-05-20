@@ -50,7 +50,9 @@ function showCartModal() {
                     <h5 class="mb-0 text-primary">${total.toFixed(2)} ر.س</h5>
                 </div>`;
             }
-
+            if (data.success) {
+                document.getElementById('cartCount').textContent = data.cartCount; // Update count
+            }
             // Show modal
             new bootstrap.Modal(document.getElementById('cartDetailsModal')).show();
         })
