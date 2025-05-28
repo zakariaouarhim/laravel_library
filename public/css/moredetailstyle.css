@@ -4,6 +4,7 @@ body {
     background-color: #f9f9f9;
     color: #333;
     line-height: 1.8;
+    
 }
 
 /* Container Styling */
@@ -141,6 +142,7 @@ p.mb-4 {
 .toast-header {
     background: #218838;
     color: white;
+    
 }
 
 /* --- Responsive Styling --- */

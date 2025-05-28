@@ -9,7 +9,7 @@
         </div>
     </div>
 </footer>
-<button id="backToTop" class="btn btn-primary rounded-circle position-fixed" style="bottom: 20px; right: 20px; display: none;">
+<button id="backToTop" class="btn btn-primary rounded-circle position-fixed" style="bottom: 20px; right: 20px; display: none; z-index: 9999;">
     ↑
 </button>
 <script>

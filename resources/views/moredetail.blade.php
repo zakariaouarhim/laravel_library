@@ -6,6 +6,7 @@
     <title>تفاصيل الكتاب</title>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/moredetailstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     
@@ -60,7 +61,7 @@
                             data-title="{{ $book->title }}" 
                             data-price="{{ $book->price }}" 
                             data-image="{{ $book->image }}"
-                            onclick="addToCart({{ $book->id }})">
+                            onclick="addToCartM({{ $book->id }})">
                         أضف إلى السلة
                     </button>
                 </div>
@@ -251,8 +252,8 @@
     </div>
     
     <!-- Success Modal -->
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="cartSuccessToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <div id="cartSuccessToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" >
             <div class="toast-header bg-success text-white">
                 <strong class="me-auto">
                     <i class="fas fa-shopping-cart me-2"></i>
@@ -265,14 +266,132 @@
             </div>
         </div>
     </div>
-
-
     
-    <script src="{{ asset('js/scripts.js') }}"></script>
+
+    <!--caroussel-->
+    <!-- Sample Books Data -->
+    <div class="related-books">
+        <h3>كتب ذات صلة</h3>
+        <div class="carousel-container">
+            <div class="carousel-wrapper" id="carouselWrapper">
+                <!-- Sample book cards -->
+                @foreach($relatedBooks as $relatedBook)
+                <div class="book-card">
+                    <img src="{{ asset($relatedBook->image) }}" alt="{{ $relatedBook->title }}">
+                    <h6>{{ $relatedBook->title }}</h6>
+                    <p class="author">{{ $relatedBook->author }}</p>
+                    <div class="price-section">
+                        <span class="price">{{ $relatedBook->price }} ر.س</span>
+                        <!-- Fixed: Added missing closing quote and parenthesis -->
+                        <button class="add-btn" 
+                        data-book-id="{{ $relatedBook->id }}"
+                        data-book-title="{{ htmlspecialchars($relatedBook->title, ENT_QUOTES) }}"
+                        data-book-price="{{ $relatedBook->price }}"
+                        data-book-image="{{ htmlspecialchars($relatedBook->image, ENT_QUOTES) }}"
+                        onclick="addCarouselBookToCart(this)">
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            <button class="carousel-nav prev" id="prevBtn" onclick="moveCarousel(-1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <button class="carousel-nav next" id="nextBtn" onclick="moveCarousel(1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <br>
+            <div class="carousel-indicators" id="indicators"></div>
+        </div>
+    </div>
+    
+    
     <script src="{{ asset('js/moredetail.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
+    <script src="{{ asset('js/carousel.js') }}"></script>
+    <script>
+        
     
-    <br> <br>
+
+        // Function for carousel books
+        function addCarouselBookToCart(button) {
+            const bookId = button.getAttribute('data-book-id');
+            const bookTitle = button.getAttribute('data-book-title');
+            const bookPrice = button.getAttribute('data-book-price');
+            const bookImage = button.getAttribute('data-book-image');
+            const quantity = 1; // Carousel books default to quantity 1
+            
+            console.log("Adding carousel book:", { bookId, bookTitle, bookPrice, bookImage, quantity });
+            
+            performAddToCart(bookId, bookTitle, bookPrice, bookImage, quantity, button);
+        }
+
+        // Common function that performs the actual add to cart operation
+        function performAddToCart(bookId, bookTitle, bookPrice, bookImage, quantity, button) {
+            fetch(`/add-to-cart/${bookId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({
+                    title: bookTitle,
+                    price: bookPrice,
+                    image: bookImage,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    // Add success animation
+                    if (button) {
+                        button.classList.add('add-success');
+                        
+                        setTimeout(() => {
+                            button.classList.remove('add-success');
+                            // Show success feedback
+                            const originalContent = button.innerHTML;
+                            button.innerHTML = '<i class="fas fa-check"></i>';
+                            button.style.background = '#28a745';
+                            
+                            setTimeout(() => {
+                                button.innerHTML = originalContent;
+                                button.style.background = '';
+                            }, 1500);
+                        }, 300);
+                    }
+                    
+                    console.log(`تمت إضافة الكتاب: ${bookTitle} (ID: ${bookId}) إلى السلة`);
+                    
+                    // Update cart count if you have this function
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount(data.cartCount);
+                    }
+                    else{
+                        console.log("updateCartCount function is not defined");
+                    }
+                    
+                    // Show success toast
+                    showCartToast(`تمت إضافة "${bookTitle}" إلى السلة`);
+                    
+                    // Update the cart modal if it's open
+                    const cartModal = document.getElementById('cartDetailsModal');
+                    if(cartModal && cartModal.classList.contains('show')) {
+                        if (typeof showCartModal === 'function') {
+                            showCartModal();
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCartToast('حدث خطأ أثناء الإضافة إلى السلة');
+            });
+        }
+    </script>
+    <br> 
     <footer>
         @include('footer')
     </footer>

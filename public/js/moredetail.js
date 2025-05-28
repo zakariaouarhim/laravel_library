@@ -1,4 +1,4 @@
- document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
             // Initialize the toast
             const cartSuccessToast = new bootstrap.Toast(document.getElementById('cartSuccessToast'));
 
@@ -12,7 +12,7 @@
            
         });
 
-        function addToCart(bookId) {
+        function addToCartM(bookId) {
             const quantityInput = document.querySelector('input[aria-label="عدد النسخ"]');
             const quantity = quantityInput.value;
             const button = document.getElementById('addToCartButton');
@@ -60,3 +60,5 @@
                 button.disabled = false;
             });
         }
+
+        

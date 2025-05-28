@@ -12,7 +12,12 @@ class Bookcontroller extends Controller
     public function show($id)
     {
     $book = Book::findOrFail($id);
-    return view('moredetail', compact('book'));
+    // Get related books from the same category
+    $relatedBooks = Book::where('category_id', $book->category_id)
+        ->where('id', '!=', $book->id)
+        ->take(10) // Adjust the number based on your needs
+        ->get();
+    return view('moredetail', compact('book','relatedBooks'));
     }
     public function showproduct()
     {
