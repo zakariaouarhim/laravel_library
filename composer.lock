@@ -4,48 +4,56 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "677c83a3a269193495164cec621fc6fb",
+    "content-hash": "654c3110bbcc5409214dbf751f46bc95",
     "packages": [
         {
             "name": "algolia/algoliasearch-client-php",
-            "version": "4.18.4",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/algolia/algoliasearch-client-php.git",
-                "reference": "6acff809f2565728ce9bca94f2aa90d7d1a23e5c"
+                "reference": "df4508d6ca85700d2df9b556edd18696f37fb2cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/algolia/algoliasearch-client-php/zipball/6acff809f2565728ce9bca94f2aa90d7d1a23e5c",
-                "reference": "6acff809f2565728ce9bca94f2aa90d7d1a23e5c",
+                "url": "https://api.github.com/repos/algolia/algoliasearch-client-php/zipball/df4508d6ca85700d2df9b556edd18696f37fb2cd",
+                "reference": "df4508d6ca85700d2df9b556edd18696f37fb2cd",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
                 "ext-mbstring": "*",
-                "guzzlehttp/psr7": "^2.0",
-                "php": ">=8.1 !=8.3.0",
-                "psr/http-message": "^1.1 || ^2.0",
+                "php": "^7.3 || ^8.0",
+                "psr/http-message": "^1.0 || ^2.0",
                 "psr/log": "^1.0 || ^2.0 || ^3.0",
                 "psr/simple-cache": "^1.0 || ^2.0 || ^3.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.0 || ^3.5.0",
-                "phpstan/phpstan": "^1.12",
-                "phpunit/phpunit": "^11.0",
-                "vlucas/phpdotenv": "^5.4"
+                "friendsofphp/php-cs-fixer": "^2.0",
+                "fzaninotto/faker": "^1.8",
+                "phpunit/phpunit": "^8.0 || ^9.0",
+                "symfony/yaml": "^2.0 || ^4.0"
             },
             "suggest": {
                 "guzzlehttp/guzzle": "If you prefer to use Guzzle HTTP client instead of the Http Client implementation provided by the package"
             },
+            "bin": [
+                "bin/algolia-doctor"
+            ],
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-2.0": "2.0.x-dev"
+                }
+            },
             "autoload": {
                 "files": [
-                    "lib/Http/Psr7/functions.php"
+                    "src/Http/Psr7/functions.php",
+                    "src/functions.php"
                 ],
                 "psr-4": {
-                    "Algolia\\AlgoliaSearch\\": "lib/"
+                    "Algolia\\AlgoliaSearch\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -55,11 +63,10 @@
             "authors": [
                 {
                     "name": "Algolia Team",
-                    "homepage": "https://alg.li/support"
+                    "email": "contact@algolia.com"
                 }
             ],
-            "description": "API powering the features of Algolia.",
-            "homepage": "https://github.com/algolia/algoliasearch-client-php",
+            "description": "Algolia Search API Client for PHP",
             "keywords": [
                 "algolia",
                 "api",
@@ -69,9 +76,9 @@
             ],
             "support": {
                 "issues": "https://github.com/algolia/algoliasearch-client-php/issues",
-                "source": "https://github.com/algolia/algoliasearch-client-php/tree/4.18.4"
+                "source": "https://github.com/algolia/algoliasearch-client-php/tree/3.4.0"
             },
-            "time": "2025-04-14T16:27:35+00:00"
+            "time": "2023-08-10T09:34:00+00:00"
         },
         {
             "name": "asm89/stack-cors",
@@ -1398,16 +1405,16 @@
         },
         {
             "name": "laravel/scout",
-            "version": "v9.8.1",
+            "version": "v9.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/scout.git",
-                "reference": "38595717b396ce733d432b82e3225fa4e0d6c8ef"
+                "reference": "f765673311226919d2526d3148a558306283bc7c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/scout/zipball/38595717b396ce733d432b82e3225fa4e0d6c8ef",
-                "reference": "38595717b396ce733d432b82e3225fa4e0d6c8ef",
+                "url": "https://api.github.com/repos/laravel/scout/zipball/f765673311226919d2526d3148a558306283bc7c",
+                "reference": "f765673311226919d2526d3148a558306283bc7c",
                 "shasum": ""
             },
             "require": {
@@ -1467,7 +1474,7 @@
                 "issues": "https://github.com/laravel/scout/issues",
                 "source": "https://github.com/laravel/scout"
             },
-            "time": "2023-02-14T16:53:14+00:00"
+            "time": "2023-01-17T16:30:55+00:00"
         },
         {
             "name": "laravel/serializable-closure",

@@ -27,5 +27,18 @@ class Category extends Model
     {
         return $this->hasMany(Book::class);
     }
-    
+    // Get all descendant categories (children, grandchildren, etc.)
+    public function descendants()
+    {
+        return $this->children()->with('descendants');
+    }
+
+    // Get all books including from child categories
+    public function allBooks()
+    {
+        $childCategoryIds = $this->children->pluck('id')->toArray();
+        $allCategoryIds = array_merge([$this->id], $childCategoryIds);
+        
+        return Book::whereIn('category_id', $allCategoryIds);
+    }
 }

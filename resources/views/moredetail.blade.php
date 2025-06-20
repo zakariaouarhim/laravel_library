@@ -43,8 +43,20 @@
                 </div>
 
                 <div class="mb-4">
-                    <span class="badge bg-secondary">روايات</span>
-                    <span class="badge bg-secondary">أدب عربي</span>
+                    @if($book->category)
+                    @if($book->category->parent)
+                        {{-- Display parent category --}}
+                        <span class="badge bg-primary">{{ $book->category->parent->name }}</span>
+                        {{-- Display child category (current category) --}}
+                        <span class="badge bg-secondary">{{ $book->category->name }}</span>
+                    @else
+                        {{-- If category has no parent, it's a main category --}}
+                        <span class="badge bg-primary">{{ $book->category->name }}</span>
+                    @endif
+                @else
+                    {{-- Fallback if no category is assigned --}}
+                    <span class="badge bg-warning">غير مصنف</span>
+                @endif
                 </div>
 
                 <p class="mb-4">{{ $book->description }}</p>
@@ -270,46 +282,81 @@
 
     <!--caroussel-->
     <!-- Sample Books Data -->
-    <div class="related-books">
-        <h3>كتب ذات صلة</h3>
+    <!--carousel-->
+<!-- Sample Books Data -->
+<div class="related-books">
+    <h3>كتب ذات صلة</h3>
+    
+    @if($relatedBooks && $relatedBooks->count() > 0)
         <div class="carousel-container">
-            <div class="carousel-wrapper" id="carouselWrapper">
-                <!-- Sample book cards -->
+            <div class="carousel-wrapper" id="carouselWrapper1">
                 @foreach($relatedBooks as $relatedBook)
                 <div class="book-card">
-                    <img src="{{ asset($relatedBook->image) }}" alt="{{ $relatedBook->title }}">
+                    <a href="{{ route('moredetail.page', ['id' => $relatedBook->id]) }}">
+                        <img src="{{ asset($relatedBook->image) }}" class="card-img-top" alt="{{ $relatedBook->title }}" loading="lazy">
+                    </a>
+                    
                     <h6>{{ $relatedBook->title }}</h6>
-                    <p class="author">{{ $relatedBook->author }}</p>
+                    <p class="book-author">
+                        <i class="fas fa-user-edit me-1"></i>
+                        {{ $relatedBook->author }}
+                    </p>
                     <div class="price-section">
                         <span class="price">{{ $relatedBook->price }} ر.س</span>
-                        <!-- Fixed: Added missing closing quote and parenthesis -->
                         <button class="add-btn" 
                         data-book-id="{{ $relatedBook->id }}"
                         data-book-title="{{ htmlspecialchars($relatedBook->title, ENT_QUOTES) }}"
                         data-book-price="{{ $relatedBook->price }}"
                         data-book-image="{{ htmlspecialchars($relatedBook->image, ENT_QUOTES) }}"
                         onclick="addCarouselBookToCart(this)">
-                    <i class="fas fa-shopping-cart"></i>
-                </button>
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
                     </div>
                 </div>
                 @endforeach
             </div>
-            <button class="carousel-nav prev" id="prevBtn" onclick="moveCarousel(-1)">
+            <button class="carousel-nav prev" id="prevBtn1" onclick="moveCarousel(-1, 'carousel1')">
                 <i class="fas fa-chevron-right"></i>
             </button>
-            <button class="carousel-nav next" id="nextBtn" onclick="moveCarousel(1)">
+            <button class="carousel-nav next" id="nextBtn1" onclick="moveCarousel(1, 'carousel1')">
                 <i class="fas fa-chevron-left"></i>
             </button>
             <br>
-            <div class="carousel-indicators" id="indicators"></div>
+            <div class="carousel-indicators" id="indicators1"></div>
         </div>
-    </div>
+        @else
+        <!-- Stylized empty state message -->
+        <div class="empty-carousel-message">
+            <div class="empty-state-card text-center p-5 border rounded bg-light">
+                <div class="empty-state-icon mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" 
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-books text-primary" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+                <h4 class="text-dark mb-3">لا توجد كتب ذات صلة</h4>
+                <p class="text-muted mb-4">
+                    عذراً، لا توجد كتب أخرى متاحة في نفس فئة هذا الكتاب حالياً.<br>
+                    يمكنك تصفح مجموعتنا الكاملة من الكتب للعثور على المزيد من الخيارات المثيرة.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ route('index.page') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>العودة للرئيسية
+                    </a>
+                    <a href="#" class="btn btn-outline-primary" onclick="window.history.back();">
+                        <i class="fas fa-arrow-right me-2"></i>العودة للخلف
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
+</div>
     
     
     <script src="{{ asset('js/moredetail.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/carousel.js') }}"></script>
+    <script src="{{ asset('js/scripts.js') }}"></script>
     <script>
         
     

@@ -8,10 +8,26 @@ use Laravel\Scout\Searchable;
 
 class Book extends Model
 {
-    use HasFactory,Searchable;
+    use HasFactory;
      // Define fillable attributes
     protected $fillable = [
-        'title', 'author', 'price', 'image', 'category_id', 'description','Quantity'
+        'title',
+        'author',
+        'description',
+        'price',
+        'category_id',
+        'image',
+        'Page_Num',
+        'Langue',
+        'Publishing_House',
+        'ISBN',
+        'Quantity',
+        'api_data_status',
+        'api_source',
+        'api_id',
+        'api_last_updated',
+        'original_image',
+        'local_image_path'
     ];
     
      // Relationship with CartItem
@@ -36,5 +52,25 @@ class Book extends Model
             'author' => $this->author,
             'description' => $this->description,
         ];
+    }
+
+    public function inventoryLogs()
+    {
+        return $this->hasMany(InventoryLog::class);
+    }
+
+    public function shipmentItems()
+    {
+        return $this->hasMany(ShipmentItem::class);
+    }
+
+    public function scopeNeedsEnrichment($query)
+    {
+        return $query->where('api_data_status', 'pending');
+    }
+
+    public function scopeEnriched($query)
+    {
+        return $query->where('api_data_status', 'enriched');
     }
 }

@@ -26,6 +26,18 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" href="{{ route('Dashbord_Admin.Shipment_Management') }}">
+                <span data-feather="users"></span>
+                إدارة الشحنات
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('Dashbord_Admin.ManagementSystem') }}">
+                <span data-feather="users"></span>
+                نظام إدارة المكتبة
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="#">
                 <span data-feather="bar-chart-2"></span>
                 التقارير

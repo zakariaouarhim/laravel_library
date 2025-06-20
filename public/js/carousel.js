@@ -1,9 +1,15 @@
 class EnhancedCarousel {
-    constructor() {
-        this.wrapper = document.getElementById('carouselWrapper');
-        this.prevBtn = document.getElementById('prevBtn');
-        this.nextBtn = document.getElementById('nextBtn');
-        this.indicators = document.getElementById('indicators');
+    constructor(wrapperId, prevBtnId, nextBtnId, indicatorsId) {
+        this.wrapper = document.getElementById(wrapperId);
+        this.prevBtn = document.getElementById(prevBtnId);
+        this.nextBtn = document.getElementById(nextBtnId);
+        this.indicators = document.getElementById(indicatorsId);
+        
+        // Check if all elements exist
+        if (!this.wrapper || !this.prevBtn || !this.nextBtn || !this.indicators) {
+            console.warn(`Carousel elements not found for ${wrapperId}`);
+            return;
+        }
         
         this.currentPosition = 0;
         this.cardWidth = 240; // 220px + 20px gap
@@ -46,6 +52,7 @@ class EnhancedCarousel {
     
     updateIndicators() {
         const indicators = this.indicators.querySelectorAll('.indicator');
+        // Calculate which indicator should be active based on current position
         const activeIndex = Math.floor(this.currentPosition / this.visibleCards);
         
         indicators.forEach((indicator, index) => {
@@ -54,6 +61,7 @@ class EnhancedCarousel {
     }
     
     updateCarousel() {
+        // Move by cardWidth for each position (one card at a time)
         const translateX = this.currentPosition * this.cardWidth;
         this.wrapper.style.transform = `translateX(${translateX}px)`;
         this.updateIndicators();
@@ -65,7 +73,8 @@ class EnhancedCarousel {
     }
     
     move(direction) {
-        const newPosition = this.currentPosition + (direction * this.visibleCards);
+        // Move one card at a time instead of visibleCards
+        const newPosition = this.currentPosition + direction;
         
         if (newPosition >= 0 && newPosition <= this.maxPosition) {
             this.currentPosition = newPosition;
@@ -86,12 +95,6 @@ class EnhancedCarousel {
     }
     
     setupEventListeners() {
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') this.move(1);
-            if (e.key === 'ArrowRight') this.move(-1);
-        });
-        
         // Touch/swipe support
         let startX = 0;
         let currentX = 0;
@@ -113,6 +116,7 @@ class EnhancedCarousel {
             
             const diffX = startX - currentX;
             if (Math.abs(diffX) > 50) {
+                // Move one card at a time for touch swipe as well
                 this.move(diffX > 0 ? 1 : -1);
             }
             
@@ -131,116 +135,21 @@ class EnhancedCarousel {
     }
 }
 
-// Initialize carousel when DOM is loaded
-let carousel;
+// Store carousel instances
+let carousels = {};
+
+// Initialize carousels when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    carousel = new EnhancedCarousel();
-});
-
-// Global functions for compatibility
-function moveCarousel(direction) {
-    if (carousel) {
-        carousel.move(direction);
-    }
-}
-
-function addToCart(bookId, bookTitle, bookPrice, bookImage) {
-    console.log("Parameters:", { bookId, bookTitle, bookPrice, bookImage });
+    // Initialize first carousel (Arabic books)
+    carousels.carousel1 = new EnhancedCarousel('carouselWrapper1', 'prevBtn1', 'nextBtn1', 'indicators1');
     
-    // Get the button element that was clicked
-    const button = event.target.closest('.add-btn');
-    
-    fetch(`/add-to-cart/${bookId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        },
-        body: JSON.stringify({
-            title: bookTitle,
-            price: bookPrice,
-            image: bookImage
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.success) {
-            // Add success animation
-            button.classList.add('add-success');
-            
-            // Simulate API call
-            setTimeout(() => {
-                button.classList.remove('add-success');
-                // Show success feedback
-                button.innerHTML = '<i class="fas fa-check"></i>';
-                button.style.background = '#28a745';
-                
-                setTimeout(() => {
-                    button.innerHTML = '<i class="fas fa-shopping-cart"></i>';
-                    button.style.background = '';
-                }, 1500);
-                
-                console.log(`تمت إضافة الكتاب ${bookId} إلى السلة`);
-            }, 300);
-            
-            updateCartCount(data.cartCount);
-            showCartToast(`تمت إضافة "${bookTitle}" إلى السلة`);
-            
-            // Update the cart modal if it's open
-            const cartModal = document.getElementById('cartDetailsModal');
-            if(cartModal && cartModal.classList.contains('show')) {
-                showCartModal();
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showCartToast('حدث خطأ أثناء الإضافة إلى السلة');
-    });
-}
-
-// Fixed helper functions to match your HTML structure
-function updateCartCount(count) {
-    const cartCountElement = document.getElementById('cartCount');
-    if (cartCountElement) {
-        cartCountElement.textContent = count;
-    }
-}
-
-function showCartToast(message) {
-    // Use the correct ID from your HTML: cartSuccessToast
-    const toastElement = document.getElementById('cartSuccessToast');
-    if (toastElement) {
-        // Update the toast body message
-        const toastBody = toastElement.querySelector('.toast-body');
-        if (toastBody) {
-            toastBody.textContent = message;
-        }
-        
-        // Show the toast using Bootstrap's Toast API
-        const toast = new bootstrap.Toast(toastElement);
-        toast.show();
-    } else {
-        console.error('Toast element not found');
-    }
-}
-
-// Initialize cart count on page load
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/get-cart')
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                updateCartCount(data.cartCount);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading cart count:', error);
-        });
+    // Initialize second carousel (English books)
+    carousels.carousel2 = new EnhancedCarousel('carouselWrapper2', 'prevBtn2', 'nextBtn2', 'indicators2');
 });
 
-document.getElementById('cartDetailsModal').addEventListener('hidden.bs.modal', function () {
-    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style.paddingRight = '';
-});
+// Global function for compatibility with onclick handlers
+function moveCarousel(direction, carouselId) {
+    if (carousels[carouselId]) {
+        carousels[carouselId].move(direction);
+    }
+}

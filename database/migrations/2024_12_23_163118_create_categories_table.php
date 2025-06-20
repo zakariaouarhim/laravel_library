@@ -16,7 +16,13 @@ class CreateCategoriesTable extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
+            $table->unsignedBigInteger('parent_id')->nullable(); // Self-referencing parent category
             $table->timestamps();
+
+            $table->foreign('parent_id')
+                  ->references('id')
+                  ->on('categories')
+                  ->onDelete('cascade');
         });
     }
 

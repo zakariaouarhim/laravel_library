@@ -13,18 +13,8 @@ async function fetchProducts() {
     return [];
   }
 }
-async function AddProduct() {
-  var productName=document.getElementById("productName");
-  var productDescription=document.getElementById("productDescription");
-  var productPrice=document.getElementById("productPrice");
-  var productNumPages=document.getElementById("productNumPages");
-  var productLanguage=document.getElementById("productLanguage");
-  var ProductPublishingHouse=document.getElementById("ProductPublishingHouse");
-  var productIsbn=document.getElementById("productIsbn");
-  var productcategorie=document.getElementById("Productcategorie");
-  var productimage="images/books/"+productName+".jpg";
-  
-}
+
+
 
 // Render products in the table
 async function renderProducts() {
@@ -35,9 +25,16 @@ async function renderProducts() {
       (product) => `
       <tr>
         <td>${product.id}</td>
-        <td><img src="/${product.image}" alt="${product.title}" class="card-img-top" loading="lazy"></td>
+        <td><img src="/${product.image}" alt="${product.title}" class="card-img-top"  loading="lazy" style="width: 50px; height: 60px; object-fit: cover;"></td>
         <td>${product.title}</td>
-        <td>${product.description}</td>
+        <td style="
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* number of lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+">${product.description}</td>
         <td>${product.price} ريال</td>
         <td>${product.author}</td>
         <td>${product.Page_Num}</td>

@@ -9,6 +9,7 @@
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/product.css') }}">
     
     
@@ -47,7 +48,7 @@
                   <th scope="col">#</th>
                   <th scope="col">الصورة</th>
                   <th scope="col">اسم المنتج</th>
-                  <th scope="col">الوصف</th>
+                  <th scope="col" style="max-width: 500px;">الوصف</th>
                   <th scope="col">السعر</th>
                   <th scope="col">المؤلف</th>
                   <th scope="col">عدد الصفحات</th>

@@ -5,7 +5,10 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Usercontroller;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Shipment;
+use App\Http\Controllers\SystemSettingsController;
 use Illuminate\Http\Request;
 
 /*
@@ -18,6 +21,47 @@ use Illuminate\Http\Request;
 | contains the "web" middleware group. Now create something great!
 |
 */
+// Shipment Management Routes
+
+    
+    // Shipment Routes
+    Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
+    Route::get('/shipments/create', [ShipmentController::class, 'create'])->name('shipments.create');
+    Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
+    Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
+    Route::post('/shipments/{shipment}/process', [ShipmentController::class, 'processShipment'])->name('shipments.process');
+    Route::post('/shipments/{shipment}/bulk-enrich', [ShipmentController::class, 'bulkEnrich'])->name('shipments.bulk-enrich');
+    Route::post('/shipment-items/{item}/enrich', [ShipmentController::class, 'enrichItem'])->name('shipment-items.enrich');
+    
+    // Book Management Routes (Enhanced)
+    Route::post('/books/{book}/enrich', [Bookcontroller::class, 'enrichBook'])->name('books.enrich');
+    Route::get('/books/pending-enrichment', [Bookcontroller::class, 'getPendingEnrichment'])->name('books.pending-enrichment');
+    Route::post('/books/bulk-enrich', [Bookcontroller::class, 'bulkEnrichBooks'])->name('books.bulk-enrich');
+    Route::get('/debug-enrich/{id}', [BookController::class, 'debugEnrich']);
+    
+    // System Settings Routes
+    Route::get('/settings', [SystemSettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SystemSettingsController::class, 'update'])->name('settings.update');
+    
+    // Inventory Routes
+   
+
+
+// API Routes for AJAX calls
+
+Route::get('/Dashbord_Admin/Shipment_Management', [ShipmentController::class, 'index'])->name('Dashbord_Admin.Shipment_Management');
+Route::get('/Dashbord_Admin/ManagementSystem', [ShipmentController::class, 'showmanagement'])->name('Dashbord_Admin.ManagementSystem');
+
+Route::get('products/api', [BookController::class, 'getProductsApi'])->name('products.api');
+Route::get('products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
+
+Route::get('products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
+Route::put('products/api/{id}', [BookController::class, 'updateProduct'])->name('products.api.update');
+
+Route::put('products/{id}', [BookController::class, 'updateProduct'])->name('pro.update');
+
+Route::get('/test-api', [BookController::class, 'testApiConnection']);
+
 
 // Dashboard Routes
 Route::get('/Dashbord_Admin/dashboard', function () {
@@ -25,6 +69,7 @@ Route::get('/Dashbord_Admin/dashboard', function () {
 })->name('Dashbord_Admin.dashboard');
 Route::resource('orders', OrderController::class);
 Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
+
 Route::get('/Dashbord_Admin/Product/data', [BookController::class, 'getProducts']);
 Route::get('/Dashbord_Admin/Product/{id}', [BookController::class, 'getProductById']); 
 Route::put('/Dashbord_Admin/Product/{id}', [BookController::class, 'updateProduct']);
@@ -95,3 +140,8 @@ Auth::routes();
 Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser');
 Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin');
 Route::get('/books', [BookController::class, 'index']);
+
+
+
+Route::get('/settings', [SystemSettingsController::class, 'index'])->name('settings.index');
+Route::post('/settings', [SystemSettingsController::class, 'update'])->name('settings.update');
