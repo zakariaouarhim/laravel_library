@@ -7,16 +7,21 @@ use Illuminate\Support\Facades\DB;
 class BookService
 {
     public function enrichBookFromAPI(Book $book)
-    {
-        // Check if already enriched
-        if ($book->api_data_status === 'enriched') {
-            \Log::info('Book already enriched, skipping: ' . $book->id);
-            return $book;
-        }
+{
+    // Check if already enriched
+    if ($book->api_data_status === 'enriched') {
+        \Log::info('Book already enriched, skipping: ' . $book->id);
+        return $book;
+    }
 
-        // Set status to processing to prevent concurrent processing
-        $book->update(['api_data_status' => 'processing']);
-    
+    // Use DB transaction to ensure atomicity
+    return DB::transaction(function () use ($book) {
+        // Set status to processing with timestamp
+        $book->update([
+            'api_data_status' => 'processing',
+            'api_last_updated' => now()
+        ]);
+
         try {
             \Log::info('Starting book enrichment for book ID: ' . $book->id);
             \Log::info('Book title: ' . $book->title);
@@ -46,41 +51,35 @@ class BookService
             
             \Log::info('Mapped data fields: ' . implode(', ', array_keys($mappedData)));
             
-            // Update book with transaction
-            DB::transaction(function () use ($book, $mappedData) {
-                // Use Scout's method to disable syncing during update
-                Book::withoutSyncingToSearch(function () use ($book, $mappedData) {
-                    $book->update($mappedData);
-                    $book->api_data_status = 'enriched';
-                    $book->api_last_updated = now();
-                    $book->api_error_message = null; // Clear any previous error
-                    $book->save();
-                });
-            });
+            // Update book with enriched data
+            $book->update($mappedData);
+            
+            // Set final status
+            $book->update([
+                'api_data_status' => 'enriched',
+                'api_last_updated' => now(),
+                'api_error_message' => null // Clear any previous error
+            ]);
             
             \Log::info('Book enrichment completed successfully for book ID: ' . $book->id);
+            
+            return $book->fresh(); // Return fresh instance from database
             
         } catch (\Exception $e) {
             \Log::error('Error in enrichBookFromAPI for book ID ' . $book->id . ': ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             
             // Update status to failed with error message
-            try {
-                Book::withoutSyncingToSearch(function () use ($book, $e) {
-                    $book->api_data_status = 'failed';
-                    $book->api_last_updated = now();
-                    $book->api_error_message = substr($e->getMessage(), 0, 500); // Limit error message length
-                    $book->save();
-                });
-            } catch (\Exception $updateError) {
-                \Log::error('Failed to update book status after enrichment error: ' . $updateError->getMessage());
-            }
+            $book->update([
+                'api_data_status' => 'failed',
+                'api_last_updated' => now(),
+                'api_error_message' => substr($e->getMessage(), 0, 500)
+            ]);
             
-            throw $e;
+            throw $e; // Re-throw the exception to be handled by the controller
         }
-    
-        return $book->fresh(); // Return fresh instance from database
-    }
+    });
+}
     
     protected function extractISBN(Book $book)
     {

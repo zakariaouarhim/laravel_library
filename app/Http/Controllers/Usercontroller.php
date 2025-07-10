@@ -7,7 +7,7 @@ use App\Models\UserModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Auth;
 
 class Usercontroller extends Controller
 {
@@ -24,32 +24,32 @@ class Usercontroller extends Controller
             
             \Log::info('Data passed validation');
 
-            // Test database connection
-            try {
-                \DB::connection()->getPdo();
-                \Log::info('Database connected successfully');
-            } catch (\Exception $e) {
-                \Log::error('Database connection failed:', ['error' => $e->getMessage()]);
-                throw $e;
-            }
-
-            $userData = [
+            // Create user using the UserModel
+            $user = UserModel::create([
                 'name' => $validateData['name'],
                 'email' => $validateData['email'],
-                'password' => bcrypt($validateData['password']),
+                'password' => Hash::make($validateData['password']),
                 'role' => 'user'
-            ];
+            ]);
             
-            \Log::info('Attempting to create user with data:', $userData);
-            
-            // Try manual insert to bypass model
-            $inserted = \DB::table('user')->insert($userData);
-            \Log::info('Direct DB insert result:', ['success' => $inserted]);
+            \Log::info('User created successfully:', ['user_id' => $user->id]);
 
-            if ($inserted) {
-                return redirect()->back()->with('success', 'User registered successfully');
+            if ($user) {
+                // Login the user using Laravel's Auth system
+                Auth::login($user);
+                
+                // Also store in session for backward compatibility (if needed)
+                session([
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'user_role' => $user->role,
+                    'is_logged_in' => true
+                ]);
+                
+                return redirect()->route('index.page')->with('success', 'Account created successfully! Welcome ' . $user->name);
             } else {
-                throw new \Exception('Failed to insert user data');
+                throw new \Exception('Failed to create user');
             }
             
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -67,51 +67,68 @@ class Usercontroller extends Controller
                 ->withInput();
         }
     }
+
     function userlogin(Request $requestlogin){
         try {
-        // Validate the request data
-        $validatedData = $requestlogin->validate([
-            'email' => 'required|email|exists:user,email', // Check if email exists in the 'user' table
-            'password' => 'required|min:8',
-        ]);
+            // Validate the request data
+            $validatedData = $requestlogin->validate([
+                'email' => 'required|email',
+                'password' => 'required|min:8',
+            ]);
 
-        // Fetch the user from the database
-        $user = DB::table('user')
-            ->where('email', $validatedData['email'])
-            ->first();
+            // Attempt to authenticate using Laravel's Auth system
+            $credentials = [
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password']
+            ];
 
-        // Check if the user exists and the password is correct
-        if ($user && Hash::check($validatedData['password'], $user->password)) {
-            // Log the user in (you can use Laravel's Auth system here)
-            // For example: Auth::loginUsingId($user->id);
+            if (Auth::attempt($credentials)) {
+                $user = Auth::user();
+                
+                // Store user info in session for backward compatibility
+                session([
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'user_role' => $user->role,
+                    'is_logged_in' => true
+                ]);
 
-            // Redirect to the home page or dashboard
-            if ($user->role=="admin") {
-                return redirect()->route('Dashbord_Admin.dashboard')->with('success', 'Login successful');
-            }else {
-                return redirect()->route('index.page')->with('success', 'Login successful');
+                // Redirect based on role
+                if ($user->role == "admin") {
+                    return redirect()->route('Dashbord_Admin.dashboard')->with('success', 'Login successful');
+                } else {
+                    return redirect()->route('index.page')->with('success', 'Login successful! Welcome back ' . $user->name);
+                }
+                
+            } else {
+                // Invalid credentials
+                return back()->with('fail', 'Invalid email or password')->withInput();
             }
-            
-        } else {
-            // Invalid credentials
-            return back()->with('fail', 'Invalid email or password');
-        }
 
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        // Handle validation errors
-        return back()
-            ->withErrors($e->errors())
-            ->withInput();
-    } catch (\Exception $e) {
-        // Log the error and return a generic error message
-        Log::error('Login error:', [
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        return back()->with('fail', 'An error occurred during login. Please try again.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            // Log the error and return a generic error message
+            Log::error('Login error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('fail', 'An error occurred during login. Please try again.');
+        }
     }
-}
-   public function index()
+
+    // Add logout function
+    function logout(){
+        Auth::logout(); // Logout from Laravel's Auth system
+        session()->flush(); // Clear all session data
+        return redirect()->route('index.page')->with('success', 'Logged out successfully');
+    }
+
+    public function index()
     {
         return view('Dashbord_Admin.client');
     }

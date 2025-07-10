@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
@@ -60,6 +61,9 @@
                 </div>
 
                 <p class="mb-4">{{ $book->description }}</p>
+                {{--  --}}
+                
+                {{--  --}}
 
                 <div class="d-flex align-items-center mb-4">
                     <div class="input-group" style="max-width: 120px;">
@@ -111,22 +115,95 @@
         <div class="mt-5">
             <ul class="nav nav-tabs" id="bookDetailsTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true" style="color: black">
                         <i class="fas fa-info-circle me-2"></i>الوصف</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="false">
+                    <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="false" style="color: black">
                         <i class="fas fa-list-ul me-2"></i>تفاصيل إضافية</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false" style="color: black">
                         <i class="fas fa-star me-2"></i>التقييمات
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="biography-tab" data-bs-toggle="tab" data-bs-target="#biography" type="button" role="tab" aria-controls="biography" aria-selected="false" style="color: black">
+                        <i class="fas fa-user-edit mb-3" style="color: black;"></i> نبذة عن الكاتب
+
                     </button>
                 </li>
             </ul>
             <div class="tab-content border rounded-bottom p-3" id="bookDetailsTabsContent">
                 <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
                     <p>{{ $book->description }}</p>
+                </div>
+                 <!-- New Author Bio Tab -->
+                <div class="tab-pane fade" id="biography" role="tabpanel" aria-labelledby="author-bio-tab">
+                    <div class="author-bio-section">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="author-avatar me-3">
+                                
+                                @if(isset($book->primaryAuthor) && $book->primaryAuthor && $book->primaryAuthor->profile_image)
+                                <img src="{{ asset($book->primaryAuthor->profile_image) }}" alt="{{ $book->author }}" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                                @else
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                                        {{ mb_substr($book->author, 0, 1, 'UTF-8') }}
+                                    </div>
+                                @endif
+                            </div>
+                            <div>
+                                <h4 class="mb-2">{{ $book->author }}</h4>
+                                <div class="text-muted">
+                                    <i class="fas fa-pen-fancy me-1"></i>
+                                    مؤلف
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="author-description">
+                            @if(isset($book->primaryAuthor) && $book->primaryAuthor && $book->primaryAuthor->biography)
+                            <p>{{ $book->primaryAuthor->biography }}</p>
+                             @else
+                                <div class="text-center p-4 bg-light rounded">
+                                    <i class="fas fa-user-edit text-muted mb-3" style="font-size: 3rem;"></i>
+                                    <h5 class="text-muted">لا توجد معلومات متاحة</h5>
+                                    <p class="text-muted mb-0">لم يتم إضافة نبذة عن الكاتب بعد</p>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- Optional: Author's other books section -->
+                        @if(isset($authorBooks) && $authorBooks->count() > 1)
+                        <div class="author-other-books mt-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-books me-2"></i>
+                                كتب أخرى للمؤلف
+                            </h5>
+                            <div class="list-group">
+                                @foreach($authorBooks->where('id', '!=', $book->id)->take(3) as $otherBook)
+                                <a href="{{ route('moredetail.page', ['id' => $otherBook->id]) }}" 
+                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa-solid fa-book text-primary me-3"></i>
+                                        <div>
+                                            <h6 class="mb-1">{{ $otherBook->title }}</h6>
+                                            <small class="text-muted">
+                                                @if($otherBook->primaryAuthor)
+                                                    {{ $otherBook->primaryAuthor->name }}
+                                                @else
+                                                    {{ $otherBook->author ?? 'مؤلف غير معروف' }}
+                                                @endif
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                </a>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
                     <table class="table table-bordered">
@@ -152,111 +229,159 @@
                         </tr>
                     </table>
                 </div>
-                
-                 <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                    <div class="review-summary mb-4">
-                        <div class="row align-items-center">
-                            <div class="col-md-4 text-center">
-                                <div class="average-rating">
-                                    <h2 class="display-4 fw-bold">4.8</h2>
-                                    <div class="stars mb-2">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star-half-alt text-warning"></i>
-                                    </div>
-                                    <p class="text-muted">من 24 تقييم</p>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="rating-bars">
-                                    <div class="rating-bar d-flex align-items-center mb-2">
-                                        <div class="rating-text me-2">5 <i class="fas fa-star text-warning"></i></div>
-                                        <div class="progress flex-grow-1">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <div class="rating-count ms-2">18</div>
-                                    </div>
-                                    <div class="rating-bar d-flex align-items-center mb-2">
-                                        <div class="rating-text me-2">4 <i class="fas fa-star text-warning"></i></div>
-                                        <div class="progress flex-grow-1">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: 17%" aria-valuenow="17" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <div class="rating-count ms-2">4</div>
-                                    </div>
-                                    <div class="rating-bar d-flex align-items-center mb-2">
-                                        <div class="rating-text me-2">3 <i class="fas fa-star text-warning"></i></div>
-                                        <div class="progress flex-grow-1">
-                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 8%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <div class="rating-count ms-2">2</div>
-                                    </div>
-                                    <div class="rating-bar d-flex align-items-center mb-2">
-                                        <div class="rating-text me-2">2 <i class="fas fa-star text-warning"></i></div>
-                                        <div class="progress flex-grow-1">
-                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <div class="rating-count ms-2">0</div>
-                                    </div>
-                                    <div class="rating-bar d-flex align-items-center">
-                                        <div class="rating-text me-2">1 <i class="fas fa-star text-warning"></i></div>
-                                        <div class="progress flex-grow-1">
-                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <div class="rating-count ms-2">0</div>
-                                    </div>
-                                </div>
-                            </div>
+                <!-- Review -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                    <!-- Rating Summary -->
+    @if($book->reviews->count() > 0)
+    <div class="rating-summary mb-4 p-3 bg-light rounded">
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <h2 class="mb-0">{{ number_format($book->average_rating, 1) }}</h2>
+                <div class="stars mb-2">
+                    @for ($i = 1; $i <= 5; $i++)
+                        <i class="{{ $i <= round($book->average_rating) ? 'fas' : 'far' }} fa-star text-warning"></i>
+                    @endfor
+                </div>
+                <p class="text-muted mb-0">{{ $book->reviews_count }} تقييم</p>
+            </div>
+            <div class="col-md-8">
+                @for ($star = 5; $star >= 1; $star--)
+                    @php
+                        $count = $book->reviews->where('rating', $star)->count();
+                        $percentage = $book->reviews_count > 0 ? ($count / $book->reviews_count) * 100 : 0;
+                    @endphp
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="me-2">{{ $star }} نجوم</span>
+                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: {{ $percentage }}%"></div>
+                        </div>
+                        <span class="text-muted">{{ $count }}</span>
+                    </div>
+                @endfor
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- User Reviews -->
+    <div class="user-reviews mb-4">
+        @if($book->reviews->count() > 0)
+            @foreach ($book->reviews->sortByDesc('created_at') as $review)
+            <div class="review-item mb-4 p-3 border rounded">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="avatar me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px;">
+                            {{ mb_substr($review->user->name ?? 'م', 0, 1, 'UTF-8') }}
                         </div>
                     </div>
-                    <hr>
-                    <div class="user-reviews">
-                        <div class="review-item mb-4">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="avatar me-3">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">م</div>
-                                </div>
-                                <div>
-                                    <h5 class="mb-0">محمد أحمد</h5>
-                                    <div class="stars">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                    </div>
-                                </div>
-                                <div class="ms-auto text-muted">منذ 3 أيام</div>
-                            </div>
-                            <p>كتاب رائع بكل المقاييس، استمتعت بقراءته كثيراً وأنصح الجميع باقتنائه!</p>
+                    <div>
+                        <h6 class="mb-1">{{ $review->user->name ?? 'مستخدم' }}</h6>
+                        <div class="stars mb-1">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star text-warning"></i>
+                            @endfor
                         </div>
-                        <div class="review-item mb-4">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="avatar me-3">
-                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">س</div>
-                                </div>
-                                <div>
-                                    <h5 class="mb-0">سارة علي</h5>
-                                    <div class="stars">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="far fa-star text-warning"></i>
-                                    </div>
-                                </div>
-                                <div class="ms-auto text-muted">منذ أسبوع</div>
-                            </div>
-                            <p>أسلوب المؤلف جميل ومميز، لكن كنت أتمنى لو كان هناك تفاصيل أكثر في بعض الفصول.</p>
-                        </div>
-                    </div>
-                    <div class="add-review-cta text-center mt-4">
-                        <button class="btn btn-outline-primary">
-                            <i class="fas fa-pencil-alt me-2"></i>أضف تقييمك للكتاب
-                        </button>
+                        <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
                     </div>
                 </div>
+                <p class="mb-0">{{ $review->comment }}</p>
+            </div>
+            @endforeach
+        @else
+            <div class="text-center p-4">
+                <i class="fas fa-star text-muted" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-muted">لا توجد تقييمات بعد</h5>
+                <p class="text-muted">كن أول من يقيم هذا الكتاب</p>
+            </div>
+        @endif
+    </div>
+
+    <!-- Review Form -->
+    @auth
+    @php
+        $userReview = $book->reviews->where('user_id', auth()->id())->first();
+    @endphp
+    
+    @if(!$userReview)
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-star me-2"></i>أضف تقييمك
+                </h5>
+                <form action="{{ route('reviews.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="book_id" value="{{ $book->id }}">
+
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">التقييم <span class="text-danger">*</span></label>
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rating" value="5" {{ old('rating') == 5 ? 'checked' : '' }}>
+                            <label for="star5" class="bi bi-star-fill"></label>
+                            <input type="radio" id="star4" name="rating" value="4" {{ old('rating') == 4 ? 'checked' : '' }}>
+                            <label for="star4" class="bi bi-star-fill"></label>
+                            <input type="radio" id="star3" name="rating" value="3" {{ old('rating') == 3 ? 'checked' : '' }}>
+                            <label for="star3" class="bi bi-star-fill"></label>
+                            <input type="radio" id="star2" name="rating" value="2" {{ old('rating') == 2 ? 'checked' : '' }}>
+                            <label for="star2" class="bi bi-star-fill"></label>
+                            <input type="radio" id="star1" name="rating" value="1" {{ old('rating') == 1 ? 'checked' : '' }}>
+                            <label for="star1" class="bi bi-star-fill"></label>
+                        </div>
+                        <div class="rating-feedback mt-2">
+                            <span id="rating-text" class="text-muted">اختر عدد النجوم</span>
+                        </div>
+                        @error('rating')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">تعليقك <span class="text-danger">*</span></label>
+                        <textarea name="comment" id="comment" class="form-control @error('comment') is-invalid @enderror" 
+                                rows="4" placeholder="اكتب تقييمك للكتاب..." required>{{ old('comment') }}</textarea>
+                        @error('comment')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>إرسال التقييم
+                    </button>
+                </form>
+            </div>
+        </div>
+    @else
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            لقد قمت بتقييم هذا الكتاب من قبل بـ {{ $userReview->rating }} نجوم.
+        </div>
+    @endif
+@else
+    <div class="alert alert-info text-center">
+        <i class="fas fa-user-lock me-2"></i>
+        يرجى <a href="{{ route('login2.page') }}" class="alert-link">تسجيل الدخول</a> لإضافة تقييمك.
+    </div>
+@endauth
+                </div>
+                 
             </div>
         </div>
             </div>
@@ -279,10 +404,6 @@
         </div>
     </div>
     
-
-    <!--caroussel-->
-    <!-- Sample Books Data -->
-    <!--carousel-->
 <!-- Sample Books Data -->
 <div class="related-books">
     <h3>كتب ذات صلة</h3>
@@ -299,7 +420,11 @@
                     <h6>{{ $relatedBook->title }}</h6>
                     <p class="book-author">
                         <i class="fas fa-user-edit me-1"></i>
-                        {{ $relatedBook->author }}
+                        @if($relatedBook->primaryAuthor)
+                            {{ $relatedBook->primaryAuthor->name }}
+                        @else
+                            {{ $relatedBook->author ?? 'مؤلف غير معروف' }}
+                        @endif
                     </p>
                     <div class="price-section">
                         <span class="price">{{ $relatedBook->price }} ر.س</span>

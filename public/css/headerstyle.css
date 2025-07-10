@@ -266,4 +266,22 @@ body {
         font-size: 0.9rem;
     }
 }
+#cartSuccessToast {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    z-index: 1050;
+    background: linear-gradient(135deg, #03045E, #48CAE4);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 15px 35px rgba(40, 167, 69, 0.3);
+    border: none;
+}
 
+.toast-header {
+    background: linear-gradient(135deg, #03045E, #48CAE4);
+    color: white;
+    border-radius: 10px 10px 0 0;
+    border: none;
+}

@@ -1,5 +1,5 @@
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="mainNavbar" >
     <div class="container">
         <!-- Logo -->
         <a class="navbar-brand" href="{{ route('index.page') }}">
@@ -97,30 +97,66 @@
                     </div>
                 </div>
 
-             
                 <!-- Account Dropdown -->
                 <div class="nav-item dropdown ms-3">
-                    <a href="#" class="nav-link dropdown-toggle" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle text-white fs-4" title="حسابي"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="accountDropdown" style="min-width: 250px;">
-                        <li class="mb-3">
-                            <a href="{{ route('login2.page') }}" class="btn btn-primary w-100"> تسجيل الدخول </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li class="mb-3">
-                            <label for="trackOrderInput" class="form-label">تعقب طلباتي</label>
-                            <div class="input-group">
-                                <input type="text" id="trackOrderInput" class="form-control" placeholder="رقم الطلب أو البريد الإلكتروني">
-                                <button class="btn btn-outline-secondary" type="button">بحث</button>
-                            </div>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">حسابي</a></li>
-                        <li><a class="dropdown-item" href="#">الطلبات</a></li>
-                        <li><a class="dropdown-item" href="#">طلبات الإسترجاع</a></li>
-                        <li><a class="dropdown-item" href="#">قائمة الأمنيات</a></li>
-                    </ul>
+                    @if(session('is_logged_in'))
+                        <!-- User is logged in -->
+                        <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle text-white fs-4 me-2"></i>
+                            <span class="text-white">مرحباً {{ session('user_name') }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="accountDropdown" style="min-width: 250px;">
+                            <li class="mb-3">
+                                <div class="text-center">
+                                    <strong>{{ session('user_name') }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ session('user_email') }}</small>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="mb-3">
+                                <label for="trackOrderInput" class="form-label">تعقب طلباتي</label>
+                                <div class="input-group">
+                                    <input type="text" id="trackOrderInput" class="form-control" placeholder="رقم الطلب أو البريد الإلكتروني">
+                                    <button class="btn btn-outline-secondary" type="button">بحث</button>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">حسابي</a></li>
+                            <li><a class="dropdown-item" href="#">الطلبات</a></li>
+                            <li><a class="dropdown-item" href="#">طلبات الإسترجاع</a></li>
+                            <li><a class="dropdown-item" href="#">قائمة الأمنيات</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ route('logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2"></i>تسجيل الخروج
+                                </a>
+                            </li>
+                        </ul>
+                    @else
+                        <!-- User is not logged in -->
+                        <a href="#" class="nav-link dropdown-toggle" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle text-white fs-4" title="حسابي"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="accountDropdown" style="min-width: 250px;">
+                            <li class="mb-3">
+                                <a href="{{ route('login2.page') }}" class="btn btn-primary w-100"> تسجيل الدخول </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="mb-3">
+                                <label for="trackOrderInput" class="form-label">تعقب طلباتي</label>
+                                <div class="input-group">
+                                    <input type="text" id="trackOrderInput" class="form-control" placeholder="رقم الطلب أو البريد الإلكتروني">
+                                    <button class="btn btn-outline-secondary" type="button">بحث</button>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">حسابي</a></li>
+                            <li><a class="dropdown-item" href="#">الطلبات</a></li>
+                            <li><a class="dropdown-item" href="#">طلبات الإسترجاع</a></li>
+                            <li><a class="dropdown-item" href="#">قائمة الأمنيات</a></li>
+                        </ul>
+                    @endif
                 </div>
             </div>
         </div>

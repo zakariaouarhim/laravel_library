@@ -6,6 +6,7 @@
     <title>{{ $category->name }} - عصير الكتب</title>
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
     <!-- Favicon -->
@@ -79,32 +80,44 @@
                         <h5 class="mb-0"><i class="fas fa-filter me-2"></i>تصفية النتائج</h5>
                     </div>
                     <div class="sidebar-card-body">
-                        <form action="" method="GET">
-                            <!-- Publishers Filter -->
+                        <form action="{{ route('by-category', ['category' => $category->id]) }} method="GET">
+                           <!-- Publishers Filter -->
                             <div class="filter-section">
                                 <h6 class="filter-title">دار النشر</h6>
-                                <div class="custom-checkbox">
-                                    <input class="custom-checkbox-input" type="checkbox" name="publishers[]" value="1" id="publisher1">
-                                    <label class="custom-checkbox-label" for="publisher1">دار الساقي</label>
+                                <input type="text" id="publisherSearch" class="form-control mb-3" placeholder="ابحث عن دار النشر...">
+
+                                <div id="publisherList">
+                                    @foreach ($publishingHouses as $index => $publishingHouse)
+                                        <div class="custom-checkbox {{ $index >= 4 ? 'd-none extra-publisher' : '' }}">
+                                            <input class="custom-checkbox-input" 
+                                                type="checkbox" 
+                                                name="publishers[]" 
+                                                value="{{ $publishingHouse->id }}" 
+                                                id="publisher{{ $publishingHouse->id }}"
+                                                {{ in_array($publishingHouse->id, request()->get('publishers', [])) ? 'checked' : '' }}>
+                                            <label class="custom-checkbox-label" for="publisher{{ $publishingHouse->id }}">
+                                                {{ $publishingHouse->name }}
+                                            </label>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <div class="custom-checkbox">
-                                    <input class="custom-checkbox-input" type="checkbox" name="publishers[]" value="2" id="publisher2">
-                                    <label class="custom-checkbox-label" for="publisher2">المركز الثقافي العربي</label>
-                                </div>
-                                <div class="custom-checkbox">
-                                    <input class="custom-checkbox-input" type="checkbox" name="publishers[]" value="3" id="publisher3">
-                                    <label class="custom-checkbox-label" for="publisher3">دار النهضة العربية</label>
-                                </div>
+
+                                @if ($publishingHouses->count() > 4)
+                                    <button type="button" id="showMoreBtn" class="btn btn-link mt-2 p-0" style="font-size: 0.9rem;">
+                                        <i class="fas fa-chevron-down me-1"></i> عرض المزيد
+                                    </button>
+                                @endif
                             </div>
+
                             
                             <!-- Language Filter -->
                             <div class="filter-section">
                                 <h6 class="filter-title">اللغة</h6>
                                 <select class="form-select custom-select" name="language">
                                     <option value="">جميع اللغات</option>
-                                    <option value="العربية">العربية</option>
-                                    <option value="الإنجليزية">الإنجليزية</option>
-                                    <option value="الفرنسية">الفرنسية</option>
+                                    <option value="العربية" {{ request('language') == 'العربية' ? 'selected' : '' }}>العربية</option>
+                                    <option value="الإنجليزية" {{ request('language') == 'الإنجليزية' ? 'selected' : '' }}>الإنجليزية</option>
+                                    <option value="الفرنسية" {{ request('language') == 'الفرنسية' ? 'selected' : '' }}>الفرنسية</option>
                                 </select>
                             </div>
                             
@@ -116,12 +129,14 @@
                                     <div class="range-inputs mt-3">
                                         <div class="input-group">
                                             <span class="input-group-text">من</span>
-                                            <input type="number" class="form-control" id="price-min" name="price_min" placeholder="0">
+                                            <input type="number" class="form-control" id="price-min" name="price_min" 
+                                                placeholder="0" value="{{ request('price_min') }}">
                                             <span class="input-group-text">ر.س</span>
                                         </div>
                                         <div class="input-group mt-2">
                                             <span class="input-group-text">إلى</span>
-                                            <input type="number" class="form-control" id="price-max" name="price_max" placeholder="1000">
+                                            <input type="number" class="form-control" id="price-max" name="price_max" 
+                                                placeholder="1000" value="{{ request('price_max') }}">
                                             <span class="input-group-text">ر.س</span>
                                         </div>
                                     </div>
@@ -147,84 +162,74 @@
                         </div>
                         <div class="d-flex align-items-center">
                             <div class="view-options me-3">
-                                <button class="btn btn-view active" data-view="grid"><i class="fas fa-th"></i></button>
-                                <button class="btn btn-view" data-view="list"><i class="fas fa-list"></i></button>
+                                <a href="{{ request()->fullUrlWithQuery(['view' => 'grid']) }}" 
+                                    class="btn btn-view {{ request('view', 'grid') == 'grid' ? 'active' : '' }}">
+                                    <i class="fas fa-th"></i>
+                                 </a>
+                                 
+                                 <a href="{{ request()->fullUrlWithQuery(['view' => 'list']) }}" 
+                                    class="btn btn-view {{ request('view') == 'list' ? 'active' : '' }}">
+                                    <i class="fas fa-list"></i>
+                                 </a>
+                                 
                             </div>
                             <div class="dropdown">
                                 <button class="btn btn-sort dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-sort me-1"></i> ترتيب حسب
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-                                    <li><a class="dropdown-item" href="?sort=newest"><i class="fas fa-calendar-alt me-2"></i>الأحدث</a></li>
-                                    <li><a class="dropdown-item" href="?sort=price_asc"><i class="fas fa-sort-amount-down-alt me-2"></i>السعر: من الأقل للأعلى</a></li>
-                                    <li><a class="dropdown-item" href="?sort=price_desc"><i class="fas fa-sort-amount-down me-2"></i>السعر: من الأعلى للأقل</a></li>
-                                    <li><a class="dropdown-item" href="?sort=title"><i class="fas fa-sort-alpha-down me-2"></i>العنوان: أ-ي</a></li>
+                                    <li><a class="dropdown-item {{ request('sort') == 'newest' ? 'active' : '' }}" 
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'newest']) }}">
+                                     <i class="fas fa-calendar-alt me-2"></i>الأحدث
+                                 </a></li>
+                                 
+                                 <li><a class="dropdown-item {{ request('sort') == 'price_asc' ? 'active' : '' }}" 
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'price_asc']) }}">
+                                     <i class="fas fa-sort-amount-down-alt me-2"></i>السعر: من الأقل للأعلى
+                                 </a></li>
+                                 
+                                 <li><a class="dropdown-item {{ request('sort') == 'price_desc' ? 'active' : '' }}" 
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'price_desc']) }}">
+                                     <i class="fas fa-sort-amount-down me-2"></i>السعر: من الأعلى للأقل
+                                 </a></li>
+                                 
+                                 <li><a class="dropdown-item {{ request('sort') == 'title' ? 'active' : '' }}" 
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'title']) }}">
+                                     <i class="fas fa-sort-alpha-down me-2"></i>العنوان: أ-ي
+                                 </a></li>
+                                 
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
                 
+                
                 @if ($books->isEmpty())
-                    <div class="empty-state">
-                        <div class="empty-state-icon"><i class="fas fa-book-open"></i></div>
-                        <h3>لا توجد كتب متاحة</h3>
-                        <p>لم نتمكن من العثور على كتب في قسم "{{ $category->name }}"</p>
-                        <a href="{{ route('index.page') }}" class="btn btn-primary">تصفح الكتب</a>
-                    </div>
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-book-open"></i></div>
+                    <h3>لا توجد كتب متاحة</h3>
+                    <p>لم نتمكن من العثور على كتب في قسم "{{ $category->name }}"</p>
+                    <a href="{{ route('index.page') }}" class="btn btn-primary">تصفح الكتب</a>
+                </div>
                 @else
-                    <div class="books-container grid-view">
-                        @foreach ($books as $book)
-                        
-                            <div class="book-item">
-                                <div class="book-card">
-                                    <div class="card-badges">
-                                        @if($book->is_new ?? false)
-                                            <span class="badge bg-success">جديد</span>
-                                        @endif
-                                        @if($book->discount ?? 0 > 0)
-                                            <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
-                                        @endif
-                                    </div>
-                                    <div class="quick-actions">
-                                        <button class="action-btn" title="إضافة للمفضلة"><i class="far fa-heart"></i></button>
-                                        <button class="action-btn" title="إضافة للسلة"  onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
-                                            <i class="fas fa-shopping-cart"></i>
-                                        </button>
-                                    </div>
-                                    <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="book-image-wrapper">
-                                        <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" class="book-image" alt="{{ $book->title }}">
-                                    </a>
-                                    <div class="book-details">
-                                        <h5 class="book-title">
-                                            <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">{{ $book->title }}</a>
-                                        </h5>
-                                        <p class="book-author">
-                                            <i class="fas fa-user-edit"></i> {{ $book->author }}
-                                        </p>
-                                        
-                                        <div class="book-price-block">
-                                            <p class="book-price">{{ $book->price }} <span class="currency">ر.س</span></p>
-                                            @if($book->original_price ?? 0 > $book->price)
-                                                <p class="original-price">{{ $book->original_price }} <span class="currency">ر.س</span></p>
-                                            @endif
-                                        </div>
-                                        <div class="book-actions">
-                                            
-                                            <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="view-btn">عرض التفاصيل</a>
-                                            <div class="text-center">
-                                            
-                                        </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    
-                    <div class="pagination-container">
-                        {{ $books->links() }}
-                    </div>
+                @php
+                    $viewMode = request('view', 'grid'); // Default is grid
+                @endphp
+                <div class="books-container {{ $viewMode === 'list' ? 'list-view' : 'grid-view' }}">
+                    @foreach ($books as $book)
+                        @if($viewMode === 'list')
+                            @include('partials.book-card-list', ['book' => $book])
+                        @else
+                            @include('partials.book-card-grid', ['book' => $book])
+                        @endif
+                    @endforeach
+
+                </div>
+
+                <div class="pagination-container">
+                    {{ $books->links() }}
+                </div>
                 @endif
                 @else
                 <div class="empty-state">

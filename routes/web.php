@@ -7,6 +7,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Shipment;
 use App\Http\Controllers\SystemSettingsController;
 use Illuminate\Http\Request;
@@ -106,6 +107,12 @@ Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetai
 Route::get('/login2', function () {
     return view('login2');
 })->name('login2.page');
+Route::get('/logout', [Usercontroller::class, 'logout'])->name('logout');
+
+////////review//////////
+Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store')->middleware('auth');
+
+
 
 Route::get('/index2', function () {
     return view('index2');

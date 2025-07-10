@@ -61,4 +61,60 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('.star-rating label');
+            const ratingText = document.getElementById('rating-text');
+            const ratingMessages = {
+                1: 'نجمة واحدة - ضعيف',
+                2: 'نجمتان - مقبول',
+                3: 'ثلاث نجوم - جيد',
+                4: 'أربع نجوم - جيد جداً',
+                5: 'خمس نجوم - ممتاز'
+            };
+            
+            // Add click animation and feedback
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    // Animation effect
+                    this.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 200);
+                    
+                    // Update feedback text
+                    const rating = this.previousElementSibling.value;
+                    ratingText.textContent = ratingMessages[rating];
+                    ratingText.style.color = '#ffc107';
+                    ratingText.style.fontWeight = '600';
+                });
+                
+                // Hover effect for better UX
+                star.addEventListener('mouseenter', function() {
+                    const rating = this.previousElementSibling.value;
+                    ratingText.textContent = ratingMessages[rating];
+                    ratingText.style.color = '#6c757d';
+                });
+            });
+            
+            // Reset text when mouse leaves star area
+            document.querySelector('.star-rating').addEventListener('mouseleave', function() {
+                const checkedInput = document.querySelector('input[name="rating"]:checked');
+                if (checkedInput) {
+                    ratingText.textContent = ratingMessages[checkedInput.value];
+                    ratingText.style.color = '#ffc107';
+                    ratingText.style.fontWeight = '600';
+                } else {
+                    ratingText.textContent = 'اختر عدد النجوم';
+                    ratingText.style.color = '#6c757d';
+                    ratingText.style.fontWeight = 'normal';
+                }
+            });
+            
+            // Initialize display if there's a pre-selected rating
+            const checkedInput = document.querySelector('input[name="rating"]:checked');
+            if (checkedInput) {
+                ratingText.textContent = ratingMessages[checkedInput.value];
+                ratingText.style.color = '#ffc107';
+                ratingText.style.fontWeight = '600';
+            }
+        });

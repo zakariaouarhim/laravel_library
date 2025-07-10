@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Book;
+use App\Models\Author;
+use App\Models\BookAuthor;
+use App\Models\PublishingHouse;
 use App\Models\Category;
 use App\Services\BookService;
 use App\Services\APIService;
@@ -21,18 +24,44 @@ class BookController extends Controller
    
     public function show($id)
     {
-        // Get the book with its category and the category's parent
-        $book = Book::with(['category.parent'])->findOrFail($id);
+        // Get the book with its category, category's parent, and author relationship
+        $book = Book::with(['category.parent', 'primaryAuthor'])->findOrFail($id);
         
-        // Get related books from the same category
-        $relatedBooks = Book::where('category_id', $book->category_id)
+        // Get all authors
+        $authors = Author::active()->get();
+        
+        // Get all active publishing houses
+        $publishingHouses = PublishingHouse::active()->get();
+        
+        // Get the primary author of this book (if using relationship)
+        $primaryAuthor = $book->primaryAuthor;
+        
+        // Get other books by the same author
+        $authorBooks = collect();
+        if ($primaryAuthor) {
+            $authorBooks = Book::where('author_id', $primaryAuthor->id)
+                ->where('id', '!=', $book->id)
+                ->take(10)
+                ->get();
+        } else {
+            // If no author relationship, try to find books by author name
+            $authorBooks = Book::where('author', $book->author)
+                ->where('id', '!=', $book->id)
+                ->take(10)
+                ->get();
+        }
+        
+        // Get related books from the same category with author relationship
+        $relatedBooks = Book::with('primaryAuthor')
+            ->where('category_id', $book->category_id)
             ->where('id', '!=', $book->id)
             ->take(10)
             ->get();
         
         // If no related books found in same category, try to get books from parent category
         if ($relatedBooks->isEmpty() && $book->category && $book->category->parent_id) {
-            $relatedBooks = Book::where('category_id', $book->category->parent_id)
+            $relatedBooks = Book::with('primaryAuthor')
+                ->where('category_id', $book->category->parent_id)
                 ->where('id', '!=', $book->id)
                 ->take(10)
                 ->get();
@@ -40,21 +69,26 @@ class BookController extends Controller
         
         // If still no related books, get random books from same author
         if ($relatedBooks->isEmpty()) {
-            $relatedBooks = Book::where('author', $book->author)
-                ->where('id', '!=', $book->id)
-                ->take(10)
-                ->get();
+            $relatedBooks = $authorBooks->take(10);
         }
         
         // If still empty, get latest books (last resort)
         if ($relatedBooks->isEmpty()) {
-            $relatedBooks = Book::where('id', '!=', $book->id)
+            $relatedBooks = Book::with('primaryAuthor')
+                ->where('id', '!=', $book->id)
                 ->latest()
                 ->take(10)
                 ->get();
         }
         
-        return view('moredetail', compact('book', 'relatedBooks'));
+        return view('moredetail', compact(
+            'book', 
+            'relatedBooks', 
+            'authors', 
+            'publishingHouses', 
+            'primaryAuthor', 
+            'authorBooks'
+        ));
     }
 
     public function showproduct()
@@ -394,16 +428,22 @@ public function addProduct(Request $request)
     }
 }
     // New method to enrich a single book
-    // Replace your enrichBook method in BookController with this improved version
-public function enrichBook(Book $book)
+    public function enrichBook(Book $book)
 {
     try {
         // Check if book is already being processed
         if ($book->api_data_status === 'processing') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Book enrichment is already in progress. Please wait and try again later.'
-            ], 409); // Conflict status
+            // Check if the processing has been stuck for too long (more than 5 minutes)
+            $processingTimeout = 5; // minutes
+            if ($book->api_last_updated && $book->api_last_updated->diffInMinutes(now()) > $processingTimeout) {
+                \Log::warning("Book ID {$book->id} was stuck in processing state for over {$processingTimeout} minutes. Resetting status.");
+                $book->update(['api_data_status' => 'pending']);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Book enrichment is already in progress. Please wait and try again later.'
+                ], 409);
+            }
         }
 
         // Check if book is already enriched
@@ -417,16 +457,25 @@ public function enrichBook(Book $book)
 
         \Log::info('Starting enrichment for book ID: ' . $book->id);
         
-        // Perform enrichment
-        $enrichedBook = $this->bookService->enrichBookFromAPI($book);
+        // Perform enrichment using DB transaction to ensure atomicity
+        DB::beginTransaction();
         
-        \Log::info('Enrichment completed successfully for book ID: ' . $book->id);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Book enriched successfully!',
-            'book' => $enrichedBook
-        ]);
+        try {
+            $enrichedBook = $this->bookService->enrichBookFromAPI($book);
+            DB::commit();
+            
+            \Log::info('Enrichment completed successfully for book ID: ' . $book->id);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Book enriched successfully!',
+                'book' => $enrichedBook
+            ]);
+            
+        } catch (\Exception $enrichmentError) {
+            DB::rollback();
+            throw $enrichmentError;
+        }
                  
     } catch (\Illuminate\Database\QueryException $e) {
         \Log::error('Database error during enrichment for book ID ' . $book->id . ': ' . $e->getMessage());
@@ -446,6 +495,13 @@ public function enrichBook(Book $book)
     } catch (\Exception $e) {
         \Log::error('Error enriching book ID ' . $book->id . ': ' . $e->getMessage());
         \Log::error('Stack trace: ' . $e->getTraceAsString());
+        
+        // Make sure to reset the status if enrichment fails
+        try {
+            $book->update(['api_data_status' => 'pending', 'api_error_message' => substr($e->getMessage(), 0, 500)]);
+        } catch (\Exception $resetError) {
+            \Log::error('Failed to reset book status after error: ' . $resetError->getMessage());
+        }
         
         // Provide more specific error messages based on the error type
         $message = 'Failed to enrich book';
@@ -467,6 +523,7 @@ public function enrichBook(Book $book)
         ], 500);
     }
 }
+    
 
     // New method to get books that need enrichment
     public function getPendingEnrichment()
@@ -552,27 +609,182 @@ public function enrichBook(Book $book)
         }
     }
 
+   
+
     public function index()
     {
-        $books = Book::all();
+        // Get all authors
+        $authors = Author::active()->get();
+        
+        // Get all active publishing houses
+        $publishingHouses = PublishingHouse::active()->get();
+        
+        // Get books with their relationships loaded - prioritize primaryAuthor
+        $books = Book::with([
+            'primaryAuthor',        // Load primary author via author_id
+            'authors',              // Load all authors via many-to-many as backup
+            'publishingHouse',      // Load publishing house
+            'category'              // Load category
+        ])->get();
+        
+        // Get categories with children
         $categorie = Category::whereNull('parent_id')
             ->with('children')
             ->take(13)
             ->get();
-        $EnglichBooks = Book::where('Langue', 'English')->get();   
-
-        return view('index', compact('books', 'categorie', 'EnglichBooks'));
+        
+        // Get English books with relationships
+        $EnglichBooks = Book::where('Langue', 'English')
+            ->with([
+                'primaryAuthor',    // Primary author relationship
+                'authors',          // All authors relationship
+                'publishingHouse'   // Publishing house relationship
+            ])
+            ->get();
+            
+        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses'));
+    }
+    // Additional method to handle book creation with author assignment
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:191',
+            'author_id' => 'nullable|exists:authors,id',
+            'author_name' => 'nullable|string|max:191', // For creating new authors
+            'price' => 'required|numeric|min:0',
+            'category_id' => 'required|exists:categories,id',
+            'publishing_house_id' => 'nullable|exists:publishing_houses,id',
+            'ISBN' => 'required|string|unique:books,ISBN',
+            'Page_Num' => 'required|integer|min:1',
+            'Langue' => 'required|string',
+            'Quantity' => 'required|integer|min:0',
+            // Add other validation rules as needed
+        ]);
+        
+        $bookData = $request->all();
+        
+        // Handle author creation if author_name is provided but author_id is not
+        if (!$request->author_id && $request->author_name) {
+            $author = Author::firstOrCreate(
+                ['name' => $request->author_name],
+                ['status' => 'active']
+            );
+            $bookData['author_id'] = $author->id;
+            $bookData['author'] = $author->name; // Keep old field for compatibility
+        } elseif ($request->author_id) {
+            $author = Author::find($request->author_id);
+            $bookData['author'] = $author->name; // Keep old field for compatibility
+        }
+        
+        // Handle publishing house
+        if ($request->publishing_house_id) {
+            $publishingHouse = PublishingHouse::find($request->publishing_house_id);
+            $bookData['Publishing_House'] = $publishingHouse->name; // Keep old field for compatibility
+        }
+        
+        $book = Book::create($bookData);
+        
+        // Create primary author relationship in book_authors table
+        if (isset($author)) {
+            BookAuthor::create([
+                'book_id' => $book->id,
+                'author_id' => $author->id,
+                'author_type' => 'primary'
+            ]);
+        }
+        
+        return redirect()->route('books.index')->with('success', 'Book created successfully!');
     }
 
-    public function byCategory(Category $category)
+    // Method to add additional authors to a book
+    public function addAuthor(Request $request, Book $book)
     {
+        $request->validate([
+            'author_id' => 'required|exists:authors,id',
+            'author_type' => 'required|in:co-author,editor,translator,illustrator'
+        ]);
+        
+        // Check if this author-book-type combination already exists
+        $exists = BookAuthor::where([
+            'book_id' => $book->id,
+            'author_id' => $request->author_id,
+            'author_type' => $request->author_type
+        ])->exists();
+        
+        if (!$exists) {
+            BookAuthor::create([
+                'book_id' => $book->id,
+                'author_id' => $request->author_id,
+                'author_type' => $request->author_type
+            ]);
+            
+            return response()->json(['success' => true, 'message' => 'Author added successfully!']);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'This author is already associated with this book in this role.']);
+    }
+
+
+    public function byCategory(Request $request, Category $category)
+    {
+        // Get current category and its children
         $childCategoryIds = $category->children->pluck('id')->toArray();
         $allCategoryIds = array_merge([$category->id], $childCategoryIds);
-        $books = Book::whereIn('category_id', $allCategoryIds)->paginate(12);
+
+        // Start the query with category filter
+        $query = Book::whereIn('category_id', $allCategoryIds);
+
+        // ✅ Apply publishing house filter
+        if ($request->has('publishers')) {
+            $query->whereIn('Publishing_House_id', $request->input('publishers'));
+        }
+
+        // ✅ Apply language filter
+        if ($request->filled('language')) {
+            $query->where('Langue', $request->input('language'));
+        }
+
+        // ✅ Apply price range filters
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $request->input('price_min'));
+        }
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $request->input('price_max'));
+        }
+
+        
+
+        // Additional data for the filters
+        $authors = Author::active()->get();
+        $publishingHouses = PublishingHouse::active()->get();
         $categories = Category::all();
 
-        return view('by-category', compact('books', 'category', 'categories'));
+        switch ($request->input('sort')) {
+            case 'newest':
+                $query->latest();
+                break;
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'title':
+                $query->orderBy('title', 'asc');
+                break;
+        }
+        
+        // Final result with pagination
+        $books = $query->paginate(12)->appends($request->query());
+        return view('by-category', compact(
+            'books',
+            'category',
+            'categories',
+            'authors',
+            'publishingHouses'
+        ));
     }
+
     public function byCategory2(Category $category)
     {
         $childCategoryIds = $category->children->pluck('id')->toArray();

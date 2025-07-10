@@ -442,7 +442,10 @@ function confirmDelete() {
 
 // Enrich single product
 function enrichProduct(id) {
-    //showLoadingModal();
+    // Show loading state
+    const enrichButton = $(`[onclick="enrichProduct(${id})"]`);
+    const originalText = enrichButton.text();
+    enrichButton.prop('disabled', true).text('جاري الإثراء...');
     
     $.ajaxSetup({
         headers: {
@@ -452,24 +455,77 @@ function enrichProduct(id) {
     
     $.post(`/books/${id}/enrich`)
         .done(function(response) {
-            hideLoadingModal();
             if (response.success) {
                 showAlert('تم إثراء المنتج بنجاح', 'success');
                 loadProducts(currentPage);
+                
+                // Update button to show enriched state
+                enrichButton.removeClass('btn-warning').addClass('btn-success')
+                    .text('تم الإثراء').prop('disabled', true);
             } else {
                 showAlert(response.message || 'فشل في إثراء المنتج', 'warning');
+                enrichButton.prop('disabled', false).text(originalText);
             }
         })
         .fail(function(xhr, status, error) {
-            hideLoadingModal();
+            // Reset button state
+            enrichButton.prop('disabled', false).text(originalText);
             
-            // Log detailed error information
-            console.log('Status:', xhr.status);
-            console.log('Response Text:', xhr.responseText);
-            console.log('Error:', error);
+            let errorMessage = 'حدث خطأ في إثراء المنتج';
             
-            showAlert('حدث خطأ في إثراء المنتج', 'danger');
+            if (xhr.status === 409) {
+                // Conflict - book is being processed
+                errorMessage = 'الكتاب قيد المعالجة حالياً. يرجى المحاولة بعد قليل.';
+                showAlert(errorMessage, 'info');
+                
+                // Retry after 30 seconds
+                setTimeout(() => {
+                    enrichButton.prop('disabled', false).text(originalText);
+                }, 30000);
+                
+            } else if (xhr.status === 422) {
+                // Validation error
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    errorMessage = response.message || 'خطأ في التحقق من البيانات';
+                } catch (e) {
+                    // Use default error message
+                }
+                showAlert(errorMessage, 'warning');
+                
+            } else if (xhr.status === 500) {
+                // Server error
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    errorMessage = response.message || 'حدث خطأ في الخادم';
+                } catch (e) {
+                    // Use default error message
+                }
+                showAlert(errorMessage, 'danger');
+                
+            } else {
+                // Other errors
+                showAlert(errorMessage, 'danger');
+            }
             
+            // Log detailed error information for debugging
+            console.log('Enrich Error Details:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+        });
+}
+
+// Optional: Add a function to check if a book is currently being processed
+function checkEnrichmentStatus(id) {
+    return $.get(`/books/${id}/status`)
+        .then(function(response) {
+            return response.api_data_status;
+        })
+        .catch(function() {
+            return 'unknown';
         });
 }
 

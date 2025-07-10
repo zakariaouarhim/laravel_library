@@ -32,20 +32,19 @@ body {
 }
 
 /* --- Book Image Section Enhancement --- */
-.col-md-5 img {
-    align-self: start;
-    /* This makes the image stick to the top */
-    margin-top: 20px;
-    /* Optional: lift it even more if needed */
+.col-md-5 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
 }
 
 .col-md-5::before {
     content: '';
     position: absolute;
-    align-self: start;
-    margin-top: 20px;
-    width: 420px;
-    height: 540px;
+    width: 320px;
+    height: 420px;
     background: linear-gradient(45deg, rgba(0, 123, 255, 0.1), rgba(40, 167, 69, 0.1));
     border-radius: 15px;
     z-index: 0;
@@ -53,8 +52,8 @@ body {
 }
 
 .col-md-5 img {
-    width: 400px;
-    height: 520px;
+    width: 300px;
+    height: 400px;
     object-fit: cover;
     border-radius: 15px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
@@ -105,7 +104,10 @@ body {
     gap: 8px;
 }
 
-
+.text-muted::before {
+    content: '✍️';
+    font-size: 16px;
+}
 
 /* Price & Discount Enhancement */
 .d-flex.align-items-center.mb-3 {
@@ -653,33 +655,6 @@ textarea:focus {
     outline: 2px solid #007bff;
     outline-offset: 2px;
 }
-/*//////*/
-.star-rating {
-    direction: rtl;
-    display: inline-block;
-    cursor: pointer;
-}
-
-.star-rating input {
-    display: none;
-}
-
-.star-rating label {
-    color: #ddd;
-    font-size: 24px;
-    padding: 0 2px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.star-rating label:hover,
-.star-rating label:hover~label,
-.star-rating input:checked~label {
-    color: #ffc107;
-}
-/*///////*/
-
-
 
 /* Print Styles */
 @media print {
