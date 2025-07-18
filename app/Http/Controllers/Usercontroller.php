@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\UserModel; 
+use App\Models\Book;
+use App\Models\Author;
+use App\Models\BookAuthor;
+use App\Models\PublishingHouse;
+use App\Models\Book_Review;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -44,6 +49,7 @@ class Usercontroller extends Controller
                     'user_name' => $user->name,
                     'user_email' => $user->email,
                     'user_role' => $user->role,
+                    
                     'is_logged_in' => true
                 ]);
                 
@@ -91,8 +97,10 @@ class Usercontroller extends Controller
                     'user_name' => $user->name,
                     'user_email' => $user->email,
                     'user_role' => $user->role,
-                    'is_logged_in' => true
+                    'is_logged_in' => true,
+                    'user_updated_at' => $user->created_at->locale('ar')->translatedFormat('F Y') // Arabic month/year
                 ]);
+
 
                 // Redirect based on role
                 if ($user->role == "admin") {
@@ -131,5 +139,97 @@ class Usercontroller extends Controller
     public function index()
     {
         return view('Dashbord_Admin.client');
+    }
+    public function account()
+    {
+        $userId = auth()->id(); // Get authenticated user ID
+        $reviews =  Book_Review::where('user_id', $userId)
+                            ->with('book') // Load book relationship
+                            ->latest() // Order by newest first
+                            ->get();
+                            
+                
+        // Get recommendations
+        $recommendations = $this->getRecommendations($userId);
+        /* $orders = // fetch user orders
+        $addresses = // fetch user addresses
+        $wishlist = // fetch user wishlist
+        $returns = // fetch user returns*/
+        $wishlistBookIds = auth()->check()
+        ? auth()->user()->wishlist()->pluck('books.id')->toArray()
+        : [];
+
+
+        return view('account', compact('reviews','recommendations','wishlistBookIds'));
+    } 
+    
+   
+    private function getRecommendations($userId, $limit = 5)
+    {
+        
+        // Get user's favorite categories based on their highly rated books
+        $favoriteCategories = Book_Review::where('user_id', $userId)
+                                    ->where('rating', '>=', 4)
+                                    ->with('book.category')
+                                    ->get()
+                                    ->pluck('book.category.id')
+                                    ->filter()
+                                    ->unique()
+                                    ->take(3);
+        
+        // Get user's already reviewed books to exclude them
+        $reviewedBookIds = Book_Review::where('user_id', $userId)
+                                    ->pluck('book_id')
+                                    ->toArray();
+        
+        if ($favoriteCategories->isEmpty()) {
+            // If no reviews yet, show popular books
+            $recommendations = Book::whereNotIn('id', $reviewedBookIds)
+                                ->with(['category', 'primaryAuthor'])
+                                ->withAvg('reviews', 'rating')
+                                ->withCount('reviews')
+                                ->having('reviews_count', '>', 0)
+                                ->orderBy('reviews_avg_rating', 'desc')
+                                ->orderBy('reviews_count', 'desc')
+                                ->take($limit)
+                                ->get();
+        } else {
+            // Recommend books from favorite categories
+           $recommendations = Book::whereIn('category_id', $favoriteCategories)
+                ->whereNotIn('id', $reviewedBookIds)
+                ->with(['category', 'primaryAuthor'])
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->orderByDesc('reviews_avg_rating')
+                ->orderByDesc('reviews_count')
+                ->take($limit)
+                ->get();
+
+            // If still no books (e.g., because they have no reviews), fallback
+            if ($recommendations->isEmpty()) {
+                $recommendations = Book::whereIn('category_id', $favoriteCategories)
+                    ->whereNotIn('id', $reviewedBookIds)
+                    ->with(['category', 'primaryAuthor'])
+                    ->take($limit)
+                    ->get();
+            }
+
+        }
+        
+
+
+        // Format data for the view
+        return $recommendations->map(function($book) {
+            return [
+                'id' => $book->id,
+                'title' => $book->title,
+                'author' => $book->primaryAuthor->name ?? 'مؤلف غير محدد',
+                'image' => $book->image ? asset( $book->image) : asset('images/default-book.jpg'),
+                'rating' => round($book->reviews_avg_rating ?? 0),
+                'category' => $book->category->name ?? ''
+            ];
+        });
+        
+
     }
 }

@@ -231,4 +231,8 @@ class Book extends Model
     {
         return $this->reviews()->count();
     }
+    public function wishlistedBy()
+    {
+        return $this->belongsToMany(User::class, 'wishlists')->withTimestamps();
+    }
 }

@@ -122,7 +122,7 @@
                                 </div>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">حسابي</a></li>
+                            <li><a class="dropdown-item" href="{{ route('account.page') }}">حسابي</a></li>
                             <li><a class="dropdown-item" href="#">الطلبات</a></li>
                             <li><a class="dropdown-item" href="#">طلبات الإسترجاع</a></li>
                             <li><a class="dropdown-item" href="#">قائمة الأمنيات</a></li>
@@ -151,10 +151,7 @@
                                 </div>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">حسابي</a></li>
-                            <li><a class="dropdown-item" href="#">الطلبات</a></li>
-                            <li><a class="dropdown-item" href="#">طلبات الإسترجاع</a></li>
-                            <li><a class="dropdown-item" href="#">قائمة الأمنيات</a></li>
+                            
                         </ul>
                     @endif
                 </div>

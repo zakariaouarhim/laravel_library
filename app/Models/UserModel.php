@@ -12,7 +12,7 @@ class UserModel extends Authenticatable
     protected $table = 'user';
     
     // Fixed the fillable fields - removed extra space and corrected 'Email' to 'email'
-    protected $fillable = ['name', 'email', 'password', 'role'];
+    protected $fillable = ['name', 'email', 'password', 'role','created_at','updated_at'];
     
     // Hide password from JSON output
     protected $hidden = ['password', 'remember_token'];
@@ -38,5 +38,23 @@ class UserModel extends Authenticatable
     public function cart()
     {
         return $this->hasOne(Cart::class);
+    }
+    public function wishlist()
+    {
+        return $this->belongsToMany(
+            Book::class,           // Related model
+            'wishlists',           // Pivot table name
+            'user_id',             // Foreign key on pivot table for current model
+            'book_id',             // Foreign key on pivot table for related model
+            'id',                  // Local key on current model
+            'id'                   // Local key on related model
+        )->withTimestamps();
+    }
+
+    // Alternative, more explicit way:
+    public function wishlistBooks()
+    {
+        return $this->belongsToMany(Book::class, 'wishlists', 'user_id', 'book_id')
+                    ->withTimestamps();
     }
 }

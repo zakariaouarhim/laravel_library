@@ -8,6 +8,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Shipment;
 use App\Http\Controllers\SystemSettingsController;
 use Illuminate\Http\Request;
@@ -126,7 +127,21 @@ Route::get('/index3', function () {
 Route::get('/checkout', function () {
     return view('checkout');
 })->name('checkout.page');
+/////////////////////////wishlist
+Route::middleware('auth')->group(function () {
+    Route::post('/wishlist/add/{bookId}', [WishlistController::class, 'add'])->name('wishlist.add');
+    Route::post('/wishlist/remove/{bookId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+});
+Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideRecommendation'])->name('recommendations.hide');
 
+// If you need the hide recommendation route
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::post('/recommendations/hide/{bookId}', [RecommendationController::class, 'hide'])->name('recommendations.hide');
+});
+
+/////////////////////////header routes
+Route::get('/account', [UserController::class, 'account'])->name('account.page');
 
 ///////////category////////////
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
