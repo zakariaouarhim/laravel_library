@@ -35,7 +35,31 @@
     </div>
   </div>
     <div class="container checkout-section py-5">
-        <form id="checkoutForm" action=" route('checkout.submit') }}" method="POST">
+        <!-- Main Checkout Form -->
+        <!-- Add this at the top of your form to display errors -->
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <form id="checkoutForm" action="{{ route('checkout.submit') }}" method="POST">
             @csrf
             <div class="row g-4">
                 <div class="col-lg-8">
@@ -43,32 +67,9 @@
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <h2 class="fs-5 m-0">سلة التسوق</h2>
-                           @php $cart = session('cart');
-                            if ($cart=="") {
-                                 $cart = $cart ?? [];
-                            }
-                            @endphp
-                            @php
-                            // Calculate subtotal
-                            $subtotal = 0;
-                            foreach($cart as $item) {
-                                $subtotal += $item['price'] * $item['quantity'];
-                            }
-
-                            // Fixed shipping cost
-                            $shipping = 25.00;
-
-                            // Initialize discount (you can integrate coupon logic later)
-                            $discount = 0.00;
-
-                            // Calculate total
-                            $total = $subtotal + $shipping - $discount;
-                            @endphp
                             <span class="text-muted" id="countcart">{{ count($cart) }} منتجات</span>
                         </div>
-                        <form id="checkoutForm2" action="{{ route('checkout.store') }}" method="POST">
                         <div class="card-body" id="cartContent">
-                            
                             @if(count($cart) > 0)
                             <h3 class="mb-4">مراجعة الطلب</h3>
                             <div class="cart-items">
@@ -82,49 +83,46 @@
                                             <h3 class="fs-6 mb-1">{{ $item['title'] }}</h3>
                                             <div class="d-flex align-items-center">
                                                 <span class="fw-bold text-primary me-3">{{ number_format($item['price'] * $item['quantity'], 2) }} ر.س</span>
-                                                
-                                               
-                                                
                                             </div>
                                         </div>
                                         
                                         <div class="d-flex align-items-center">
                                             <label class="me-2">الكمية:</label>
-                                                <div class="quantity-control-group">
-                                                    <button type="button" class="quantity-btn quantity-decrease">-</button>
-                                                    <input type="number" 
-                                                        id="quantity"
-                                                        name="quantity[{{ $id }}]" 
-                                                        class="quantity-input" 
-                                                        value="{{ $item['quantity'] }}" 
-                                                        min="1"
-                                                        data-price="{{ $item['price'] }}"
-                                                        readonly>
-                                                    <button type="button" class="quantity-btn quantity-increase">+</button>
-                                                </div>
+                                            <div class="quantity-control-group">
+                                                <button type="button" class="quantity-btn quantity-decrease">-</button>
+                                                <input type="number" 
+                                                    id="quantity_{{ $id }}"
+                                                    name="display_quantity[{{ $id }}]" 
+                                                    class="quantity-input" 
+                                                    value="{{ $item['quantity'] }}" 
+                                                    min="1"
+                                                    data-price="{{ $item['price'] }}"
+                                                    readonly>
+                                                <!-- Hidden input for form submission -->
+                                                <input type="hidden" name="cart_quantities[{{ $id }}]" value="{{ $item['quantity'] }}" class="hidden-quantity">
+                                                <button type="button" class="quantity-btn quantity-increase">+</button>
+                                            </div>
                                             <!-- Edit and Save Buttons -->
-                                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-btn" onclick="enableQuantityInput()">
-                                                <i class="bi bi-pencil"></i></i></button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-btn">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
                                                 
-                                            <button type="button" class="delete-item-btn" title="حذف المنتج" onclick="removeFromCart2({{ $id }})" >
+                                            <button type="button" class="delete-item-btn" title="حذف المنتج" onclick="removeFromCart2({{ $id }})">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
-                                            
                                         </div>
                                     </div>
-                                    
                                 @endforeach
                             </div>
                             @else
                             <div class="text-center py-4">
                                 <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
                                 <p class="text-muted">سلة التسوق فارغة</p>
-                                <a href=" {{ route('index.page') }}" class="btn btn-primary">تصفح الكتب</a>
+                                <a href="{{ route('index.page') }}" class="btn btn-primary">تصفح الكتب</a>
                             </div>
                             @endif
                         </div>
                     </div>
-                </form>
 
                     <!-- Shipping Information Section -->
                     <div class="card shadow-sm mb-4">
@@ -134,43 +132,63 @@
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">الاسم الأول</label>
-                                    <input type="text" name="first_name" class="form-control" required>
+                                    <label class="form-label">الاسم الأول <span class="text-danger">*</span></label>
+                                    <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror" 
+                                        value="{{ old('first_name') }}" required>
+                                    @error('first_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">الاسم الأخير</label>
-                                    <input type="text" name="last_name" class="form-control" required>
+                                    <label class="form-label">الاسم الأخير <span class="text-danger">*</span></label>
+                                    <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror" 
+                                        value="{{ old('last_name') }}" required>
+                                    @error('last_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">البريد الإلكتروني</label>
-                                    <input type="email" name="email" class="form-control" required>
+                                    <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                                        value="{{ old('email') }}" required>
+                                    @error('email')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">رقم الهاتف</label>
-                                    <input type="tel" name="phone" class="form-control" pattern="[0-9]{10}" required>
+                                    <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
+                                    <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror" 
+                                        pattern="[0-9]{10}" value="{{ old('phone') }}" required>
+                                    @error('phone')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">العنوان التفصيلي</label>
-                                <textarea name="address" class="form-control" rows="3" required></textarea>
+                                <label class="form-label">العنوان التفصيلي <span class="text-danger">*</span></label>
+                                <textarea name="address" class="form-control @error('address') is-invalid @enderror" 
+                                        rows="3" required>{{ old('address') }}</textarea>
+                                @error('address')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">المدينة</label>
-                                    <select class="form-select" name="city" required>
-                                        <option value="">اختر المدينة</option>
-                                        <option value="الرياض">الرياض</option>
-                                        <option value="جدة">جدة</option>
-                                        <option value="مكة المكرمة">مكة المكرمة</option>
-                                        <option value="المدينة المنورة">المدينة المنورة</option>
-                                        <option value="الدمام">الدمام</option>
-                                    </select>
+                                    <label class="form-label">المدينة <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="city" id="city" placeholder="اكتب مدينتك" required>
+                                    @error('city')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">الرمز البريدي</label>
-                                    <input type="text" name="zip_code" class="form-control" pattern="[0-9]{5}" required>
+                                    <label class="form-label">الرمز البريدي <span class="text-danger">*</span></label>
+                                    <input type="text" name="zip_code" class="form-control @error('zip_code') is-invalid @enderror" 
+                                        pattern="[0-9]{5}" value="{{ old('zip_code') }}" required>
+                                    @error('zip_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -185,7 +203,8 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="payment-method-card">
-                                        <input type="radio" name="payment_method" id="cashOnDelivery" value="cod" checked>
+                                        <input type="radio" name="payment_method" id="cashOnDelivery" value="cod" 
+                                            {{ old('payment_method', 'cod') == 'cod' ? 'checked' : '' }}>
                                         <label for="cashOnDelivery" class="form-check-label">
                                             <i class="fas fa-money-bill-wave"></i>
                                             <span>الدفع عند الاستلام</span>
@@ -194,7 +213,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="payment-method-card">
-                                        <input type="radio" name="payment_method" id="creditCard" value="credit_card">
+                                        <input type="radio" name="payment_method" id="creditCard" value="credit_card"
+                                            {{ old('payment_method') == 'credit_card' ? 'checked' : '' }}>
                                         <label for="creditCard" class="form-check-label">
                                             <i class="fas fa-credit-card"></i>
                                             <span>بطاقة ائتمان</span>
@@ -202,33 +222,48 @@
                                     </div>
                                 </div>
                             </div>
+                            @error('payment_method')
+                                <div class="text-danger mt-2">{{ $message }}</div>
+                            @enderror
 
                             <!-- Credit Card Section -->
-                            <div id="creditCardInfo" class="mt-4" style="display: none;">
+                            <div id="creditCardInfo" class="mt-4" style="{{ old('payment_method') == 'credit_card' ? 'display: block;' : 'display: none;' }}">
                                 <div class="row">
                                     <div class="col-12 mb-3">
                                         <label for="cardNumber" class="form-label">رقم البطاقة</label>
                                         <div class="input-group">
                                             <input type="text" id="cardNumber" name="card_number" 
-                                                   class="form-control" 
-                                                   placeholder="1234 5678 9012 3456"
-                                                   data-inputmask="'mask': '9999 9999 9999 9999'">
+                                                class="form-control @error('card_number') is-invalid @enderror" 
+                                                placeholder="1234 5678 9012 3456"
+                                                value="{{ old('card_number') }}"
+                                                data-inputmask="'mask': '9999 9999 9999 9999'">
                                             <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
+                                            @error('card_number')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="expiryDate" class="form-label">تاريخ الانتهاء</label>
                                         <input type="text" id="expiryDate" name="expiry_date" 
-                                               class="form-control" 
-                                               placeholder="MM/YY"
-                                               data-inputmask="'mask': '99/99'">
+                                            class="form-control @error('expiry_date') is-invalid @enderror" 
+                                            placeholder="MM/YY"
+                                            value="{{ old('expiry_date') }}"
+                                            data-inputmask="'mask': '99/99'">
+                                        @error('expiry_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="cvv" class="form-label">CVV</label>
                                         <input type="text" id="cvv" name="cvv" 
-                                               class="form-control" 
-                                               placeholder="123"
-                                               data-inputmask="'mask': '999'">
+                                            class="form-control @error('cvv') is-invalid @enderror" 
+                                            placeholder="123"
+                                            value="{{ old('cvv') }}"
+                                            data-inputmask="'mask': '999'">
+                                        @error('cvv')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -252,7 +287,7 @@
                                 <div id="couponMessage" class="mt-2 small"></div>
                             </div>
                             
-                                            <div class="order-summary">
+                            <div class="order-summary">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>المجموع الفرعي:</span>
                                     <span id="subtotal">{{ number_format($subtotal, 2) }} ر.س</span>
@@ -272,23 +307,28 @@
                                 </div>
                             </div>
 
-                            
                             <button type="submit" class="btn btn-primary w-100 mt-4" id="completeOrder">
                                 <span class="submit-text">إتمام عملية الشراء</span>
                                 <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                             </button>
                             
                             <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" 
+                                    id="termsCheck" name="terms" required {{ old('terms') ? 'checked' : '' }}>
                                 <label class="form-check-label small" for="termsCheck">
-                                    أوافق على <a href=" route('terms') }}">الشروط والأحكام</a>
+                                    أوافق على <a href="#">الشروط والأحكام</a>
                                 </label>
+                                @error('terms')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </form>
+
+
     </div>
     
     @include('footer')

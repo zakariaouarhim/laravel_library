@@ -1,28 +1,83 @@
 document.addEventListener("DOMContentLoaded", function () {
-        const creditCardRadio = document.getElementById("creditCard");
-        const cashOnDeliveryRadio = document.getElementById("cashOnDelivery");
-        const creditCardInfo = document.getElementById("creditCardInfo");
+    const creditCardRadio = document.getElementById("creditCard");
+    const cashOnDeliveryRadio = document.getElementById("cashOnDelivery");
+    const creditCardInfo = document.getElementById("creditCardInfo");
 
-        creditCardRadio.addEventListener("change", function () {
-            if (this.checked) {
-                creditCardInfo.style.display = "block";
-            }
-           
-        });
+    creditCardRadio.addEventListener("change", function () {
+        if (this.checked) {
+            creditCardInfo.style.display = "block";
+        }
+    });
 
-        cashOnDeliveryRadio.addEventListener("change", function () {
-            if (this.checked) {
-                creditCardInfo.style.display = "none";
-                
+    cashOnDeliveryRadio.addEventListener("change", function () {
+        if (this.checked) {
+            creditCardInfo.style.display = "none";
+        }
+    });
+
+    // Function to sync visible quantity input with hidden input
+    function syncQuantityInputs(itemElement) {
+        const visibleInput = itemElement.querySelector('.quantity-input');
+        const hiddenInput = itemElement.querySelector('.hidden-quantity');
+        if (visibleInput && hiddenInput) {
+            hiddenInput.value = visibleInput.value;
+        }
+    }
+
+    // Function to update quantity on server
+    function updateQuantityOnServer(itemId, newQuantity, callback) {
+        fetch('/cart/update-quantity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                id: itemId,
+                quantity: newQuantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (callback) callback(true, data);
+            } else {
+                if (callback) callback(false, data);
+                showCartToast(data.message || 'حدث خطأ في تحديث الكمية', 'error');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (callback) callback(false, null);
+            showCartToast('حدث خطأ في الاتصال بالخادم', 'error');
         });
-        // Handle plus button
+    }
+
+    // Handle plus button
     document.querySelectorAll('.quantity-increase').forEach(function (button) {
         button.addEventListener('click', function () {
+            const itemElement = this.closest('[data-item-id]');
+            const itemId = itemElement.getAttribute('data-item-id');
             const input = this.parentElement.querySelector('.quantity-input');
             let currentValue = parseInt(input.value);
+            
             if (!isNaN(currentValue)) {
-                input.value = currentValue + 1;
+                const newQuantity = currentValue + 1;
+                
+                // Update server first
+                updateQuantityOnServer(itemId, newQuantity, function(success, data) {
+                    if (success) {
+                        // Update UI only if server update was successful
+                        input.value = newQuantity;
+                        syncQuantityInputs(itemElement);
+                        updateItemPriceDisplay(itemElement);
+                        updateTotals();
+                        showCartToast('تم تحديث الكمية بنجاح');
+                    } else {
+                        // Revert to original value if server update failed
+                        input.value = currentValue;
+                    }
+                });
             }
         });
     });
@@ -30,13 +85,32 @@ document.addEventListener("DOMContentLoaded", function () {
     // Handle minus button
     document.querySelectorAll('.quantity-decrease').forEach(function (button) {
         button.addEventListener('click', function () {
+            const itemElement = this.closest('[data-item-id]');
+            const itemId = itemElement.getAttribute('data-item-id');
             const input = this.parentElement.querySelector('.quantity-input');
             let currentValue = parseInt(input.value);
+            
             if (!isNaN(currentValue) && currentValue > 1) {
-                input.value = currentValue - 1;
+                const newQuantity = currentValue - 1;
+                
+                // Update server first
+                updateQuantityOnServer(itemId, newQuantity, function(success, data) {
+                    if (success) {
+                        // Update UI only if server update was successful
+                        input.value = newQuantity;
+                        syncQuantityInputs(itemElement);
+                        updateItemPriceDisplay(itemElement);
+                        updateTotals();
+                        showCartToast('تم تحديث الكمية بنجاح');
+                    } else {
+                        // Revert to original value if server update failed
+                        input.value = currentValue;
+                    }
+                });
             }
         });
     });
+
     // Connect edit buttons to enableQuantityInput function
     document.querySelectorAll('.edit-btn').forEach(function (button) {
         button.addEventListener('click', function () {
@@ -47,36 +121,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
-    
-    // Update quantity increase/decrease buttons to update totals
-    document.querySelectorAll('.quantity-increase, .quantity-decrease').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const itemElement = this.closest('[data-item-id]');
-            const itemId = itemElement ? itemElement.getAttribute('data-item-id') : null;
-            const quantityInput = this.parentElement.querySelector('.quantity-input');
-            const quantity = parseInt(quantityInput.value);
-            
-            if (itemId && !isNaN(quantity)) {
-                // Update item price display immediately for better UX
-                const itemPrice = parseFloat(quantityInput.getAttribute('data-price'));
-                const itemTotal = itemPrice * quantity;
-                const priceElement = itemElement.querySelector('.fw-bold.text-primary');
-                
-                if (priceElement) {
-                    priceElement.textContent = `${itemTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
-                }
-                
-                // Update overall totals
-                updateTotals();
-                
-               
-                
-                
-            }
-        });
-    });
-    
-    // Also allow updating when quantity input loses focus
+
+    // Allow updating when quantity input loses focus
     document.querySelectorAll('.quantity-input').forEach(function (input) {
         input.addEventListener('blur', function () {
             if (this.hasAttribute('data-editing')) {
@@ -86,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (itemId) {
                     const editBtn = itemElement.querySelector('.edit-btn');
                     if (editBtn) {
-                        editBtn.click(); // Simulate clicking the edit/save button
+                        editBtn.click();
                     }
                 }
             }
@@ -102,15 +148,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (itemId) {
                     const editBtn = itemElement.querySelector('.edit-btn');
                     if (editBtn) {
-                        editBtn.click(); // Simulate clicking the edit/save button
+                        editBtn.click();
                     }
                 }
             }
         });
     });
+});
 
-    });
-    $('input[name="payment_method"]').change(function() {
+// Function to update individual item price display
+function updateItemPriceDisplay(itemElement) {
+    const quantityInput = itemElement.querySelector('.quantity-input');
+    const quantity = parseInt(quantityInput.value);
+    const itemPrice = parseFloat(quantityInput.getAttribute('data-price'));
+    const itemTotal = itemPrice * quantity;
+    const priceElement = itemElement.querySelector('.fw-bold.text-primary');
+    
+    if (priceElement) {
+        priceElement.textContent = `${itemTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
+    }
+}
+
+// Payment method selection with jQuery
+$('input[name="payment_method"]').change(function() {
     $('.payment-method-card').removeClass('selected');
     $(this).closest('.payment-method-card').addClass('selected');
     
@@ -121,17 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }    
 });
 
-
 function removeFromCart2(itemId) {
-    
-    fetch('/remove-from-cart', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ id: itemId })
-    })
     fetch(`/remove-from-cart/${itemId}`, {
         method: 'POST',
         headers: {
@@ -152,8 +202,8 @@ function removeFromCart2(itemId) {
 
             let countCartSpan = document.getElementById('countcart');
             if (countCartSpan) {
-                let text = countCartSpan.textContent.trim(); // e.g., "3 منتجات"
-                let count = parseInt(text); // Get the number
+                let text = countCartSpan.textContent.trim();
+                let count = parseInt(text);
                 if (!isNaN(count) && count > 0) {
                     countCartSpan.textContent = `${count - 1} منتجات`;
                 }
@@ -169,7 +219,7 @@ function removeFromCart2(itemId) {
                     <div class="text-center py-4">
                         <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
                         <p class="text-muted">سلة التسوق فارغة</p>
-                        <a href="{{ route('index.page') }}" class="btn btn-primary">تصفح الكتب</a>
+                        <a href="/browse" class="btn btn-primary">تصفح الكتب</a>
                     </div>
                 `;
             }
@@ -182,7 +232,7 @@ function removeFromCart2(itemId) {
     })
     .catch(error => {
         console.error('Error:', error);
-        showCartToast('ayyehحدث خطأ أثناء حذف المنتج. يرجى المحاولة لاحقًا.', 'error');
+        showCartToast('حدث خطأ أثناء حذف المنتج. يرجى المحاولة لاحقًا.', 'error');
     });
 }
 
@@ -210,6 +260,7 @@ function showCartToast(message, type = 'success') {
     
     toast.show();
 }
+
 function updateTotals() {
     // Get all cart items
     const cartItems = document.querySelectorAll('[data-item-id]');
@@ -258,8 +309,6 @@ function updateTotals() {
     }
 }
 
-/////////////
-
 // Function to handle the edit button functionality
 function enableQuantityInput(itemId) {
     // Find the item container
@@ -286,85 +335,87 @@ function enableQuantityInput(itemId) {
     } else {
         // Save changes
         const newQuantity = parseInt(quantityInput.value);
+        const originalQuantity = parseInt(quantityInput.getAttribute('data-original-value'));
         
         // Validate input (ensure it's a number greater than 0)
         if (isNaN(newQuantity) || newQuantity <= 0) {
             // If invalid, restore original value
-            quantityInput.value = quantityInput.getAttribute('data-original-value');
+            quantityInput.value = originalQuantity;
             showCartToast('الرجاء إدخال كمية صحيحة', 'error');
+            
+            // Disable editing
+            quantityInput.removeAttribute('data-editing');
+            quantityInput.readOnly = true;
+            editBtn.innerHTML = '<i class="bi bi-pencil"></i>';
+        } else if (newQuantity !== originalQuantity) {
+            // Only update if quantity actually changed
+            
+            // Show loading state
+            editBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            editBtn.disabled = true;
+            
+            // Update server
+            updateQuantityOnServer(itemId, newQuantity, function(success, data) {
+                if (success) {
+                    // Update the hidden input and display
+                    const hiddenInput = itemElement.querySelector('.hidden-quantity');
+                    if (hiddenInput) {
+                        hiddenInput.value = newQuantity;
+                    }
+                    
+                    // Update item price display
+                    updateItemPriceDisplay(itemElement);
+                    
+                    // Update overall totals
+                    updateTotals();
+                    
+                    // Show success message
+                    showCartToast('تم تحديث الكمية بنجاح');
+                } else {
+                    // If server update failed, restore original value
+                    quantityInput.value = originalQuantity;
+                    showCartToast('حدث خطأ في تحديث الكمية', 'error');
+                }
+                
+                // Disable editing and restore button
+                quantityInput.removeAttribute('data-editing');
+                quantityInput.readOnly = true;
+                editBtn.innerHTML = '<i class="bi bi-pencil"></i>';
+                editBtn.disabled = false;
+            });
         } else {
-            // Update cart on server
-            updateCartItemQuantity(itemId, newQuantity);
+            // No change, just disable editing
+            quantityInput.removeAttribute('data-editing');
+            quantityInput.readOnly = true;
+            editBtn.innerHTML = '<i class="bi bi-pencil"></i>';
         }
-        
-        // Disable editing
-        quantityInput.removeAttribute('data-editing');
-        quantityInput.readOnly = true;
-        editBtn.innerHTML = '<i class="bi bi-pencil"></i>';
     }
 }
 
-// Function to update cart item quantity on server and UI
-function updateCartItemQuantity(itemId, quantity) {
-    // Show loading indicator
-    const loadingSpinner = document.createElement('span');
-    loadingSpinner.className = 'spinner-border spinner-border-sm ms-2';
-    loadingSpinner.setAttribute('role', 'status');
-    
-    const itemElement = document.getElementById(`element${itemId}`)  || 
-                        document.querySelector('[data-item-id="${itemId}"]');
-    const priceElement = itemElement.querySelector('.fw-bold.text-primary');
-    
-    // Add loading spinner
-    priceElement.appendChild(loadingSpinner);
-    
-    // Send update to server
-    fetch(window.routes.updateCartQuantity, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ 
-            id: itemId,
-            quantity: quantity 
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Remove loading spinner
-        if (loadingSpinner.parentNode) {
-            loadingSpinner.parentNode.removeChild(loadingSpinner);
-        }
-        
-        if (data.success) {
-            // Update price display for this item
-            const quantityInput = itemElement.querySelector('.quantity-input');
-            const itemPrice = parseFloat(quantityInput.getAttribute('data-price'));
-            const itemTotal = itemPrice * quantity;
+// Form submission handler to ensure all data is synced
+document.addEventListener('DOMContentLoaded', function() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            // Sync all quantity inputs before submission
+            document.querySelectorAll('[data-item-id]').forEach(function(itemElement) {
+                const visibleInput = itemElement.querySelector('.quantity-input');
+                const hiddenInput = itemElement.querySelector('.hidden-quantity');
+                if (visibleInput && hiddenInput) {
+                    hiddenInput.value = visibleInput.value;
+                }
+            });
             
-            // Update the price display for this specific item
-            priceElement.textContent = `${itemTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
+            // Show loading state
+            const submitBtn = this.querySelector('#completeOrder');
+            const submitText = submitBtn.querySelector('.submit-text');
+            const spinner = submitBtn.querySelector('.spinner-border');
             
-            // Update overall totals
-            updateTotals();
-            // Update cart modal content
-            
-            // Show success message
-            showCartToast('تم تحديث الكمية بنجاح');
-        } else {
-            // Show error message
-            showCartToast(data.message || 'حدث خطأ أثناء تحديث الكميةyyyyy', 'error');
-        }
-    })
-    .catch(error => {
-        // Remove loading spinner
-        if (loadingSpinner.parentNode) {
-            loadingSpinner.parentNode.removeChild(loadingSpinner);
-        }
-        
-        console.error('Error:', error);
-        showCartToast('حدث خطأ أثناء تحديث الكميةzaaa', 'error');
-    });
-}
-
+            if (submitText && spinner) {
+                submitText.classList.add('d-none');
+                spinner.classList.remove('d-none');
+                submitBtn.disabled = true;
+            }
+        });
+    }
+});

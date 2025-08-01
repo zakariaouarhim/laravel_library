@@ -128,6 +128,11 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#quotes" type="button" role="tab" aria-controls="quotes" aria-selected="false" style="color: black">
+                        <i class="fa-solid fa-quote-right"></i> اقتباسات   
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="biography-tab" data-bs-toggle="tab" data-bs-target="#biography" type="button" role="tab" aria-controls="biography" aria-selected="false" style="color: black">
                         <i class="fas fa-user-edit mb-3" style="color: black;"></i> نبذة عن الكاتب
 
@@ -229,141 +234,121 @@
                         </tr>
                     </table>
                 </div>
-                <!-- Review -->
-                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                    <!-- Rating Summary -->
-    @if($book->reviews->count() > 0)
-    <div class="rating-summary mb-4 p-3 bg-light rounded">
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <h2 class="mb-0">{{ number_format($book->average_rating, 1) }}</h2>
-                <div class="stars mb-2">
-                    @for ($i = 1; $i <= 5; $i++)
-                        <i class="{{ $i <= round($book->average_rating) ? 'fas' : 'far' }} fa-star text-warning"></i>
-                    @endfor
-                </div>
-                <p class="text-muted mb-0">{{ $book->reviews_count }} تقييم</p>
-            </div>
-            <div class="col-md-8">
-                @for ($star = 5; $star >= 1; $star--)
-                    @php
-                        $count = $book->reviews->where('rating', $star)->count();
-                        $percentage = $book->reviews_count > 0 ? ($count / $book->reviews_count) * 100 : 0;
-                    @endphp
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="me-2">{{ $star }} نجوم</span>
-                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
-                            <div class="progress-bar bg-warning" role="progressbar" 
-                                 style="width: {{ $percentage }}%"></div>
-                        </div>
-                        <span class="text-muted">{{ $count }}</span>
-                    </div>
-                @endfor
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Success/Error Messages -->
-    @if(session('success'))
+                <!-- quotes -->
+                <!-- Quotes Section -->
+<div class="tab-pane fade" id="quotes" role="tabpanel" aria-labelledby="quotes-tab">
+    <!-- Success/Error Messages for Quotes -->
+    @if(session('quote_success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>
-            {{ session('success') }}
+            {{ session('quote_success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    @if(session('error'))
+    @if(session('quote_error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i>
-            {{ session('error') }}
+            {{ session('quote_error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <!-- User Reviews -->
-    <div class="user-reviews mb-4">
-        @if($book->reviews->count() > 0)
-            @foreach ($book->reviews->sortByDesc('created_at') as $review)
-            <div class="review-item mb-4 p-3 border rounded">
-                <div class="d-flex align-items-center mb-2">
-                    <div class="avatar me-3">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                             style="width: 40px; height: 40px;">
-                            {{ mb_substr($review->user->name ?? 'م', 0, 1, 'UTF-8') }}
+    <!-- Quotes Display -->
+    <div class="quotes-section mb-4">
+        @if(isset($book->quotes) && $book->quotes->count() > 0)
+            <div class="row">
+                @foreach ($book->quotes->sortByDesc('created_at') as $quote)
+                <div class="col-md-6 mb-4">
+                    <div class="quote-card h-100 border rounded p-4 position-relative bg-light">
+                        <i class="fa-solid fa-quote-right position-absolute text-primary opacity-25" 
+                           style="font-size: 3rem; top: 15px; right: 20px;"></i>
+                           <br>
+                        
+                        <div class="quote-content mb-3" style="padding-top: 20px;">
+                            <p class="mb-3 fst-italic" style="font-size: 1.1rem; line-height: 1.6;">
+                                "{{ $quote->text }}"
+                            </p>
+                            
+                            
                         </div>
-                    </div>
-                    <div>
-                        <h6 class="mb-1">{{ $review->user->name ?? 'مستخدم' }}</h6>
-                        <div class="stars mb-1">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star text-warning"></i>
-                            @endfor
+                        
+                        <div class="quote-footer d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-2">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                        style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                        {{ mb_substr($quote->user->name ?? 'م', 0, 1, 'UTF-8') }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <small class="text-muted">{{ $quote->user->name ?? 'مستخدم' }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="quote-actions">
+                                <small class="text-muted me-2">{{ $quote->created_at->diffForHumans() }}</small>
+                                
+                                <!-- Like/Unlike button -->
+                                @auth
+                                <form class="d-inline" action="{{ route('quotes.toggle-like', $quote->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-primary border-0">
+                                        <i class="{{ $quote->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart"></i>
+                                        <span class="ms-1">{{ $quote->likes_count ?? 0 }}</span>
+                                    </button>
+                                </form>
+                                @endauth
+                                
+                                @guest
+                                <span class="text-muted">
+                                    <i class="far fa-heart"></i>
+                                    <span class="ms-1">{{ $quote->likes_count ?? 0 }}</span>
+                                </span>
+                                @endguest
+                            </div>
                         </div>
-                        <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
                     </div>
                 </div>
-                <p class="mb-0">{{ $review->comment }}</p>
+                @endforeach
             </div>
-            @endforeach
         @else
-            <div class="text-center p-4">
-                <i class="fas fa-star text-muted" style="font-size: 3rem;"></i>
-                <h5 class="mt-3 text-muted">لا توجد تقييمات بعد</h5>
-                <p class="text-muted">كن أول من يقيم هذا الكتاب</p>
+            <div class="text-center p-5">
+                <i class="fa-solid fa-quote-right text-muted mb-3" style="font-size: 4rem;"></i>
+                <h5 class="text-muted">لا توجد اقتباسات بعد</h5>
+                <p class="text-muted">كن أول من يشارك اقتباس من هذا الكتاب</p>
             </div>
         @endif
     </div>
 
-    <!-- Review Form -->
+    <!-- Add Quote Form -->
     @auth
     @php
-        $userReview = $book->reviews->where('user_id', auth()->id())->first();
+        // Check if user has already read the book or has permission to add quotes
+        $canAddQuote = true; // You can add your logic here
     @endphp
     
-    @if(!$userReview)
-        <div class="card">
+    @if($canAddQuote)
+        <div class="card mt-4">
             <div class="card-body">
                 <h5 class="card-title mb-3">
-                    <i class="fas fa-star me-2"></i>أضف تقييمك
+                    <i class="fa-solid fa-quote-right me-2"></i>أضف اقتباس جديد
                 </h5>
-                <form action="{{ route('reviews.store') }}" method="POST">
+                <form action="{{ route('quotes.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="book_id" value="{{ $book->id }}">
 
                     <div class="mb-3">
-                        <label for="rating" class="form-label">التقييم <span class="text-danger">*</span></label>
-                        <div class="star-rating">
-                            <input type="radio" id="star5" name="rating" value="5" {{ old('rating') == 5 ? 'checked' : '' }}>
-                            <label for="star5" class="bi bi-star-fill"></label>
-                            <input type="radio" id="star4" name="rating" value="4" {{ old('rating') == 4 ? 'checked' : '' }}>
-                            <label for="star4" class="bi bi-star-fill"></label>
-                            <input type="radio" id="star3" name="rating" value="3" {{ old('rating') == 3 ? 'checked' : '' }}>
-                            <label for="star3" class="bi bi-star-fill"></label>
-                            <input type="radio" id="star2" name="rating" value="2" {{ old('rating') == 2 ? 'checked' : '' }}>
-                            <label for="star2" class="bi bi-star-fill"></label>
-                            <input type="radio" id="star1" name="rating" value="1" {{ old('rating') == 1 ? 'checked' : '' }}>
-                            <label for="star1" class="bi bi-star-fill"></label>
-                        </div>
-                        <div class="rating-feedback mt-2">
-                            <span id="rating-text" class="text-muted">اختر عدد النجوم</span>
-                        </div>
-                        @error('rating')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="comment" class="form-label">تعليقك <span class="text-danger">*</span></label>
-                        <textarea name="comment" id="comment" class="form-control @error('comment') is-invalid @enderror" 
-                                rows="4" placeholder="اكتب تقييمك للكتاب..." required>{{ old('comment') }}</textarea>
-                        @error('comment')
+                        <label for="quote_text" class="form-label">الاقتباس <span class="text-danger">*</span></label>
+                        <textarea name="text" id="quote_text" class="form-control @error('text') is-invalid @enderror" 
+                                rows="4" placeholder="اكتب الاقتباس هنا..." required>{{ old('text') }}</textarea>
+                        <div class="form-text">شارك اقتباسك المفضل من الكتاب</div>
+                        @error('text')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-2"></i>إرسال التقييم
+                        <i class="fa-solid fa-plus me-2"></i>إضافة الاقتباس
                     </button>
                 </form>
             </div>
@@ -371,15 +356,175 @@
     @else
         <div class="alert alert-info">
             <i class="fas fa-info-circle me-2"></i>
-            لقد قمت بتقييم هذا الكتاب من قبل بـ {{ $userReview->rating }} نجوم.
+            يمكنك إضافة اقتباسات بعد قراءة الكتاب أو تقييمه.
         </div>
     @endif
 @else
     <div class="alert alert-info text-center">
         <i class="fas fa-user-lock me-2"></i>
-        يرجى <a href="{{ route('login2.page') }}" class="alert-link">تسجيل الدخول</a> لإضافة تقييمك.
+        يرجى <a href="{{ route('login2.page') }}" class="alert-link">تسجيل الدخول</a> لإضافة اقتباسات ومشاهدة اقتباسات القراء.
     </div>
 @endauth
+</div>
+                <!-- Review -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                    <!-- Rating Summary -->
+                    @if($book->reviews->count() > 0)
+                    <div class="rating-summary mb-4 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <h2 class="mb-0">{{ number_format($book->average_rating, 1) }}</h2>
+                                <div class="stars mb-2">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <i class="{{ $i <= round($book->average_rating) ? 'fas' : 'far' }} fa-star text-warning"></i>
+                                    @endfor
+                                </div>
+                                <p class="text-muted mb-0">{{ $book->reviews_count }} تقييم</p>
+                            </div>
+                            <div class="col-md-8">
+                                @for ($star = 5; $star >= 1; $star--)
+                                    @php
+                                        $count = $book->reviews->where('rating', $star)->count();
+                                        $percentage = $book->reviews_count > 0 ? ($count / $book->reviews_count) * 100 : 0;
+                                    @endphp
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="me-2">{{ $star }} نجوم</span>
+                                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                style="width: {{ $percentage }}%"></div>
+                                        </div>
+                                        <span class="text-muted">{{ $count }}</span>
+                                    </div>
+                                @endfor
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Success/Error Messages -->
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
+                    <!-- User Reviews -->
+                    <div class="user-reviews mb-4">
+                        @if($book->reviews->count() > 0)
+                            @foreach ($book->reviews->sortByDesc('created_at') as $review)
+                            <div class="review-item mb-4 p-3 border rounded">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="avatar me-3">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                            style="width: 40px; height: 40px;">
+                                            {{ mb_substr($review->user->name ?? 'م', 0, 1, 'UTF-8') }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ $review->user->name ?? 'مستخدم' }}</h6>
+                                        <div class="stars mb-1">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star text-warning"></i>
+                                            @endfor
+                                        </div>
+                                        <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
+                                    </div>
+                                </div>
+                                <p class="mb-0">{{ $review->comment }}</p>
+                            </div>
+                            @endforeach
+                        @else
+                            <div class="text-center p-4">
+                                <i class="fas fa-star text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="mt-3 text-muted">لا توجد تقييمات بعد</h5>
+                                <p class="text-muted">كن أول من يقيم هذا الكتاب</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Review Form -->
+                    @auth
+                    @php
+                        $userReview = $book->reviews->where('user_id', auth()->id())->first();
+                    @endphp
+                    
+                    @if(!$userReview)
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">
+                                    <i class="fas fa-star me-2"></i>أضف تقييمك
+                                </h5>
+                                <form action="{{ route('reviews.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="book_id" value="{{ $book->id }}">
+
+                                    <div class="mb-3">
+                                        <label for="rating" class="form-label">التقييم <span class="text-danger">*</span></label>
+                                        <div class="star-rating">
+                                            <input type="radio" id="star5" name="rating" value="5" {{ old('rating') == 5 ? 'checked' : '' }}>
+                                            <label for="star5" class="bi bi-star-fill"></label>
+                                            <input type="radio" id="star4" name="rating" value="4" {{ old('rating') == 4 ? 'checked' : '' }}>
+                                            <label for="star4" class="bi bi-star-fill"></label>
+                                            <input type="radio" id="star3" name="rating" value="3" {{ old('rating') == 3 ? 'checked' : '' }}>
+                                            <label for="star3" class="bi bi-star-fill"></label>
+                                            <input type="radio" id="star2" name="rating" value="2" {{ old('rating') == 2 ? 'checked' : '' }}>
+                                            <label for="star2" class="bi bi-star-fill"></label>
+                                            <input type="radio" id="star1" name="rating" value="1" {{ old('rating') == 1 ? 'checked' : '' }}>
+                                            <label for="star1" class="bi bi-star-fill"></label>
+                                        </div>
+                                        <div class="rating-feedback mt-2">
+                                            <span id="rating-text" class="text-muted">اختر عدد النجوم</span>
+                                        </div>
+                                        @error('rating')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="comment" class="form-label">تعليقك <span class="text-danger">*</span></label>
+                                        <textarea name="comment" id="comment" class="form-control @error('comment') is-invalid @enderror" 
+                                                rows="4" placeholder="اكتب تقييمك للكتاب..." required>{{ old('comment') }}</textarea>
+                                        @error('comment')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input type="hidden" name="is_read" value="0">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="is_read" name="is_read" value="1" {{ old('is_read') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="is_read">
+                                            <i class="fas fa-book-open me-1"></i>
+                                            أؤكد أنني قرأت هذا الكتاب
+                                        </label>
+                                    </div>
+                                    <br>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-2"></i>إرسال التقييم
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            لقد قمت بتقييم هذا الكتاب من قبل بـ {{ $userReview->rating }} نجوم.
+                        </div>
+                    @endif
+                @else
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-user-lock me-2"></i>
+                        يرجى <a href="{{ route('login2.page') }}" class="alert-link">تسجيل الدخول</a> لإضافة تقييمك.
+                    </div>
+                @endauth
                 </div>
                  
             </div>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
+    protected $table = 'cart';
     protected $fillable = ['user_id']; // Add other fields if needed
 
     // Relationship with User (if applicable) : Defines a relationship between the Cart and User models.

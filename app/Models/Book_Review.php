@@ -16,6 +16,7 @@ class Book_Review extends Model
         'book_id',
         'rating',
         'comment',
+        'is_read',
     ];
 
     // Cast created_at and updated_at to Carbon instances

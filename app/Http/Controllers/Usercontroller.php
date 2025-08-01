@@ -9,6 +9,9 @@ use App\Models\Author;
 use App\Models\BookAuthor;
 use App\Models\PublishingHouse;
 use App\Models\Book_Review;
+use App\Models\Quote;
+use App\Models\ReadingGoal;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -142,13 +145,32 @@ class Usercontroller extends Controller
     }
     public function account()
     {
+        $user = auth()->user(); // returns Usermodel instance
         $userId = auth()->id(); // Get authenticated user ID
         $reviews =  Book_Review::where('user_id', $userId)
                             ->with('book') // Load book relationship
                             ->latest() // Order by newest first
                             ->get();
-                            
-                
+        $lastReview = Book_Review::where('user_id', $userId)
+                         ->with('book')
+                         ->latest()
+                         ->first(); // 👈 Just get the last one
+        $lastWishlistBook = auth()->user()
+        ->wishlist()
+        ->latest('pivot_created_at') // use pivot table timestamps
+        ->first(); // only the last one  
+
+        $booksRead = Book_Review::where('user_id', $userId)
+        ->where('is_read', 1)
+        ->with('book')
+        ->count();
+
+        $readingGoal = ReadingGoal::where('user_id', $userId)
+                          ->where('year', now()->year)
+                          ->first();
+
+        $target = $readingGoal?->target ?? 12; // fallback to 12 if not set
+        $progressPercent = min(100, intval(($booksRead / $target) * 100));
         // Get recommendations
         $recommendations = $this->getRecommendations($userId);
         /* $orders = // fetch user orders
@@ -158,11 +180,48 @@ class Usercontroller extends Controller
         $wishlistBookIds = auth()->check()
         ? auth()->user()->wishlist()->pluck('books.id')->toArray()
         : [];
+        $quotes=quote::where('user_id', $userId)
+                            ->with('book') // Load book relationship
+                            ->latest() // Order by newest first
+                            ->get();
+        $lastQuote = auth()->user()->latestQuote;
 
-
-        return view('account', compact('reviews','recommendations','wishlistBookIds'));
+        $WishlistBook = auth()->user()
+        ->wishlist()
+        ->latest('pivot_created_at') // use pivot table timestamps
+        ->get(); // only the last one  
+        $OrderNumber=Order::where('user_id', $userId)
+        ->count();
+        return view('account', 
+        compact('reviews',
+        'recommendations',
+        'wishlistBookIds',
+        'lastReview',
+        'lastWishlistBook',
+        'booksRead',
+        'progressPercent',
+        'readingGoal',
+        'quotes',
+        'lastQuote',
+        'WishlistBook',
+        'target',
+        'OrderNumber'
+        ));
     } 
-    
+    public function updateReadingGoal(Request $request)
+    {
+        $request->validate([
+            'target' => 'required|integer|min:1|max:1000',
+        ]);
+
+        $goal = ReadingGoal::updateOrCreate(
+            ['user_id' => auth()->id(), 'year' => now()->year],
+            ['target' => $request->target]
+        );
+
+        return back()->with('success', 'تم تحديث هدف القراءة بنجاح');
+    }
+
    
     private function getRecommendations($userId, $limit = 5)
     {

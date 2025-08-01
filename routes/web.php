@@ -11,6 +11,9 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Shipment;
 use App\Http\Controllers\SystemSettingsController;
+use App\Http\Controllers\QuoteController;
+use App\Http\Controllers\CheckoutController;
+
 use Illuminate\Http\Request;
 
 /*
@@ -86,18 +89,25 @@ Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('ad
 Route::get('/get-cart', [CartController::class, 'getCart'])->name('get.cart');
 Route::post('/remove-from-cart', [CartController::class, 'removeFromCart'])->name('cart.remove');
 /////////////
-Route::post('/checkout/store', function (Request $request) {
-    session()->put('checkout_cart', json_decode($request->cart_data, true)); // Store cart data in session
-    return redirect()->route('checkout.page'); // Redirect to checkout page
-})->name('checkout.store');
+Route::post('/checkout/store-cart', function (Request $request) {
+    session()->put('checkout_cart', json_decode($request->cart_data, true));
+    return redirect()->route('checkout.page');
+})->name('checkout.store-cart'); // Different name
 
-Route::get('/checkout', function () {
-    $cart = session()->get('checkout_cart', []); // Retrieve cart data
-    return view('checkout', compact('cart'));
-})->name('checkout.page');
+Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.page');
 
-Route::post('/remove-from-cart/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
-Route::post('/update-cart-quantity', [CartController::class, 'updateQuantity'])
+
+
+Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
+
+
+Route::get('/success/{id}', [CheckoutController::class, 'success'])->name('success');
+
+
+Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart'])
+    ->name('cart.remove');
+
+Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])
     ->name('cart.update-quantity');
 
 
@@ -124,9 +134,7 @@ Route::get('/index3', function () {
 })->name('index3.page');
 
 
-Route::get('/checkout', function () {
-    return view('checkout');
-})->name('checkout.page');
+
 /////////////////////////wishlist
 Route::middleware('auth')->group(function () {
     Route::post('/wishlist/add/{bookId}', [WishlistController::class, 'add'])->name('wishlist.add');
@@ -135,10 +143,7 @@ Route::middleware('auth')->group(function () {
 });
 Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideRecommendation'])->name('recommendations.hide');
 
-// If you need the hide recommendation route
-Route::middleware(['web', 'auth'])->group(function () {
-    Route::post('/recommendations/hide/{bookId}', [RecommendationController::class, 'hide'])->name('recommendations.hide');
-});
+
 
 /////////////////////////header routes
 Route::get('/account', [UserController::class, 'account'])->name('account.page');
@@ -147,6 +152,23 @@ Route::get('/account', [UserController::class, 'account'])->name('account.page')
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/categories/{category}', [BookController::class, 'byCategory'])->name('by-category');
 
+// Quote routes
+Route::middleware('auth')->group(function () {
+    // Store new quote
+    Route::post('/quotes', [QuoteController::class, 'store'])->name('quotes.store');
+    
+    // Toggle like/unlike quote
+    Route::post('/quotes/{quote}/toggle-like', [QuoteController::class, 'toggleLike'])->name('quotes.toggle-like');
+    
+    // Delete quote (owner only)
+    Route::delete('/quotes/{quote}', [QuoteController::class, 'destroy'])->name('quotes.destroy');
+    
+    // Get user's quotes
+    Route::get('/my-quotes', [QuoteController::class, 'getUserQuotes'])->name('quotes.my-quotes');
+});
+//reading goal
+Route::post('reading-goal', [Usercontroller::class, 'updateReadingGoal'])
+    ->name('ReadingGoal');
 // Root and Index Routes
 Route::get('/', [BookController::class, 'index']);
 Route::get('/index', [BookController::class, 'index'])->name('index.page');

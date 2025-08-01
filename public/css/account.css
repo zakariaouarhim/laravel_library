@@ -52,17 +52,22 @@ body {
     font-size: 0.9rem;
 }
 
+/* Fixed activity item structure */
 .activity-item {
-    padding: 1rem;
+    padding: 15px 0;
     border-bottom: 1px solid #eee;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    /* Changed from center to flex-start */
+    gap: 1rem;
+    /* Added gap for consistent spacing */
 }
 
 .activity-item:last-child {
     border-bottom: none;
 }
 
+/* Fixed activity icon positioning */
 .activity-icon {
     width: 40px;
     height: 40px;
@@ -72,7 +77,26 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 1rem;
+    flex-shrink: 0;
+    /* Prevent icon from shrinking */
+    margin-top: 2px;
+    /* Small top margin to align with text */
+}
+
+/* Ensure the content area takes remaining space */
+.activity-item .flex-grow-1 {
+    min-width: 0;
+    /* Allow text to wrap properly */
+    word-wrap: break-word;
+    /* Handle long words */
+}
+
+/* Special handling for quote text */
+.activity-item .fst-italic {
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .empty-state {
@@ -95,6 +119,8 @@ body {
 .btn-outline-primary:hover {
     background-color: #667eea;
     border-color: #667eea;
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
 }
 
 .nav-pills .nav-link.active {
@@ -138,22 +164,11 @@ body {
     object-fit: cover;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    /* Prevent thumbnail from shrinking */
 }
 
-.activity-item {
-    padding: 15px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-icon {
-    margin-right: 10px;
-    color: #ffc107;
-}
-/*///recommendation///*/
+/* Recommendation styles */
 .recommendation-item {
     transition: all 0.3s ease;
 }
@@ -169,4 +184,41 @@ body {
 
 .recommendation-item:hover img {
     transform: scale(1.05);
+}
+
+/* Additional RTL support for better Arabic text handling */
+.activity-item .fw-bold,
+.activity-item .fst-italic {
+    text-align: right;
+    direction: rtl;
+}
+
+#previewProgressBar {
+    transition: all 0.3s ease;
+}
+.modal-content {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+    .activity-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+
+    .book-thumb {
+        width: 40px;
+        height: 60px;
+    }
+
+    .activity-item {
+        gap: 0.75rem;
+    }
 }

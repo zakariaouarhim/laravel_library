@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Usermodel;
 
 class UserModel extends Authenticatable
 {
@@ -56,5 +57,55 @@ class UserModel extends Authenticatable
     {
         return $this->belongsToMany(Book::class, 'wishlists', 'user_id', 'book_id')
                     ->withTimestamps();
+    }
+   /**
+     * Get all quotes created by this user
+     */
+    public function quotes()
+    {
+        return $this->hasMany(Quote::class, 'user_id', 'id');
+    }
+
+    /**
+     * Get the user's latest quote
+     */
+    public function latestQuote()
+    {
+        return $this->hasOne(Quote::class, 'user_id', 'id')->latest();
+    }
+
+    /**
+     * Get user's public quotes only
+     */
+    public function publicQuotes()
+    {
+        return $this->hasMany(Quote::class, 'user_id', 'id')->where('is_public', true);
+    }
+
+    /**
+     * Get quotes liked by this user
+     */
+    public function likedQuotes()
+    {
+        return $this->belongsToMany(Quote::class, 'quote_likes', 'user_id', 'quote_id')->withTimestamps();
+    }
+
+    /**
+     * Get books that this user has quoted from
+     */
+    public function quotedBooks()
+    {
+        return $this->belongsToMany(Book::class, 'quotes', 'user_id', 'book_id')
+                    ->withTimestamps()
+                    ->distinct();
+    }
+    public function readingGoals()
+    {
+        return $this->hasMany(ReadingGoal::class, 'user_id');
+    }
+
+    public function currentReadingGoal()
+    {
+        return $this->hasOne(ReadingGoal::class, 'user_id')->where('year', now()->year);
     }
 }

@@ -285,3 +285,13 @@ body {
     border-radius: 10px 10px 0 0;
     border: none;
 }
+/*//////////*/
+#mainNavbar {
+    transition: top 0.3s;
+}
+#mainNavbar {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}

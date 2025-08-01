@@ -70,14 +70,14 @@
                 </div>
                 <div class="col-md-3 mb-4">
                     <div class="stats-card">
-                        <div class="stats-number">{{ $quotes ?? 0 }}</div>
+                        <div class="stats-number">{{ $quotes->count() ?? 0 }}</div>
                         <div class="stats-label">اقتباس</div>
                     </div>
                 </div>
                 <div class="col-md-3 mb-4">
                     <div class="stats-card">
-                        <div class="stats-number">{{ $followers ?? 0 }}</div>
-                        <div class="stats-label">متابع</div>
+                        <div class="stats-number">{{ $OrderNumber ?? 0 }}</div>
+                        <div class="stats-label">طلبيات</div>
                     </div>
                 </div>
             </div>
@@ -118,21 +118,64 @@
                                     <i class="bi bi-activity me-2"></i>
                                     النشاطات الأخيرة
                                 </h5>
-                                
-                                @if(isset($activities) && count($activities) > 0)
-                                    @foreach($activities as $activity)
+
+                                {{-- Last Review --}}
+                                @if(isset($lastReview))
+                                    <h6 class="mb-3">
+                                        <i class="bi bi-star me-2"></i>
+                                        اخر مراجعة :
+                                    </h6>
                                     <div class="activity-item">
-                                        <div class="activity-icon">
-                                            <i class="bi bi-{{ $activity['icon'] }}"></i>
-                                        </div>
+                                        @if($lastReview->book && $lastReview->book->image)
+                                            <img src="{{ asset($lastReview->book->image) }}" 
+                                                alt="{{ $lastReview->book->title }}" 
+                                                class="book-thumb me-3">
+                                        @endif
                                         <div class="flex-grow-1">
-                                            <div class="fw-bold">{{ $activity['title'] }}</div>
-                                            <div class="text-muted small">{{ $activity['description'] }}</div>
-                                            <div class="text-muted small">{{ $activity['date'] }}</div>
+                                            <div class="fw-bold">{{ $lastReview->book->title ?? 'عنوان غير متوفر' }}</div>
+                                            <div class="text-muted small">{{ $lastReview->comment }}</div>
+                                            <div class="text-muted small">{{ $lastReview->updated_at->diffForHumans() }}</div>
                                         </div>
                                     </div>
-                                    @endforeach
-                                @else
+                                    <br>
+                                @endif
+
+                                {{-- Last Wishlist --}}
+                                @if($lastWishlistBook)
+                                    <h6 class="mb-3">
+                                        <i class="bi bi-heart add-icon "></i>
+                                        اخر المتمنيات :
+                                    </h6>
+                                    <div class="activity-item">
+                                        @if($lastWishlistBook->image)
+                                            <img src="{{ asset($lastWishlistBook->image) }}" 
+                                                alt="{{ $lastWishlistBook->title }}" 
+                                                class="book-thumb me-3">
+                                        @endif
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold">{{ $lastWishlistBook->title }}</div>
+                                            <div class="text-muted small">تمت إضافته إلى المفضلة منذ {{ $lastWishlistBook->pivot->created_at->diffForHumans() }}</div>
+                                        </div>
+                                    </div>
+                                @endif
+                                {{-- Last quote --}}
+                                @if($lastQuote)
+                                <br>
+                                    <h6 class="mb-3">
+                                        <i class="bi bi-quote me-2"></i>
+                                        اخر اقتباس :
+                                    </h6>
+                                    <div class="activity-item">
+                                        
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold">"{{ $lastQuote->text }}"</div>
+                                            <div class="text-muted small">تمت إضافته إلى الاقتباسات منذ {{ $lastQuote->created_at->diffForHumans() }}</div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                {{-- No activity fallback --}}
+                                @if(!isset($lastReview) && !$lastWishlistBook && !$lastQuote)
                                     <div class="empty-state">
                                         <i class="bi bi-activity"></i>
                                         <h6>لا يوجد نشاطات بعد</h6>
@@ -141,6 +184,7 @@
                                 @endif
                             </div>
                         </div>
+
 
                         <!-- Reviews Tab -->
                         <div class="tab-pane fade" id="reviews" role="tabpanel">
@@ -195,15 +239,15 @@
                                     الاقتباسات المفضلة
                                 </h5>
                                 
-                                @if(isset($userQuotes) && count($userQuotes) > 0)
-                                    @foreach($userQuotes as $quote)
+                                @if(isset($quotes) && count($quotes) > 0)
+                                    @foreach($quotes as $quote)
                                     <div class="activity-item">
-                                        <div class="activity-icon">
+                                        <div class="activity-icon feed-icon" >
                                             <i class="bi bi-quote"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <div class="fw-bold">{{ $quote['book_title'] }}</div>
-                                            <div class="fst-italic mb-2">"{{ $quote['quote_text'] }}"</div>
+                                            <div class="fw-bold">{{ $quote->book->title}}</div>
+                                            <div class="fst-italic mb-2">"{{ $quote['text'] }}"</div>
                                             <div class="text-muted small">{{ $quote['date'] }}</div>
                                         </div>
                                     </div>
@@ -226,42 +270,46 @@
                                     كتبي
                                 </h5>
                                 
-                                @if(isset($userBooks) && count($userBooks) > 0)
+                                @if(isset($WishlistBook) && $WishlistBook->isNotEmpty())
                                     <div class="row">
-                                        @foreach($userBooks as $book)
-                                        <div class="col-md-6 mb-4">
-                                            <div class="book-card">
-                                                <img src="{{ $book['image'] }}" alt="{{ $book['title'] }}" class="book-image">
-                                                <div class="p-3">
-                                                    <h6 class="fw-bold">{{ $book['title'] }}</h6>
-                                                    <p class="text-muted mb-2">{{ $book['author'] }}</p>
-                                                    <div class="mb-2">
+                                        @foreach($WishlistBook as $book)
+                                            <div class="col-md-6 mb-4">
+                                                <div class="book-card d-flex align-items-start">
+                                                    <img src="{{ asset($book['image']) }}" 
+                                                        alt="{{ $book['title'] ?? 'صورة كتاب' }}" 
+                                                        loading="lazy" 
+                                                        class="book-thumb me-3">
+                                                    <div class="p-2 flex-fill">
+                                                        <h6 class="fw-bold mb-1">{{ $book['title'] }}</h6>
+                                                        <p class="text-muted small mb-2">{{ $book['author'] ?? 'مؤلف غير معروف' }}</p>
+
                                                         <small class="text-muted">التقدم في القراءة</small>
                                                         <div class="reading-progress">
-                                                            <div class="reading-progress-bar" style="width: {{ $book['progress'] }}%"></div>
+                                                            <div class="reading-progress-bar" style="width: {{ $book['progress'] ?? 0 }}%"></div>
                                                         </div>
-                                                        <small class="text-muted">{{ $book['progress'] }}%</small>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <span class="badge bg-{{ $book['status_color'] }}">{{ $book['status'] }}</span>
-                                                        <button class="btn btn-sm btn-outline-primary">عرض التفاصيل</button>
+                                                        <small class="text-muted">{{ $book['progress'] ?? 0 }}%</small>
+
+                                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                                            <span class="badge bg-{{ $book['status_color'] ?? 'secondary' }}">{{ $book['status'] ?? 'غير محدد' }}</span>
+                                                            <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
                                         @endforeach
                                     </div>
                                 @else
                                     <div class="empty-state">
-                                        <i class="bi bi-book"></i>
-                                        <h6>لا توجد كتب بعد</h6>
-                                        <p>ابدأ بإضافة كتب إلى مكتبتك الشخصية</p>
+                                        <i class="bi bi-book" style="font-size: 2rem;"></i>
+                                        <h6 class="mt-2">لا توجد كتب بعد</h6>
+                                        <p class="text-muted">ابدأ بإضافة كتب إلى مكتبتك الشخصية</p>
                                         <a href="{{ route('index.page') }}" class="btn btn-primary">
                                             <i class="bi bi-plus-circle me-2"></i>
                                             تصفح الكتب
                                         </a>
                                     </div>
                                 @endif
+
                             </div>
                         </div>
                     </div>
@@ -275,15 +323,88 @@
                             <i class="bi bi-target me-2"></i>
                             هدف القراءة لهذا العام
                         </h6>
+                        
                         <div class="text-center">
                             <div class="mb-3">
-                                <div class="display-6 fw-bold text-primary">{{ $readingGoal['current'] ?? 0 }}/{{ $readingGoal['target'] ?? 12 }}</div>
+                                <div class="display-6 fw-bold text-primary">
+                                    {{ $booksRead }}/<span id="goalTarget">{{ $target }}</span>
+                                </div>
                                 <small class="text-muted">كتاب</small>
                             </div>
+                            
                             <div class="reading-progress mb-3">
-                                <div class="reading-progress-bar" style="width: {{ $readingGoal['percentage'] ?? 0 }}%"></div>
+                                <div class="reading-progress-bar" style="width: {{ $progressPercent }}%"></div>
                             </div>
-                            <small class="text-muted">{{ $readingGoal['percentage'] ?? 0 }}% مكتمل</small>
+                            
+                            <small class="text-muted">{{ $progressPercent }}% مكتمل</small>
+                            
+                            <!-- Goal Setting/Editing Controls -->
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editGoalModal">
+                                    <i class="bi bi-pencil-square me-1"></i>
+                                    تعديل الهدف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Goal Modal -->
+                    <div class="modal fade" id="editGoalModal" tabindex="-1" aria-labelledby="editGoalModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editGoalModalLabel">
+                                        <i class="bi bi-target me-2"></i>
+                                        تحديد هدف القراءة
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                
+                                <form id="goalForm" method="POST" action="{{ route('ReadingGoal') }}">
+                                    @csrf
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="readingTarget" class="form-label">عدد الكتب المراد قراءتها هذا العام</label>
+                                            <input type="number" class="form-control" id="readingTarget" name="target" 
+                                                value="{{ $target }}" min="1" max="365" required>
+                                            <div class="form-text">اختر عدد الكتب التي تريد قراءتها (من 1 إلى 365 كتاب)</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">معاينة الهدف</h6>
+                                                    <div class="display-6 fw-bold text-primary mb-2">
+                                                        {{ $booksRead }}/<span id="previewTarget">{{ $target }}</span>
+                                                    </div>
+                                                    <div class="reading-progress mb-2">
+                                                        <div class="reading-progress-bar" id="previewProgressBar" 
+                                                            style="width: {{ $progressPercent }}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        <span id="previewPercent">{{ $progressPercent }}</span>% مكتمل
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        @if($booksRead > 0)
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            لقد قرأت {{ $booksRead }} كتاب حتى الآن هذا العام
+                                        </div>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-lg me-1"></i>
+                                            حفظ الهدف
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
@@ -409,7 +530,7 @@
     @include('footer')
     
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/account.js') }}"></script>
     

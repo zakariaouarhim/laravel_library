@@ -81,7 +81,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="checkoutForm" action="{{ route('checkout.store') }}" method="POST">
+                                <form id="checkoutForm" action="{{ route('checkout.store-cart') }}" method="POST">
                                     @csrf
                                     <div id="cartItemsContainer">
                                         <!-- Cart items will be inserted dynamically -->

@@ -235,4 +235,21 @@ class Book extends Model
     {
         return $this->belongsToMany(User::class, 'wishlists')->withTimestamps();
     }
+    /**
+     * Get all quotes for this book
+     */
+    public function quotes()
+    {
+        return $this->hasMany(Quote::class)
+                    ->with('user', 'likes')
+                    ->where('is_approved', true);
+    }
+
+    /**
+     * Get quotes count for this book
+     */
+    public function getQuotesCountAttribute(): int
+    {
+        return $this->quotes()->count();
+    }
 }

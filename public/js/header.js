@@ -24,7 +24,7 @@ function showCartModal() {
                     
                     const itemHTML = `
                     <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
-                        <img src="/${item.image}" alt="${item.image}" class="img-thumbnail" style="width: 80px; height: 100px; object-fit: cover;">
+                        <img src="${item.image}" alt="${item.image}" class="img-thumbnail" style="width: 80px; height: 100px; object-fit: cover;">
                         <div class="ms-3 flex-grow-1">
                             <h6 class="mb-1">${item.title}</h6>
                             <div class="d-flex align-items-center justify-content-between">
@@ -200,3 +200,22 @@ function searchBooks(query) {
         resultsContainer.style.display = 'block';
     });
 }
+
+
+    let lastScrollTop = 0;
+    const navbar = document.getElementById("mainNavbar");
+
+    window.addEventListener("scroll", function () {
+        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+        if (currentScroll > lastScrollTop) {
+            // Scrolling down → hide navbar
+            navbar.style.top = "-100px";
+        } else {
+            // Scrolling up → show navbar
+            navbar.style.top = "0";
+        }
+
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+    });
+
