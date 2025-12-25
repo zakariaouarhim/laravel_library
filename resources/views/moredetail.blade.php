@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تفاصيل الكتاب</title>
     <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/moredetailstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+    
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     
     <!-- Bootstrap RTL CSS -->
@@ -22,10 +23,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
-    <header>
-        @include('header')
-    </header>
-    
+    @include('header')
+   
+    <div class="Layout-moredetail">
     <div class="container-fluid py-5">
         <div class="row g-0">
             <!-- Book Image Section -->
@@ -534,7 +534,7 @@
     </div>
     
     <!-- Success Modal -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 999;">
         <div id="cartSuccessToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" >
             <div class="toast-header bg-success text-white">
                 <strong class="me-auto">
@@ -621,12 +621,13 @@
         </div>
     @endif
 </div>
-    
+</div>    
     
     <script src="{{ asset('js/moredetail.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/carousel.js') }}"></script>
     <script src="{{ asset('js/scripts.js') }}"></script>
+    
     <script>
         
     

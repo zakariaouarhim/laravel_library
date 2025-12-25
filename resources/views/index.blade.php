@@ -4,14 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مكتبة بيع الكتب</title>
-    <!-- Correct CSS linking -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-
+    
     <!-- Bootstrap RTL CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
+
+    <!-- Correct CSS linking -->
+    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/Index-searchbar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
+    
+    
+    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
 
     <!-- Font Awesome -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Scheherazade+New&display=swap" rel="stylesheet">
@@ -24,56 +28,15 @@
 </head>
 
 <body>
-    @include('header')
-    
-    <!-- Header with Animated Arabic Letters Background -->
-    <header class="header-section text-white text-center py-5">
-       
-        <!-- Background with falling Arabic letters -->
-        <div class="letters-background" id="letters-container"></div>
-        
-        <!-- Content container with search -->
-        <div class="container search-container">
-            <h1 class="display-4 fw-bold">ابحث عن كتابك المفضل</h1>
-            <p class="lead">ابحث في مجموعتنا الكبيرة من الكتب عبر الأنواع والتصنيفات.</p>
-            <form class="d-flex justify-content-center mt-4">
-                <input 
-                type="text"
-                id="searchInput"
-                class="form-control w-50 me-2" 
-                placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع"
-                oninput="searchBooks(this.value)">
-                
-                <button type="submit" class="btn btn-dark">بحث</button>
-                <!-- Search Results Container -->
-                <div id="searchResults" class="search-results" style="display: none; position: absolute; top: 100%; left: 25%; width: 50%; z-index: 1000; background-color: white; color: black; border-radius: 0 0 4px 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: right;">
-                    <!-- Search results will be inserted here dynamically -->
-                </div>
-            </form>
-        </div>
-        <BR></BR>
-        <br>
-        <br>
-        <br>
-        <!-- Category buttons below the search bar -->
-        
-    <div class="categories-wrapper">
-        <div class="category-rows">
-            
-            
-            
-            <div class="category-row">
-                 @foreach ($categorie as $category)
-                <button class="category-btn small" onclick="window.location.href='{{ route('by-category', ['category' => $category->id]) }}'" >{{ $category->name }}</button>
-                 @endforeach
-                <button class="category-btn small" onclick="window.location.href='{{ route('categories.index') }}'">المزيد</button>
-            </div>
-            
-            
-        </div>
+    <div class="layout-header">
+        @include('header')
     </div>
-    </header>
     
+    <div class="layout-searchbar">
+        @include('Index-searchbar')
+    </div>
+    
+    <div class="layout-indexpage">
         <!-- First Carousel - Arabic Books -->
         <div class="related-books">
             <h3>كتب ذات صلة</h3>
@@ -150,7 +113,7 @@
    
  <!-- Success Modal -->
 
- <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+ <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 4;">
     <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" >
         <div class="toast-header bg-success text-white">
             <strong class="me-auto" >السلة</strong>
@@ -159,15 +122,7 @@
         <div class="toast-body" id="toastMessage"></div>
     </div>
 </div>
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header bg-primary text-white">
-            <strong class="me-auto">إشعار</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body"></div>
-    </div>
-</div>
+
     <!-- first categories -->
     <div class="categories-section text-center">
     <h2 class="section-title">اكتشف حسب الفئة</h2>
@@ -305,7 +260,8 @@
             </div>
         </div>
         </div>
-    </section>  
+    </section>
+    </div>  
     <!--$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ end second categories $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
     
 
@@ -313,6 +269,7 @@
     <script src="{{ asset('js/scripts.js') }}"></script>
     <script src="{{ asset('js/carousel.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
+    <script src="{{ asset('js/Index-searchbar.js') }}"></script>
     <footer>
         @include('footer')
     </footer>

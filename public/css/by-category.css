@@ -22,6 +22,7 @@ body {
     background-color: #f9fafc;
     color: var(--text-color);
     line-height: 1.6;
+    padding-top: 60px;
 }
 
 /* =================== Hero Banner =================== */
@@ -399,6 +400,21 @@ body {
     flex-direction: column;
     gap: 1.5rem;
 }
+/* Image container - FIRST element */
+.books-container.list-view img {
+    width: 120px !important;
+    height: 160px !important;
+    min-width: 120px !important;
+    min-height: 160px !important;
+    max-width: 120px !important;
+    max-height: 160px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: transform 0.3s ease !important;
+    
+    flex-shrink: 0 !important;
+}
 
 .list-view .book-card {
     display: flex;
@@ -431,7 +447,7 @@ body {
 
 .book-item {
     display: flex;
-    justify-content: center;
+    
 }
 
 .book-card {
@@ -872,6 +888,7 @@ body {
 #showMoreBtn.active i {
     transform: rotate(180deg);
 }
+
 .dropdown-item.active {
     font-weight: bold;
     background-color: #f0f0f0;
@@ -962,7 +979,7 @@ body {
 .book-item.list-style .fw-bold.text-primary {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var( #007bff) !important;
+    color: var(#007bff) !important;
     margin-right: 15px;
 }
 
@@ -983,6 +1000,7 @@ body {
     border-radius: 25px;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    
 }
 
 .book-item.list-style .btn-outline-primary:hover {
@@ -1102,4 +1120,51 @@ body {
 .book-item.list-style:hover::before {
     opacity: 1;
 }
+
 /*/////grid view/////////*/
+/* Target the specific structure in list view */
+.books-container.list-view .book-item.list-style {
+    display: flex !important;
+    align-items: flex-start !important;
+}
+
+/* The content div after image */
+.books-container.list-view .book-item.list-style>div {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+}
+
+/* The bottom div with price and button */
+.books-container.list-view .book-item.list-style .d-flex.align-items-center {
+    display: flex !important;
+    justify-content: flex-start !important;
+    /* Start from left */
+    align-items: center !important;
+    gap: 15px !important;
+    margin-top: auto !important;
+}
+
+/* Remove ms-auto effect and set fixed position */
+.books-container.list-view .book-item.list-style .btn.ms-auto {
+    margin-left: 50px !important;
+    /* Change this number to adjust position */
+    
+}
+
+/* OR use this to position button at specific distance from price */
+.books-container.list-view .book-item.list-style .d-flex.align-items-center {
+    padding-left: 20px !important;
+    /* Push everything from left */
+}
+
+.books-containers.list-view .book-item.list-style .btn {
+    margin-left: 30px !important;
+    /* Exact space from price to button */
+}
+
+/* For RTL (Arabic) */
+[dir="rtl"] .books-container.list-view .book-item.list-style .btn.ms-auto {
+    margin-left: 0 !important;
+    
+}

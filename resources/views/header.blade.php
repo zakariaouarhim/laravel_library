@@ -1,5 +1,6 @@
+<div class="layout-header">
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="mainNavbar" >
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="mainNavbar">
     <div class="container">
         <!-- Logo -->
         <a class="navbar-brand" href="{{ route('index.page') }}">
@@ -54,6 +55,11 @@
             </ul>
 
             <div class="d-flex align-items-center">
+                <!-- Search Button -->
+                <a href="javascript:void(0);" class="nav-link position-relative me-2" onclick="toggleSearchBar()">
+                    <i class="bi bi-search text-white fs-4"></i>
+                </a>
+
                 <!-- Cart Icon -->
                 <a href="javascript:void(0);" class="nav-link position-relative" onclick="showCartModal()">
                     <i class="bi bi-cart-fill text-white fs-4"></i>
@@ -61,41 +67,6 @@
                         {{ session('cart') ? count(session('cart')) : 0 }}
                     </span>
                 </a>
-
-                <!-- Empty Cart Modal -->
-                <div class="modal fade" id="emptyCartModal" tabindex="-1" aria-labelledby="emptyCartLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content text-center p-4">
-                            <h5 class="modal-title" id="emptyCartLabel">سلّة التسوق فارغة</h5>
-                            <button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">إغلاق</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cart Details Modal -->
-                <div class="modal fade" id="cartDetailsModal" tabindex="-1" aria-labelledby="cartDetailsLabel" aria-hidden="false">
-                    <div class="modal-dialog">
-                        <div class="modal-content p-3">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="cartDetailsLabel">سلّة التسوق</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="checkoutForm" action="{{ route('checkout.store-cart') }}" method="POST">
-                                    @csrf
-                                    <div id="cartItemsContainer">
-                                        <!-- Cart items will be inserted dynamically -->
-                                    </div>
-                                    <input type="hidden" name="cart_data" id="cartDataInput">
-                                </form>
-                            </div>
-                            <div class="modal-footer d-flex justify-content-between">
-                                <button class="btn btn-primary" id="checkoutButton" onclick="submitCheckoutForm()">إتمام الشراء ✔️</button>
-                                <button class="btn btn-outline-warning">سلّة التسوق</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Account Dropdown -->
                 <div class="nav-item dropdown ms-3">
@@ -151,7 +122,6 @@
                                 </div>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            
                         </ul>
                     @endif
                 </div>
@@ -159,6 +129,43 @@
         </div>
     </div>
 </nav>
+
+<!-- Search Bar (Hidden by default) -->
+<div id="searchBar" class="search-bar-container">
+    <div class="container">
+        <div class="search-bar-content">
+            <form action="{{ route('search.results') }}" method="GET" class="d-flex align-items-center position-relative">
+                <input 
+                    type="text" 
+                    name="query"
+                    id="searchInputHeader"
+                    class="form-control search-input" 
+                    placeholder="ابحث عن الكتب، المؤلفين، الناشرين..." 
+                    oninput="searchBooksAutocomplete(this.value, 'searchResultsHeader')"
+                    autocomplete="off"
+                    autofocus
+                    required>
+                <button type="submit" class="btn btn-primary search-btn">
+                    <i class="bi bi-search"></i>
+                </button>
+                <button type="button" class="btn btn-close-search" onclick="toggleSearchBar()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                
+                <!-- Search Results Container -->
+                <div id="searchResultsHeader" class="search-results-header">
+                    <!-- Results will be inserted here -->
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@include('cartmodals')
+</div>
+
+<!-- JavaScript for Search Toggle -->
+
 
 <!-- Bootstrap JS and Icons -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -12,6 +12,7 @@ body {
     font-family: 'Tajawal', 'Amiri', sans-serif;
     background-color: #f8f9fa;
     color: var(--text-color);
+    padding-top: 60px;
 }
 
 .container {

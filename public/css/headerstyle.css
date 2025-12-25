@@ -1,10 +1,10 @@
 /* Header styles */
-header {
+.layout-header header {
     background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
     color: var(--color-dark);
 }
 
-.header-section {
+.layout-header .header-section {
 
     background-size: cover;
     height: 400px;
@@ -14,7 +14,7 @@ header {
     padding: 20px;
 }
 
-.header-section::before {
+.layout-header .header-section::before {
     content: "";
     position: absolute;
     top: 0;
@@ -26,45 +26,45 @@ header {
     z-index: 1;
 }
 
-.header-section .container {
+.layout-header .header-section .container {
     position: relative;
     z-index: 2;
     /* Ensures content appears above the overlay */
 }
 
 
-.header-section form input,
-.header-section form button {
+.layout-header .header-section form input,
+.layout-header .header-section form button {
     border-radius: 25px;
     padding: 10px 20px;
 }
 
-.header-section form button {
+.layout-header .header-section form button {
     padding: 10px 30px;
 }
 
 /* Navbar styles */
-.navbar-brand img {
+.layout-header .navbar-brand img {
     height: 50px;
 }
 
 /* Dropdown menu styles */
-.dropdown-menu {
-    background-color: var(--color-primary, #ffffff);
+.layout-header .dropdown-menu {
+    background-color: var( #ffffff);
     /* Fallback to white if not set */
     border: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.dropdown-item {
+.layout-header .dropdown-item {
     color: var(--color-dark, #000000);
     /* Fallback to black if not set */
     transition: background-color 0.3s ease, color 0.3s ease;
     /* Smooth hover effect */
 }
 
-.dropdown-item:hover {
-    background-color: var(--color-secondary, #007bff);
+.layout-header .dropdown-item:hover {
+    background-color: var(--color-blue, #007bff);
     /* Fallback to Bootstrap's blue */
     color: white;
     /* Text turns white */
@@ -73,14 +73,9 @@ header {
 
 
 /* Keep your existing header styles and add these new ones */
-.header-section {
-    /* Use the teal/blue gradient from the original design */
-    background: linear-gradient(135deg, #5de1e6 0%, #5de1e6 100%);
-    position: relative;
-    height: 500px;
-}
 
-.header-section::before {
+
+.layout-header .header-section::before {
     content: "";
     position: absolute;
     top: 0;
@@ -90,38 +85,6 @@ header {
     background-color: rgba(0, 0, 0, 0.4);
     /* Darker overlay for better contrast */
     z-index: 1;
-}
-
-.letters-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    /* Above the overlay but below the container */
-    overflow: hidden;
-}
-
-.letter {
-    position: absolute;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 30px;
-    animation: fallDown linear infinite;
-    font-family: 'Amiri', serif;
-    z-index: 2;
-}
-
-/* Restore the blurry container effect */
-.search-container {
-    background-color: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px);
-    border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    position: relative;
-    z-index: 3;
-    /* Ensures content appears above everything */
 }
 
 @keyframes fallDown {
@@ -145,128 +108,20 @@ header {
 }
 
 /* Keep your existing form styles */
-.header-section form input,
-.header-section form button {
+.layout-header .header-section form input,
+.layout-header .header-section form button {
     border-radius: 25px;
     padding: 10px 20px;
 }
 
-.header-section form button {
+.layout-header .header-section form button {
     padding: 10px 30px;
 }
-body {
-    font-family: 'Amiri', 'Scheherazade New', serif;
-}
-/*///////// search bar/////////////*/
-.search-results {
-    position: absolute;
-    width: 40%;
-    max-width: 800px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    max-height: 300px;
-    overflow-y: auto;
+.layout-header {
+    font-family: 'Tajawal',sans-serif;
 }
 
-.search-results div {
-    padding: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-.search-results div:hover {
-    background-color: #f5f5f5;
-}
-
-
-
-/* Category styles below search bar */
-.categories-wrapper {
-    width: 80%;
-    max-width: 1000px;
-    margin: -50px auto 30px auto;
-    position: relative;
-    z-index: 4;
-}
-
-.category-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.category-row {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.category-btn {
-    background-color: #5de1e6;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 15px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    text-align: center;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    flex: 1;
-    min-width: 120px;
-    max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.category-btn.featured {
-    background-color: #5de1e6;
-    padding: 12px 20px;
-    font-size: 1rem;
-    min-width: 160px;
-}
-
-.category-btn.small {
-    background-color: #00695C;
-}
-
-.category-btn:hover {
-    background-color: #004D40;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-}
-
-.category-icon {
-    margin-right: 5px;
-    font-weight: bold;
-    color: #ff8a65;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .categories-wrapper {
-        width: 95%;
-        margin-top: -30px;
-    }
-
-    .category-btn {
-        padding: 8px 12px;
-        font-size: 0.8rem;
-        min-width: 100px;
-    }
-
-    .category-btn.featured {
-        padding: 10px 15px;
-        font-size: 0.9rem;
-    }
-}
-#cartSuccessToast {
+.layout-header #cartSuccessToast {
     position: fixed;
     top: 100px;
     right: 30px;
@@ -279,19 +134,138 @@ body {
     border: none;
 }
 
-.toast-header {
+.layout-header .toast-header {
     background: linear-gradient(135deg, #03045E, #48CAE4);
     color: white;
     border-radius: 10px 10px 0 0;
     border: none;
 }
 /*//////////*/
-#mainNavbar {
+.layout-header #mainNavbar {
     transition: top 0.3s;
 }
-#mainNavbar {
+.layout-header #mainNavbar {
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
+}
+
+.layout-header .nav-link {
+    display: block;
+    padding: .3rem 0.5rem !important;
+    color: #f8f8f8 !important;
+    text-decoration: none;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+    
+}
+
+/* Search Bar Styles */
+.layout-header .search-bar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.layout-header .search-bar-container.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.layout-header .search-bar-content {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.layout-header .search-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    padding: 15px 25px;
+    border-radius: 50px;
+    flex: 1;
+    transition: all 0.3s ease;
+}
+
+.layout-header .search-input:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: #48CAE4;
+    outline: none;
+    box-shadow: 0 0 20px rgba(72, 202, 228, 0.3);
+}
+
+.layout-header .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.layout-header .search-btn {
+    background: linear-gradient(135deg, #03045E, #48CAE4);
+    border: none;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    margin-left: 10px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.layout-header .search-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(72, 202, 228, 0.4);
+}
+
+.layout-header .btn-close-search {
+    background-color: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 50px;
+    margin-left: 10px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.layout-header .btn-close-search:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+.search-results-header{
+    position: absolute;
+    top: 100%;
+    width: 40%;
+    max-width: 800px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Responsive search bar */
+@media (max-width: 768px) {
+    .layout-header .search-input {
+        font-size: 1.2rem;
+        padding: 12px 20px;
+    }
+
+    .layout-header .search-btn,
+    .layout-header .btn-close-search {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
 }

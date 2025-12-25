@@ -95,7 +95,18 @@ class CartController extends Controller
             
         } else {
             // For guests, use session cart
-            $cart = session()->get('cart', []);
+            $sessionCart = session()->get('cart', []);
+            
+            // Process session cart to add full asset URLs
+            foreach ($sessionCart as $id => $item) {
+                $cart[$id] = [
+                    'id' => $item['id'] ?? $id,
+                    'title' => $item['title'],
+                    'price' => $item['price'],
+                    'image' => asset($item['image']), // Convert to full URL
+                    'quantity' => $item['quantity']
+                ];
+            }
         }
 
         return response()->json([

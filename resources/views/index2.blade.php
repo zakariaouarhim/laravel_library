@@ -3,248 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arabic Letters Animation</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Amiri', 'Scheherazade New', serif;
-            overflow: hidden;
-            background: linear-gradient(135deg, #5de1e6 0%, #00796B 100%);
-        }
-        
-        .container {
-            position: relative;
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1;
-        }
-        
-        .search-container {
-            width: 80%;
-            max-width: 800px;
-            text-align: center;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(5px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        p {
-            margin-bottom: 25px;
-            font-size: 1.2rem;
-        }
-        
-        .search-box {
-            display: flex;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        
-        .search-input {
-            flex-grow: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 30px 0 0 30px;
-            font-size: 1rem;
-            outline: none;
-            font-family: inherit;
-        }
-        
-        .search-btn {
-            background-color: #004D40;
-            color: white;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 0 30px 30px 0;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-family: inherit;
-        }
-        
-        .search-btn:hover {
-            background-color: #00695C;
-        }
-        
-        /* Category styles - Modified for two rows at full width */
-        .categories-section {
-            width: 100%;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-        
-        .category-row {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        
-        .category-btn {
-            background-color: rgba(121, 36, 89, 0.8);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            flex: 1;
-            margin: 0 5px;
-            font-family: inherit;
-        }
-        
-        .category-btn.small {
-            background-color: #004D40;
-        }
-        
-        .category-btn:hover {
-            background-color: #00695C;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-        
-        .category-icon {
-            margin-right: 5px;
-            font-weight: bold;
-            color: #ff8a65;
-        }
-        
-        .letters-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-        
-        .letter {
-            position: absolute;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 30px;
-            animation: fallDown linear infinite;
-        }
-        
-        @keyframes fallDown {
-            0% {
-                transform: translateY(-100px) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(calc(100vh + 50px)) rotate(360deg);
-                opacity: 0;
-            }
-        }
-    </style>
+    <title>مكتبة بيع الكتب</title>
+    <!-- Correct CSS linking -->
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/Index-searchbar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
+
+    <!-- Bootstrap RTL CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
+
+    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Scheherazade+New&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 </head>
+
 <body>
-    <div class="letters-background" id="letters-container"></div>
+    @include('header')
+    @include('Index-searchbar')
     
-    <div class="container">
-        <!-- Search container -->
-        <div class="search-container">
-            <h1>ابحث عن كتابك المفضل</h1>
-            <p>ابحث في مجموعتنا الكبيرة من الكتب عبر الأنواع والتصنيفات.</p>
+    <div class="layout-indexpage">
+        <!-- First Carousel - Arabic Books -->
+        <div class="related-books">
+            <h3>كتب ذات صلة</h3>
             
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع">
-                <button class="search-btn">بحث</button>
+            <div class="carousel-container">
+                <div class="carousel-wrapper" id="carouselWrapper1">
+                    @foreach ($books as $index => $book)
+                    <div class="book-card">
+                        <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">
+                            <img src="{{ asset($book->image ?? 'images/books/default-book.png') }}" 
+                                 class="card-img-top" 
+                                 alt="{{ $book->title }}" 
+                                 loading="lazy">
+                        </a>
+                        <h6>{{ $book->title }}</h6>
+                        
+                        <!-- Display author name from authors table -->
+                        <p class="book-author">
+                            <i class="fas fa-user-edit me-1"></i>
+                            @if($book->primaryAuthor)
+                                {{ $book->primaryAuthor->name }}
+                                @if($book->primaryAuthor->nationality)
+                                    <small class="text-muted">({{ $book->primaryAuthor->nationality }})</small>
+                                @endif
+                            @elseif($book->authors->where('pivot.author_type', 'primary')->first())
+                                {{ $book->authors->where('pivot.author_type', 'primary')->first()->name }}
+                            @elseif($book->authors->isNotEmpty())
+                                {{ $book->authors->first()->name }}
+                                @if($book->authors->count() > 1)
+                                    <small class="text-muted">+{{ $book->authors->count() - 1 }} مؤلف آخر</small>
+                                @endif
+                            @else
+                                <span class="text-muted">مؤلف غير محدد</span>
+                            @endif
+                        </p>
+                        
+                        <!-- Optional: Display publishing house -->
+                        @if($book->publishingHouse)
+                        <p class="book-publisher">
+                            <i class="fas fa-building me-1"></i>
+                            <small class="text-muted">{{ $book->publishingHouse->name }}</small>
+                        </p>
+                        @elseif($book->Publishing_House)
+                        <p class="book-publisher">
+                            <i class="fas fa-building me-1"></i>
+                            <small class="text-muted">{{ $book->Publishing_House }}</small>
+                        </p>
+                        @endif
+                        
+                        <div class="price-section">
+                            <div class="text-center mb-3">
+                                <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
+                                    {{ $book->price + 50 }}
+                                </span>
+                                <span class="h5 mb-0 text-danger">{{ $book->price }} درهم</span>
+                            </div>
+                            <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <button class="carousel-nav prev" id="prevBtn1" onclick="moveCarousel(-1, 'carousel1')">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="carousel-nav next" id="nextBtn1" onclick="moveCarousel(1, 'carousel1')">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <br>
+                <div class="carousel-indicators" id="indicators1"></div>
             </div>
         </div>
-        
-        <!-- Categories section - Modified to have only two rows -->
-        <div class="categories-section">
-            <!-- First row with 6 categories -->
-            <div class="category-row">
-                <button class="category-btn small">روايات</button>
-                <button class="category-btn small">تربية الأطفال والناشئين</button>
-                <button class="category-btn small">كوميكس</button>
-                <button class="category-btn small">صحة نفسية</button>
-                <button class="category-btn small">التعامل مع المراهقين</button>
-                <button class="category-btn small">أدب وتراث</button>
-            </div>
-            
-            <!-- Second row with remaining categories -->
-            <div class="category-row">
-                <button class="category-btn small">المزيد</button>
-                <button class="category-btn small">مطبخ وأطعمة شرقية</button>
-                <button class="category-btn small">اقتصاد</button>
-                <button class="category-btn small">دينية وتصوف <span class="category-icon">♥</span></button>
-                <button class="category-btn small">تنمية ذاتية</button>
-                <button class="category-btn small">أطعمة رمضان <span class="category-icon">♥</span></button>
-            </div>
+   
+ <!-- Success Modal -->
+
+ <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" >
+        <div class="toast-header bg-success text-white">
+            <strong class="me-auto" >السلة</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-primary text-white">
+            <strong class="me-auto">إشعار</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+    <!-- first categories -->
+    <div class="categories-section text-center">
+    <h2 class="section-title">اكتشف حسب الفئة</h2>
+    <div class="category-grid d-flex justify-content-center flex-wrap">
+        <!-- بطاقة الفئة -->
+        <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 1]) }}'">
+        <img src="{{ asset('images/novels.svg') }}" alt="روايات" class="category-icon" >
+        <h3>روايات</h3>
+        <p>اكتشف أروع الروايات من الأدب العربي والعالمي.</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 2]) }}'">
+        <img src="{{ asset('images/religion.svg') }}" alt="كتب دينية" class="category-icon">
+        <h3>كتب دينية</h3>
+        <p>تعرف على الكتب التي تقربك من الإيمان.</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 3]) }}'">
+        <img src="{{ asset('images/devlopment personell.svg') }}" alt="تنمية ذاتية" class="category-icon">
+        <h3>التنمية البشرية وتطوير الذات</h3>
+        <p>كتب تحفزك لتحقيق أفضل نسخة من نفسك.</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 4]) }}'">
+        <img src="{{ asset('images/children.svg') }}" alt="قصص الأطفال" class="category-icon">
+        <h3>قصص الأطفال</h3>
+        <p>قصص ممتعة ومفيدة للصغار.</p>
         </div>
     </div>
+    </div>
+    <!-- end first categories -->
 
-    <script>
-        const lettersContainer = document.getElementById('letters-container');
-        const arabicLetters = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
+    <!-- Second Carousel - English Books -->
+    <div class="related-books">
+        <h3>ENGLISH BOOKS</h3>
         
-        // Create letters dynamically
-        function createLetters() {
-            // Initial batch of letters
-            for (let i = 0; i < 120; i++) {
-                createLetter();
-            }
-            
-            // Continue adding letters over time
-            setInterval(createLetter, 1000);
-        }
+        @if($EnglichBooks && $EnglichBooks->count() > 0)
+            <div class="carousel-container">
+                <div class="carousel-wrapper" id="carouselWrapper2">
+                    @foreach($EnglichBooks as $EnglichBook)
+                    <div class="book-card">
+                        <a href="{{ route('moredetail.page', ['id' => $EnglichBook->id]) }}">
+                            <img src="{{ asset($EnglichBook->image) }}" class="card-img-top" alt="{{ $EnglichBook->title }}" loading="lazy">
+                        </a>
+                        <h6>{{ $EnglichBook->title }}</h6>
+                        <p class="book-author">
+                            <i class="fas fa-user-edit me-1"></i>
+                            @if($EnglichBook->primaryAuthor)
+                                {{ $EnglichBook->primaryAuthor->name }}
+                                @if($EnglichBook->primaryAuthor->nationality)
+                                    <small class="text-muted">({{ $EnglichBook->primaryAuthor->nationality }})</small>
+                                @endif
+                            @elseif($EnglichBook->authors->where('pivot.author_type', 'primary')->first())
+                                {{ $EnglichBook->authors->where('pivot.author_type', 'primary')->first()->name }}
+                            @elseif($EnglichBook->authors->isNotEmpty())
+                                {{ $EnglichBook->authors->first()->name }}
+                                @if($EnglichBook->authors->count() > 1)
+                                    <small class="text-muted">+{{ $EnglichBook->authors->count() - 1 }} مؤلف آخر</small>
+                                @endif
+                            @else
+                                <span class="text-muted">مؤلف غير محدد</span>
+                            @endif
+                        </p>
+                        <div class="price-section">
+                            <div class="text-center mb-3">
+                                <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
+                                    {{ $EnglichBook->price + 50 }}
+                                </span>
+                                <span class="h5 mb-0 text-danger">{{ $EnglichBook->price }} درهم</span>
+                            </div>
+                            <button class="add-btn" onclick="addToCart({{ $EnglichBook->id }},'{{ addslashes($EnglichBook->title) }}', {{ $EnglichBook->price }}, '{{ addslashes($EnglichBook->image) }}')">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <button class="carousel-nav prev" id="prevBtn2" onclick="moveCarousel(-1, 'carousel2')">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="carousel-nav next" id="nextBtn2" onclick="moveCarousel(1, 'carousel2')">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <br>
+                <div class="carousel-indicators" id="indicators2"></div>
+            </div>
+        @else
+            <!-- Empty state message -->
+            <div class="empty-carousel-message">
+                <div class="empty-state-card text-center p-5 border rounded bg-light">
+                    <div class="empty-state-icon mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" 
+                             style="width: 80px; height: 80px;">
+                            <i class="fas fa-books text-primary" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-dark mb-3">لا توجد كتب ذات صلة</h4>
+                    <p class="text-muted mb-4">
+                        عذراً، لا توجد كتب أخرى متاحة في نفس فئة هذا الكتاب حالياً.<br>
+                        يمكنك تصفح مجموعتنا الكاملة من الكتب للعثور على المزيد من الخيارات المثيرة.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ route('index.page') }}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>العودة للرئيسية
+                        </a>
+                        <a href="#" class="btn btn-outline-primary" onclick="window.history.back();">
+                            <i class="fas fa-arrow-right me-2"></i>العودة للخلف
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+    </div>
+    <section>
+        <div class="categories-section text-center">
         
-        function createLetter() {
-            const letter = document.createElement('div');
-            letter.className = 'letter';
-            
-            const randomLetter = arabicLetters[Math.floor(Math.random() * arabicLetters.length)];
-            letter.textContent = randomLetter;
-            
-            // Random positioning and animation properties
-            const size = Math.random() * 40 + 20; // Size between 20px and 60px
-            const leftPos = Math.random() * 100; // Position from left 0% to 100%
-            const duration = Math.random() * 15 + 10; // Animation duration between 10s and 25s
-            const delay = Math.random() * 10; // Delay between 0s and 10s
-            const opacity = Math.random() * 0.4 + 0.1; // Opacity between 0.1 and 0.5
-            
-            letter.style.fontSize = `${size}px`;
-            letter.style.left = `${leftPos}%`;
-            letter.style.animationDuration = `${duration}s`;
-            letter.style.animationDelay = `${delay}s`;
-            letter.style.opacity = opacity;
-            
-            lettersContainer.appendChild(letter);
-            
-            // Remove the letter after animation completes to prevent memory issues
-            setTimeout(() => {
-                letter.remove();
-            }, (duration + delay) * 1000);
-        }
+        <div class="category-grid d-flex justify-content-center flex-wrap">
+            <!-- بطاقة الفئة -->
+            <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 5]) }}'">
+            <img src="{{ asset('images/philosophy.svg') }}" alt="روايات" class="category-icon">
+            <h3>فلسفة</h3>
+            <p>اكتشف أروع الروايات من الأدب العربي والعالمي.</p>
+            </div>
+            <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 6]) }}'">
+            <img src="{{ asset('images/novels.svg') }}" alt="كتب دينية" class="category-icon">
+            <h3> كتب الفكر</h3>
+            <p>تعرف على الكتب التي تقربك من الإيمان.</p>
+            </div>
+            <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 7]) }}'">
+            <img src="{{ asset('images/psychology.svg') }}" alt="تنمية ذاتية" class="category-icon">
+            <h3>علم النفس</h3>
+            <p>كتب تحفزك لتحقيق أفضل نسخة من نفسك.</p>
+            </div>
+            <div class="category-card" onclick="window.location.href='{{ route('by-category', ['category' => 8]) }}'">
+            <img src="{{ asset('images/sociologie.svg') }}" alt="قصص الأطفال" class="category-icon">
+            <h3> علم الاجتماع</h3>
+            <p>قصص ممتعة ومفيدة للصغار.</p>
+            </div>
+        </div>
+        </div>
+    </section>
+    </div>  
+    <!--$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ end second categories $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+    
+
         
-        // Start the animation when the page loads
-        window.addEventListener('load', createLetters);
-    </script>
+    <script src="{{ asset('js/scripts.js') }}"></script>
+    <script src="{{ asset('js/carousel.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}"></script>
+    <script src="{{ asset('js/Index-searchbar.js') }}"></script>
+    <footer>
+        @include('footer')
+    </footer>
+        
+    
+    
+
+
+
 </body>
 </html>
+
+

@@ -608,7 +608,180 @@ public function addProduct(Request $request)
             return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
         }
     }
+    // Method to show search results page
+public function searchResults(Request $request)
+{
+    $query      = $request->input('query');
+    $filter     = $request->input('filter');
+    $categoryId = $request->input('category');
 
+    $categories = Category::whereNull('parent_id')->take(13)->get();
+
+    // 🔍 1. Search
+    $books = $this->searchBooks2($query);
+
+    // 🎛 2. Apply filters
+    $books = $this->applyFilters($books, $filter, $categoryId);
+
+    // 🔗 3. Related books
+    $relatedBooks = $this->getRelatedBooks($books);
+
+    $count_relatedBooks = $books->count() + $relatedBooks->count();
+
+    return view('search-results', compact(
+        'books',
+        'query',
+        'relatedBooks',
+        'count_relatedBooks',
+        'categories'
+    ));
+}
+private function searchBooks2(?string $query)
+{
+    if (!$query) {
+        return collect();
+    }
+
+    $books = Book::where('title', 'LIKE', "%{$query}%")
+        ->orWhere('author', 'LIKE', "%{$query}%")
+        ->orWhere('ISBN', 'LIKE', "%{$query}%")
+        ->get();
+
+    if ($books->isNotEmpty()) {
+        return $books;
+    }
+
+    return $this->smartFallbackSearch($query);
+}
+private function smartFallbackSearch(string $query)
+{
+    $tokens = [];
+
+    for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
+        $tokens[] = mb_substr($query, $i, 3);
+    }
+
+    return Book::all()->filter(function ($book) use ($tokens) {
+        $matchCount = 0;
+
+        foreach ($tokens as $token) {
+            if (
+                mb_stripos($book->title, $token) !== false ||
+                mb_stripos($book->author, $token) !== false
+            ) {
+                $matchCount++;
+            }
+        }
+
+        return $matchCount >= count($tokens) * 0.5;
+    })->values();
+}
+private function applyFilters($books, ?string $filter, ?int $categoryId)
+{
+    // Category filter
+    if ($categoryId) {
+        $books = $books->where('category_id', $categoryId);
+    }
+
+    // Sorting
+    return match ($filter) {
+        'price_low'  => $books->sortBy('price')->values(),
+        'price_high' => $books->sortByDesc('price')->values(),
+        'author'     => $books->sortBy('author')->values(),
+        default      => $books
+    };
+}
+private function getRelatedBooks($books)
+{
+    if ($books->isEmpty()) {
+        return collect();
+    }
+
+    $mainBook = $books->first();
+    $excludedIds = $books->pluck('id')->toArray();
+
+    return Book::where('category_id', $mainBook->category_id)
+        ->whereNotIn('id', $excludedIds)
+        ->inRandomOrder()
+        ->take(10)
+        ->get();
+}
+
+private function relatedBooks(int $bookId)
+{
+    $book = Book::with(['category.parent', 'primaryAuthor'])
+        ->findOrFail($bookId);
+
+    // 1️⃣ Same category
+    $related = Book::where('category_id', $book->category_id)
+        ->where('id', '!=', $book->id)
+        ->take(10)
+        ->get();
+
+    // 2️⃣ Same author (fallback)
+    if ($related->isEmpty() && $book->primaryAuthor) {
+        $related = Book::where('author_id', $book->primaryAuthor->id)
+            ->where('id', '!=', $book->id)
+            ->take(10)
+            ->get();
+    }
+
+    // 3️⃣ Last fallback: latest books
+    if ($related->isEmpty()) {
+        $related = Book::latest()
+            ->where('id', '!=', $book->id)
+            ->take(10)
+            ->get();
+    }
+
+    return $related;
+}
+
+
+// AJAX method for autocomplete (keep your existing one)
+public function searchBooksAjax(Request $request)
+{
+    $query = $request->input('query');
+    
+    try {
+        // First try exact match
+        $books = Book::where('title', 'LIKE', "%{$query}%")
+                    ->orWhere('author', 'LIKE', "%{$query}%")
+                    ->orWhere('ISBN', 'LIKE', "%{$query}%")
+                    ->take(5) // Limit for autocomplete
+                    ->get();
+        
+        // If no results, try n-gram approach
+        if ($books->isEmpty()) {
+            $tokens = [];
+            for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
+                $tokens[] = mb_substr($query, $i, 3);
+            }
+            
+            $allBooks = Book::all();
+            $matchingBooks = $allBooks->filter(function($book) use ($tokens) {
+                $matchCount = 0;
+                foreach ($tokens as $token) {
+                    if (mb_stripos($book->title, $token) !== false || 
+                        mb_stripos($book->author, $token) !== false) {
+                        $matchCount++;
+                    }
+                }
+                return $matchCount >= count($tokens) * 0.5;
+            })->take(5);
+            
+            $books = $matchingBooks->values();
+        }
+        
+        return response()->json([
+            'success' => true,
+            'books' => $books
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Error in searchBooks:', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
+    }
+}
    
 
     public function index()

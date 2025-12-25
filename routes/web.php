@@ -175,6 +175,8 @@ Route::get('/index', [BookController::class, 'index'])->name('index.page');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add.to.cart');
 // search route
 Route::get('/search-books', [BookController::class, 'searchBooks'])->name('search.books');
+Route::get('/search-results', [BookController::class, 'searchResults'])->name('search.results');
+Route::get('/search-books', [BookController::class, 'searchBooksAjax'])->name('search.books.ajax');
 
 // Authentication Routes
 Auth::routes();
