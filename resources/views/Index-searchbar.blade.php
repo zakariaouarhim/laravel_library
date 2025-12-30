@@ -8,25 +8,25 @@
             <h1 class="display-4 fw-bold">ابحث عن كتابك المفضل</h1>
             <p class="lead">ابحث في مجموعتنا الكبيرة من الكتب عبر الأنواع والتصنيفات.</p>
             
-            <!-- UPDATED FORM with correct action -->
-            <form action="{{ route('search.results') }}" method="GET" class="d-flex justify-content-center mt-4 position-relative">
-                <input 
-                    type="text"
-                    name="query"
-                    id="searchInput"
-                    class="form-control w-50 me-2" 
-                    placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع"
-                    oninput="searchBooksAutocomplete(this.value)"
-                    autocomplete="off"
-                    required>
-                
-                <button type="submit" class="btn btn-dark"><i class="fas fa-search"></i> بحث</button>
-                
-                <!-- Search Results Container for Autocomplete -->
-                <div id="searchResults" class="search-results" style="z-index: 9999 !important;" >
-                    <!-- Search results will be inserted here dynamically -->
-                </div>
+            <form action="{{ route('search.results') }}" method="GET" class="search-box">
+                        <input 
+                            type="text" 
+                            name="query" 
+                            id="searchInput"
+                            placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع..."
+                            oninput="searchBooksAutocomplete(this.value)"
+                            value=""
+                            required>
+                            
+                        <button type="submit">
+                            <i class="fas fa-search"></i> بحث
+                        </button>
+                        <!-- Search Results Container for Autocomplete -->
+                        <div id="searchResults" class="search-results" style="z-index: 9999 !important;" >
+                            <!-- Search results will be inserted here dynamically -->
+                        </div>
             </form>
+            
         </div>
         <br><br><br>
         
