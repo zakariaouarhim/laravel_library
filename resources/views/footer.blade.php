@@ -1,5 +1,5 @@
 <!-- Footer -->
-    <footer id="contact" aria-label="Footer with contact information and copyright">
+    <footer id="contact" aria-label="Footer with contact information and copyright" class="Footerlayout">
         <div class="footer-content">
             <div class="text-center">
                 <p class="copyright-text">&copy; 2024 مكتبة الفقراء جميع الحقوق محفوظة.</p>

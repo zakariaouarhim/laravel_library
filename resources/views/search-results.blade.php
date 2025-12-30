@@ -68,17 +68,17 @@
                     <!-- CATEGORY DROPDOWN -->
                     <select name="category" class="filter-btn"
                             onchange="this.form.submit()">
-                        <option value="">كل التصنيفات</option>
+                        <option value=""style="color:black; font-weight: 700;">كل التصنيفات</option>
 
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}"
-                                {{ request('category') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
+                                {{ request('category') == $category->id ? 'selected' : '' }} style="color:black; font-weight: 400;">
+                                *{{ $category->name }}
                             </option>
 
                             @foreach ($category->children as $child)
                                 <option value="{{ $child->id }}"
-                                    {{ request('category') == $child->id ? 'selected' : '' }}>
+                                    {{ request('category') == $child->id ? 'selected' : '' }} style="color:black">
                                     — {{ $child->name }}
                                 </option>
                             @endforeach
@@ -234,7 +234,7 @@
             
 
             <!-- Uncomment for No Results State -->
-            @if (empty($books))
+            @if ($count_relatedBooks==0)
                 
             
             <div class="no-results">

@@ -10,26 +10,27 @@ main {
     padding: 2rem;
 }
 
-footer {
+/* Footer with Footerlayout class */
+.Footerlayout {
     margin-top: auto;
     background: #1e1d1d;
     padding: 2rem 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.footer-content {
+.Footerlayout .footer-content {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
 }
 
-.footer-divider {
+.Footerlayout .footer-divider {
     height: 2px;
     background: linear-gradient(90deg, transparent, #0d6efd, transparent);
     margin: 1.5rem 0;
 }
 
-.social-links a {
+.Footerlayout .social-links a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -43,25 +44,26 @@ footer {
     text-decoration: none;
 }
 
-.social-links a:hover {
+.Footerlayout .social-links a:hover {
     background: #0d6efd;
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
 }
 
-.copyright-text {
+.Footerlayout .copyright-text {
     font-size: 0.95rem;
     opacity: 0.9;
     margin-bottom: 0.5rem;
     color: #f8f9fa;
 }
 
-.design-text {
+.Footerlayout .design-text {
     font-size: 0.9rem;
     opacity: 0.8;
     color: #f8f9fa;
 }
 
+/* Back to top button - stays global */
 #backToTop {
     width: 50px;
     height: 50px;
@@ -81,7 +83,7 @@ footer {
 }
 
 /* Demo content styling */
-.demo-section {
+.Footerlayout .demo-section {
     background: #f8f9fa;
     padding: 3rem;
     margin-bottom: 2rem;
