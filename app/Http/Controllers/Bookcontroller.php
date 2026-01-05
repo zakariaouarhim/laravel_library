@@ -623,17 +623,29 @@ public function searchResults(Request $request)
     // 🎛 2. Apply filters
     $books = $this->applyFilters($books, $filter, $categoryId);
 
-    // 🔗 3. Related books
+    // 🔗 3. Related books 
     $relatedBooks = $this->getRelatedBooks($books);
 
     $count_relatedBooks = $books->count() + $relatedBooks->count();
+    $relatedCategories = collect();
+
+    // If user searched by category → get related
+    if ($categoryId) {
+        $relatedCategories = $this->relatedCategories($categoryId);
+    }
+
+    // Fallback to popular categories
+    if ($relatedCategories->isEmpty()) {
+        $relatedCategories = $this->popularCategories();
+    }
 
     return view('search-results', compact(
         'books',
         'query',
         'relatedBooks',
         'count_relatedBooks',
-        'categories'
+        'categories',
+        'relatedCategories'
     ));
 }
 private function searchBooks2(?string $query)
@@ -736,6 +748,34 @@ private function relatedBooks(int $bookId)
 
     return $related;
 }
+private function relatedCategories($categoryId)
+{
+    $category = Category::find($categoryId);
+
+    if (!$category) {
+        return collect();
+    }
+
+    // If category has a parent → get siblings
+    if ($category->parent_id) {
+        return Category::where('parent_id', $category->parent_id)
+            ->where('id', '!=', $category->id)
+            ->take(10)
+            ->get();
+    }
+
+    // If category is parent → get children
+    return Category::where('parent_id', $category->id)
+        ->take(10)
+        ->get();
+}
+private function popularCategories($limit = 10)
+{
+    return Category::withCount('books')
+        ->orderByDesc('books_count')
+        ->take($limit)
+        ->get();
+}
 
 
 // AJAX method for autocomplete (keep your existing one)
@@ -805,7 +845,12 @@ public function searchBooksAjax(Request $request)
             ->with('children')
             ->take(13)
             ->get();
-        
+        $categorieImages = Category::withImages()->get();
+        $categorieIcons = Category::withIcons()
+                            ->inRandomOrder()
+                            ->limit(12)
+                            ->get();
+
         // Get English books with relationships
         $EnglichBooks = Book::where('Langue', 'English')
             ->with([
@@ -815,7 +860,7 @@ public function searchBooksAjax(Request $request)
             ])
             ->get();
             
-        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses'));
+        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','categorieImages','categorieIcons'));
     }
     // Additional method to handle book creation with author assignment
     public function store(Request $request)

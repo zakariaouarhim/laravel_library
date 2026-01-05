@@ -242,18 +242,28 @@
                     <i class="fas fa-search"></i>
                 </div>
                 <h3>لم نعثر على نتائج</h3>
-                <p>عذراً، لم نتمكن من العثور على كتب تطابق بحثك. جرب كلمات مفتاحية أخرى أو تصفح اقتراحاتنا.</p>
+                <p>
+                   عذراً، لم نتمكن من العثور على كتب تطابق بحثك. جرب كلمات مفتاحية أخرى أو
+                    <a href="{{ route('index.page') }}">تصفح اقتراحاتنا</a>
+                </p>
                 
+                @if ($relatedCategories->isNotEmpty())
                 <div class="suggestions">
-                    <h4>جرب البحث عن:</h4>
+                    <h4>
+                        {{ request('category') ? 'تصنيفات ذات صلة:' : 'تصنيفات شائعة:' }}
+                    </h4>
                     <div class="suggestion-tags">
-                        <a href="#" class="suggestion-tag">روايات عربية</a>
-                        <a href="#" class="suggestion-tag">شعر عربي</a>
-                        <a href="#" class="suggestion-tag">كتب تاريخ</a>
-                        <a href="#" class="suggestion-tag">فلسفة</a>
-                        <a href="#" class="suggestion-tag">علم النفس</a>
+                        @foreach ($relatedCategories as $category)
+                            <a href="{{ route('by-category', ['category' => $category->id]) }}"
+                            class="suggestion-tag">
+                            {{ $category->name }}
+                            </a>
+                        @endforeach
                     </div>
                 </div>
+                
+                @endif
+
             </div>
             @endif
         </div>

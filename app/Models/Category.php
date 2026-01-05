@@ -16,7 +16,16 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id', 'id');
     }
-
+    //category images
+    public function scopeWithImages($query)
+    {
+        return $query->whereNotNull('categorie_image');
+    }
+    //category icons
+    public function scopeWithIcons($query)
+    {
+        return $query->whereNotNull('categorie_icon');
+    }
     // Child category belongs to a parent
     public function parent()
     {

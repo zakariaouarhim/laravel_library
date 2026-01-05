@@ -45,7 +45,9 @@ body {
 .search-box-container h1 {
     font-family: 'Amiri', serif;
     font-size: clamp(24px, 5vw, 32px);
+    margin-top: 15px;
     margin-bottom: 20px;
+    z-index: 0;
 }
 
 .search-box {
@@ -550,7 +552,7 @@ background: white;
     }
 
          .search-box input {
-        padding: 14px 110px 14px 18px;
+        padding: 14px ;
     }
 
          .search-box button {

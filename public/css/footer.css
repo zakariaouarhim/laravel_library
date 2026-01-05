@@ -12,7 +12,7 @@ main {
 
 /* Footer with Footerlayout class */
 .Footerlayout {
-    margin-top: auto;
+    margin-top: 60px;
     background: #1e1d1d;
     padding: 2rem 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);

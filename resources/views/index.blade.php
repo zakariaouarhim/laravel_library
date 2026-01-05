@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/Index-searchbar.css') }}">
     <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/categories_carousel2.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/categories_carousel.css') }}">
     
     
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
@@ -73,18 +75,7 @@
                             @endif
                         </p>
                         
-                        <!-- Optional: Display publishing house -->
-                        @if($book->publishingHouse)
-                        <p class="book-publisher">
-                            <i class="fas fa-building me-1"></i>
-                            <small class="text-muted">{{ $book->publishingHouse->name }}</small>
-                        </p>
-                        @elseif($book->Publishing_House)
-                        <p class="book-publisher">
-                            <i class="fas fa-building me-1"></i>
-                            <small class="text-muted">{{ $book->Publishing_House }}</small>
-                        </p>
-                        @endif
+                        
                         
                         <div class="price-section">
                             <div class="text-center mb-3">
@@ -111,17 +102,11 @@
             </div>
         </div>
    
- <!-- Success Modal -->
+    <!-- carousel categories -->
+    @include('categories_carousel2')
+    @include('categories-carousel')
 
- <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 4;">
-    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" >
-        <div class="toast-header bg-success text-white">
-            <strong class="me-auto" >السلة</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="toastMessage"></div>
-    </div>
-</div>
+    
 
     <!-- first categories -->
     <div class="categories-section text-center">
@@ -270,6 +255,8 @@
     <script src="{{ asset('js/carousel.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/Index-searchbar.js') }}"></script>
+    <script src="{{ asset('js/categories_carousel.js') }}"></script>
+    <script src="{{ asset('js/categories_carousel2.js') }}"></script>
     <footer>
         @include('footer')
     </footer>

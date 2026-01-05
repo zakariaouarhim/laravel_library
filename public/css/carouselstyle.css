@@ -1,22 +1,54 @@
-/* Carousel Container */
+/* ============================================
+   CAROUSEL COMPONENT - RESPONSIVE & MODERN
+   ============================================ */
 
-/* Enhanced Carousel Styles */
+/* --- CSS Variables for Easy Theming --- */
+:root {
+    --primary-color: #007bff;
+    --primary-dark: #0056b3;
+    --secondary-color: #48CAE4;
+    --light-accent: #CAF0F8;
+    --text-dark: #2c3e50;
+    --text-muted: #6c757d;
+    --border-light: #dee2e6;
+    --bg-light: #f8f9fa;
+    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 12px 30px rgba(0, 123, 255, 0.15);
+    --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --border-radius: 15px;
+
+    /* Responsive Variables - Desktop */
+    --card-width: 220px;
+    --card-img-height: 260px;
+    --nav-size: 50px;
+    --nav-font-size: 20px;
+    --heading-font-size: 28px;
+    --heading-margin: 30px;
+    --heading-padding: 15px;
+    --container-padding: 30px;
+}
+
+/* ============================================
+   BASE STYLES - DESKTOP
+   ============================================ */
+
+/* --- Container & Layout --- */
 .related-books {
     background: white;
-    padding: 30px;
-    border-radius: 15px;
+    padding: var(--container-padding);
+    border-radius: var(--border-radius);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     margin: 40px 0;
     overflow: hidden;
 }
 
 .related-books h3 {
-    color: #2c3e50;
+    color: var(--text-dark);
     font-weight: 700;
-    font-size: 28px;
-    margin-bottom: 30px;
+    font-size: var(--heading-font-size);
+    margin-bottom: var(--heading-margin);
     position: relative;
-    padding-bottom: 15px;
+    padding-bottom: var(--heading-padding);
 }
 
 .related-books h3::after {
@@ -26,32 +58,37 @@
     right: 0;
     width: 60px;
     height: 4px;
-    background: linear-gradient(90deg, #48CAE4, #CAF0F8);
+    background: linear-gradient(90deg, var(--secondary-color), var(--light-accent));
     border-radius: 2px;
 }
 
+/* --- Carousel Structure --- */
 .carousel-container {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     padding: 20px 0;
+    z-index: 1;
 }
 
 .carousel-wrapper {
     display: flex;
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     gap: 20px;
     padding: 0 10px;
+    transition: transform 0.4s var(--transition-smooth);
 }
 
+/* --- Book Card --- */
 .book-card {
-    flex: 0 0 220px;
+    flex: 0 0 var(--card-width);
+    display: flex;
+    flex-direction: column;
     background: white;
-    border-radius: 15px;
+    border-radius: var(--border-radius);
     padding: 20px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: var(--shadow-sm);
     border: 2px solid transparent;
+    transition: all 0.3s var(--transition-smooth);
     position: relative;
     overflow: hidden;
 }
@@ -63,7 +100,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg,  #48CAE4, #CAF0F8);
+    background: linear-gradient(90deg, var(--secondary-color), var(--light-accent));
     transform: scaleX(0);
     transition: transform 0.3s ease;
     transform-origin: left;
@@ -71,8 +108,8 @@
 
 .book-card:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 30px rgba(0, 123, 255, 0.15);
-    border-color: #48CAE4;
+    box-shadow: var(--shadow-md);
+    border-color: var(--secondary-color);
 }
 
 .book-card:hover::before {
@@ -81,21 +118,21 @@
 
 .book-card img {
     width: 100%;
-    height: 260px;
+    height: var(--card-img-height);
     object-fit: cover;
     border-radius: 10px;
     margin-bottom: 15px;
     transition: transform 0.3s ease;
 }
 
-.book-card:hover img {
+.book-card img:hover {
     transform: scale(1.05);
 }
 
 .book-card h6 {
     font-size: 16px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-dark);
     margin-bottom: 8px;
     height: 48px;
     display: flex;
@@ -105,7 +142,7 @@
 }
 
 .book-card .author {
-    color: #6c757d;
+    color: var(--text-muted);
     font-size: 14px;
     margin-bottom: 15px;
     height: 20px;
@@ -116,27 +153,31 @@
     justify-content: space-between;
     align-items: center;
     margin-top: auto;
+    gap: 10px;
 }
 
 .book-card .price {
-    color: #007bff;
+    color: var(--primary-color);
     font-weight: 700;
     font-size: 18px;
 }
 
+/* --- Add Button --- */
 .book-card .add-btn {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    border: none;
-    color: white;
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .book-card .add-btn::before {
@@ -166,52 +207,36 @@
     transform: scale(0.95);
 }
 
-/* Navigation Buttons */
+/* --- Navigation Buttons --- */
 .carousel-nav {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
-    background: white;
-    border: none;
-    width: 50px;
-    height: 50px;
+    width: var(--nav-size);
+    height: var(--nav-size);
     border-radius: 50%;
+    border: none;
+    background: white;
+    color: var(--primary-color);
+    font-size: var(--nav-font-size);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    color: #007bff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    z-index: 1000;
-}
-
-/* Add these styles */
-.carousel-container {
-    position: relative;
-    /* Ensure proper stacking context */
-    padding: 20px 0;
-    overflow: visible;
-    /* Allow buttons to show outside */
-    z-index: 1;
-    /* Base layer for carousel content */
-}
-
-.carousel-nav {
     z-index: 2;
-    /* Place buttons above carousel content */
+    cursor: pointer;
     pointer-events: auto;
-    /* Ensure they're clickable */
+    transform: translateY(-50%);
 }
 
-.carousel-nav:hover {
-    background: #007bff;
+.carousel-nav:hover:not(:disabled) {
+    background: var(--primary-color);
     color: white;
     transform: translateY(-50%) scale(1.1);
     box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
 }
 
-.carousel-nav:active {
+.carousel-nav:active:not(:disabled) {
     transform: translateY(-50%) scale(0.95);
 }
 
@@ -226,105 +251,40 @@
 .carousel-nav:disabled {
     opacity: 0.3;
     cursor: not-allowed;
-    background: #f8f9fa;
-    color: #6c757d;
+    background: var(--bg-light);
+    color: var(--text-muted);
 }
 
-.carousel-nav:disabled:hover {
-    background: #f8f9fa;
-    color: #6c757d;
-    transform: translateY(-50%);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Indicators */
+/* --- Indicators --- */
 .carousel-indicators {
-
     display: flex;
     justify-content: center;
     gap: 8px;
     margin-top: 25px;
     padding: 0 20px;
-    /* Optional padding for larger screens */
 }
 
 .indicator {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #dee2e6;
     border: none;
+    background: var(--border-light);
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.indicator.active {
-    background: #007bff;
-    transform: scale(1.2);
-}
-
 .indicator:hover {
-    background: #007bff;
+    background: var(--primary-color);
     opacity: 0.7;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .book-card {
-        flex: 0 0 200px;
-    }
+.indicator.active {
+    background: var(--primary-color);
+    transform: scale(1.2);
 }
 
-@media (max-width: 992px) {
-    .book-card {
-        flex: 0 0 180px;
-    }
-
-    .carousel-nav {
-        width: 45px;
-        height: 45px;
-        font-size: 18px;
-    }
-}
-
-@media (max-width: 768px) {
-    .book-card {
-        flex: 0 0 160px;
-    }
-
-    .related-books {
-        padding: 20px;
-    }
-
-    .related-books h3 {
-        font-size: 24px;
-    }
-}
-
-@media (max-width: 576px) {
-    .book-card {
-        flex: 0 0 140px;
-    }
-
-    .book-card img {
-        height: 160px;
-    }
-
-    .book-card h6 {
-        font-size: 14px;
-        height: 40px;
-    }
-
-    .carousel-nav.prev {
-        right: -20px;
-    }
-
-    .carousel-nav.next {
-        left: -20px;
-    }
-}
-
-/* Loading Animation */
+/* --- Loading Animation --- */
 .loading {
     display: flex;
     justify-content: center;
@@ -336,33 +296,27 @@
     width: 40px;
     height: 40px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #007bff;
+    border-top: 4px solid var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
+    to {
         transform: rotate(360deg);
     }
 }
 
-/* Success Animation */
+/* --- Success Animation --- */
 @keyframes addSuccess {
-    0% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
 
     50% {
         transform: scale(1.2);
-    }
-
-    100% {
-        transform: scale(1);
     }
 }
 
@@ -370,7 +324,7 @@
     animation: addSuccess 0.3s ease;
 }
 
-/* Empty State Styling */
+/* --- Empty State --- */
 .empty-carousel-message {
     margin: 2rem 0;
 }
@@ -378,14 +332,16 @@
 .empty-state-card {
     min-height: 300px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    border: 2px dashed #dee2e6 !important;
-    background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
-        linear-gradient(-45deg, #f8f9fa 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #f8f9fa 75%),
-        linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
+    padding: 2rem;
+    border: 2px dashed var(--border-light);
+    background:
+        linear-gradient(45deg, var(--bg-light) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--bg-light) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--bg-light) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--bg-light) 75%);
     background-size: 20px 20px;
     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
     transition: all 0.3s ease;
@@ -393,7 +349,7 @@
 
 .empty-state-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
 }
 
 .empty-state-icon {
@@ -412,18 +368,303 @@
     }
 }
 
-/* Responsive adjustments */
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE & TABLET
+   ============================================ */
+
+/* --- Large Tablets (1024px to 1200px) --- */
+@media (max-width: 1200px) {
+    :root {
+        --card-width: 200px;
+    }
+}
+
+/* --- Tablets (768px to 1024px) --- */
+@media (max-width: 1024px) {
+    :root {
+        --card-width: 190px;
+        --card-img-height: 240px;
+        --heading-font-size: 26px;
+        --heading-margin: 25px;
+        --container-padding: 25px;
+    }
+
+    .carousel-nav {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+
+    .book-card h6 {
+        font-size: 15px;
+        height: 45px;
+    }
+
+    .book-card .author {
+        font-size: 13px;
+    }
+
+    .book-card .price {
+        font-size: 16px;
+    }
+}
+
+/* --- iPad Portrait / Small Tablets (768px to 1024px) --- */
 @media (max-width: 768px) {
+    :root {
+        --card-width: 160px;
+        --card-img-height: 200px;
+        --heading-font-size: 24px;
+        --heading-margin: 20px;
+        --heading-padding: 12px;
+        --container-padding: 5vw;
+        --nav-size: 44px;
+        --nav-font-size: 18px;
+    }
+
+    .related-books {
+        margin: 5vw 0;
+        border-radius: 12px;
+    }
+
+    .related-books h3 {
+        margin-bottom: 20px;
+    }
+
+    .carousel-wrapper {
+        gap: 15px;
+        padding: 0 5px;
+    }
+
+    .book-card {
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .book-card h6 {
+        font-size: 14px;
+        height: 42px;
+        margin-bottom: 6px;
+    }
+
+    .book-card .author {
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+    .book-card img {
+        margin-bottom: 12px;
+        border-radius: 8px;
+    }
+
+    .book-card .price-section {
+        gap: 8px;
+    }
+
+    .book-card .add-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .carousel-nav.prev {
+        right: -20px;
+    }
+
+    .carousel-nav.next {
+        left: -20px;
+    }
+
+    .carousel-indicators {
+        gap: 6px;
+        margin-top: 20px;
+        padding: 0 15px;
+    }
+
+    .indicator {
+        width: 8px;
+        height: 8px;
+    }
+
     .empty-state-card {
-        margin: 1rem;
-        padding: 2rem 1rem !important;
+        min-height: 250px;
+        padding: 1.5rem;
     }
 
     .empty-state-card h4 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
 
     .empty-state-card p {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* --- Landscape Mobile / Small Tablets (600px to 768px) --- */
+@media (max-width: 600px) {
+    :root {
+        --card-width: 140px;
+        --card-img-height: 170px;
+        --heading-font-size: 22px;
+        --heading-margin: 15px;
+        --container-padding: 4vw;
+        --nav-size: 40px;
+        --nav-font-size: 16px;
+    }
+
+    .related-books {
+        padding: var(--container-padding);
+        margin: 4vw 0;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .related-books h3 {
+        font-size: var(--heading-font-size);
+        margin-bottom: var(--heading-margin);
+        padding-bottom: 10px;
+    }
+
+    .related-books h3::after {
+        width: 50px;
+        height: 3px;
+    }
+
+    .carousel-wrapper {
+        gap: 12px;
+        padding: 0 3px;
+    }
+
+    .book-card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .book-card h6 {
+        font-size: 13px;
+        height: 40px;
+        margin-bottom: 5px;
+    }
+
+    .book-card .author {
+        font-size: 11px;
+        margin-bottom: 10px;
+        height: 18px;
+    }
+
+    .book-card img {
+        height: var(--card-img-height);
+        margin-bottom: 10px;
+        border-radius: 8px;
+    }
+
+    .book-card .price {
+        font-size: 15px;
+    }
+
+    .book-card .add-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+    }
+
+    .carousel-nav {
+        width: var(--nav-size);
+        height: var(--nav-size);
+        font-size: var(--nav-font-size);
+    }
+
+    .carousel-nav.prev {
+        right: -18px;
+    }
+
+    .carousel-nav.next {
+        left: -18px;
+    }
+
+    .carousel-indicators {
+        gap: 5px;
+        margin-top: 15px;
+    }
+
+    .indicator {
+        width: 7px;
+        height: 7px;
+    }
+
+    .indicator.active {
+        transform: scale(1.3);
+    }
+}
+
+/* --- Mobile Small Screens (< 400px) --- */
+@media (max-width: 400px) {
+    :root {
+        --card-width: 130px;
+        --card-img-height: 155px;
+        --heading-font-size: 20px;
+        --heading-margin: 12px;
+        --container-padding: 3vw;
+        --nav-size: 38px;
+        --nav-font-size: 15px;
+    }
+
+    .related-books {
+        padding: var(--container-padding);
+        margin: 3vw 0;
+    }
+
+    .carousel-wrapper {
+        gap: 10px;
+    }
+
+    .book-card {
+        padding: 10px;
+    }
+
+    .book-card h6 {
+        font-size: 12px;
+        height: 38px;
+    }
+
+    .book-card .author {
+        font-size: 10px;
+        margin-bottom: 8px;
+    }
+
+    .book-card .price-section {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .book-card .add-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .carousel-nav {
+        width: 36px;
+        height: 36px;
+    }
+
+    .carousel-nav.prev {
+        right: -16px;
+    }
+
+    .carousel-nav.next {
+        left: -16px;
+    }
+
+    .empty-state-card {
+        min-height: 200px;
+        padding: 1rem;
+    }
+
+    .empty-state-card h4 {
+        font-size: 1rem;
+    }
+
+    .empty-state-card p {
+        font-size: 0.8rem;
     }
 }
