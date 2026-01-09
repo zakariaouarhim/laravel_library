@@ -24,7 +24,7 @@ class Order extends Model
 
     public function checkoutDetail()
     {
-        return $this->belongsTo(CheckoutDetail::class);
+        return $this->hasOne(CheckoutDetail::class);
     }
     // Relationship with User (nullable for guest orders)
     public function user()

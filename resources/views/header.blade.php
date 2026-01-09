@@ -87,10 +87,21 @@
                             <li><hr class="dropdown-divider"></li>
                             <li class="mb-3">
                                 <label for="trackOrderInput" class="form-label">تعقب طلباتي</label>
-                                <div class="input-group">
-                                    <input type="text" id="trackOrderInput" class="form-control" placeholder="رقم الطلب أو البريد الإلكتروني">
-                                    <button class="btn btn-outline-secondary" type="button">بحث</button>
-                                </div>
+                                <form action="{{ route('trackmyorder') }}" method="POST">
+                                    @csrf
+                                    <div class="input-group">
+                                        <input 
+                                            type="text" 
+                                            name="trackOrderInput" 
+                                            class="form-control" 
+                                            placeholder="رقم التتبع أو البريد الإلكتروني"
+                                            required
+                                        >
+                                        <button class="btn btn-outline-secondary" type="submit">
+                                            بحث
+                                        </button>
+                                    </div>
+                                </form>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ route('account.page') }}">حسابي</a></li>
@@ -116,10 +127,21 @@
                             <li><hr class="dropdown-divider"></li>
                             <li class="mb-3">
                                 <label for="trackOrderInput" class="form-label">تعقب طلباتي</label>
-                                <div class="input-group">
-                                    <input type="text" id="trackOrderInput" class="form-control" placeholder="رقم الطلب أو البريد الإلكتروني">
-                                    <button class="btn btn-outline-secondary" type="button">بحث</button>
-                                </div>
+                                <form action="{{ route('trackmyorder') }}" method="POST">
+                                    @csrf
+                                    <div class="input-group">
+                                        <input 
+                                            type="text" 
+                                            name="trackOrderInput" 
+                                            class="form-control" 
+                                            placeholder="رقم التتبع أو البريد الإلكتروني"
+                                            required
+                                        >
+                                        <button class="btn btn-outline-secondary" type="submit">
+                                            بحث
+                                        </button>
+                                    </div>
+                                </form>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                         </ul>

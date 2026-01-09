@@ -44,7 +44,7 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     margin: clamp(1.5rem, 5vw, 2.5rem) auto;
-    max-width: 1200px;
+    max-width: 100%;
     overflow: hidden;
 }
 
@@ -100,6 +100,54 @@
 /* ============================================
            Category Card
            ============================================ */
+           
+.category-section2 .category-card {
+  background: white;
+  padding: 30px;
+  border-radius: var(--border-radius);
+  text-align: center;
+  transition: all var(--transition-speed);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-section2 .category-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  transform: scaleX(0);
+  transition: transform var(--transition-speed);
+  transform-origin: right;
+}
+
+.category-section2 .category-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--color-accent);
+}
+
+.category-section2 .category-card:hover::before {
+  transform: scaleX(1);
+}
+
+.category-section2 .category-icon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 20px;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: transform var(--transition-speed);
+}
+
+.category-section2 .category-card:hover .category-icon {
+  transform: scale(1.1) rotate(5deg);
+}
 .category-section2 .category-card {
     flex: 0 0 clamp(120px, 18vw, 160px);
     aspect-ratio: 1 / 1;

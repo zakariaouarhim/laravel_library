@@ -7,9 +7,10 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Models\CheckoutDetail;
 use App\Models\Order;
 use App\Models\OrderDetail;
-use App\Models\Cart; // Add this import
+use App\Models\Cart; 
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth; // Add this import
+use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -99,9 +100,21 @@ class CheckoutController extends Controller
                 $validated['card_number'] = encrypt($validated['card_number']);
                 $validated['cvv'] = encrypt($validated['cvv']);
             }
+            // Create order record
+            $order = Order::create([
+                'user_id' => auth()->check() ? auth()->id() : null,
+                'status' => 'pending',
+                'total_price' => $total,
+                'shipping_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
+                'billing_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
+                'payment_method' => $validated['payment_method'],
+                'tracking_number' => 'TR-' . Str::upper(Str::random(10)),
+            ]);
 
+            Log::info('Order record created', ['id' => $order->id]);
             // Create checkout record
             $checkout = CheckoutDetail::create([
+                'order_id' => $order->id,
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'email' => $validated['email'],
@@ -123,18 +136,7 @@ class CheckoutController extends Controller
 
             Log::info('Checkout record created', ['id' => $checkout->id]);
 
-            // Create order record
-            $order = Order::create([
-                'user_id' => auth()->check() ? auth()->id() : 0,// Use 0 for guest users
-                'status' => 'pending',
-                'total_price' => $total,
-                'shipping_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
-                'billing_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
-                'payment_method' => $validated['payment_method'],
-                'tracking_number' => 'TR' . time() . rand(100, 999),
-            ]);
-
-            Log::info('Order record created', ['id' => $order->id]);
+            
 
             // Create order details
             foreach ($cart as $id => $item) {
@@ -233,5 +235,52 @@ class CheckoutController extends Controller
             'success' => false,
             'message' => 'حدث خطأ في تحديث الكمية'
         ]);
+    }
+    public function trackmyorder(Request $request){
+         $input = trim($request->input('trackOrderInput'));
+         
+
+        $order = Order::where('tracking_number', $input)
+            ->with(['checkoutDetail', 'orderDetails.book'])
+            ->first();
+
+        if ($order) {
+           
+            switch ($order->status) {
+                case 'pending':
+                     $progress=25;
+                    break;
+                case 'processing':
+                     $progress=50;
+                    break;
+                case 'shipped':
+                     $progress=75;
+                    break;
+                case 'delivered':
+                     $progress=100;
+                    break;
+                case 'cancelled':
+                     $progress=0;
+                    break;
+                case 'Failed':
+                     $progress=0;
+                    break;
+                case 'Refunded':
+                     $progress=0;
+                    break;
+                case 'returned':
+                     $progress=0;
+                    break;    
+                    
+                default:
+                    $progress=25;
+                }
+
+            return view('trackmyorder', compact('order','progress'));
+
+        }
+
+
+        return redirect()->back()->with('error', 'الطلب غير موجود');
     }
 }

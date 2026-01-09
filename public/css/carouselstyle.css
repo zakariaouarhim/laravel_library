@@ -1,71 +1,65 @@
 /* ============================================
-   CAROUSEL COMPONENT - RESPONSIVE & MODERN
+   CAROUSEL COMPONENT - REFACTORED
    ============================================ */
 
-/* --- CSS Variables for Easy Theming --- */
+/* 1. CONFIGURATION (CSS VARIABLES) */
 :root {
-    --primary-color: #007bff;
-    --primary-dark: #0056b3;
-    --secondary-color: #48CAE4;
-    --light-accent: #CAF0F8;
-    --text-dark: #2c3e50;
-    --text-muted: #6c757d;
-    --border-light: #dee2e6;
-    --bg-light: #f8f9fa;
-    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 12px 30px rgba(0, 123, 255, 0.15);
-    --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --border-radius: 15px;
+    /* Colors */
+    --c-primary: #007bff;
+    --c-primary-dark: #0056b3;
+    --c-secondary: #48CAE4;
+    --c-accent-light: #ADE8F4;
+    --c-text-dark: #03045E;
+    --c-text-muted: #6c757d;
+    --c-bg-light: #f8f9fa;
+    --c-border: #e2e8f0;
 
-    /* Responsive Variables - Desktop */
-    --card-width: 220px;
-    --card-img-height: 260px;
+    /* Effects */
+    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 20px 60px rgba(0, 123, 255, 0.2);
+    --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --radius-main: 16px;
+
+    /* Dimensions (Responsive Defaults) */
+    --card-width: 250px;
+    --card-img-h: 300px;
     --nav-size: 50px;
-    --nav-font-size: 20px;
-    --heading-font-size: 28px;
-    --heading-margin: 30px;
-    --heading-padding: 15px;
-    --container-padding: 30px;
+    --nav-font: 20px;
+    --container-pad: 30px;
 }
 
-/* ============================================
-   BASE STYLES - DESKTOP
-   ============================================ */
-
-/* --- Container & Layout --- */
+/* 2. LAYOUT & CONTAINER */
 .related-books {
     background: white;
-    padding: var(--container-padding);
-    border-radius: var(--border-radius);
+    padding: var(--container-pad);
+    border-radius: var(--radius-main);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     margin: 40px 0;
     overflow: hidden;
 }
 
 .related-books h3 {
-    color: var(--text-dark);
+    color: var(--c-text-dark);
     font-weight: 700;
-    font-size: var(--heading-font-size);
-    margin-bottom: var(--heading-margin);
+    font-size: 28px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
     position: relative;
-    padding-bottom: var(--heading-padding);
 }
 
 .related-books h3::after {
     content: '';
     position: absolute;
     bottom: 0;
-    right: 0;
+    inset-inline-start: 0;
     width: 60px;
     height: 4px;
-    background: linear-gradient(90deg, var(--secondary-color), var(--light-accent));
+    background: linear-gradient(90deg, var(--c-secondary), var(--c-accent-light));
     border-radius: 2px;
 }
 
-/* --- Carousel Structure --- */
 .carousel-container {
     position: relative;
-    overflow: visible;
     padding: 20px 0;
     z-index: 1;
 }
@@ -73,26 +67,32 @@
 .carousel-wrapper {
     display: flex;
     gap: 20px;
-    padding: 0 10px;
-    transition: transform 0.4s var(--transition-smooth);
+    padding: 20px 0px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    transition: transform 0.4s var(--ease-smooth);
+    scroll-snap-type: x mandatory;
 }
 
-/* --- Book Card --- */
+/* 3. BOOK CARD COMPONENT */
 .book-card {
     flex: 0 0 var(--card-width);
     display: flex;
     flex-direction: column;
+    position: relative;
     background: white;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-main);
     padding: 20px;
     text-align: center;
-    box-shadow: var(--shadow-sm);
     border: 2px solid transparent;
-    transition: all 0.3s var(--transition-smooth);
-    position: relative;
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
+    transition: all 0.3s var(--ease-smooth);
 }
 
+/* Top accent border animation */
 .book-card::before {
     content: '';
     position: absolute;
@@ -100,162 +100,176 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--secondary-color), var(--light-accent));
+    background: linear-gradient(90deg, var(--c-secondary), var(--c-accent-light));
     transform: scaleX(0);
+    transform-origin: right;
     transition: transform 0.3s ease;
-    transform-origin: left;
 }
 
 .book-card:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-8px);
     box-shadow: var(--shadow-md);
-    border-color: var(--secondary-color);
+    border-color: var(--c-secondary);
 }
 
 .book-card:hover::before {
     transform: scaleX(1);
 }
 
-.book-card img {
+/* Card Elements */
+.book-card img.card-img-top {
     width: 100%;
-    height: var(--card-img-height);
+    height: var(--card-img-h);
     object-fit: cover;
-    border-radius: 10px;
+    border-radius: 12px;
     margin-bottom: 15px;
     transition: transform 0.3s ease;
 }
 
-.book-card img:hover {
+.book-card:hover img.card-img-top {
     transform: scale(1.05);
 }
 
 .book-card h6 {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-    height: 48px;
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    font-weight: 700;
+    color: var(--c-text-dark);
+    margin: 10px 0;
+    min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1.3;
+    line-height: 1.4;
 }
 
-.book-card .author {
-    color: var(--text-muted);
-    font-size: 14px;
-    margin-bottom: 15px;
-    height: 20px;
+.book-card .book-author {
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+    color: var(--c-text-muted);
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    min-height: 20px;
 }
 
+.book-card .book-author i {
+    color: var(--c-secondary);
+}
+
+/* Price Section (Footer) */
 .book-card .price-section {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
     margin-top: auto;
     gap: 10px;
+    flex-shrink: 0;
+    padding-top: 15px;
+    border-top: 1px solid var(--c-border);
 }
 
-.book-card .price {
-    color: var(--primary-color);
+.book-card .price-section>div {
+    width: 100%;
+    text-align: center;
+}
+
+.book-card .price-section .text-through {
+    text-decoration: line-through;
+    color: var(--c-text-muted);
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+}
+
+.book-card .price-section .text-danger {
+    color: #e53e3e;
     font-weight: 700;
-    font-size: 18px;
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
 }
 
-/* --- Add Button --- */
+/* Add Button (Specific Modifier) */
 .book-card .add-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--c-secondary), var(--c-accent-light));
     border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    color: white;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.book-card .add-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    transform: translate(-50%, -50%);
+    gap: 8px;
+    margin-top: 10px;
+    font-size: clamp(0.85rem, 2vw, 1rem);
 }
 
 .book-card .add-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    background: linear-gradient(135deg, #3ba0c4, #90E0EF);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3);
 }
 
-.book-card .add-btn:hover::before {
-    width: 100%;
-    height: 100%;
+.book-card .add-btn i {
+    font-size: 1rem;
 }
 
-.book-card .add-btn:active {
-    transform: scale(0.95);
-}
-
-/* --- Navigation Buttons --- */
+/* 4. NAVIGATION CONTROLS */
 .carousel-nav {
     position: absolute;
     top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
     width: var(--nav-size);
     height: var(--nav-size);
+    font-size: var(--nav-font);
     border-radius: 50%;
     border: none;
     background: white;
-    color: var(--primary-color);
-    font-size: var(--nav-font-size);
+    color: var(--c-primary);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    z-index: 2;
     cursor: pointer;
-    pointer-events: auto;
-    transform: translateY(-50%);
+    transition: all 0.3s ease;
+}
+
+.carousel-nav.prev {
+    inset-inline-start: -25px;
+}
+
+.carousel-nav.next {
+    inset-inline-end: -25px;
+}
+
+[dir="rtl"] .carousel-nav.prev {
+    right: -25px;
+    left: auto;
+}
+
+[dir="rtl"] .carousel-nav.next {
+    left: -25px;
+    right: auto;
 }
 
 .carousel-nav:hover:not(:disabled) {
-    background: var(--primary-color);
+    background: var(--c-primary);
     color: white;
     transform: translateY(-50%) scale(1.1);
     box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
 }
 
-.carousel-nav:active:not(:disabled) {
-    transform: translateY(-50%) scale(0.95);
-}
-
-.carousel-nav.prev {
-    right: -25px;
-}
-
-.carousel-nav.next {
-    left: -25px;
-}
-
 .carousel-nav:disabled {
     opacity: 0.3;
     cursor: not-allowed;
-    background: var(--bg-light);
-    color: var(--text-muted);
+    background: var(--c-bg-light);
 }
 
-/* --- Indicators --- */
+/* Indicators */
 .carousel-indicators {
     display: flex;
     justify-content: center;
@@ -269,22 +283,18 @@
     height: 10px;
     border-radius: 50%;
     border: none;
-    background: var(--border-light);
-    transition: all 0.3s ease;
+    background: var(--c-border);
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
+.indicator.active,
 .indicator:hover {
-    background: var(--primary-color);
-    opacity: 0.7;
-}
-
-.indicator.active {
-    background: var(--primary-color);
+    background: var(--c-primary);
     transform: scale(1.2);
 }
 
-/* --- Loading Animation --- */
+/* 5. UTILITIES & ANIMATIONS */
 .loading {
     display: flex;
     justify-content: center;
@@ -296,7 +306,7 @@
     width: 40px;
     height: 40px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary-color);
+    border-top-color: var(--c-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -307,14 +317,7 @@
     }
 }
 
-/* --- Success Animation --- */
 @keyframes addSuccess {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
     50% {
         transform: scale(1.2);
     }
@@ -324,11 +327,7 @@
     animation: addSuccess 0.3s ease;
 }
 
-/* --- Empty State --- */
-.empty-carousel-message {
-    margin: 2rem 0;
-}
-
+/* Empty State */
 .empty-state-card {
     min-height: 300px;
     display: flex;
@@ -336,20 +335,9 @@
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    border: 2px dashed var(--border-light);
-    background:
-        linear-gradient(45deg, var(--bg-light) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--bg-light) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, var(--bg-light) 75%),
-        linear-gradient(-45deg, transparent 75%, var(--bg-light) 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-    transition: all 0.3s ease;
-}
-
-.empty-state-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    border: 2px dashed var(--c-border);
+    background-color: var(--c-bg-light);
+    transition: transform 0.3s ease;
 }
 
 .empty-state-icon {
@@ -368,25 +356,21 @@
     }
 }
 
-/* ============================================
-   RESPONSIVE DESIGN - MOBILE & TABLET
-   ============================================ */
+/* 6. RESPONSIVE DESIGN (Consolidated) */
 
-/* --- Large Tablets (1024px to 1200px) --- */
+/* Large Tablets */
 @media (max-width: 1200px) {
     :root {
-        --card-width: 200px;
+        --card-width: 220px;
     }
 }
 
-/* --- Tablets (768px to 1024px) --- */
+/* Tablets */
 @media (max-width: 1024px) {
     :root {
-        --card-width: 190px;
-        --card-img-height: 240px;
-        --heading-font-size: 26px;
-        --heading-margin: 25px;
-        --container-padding: 25px;
+        --card-width: 200px;
+        --card-img-h: 240px;
+        --container-pad: 25px;
     }
 
     .carousel-nav {
@@ -394,46 +378,20 @@
         height: 45px;
         font-size: 18px;
     }
-
-    .book-card h6 {
-        font-size: 15px;
-        height: 45px;
-    }
-
-    .book-card .author {
-        font-size: 13px;
-    }
-
-    .book-card .price {
-        font-size: 16px;
-    }
 }
 
-/* --- iPad Portrait / Small Tablets (768px to 1024px) --- */
+/* Small Tablets / Large Mobile */
 @media (max-width: 768px) {
     :root {
         --card-width: 160px;
-        --card-img-height: 200px;
-        --heading-font-size: 24px;
-        --heading-margin: 20px;
-        --heading-padding: 12px;
-        --container-padding: 5vw;
+        --card-img-h: 200px;
+        --container-pad: 5vw;
         --nav-size: 44px;
-        --nav-font-size: 18px;
     }
 
     .related-books {
         margin: 5vw 0;
         border-radius: 12px;
-    }
-
-    .related-books h3 {
-        margin-bottom: 20px;
-    }
-
-    .carousel-wrapper {
-        gap: 15px;
-        padding: 0 5px;
     }
 
     .book-card {
@@ -443,27 +401,7 @@
 
     .book-card h6 {
         font-size: 14px;
-        height: 42px;
-        margin-bottom: 6px;
-    }
-
-    .book-card .author {
-        font-size: 12px;
-        margin-bottom: 12px;
-    }
-
-    .book-card img {
-        margin-bottom: 12px;
-        border-radius: 8px;
-    }
-
-    .book-card .price-section {
-        gap: 8px;
-    }
-
-    .book-card .add-btn {
-        width: 36px;
-        height: 36px;
+        min-height: 42px;
     }
 
     .carousel-nav.prev {
@@ -473,198 +411,53 @@
     .carousel-nav.next {
         left: -20px;
     }
-
-    .carousel-indicators {
-        gap: 6px;
-        margin-top: 20px;
-        padding: 0 15px;
-    }
-
-    .indicator {
-        width: 8px;
-        height: 8px;
-    }
-
-    .empty-state-card {
-        min-height: 250px;
-        padding: 1.5rem;
-    }
-
-    .empty-state-card h4 {
-        font-size: 1.1rem;
-    }
-
-    .empty-state-card p {
-        font-size: 0.85rem;
-    }
 }
 
-/* --- Landscape Mobile / Small Tablets (600px to 768px) --- */
+/* Mobile */
 @media (max-width: 600px) {
     :root {
         --card-width: 140px;
-        --card-img-height: 170px;
-        --heading-font-size: 22px;
-        --heading-margin: 15px;
-        --container-padding: 4vw;
+        --card-img-h: 170px;
+        --container-pad: 4vw;
         --nav-size: 40px;
-        --nav-font-size: 16px;
     }
 
     .related-books {
-        padding: var(--container-padding);
         margin: 4vw 0;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    .related-books h3 {
-        font-size: var(--heading-font-size);
-        margin-bottom: var(--heading-margin);
-        padding-bottom: 10px;
-    }
-
-    .related-books h3::after {
-        width: 50px;
-        height: 3px;
-    }
-
-    .carousel-wrapper {
-        gap: 12px;
-        padding: 0 3px;
     }
 
     .book-card {
         padding: 12px;
-        border-radius: 10px;
-    }
-
-    .book-card h6 {
-        font-size: 13px;
-        height: 40px;
-        margin-bottom: 5px;
-    }
-
-    .book-card .author {
-        font-size: 11px;
-        margin-bottom: 10px;
-        height: 18px;
-    }
-
-    .book-card img {
-        height: var(--card-img-height);
-        margin-bottom: 10px;
-        border-radius: 8px;
-    }
-
-    .book-card .price {
-        font-size: 15px;
     }
 
     .book-card .add-btn {
-        width: 34px;
-        height: 34px;
-        font-size: 14px;
+        width: 100%;
+        height: 38px;
+        padding: 0;
+        gap: 0;
     }
 
-    .carousel-nav {
-        width: var(--nav-size);
-        height: var(--nav-size);
-        font-size: var(--nav-font-size);
+    .book-card .add-btn span,
+    .book-card .add-btn i+text {
+        display: none;
     }
 
-    .carousel-nav.prev {
-        right: -18px;
-    }
-
-    .carousel-nav.next {
-        left: -18px;
-    }
-
-    .carousel-indicators {
-        gap: 5px;
-        margin-top: 15px;
-    }
-
-    .indicator {
-        width: 7px;
-        height: 7px;
-    }
-
-    .indicator.active {
-        transform: scale(1.3);
+    .book-card .add-btn i {
+        font-size: 1.1rem;
     }
 }
 
-/* --- Mobile Small Screens (< 400px) --- */
+/* Tiny Screens */
 @media (max-width: 400px) {
     :root {
         --card-width: 130px;
-        --card-img-height: 155px;
-        --heading-font-size: 20px;
-        --heading-margin: 12px;
-        --container-padding: 3vw;
+        --card-img-h: 155px;
+        --container-pad: 3vw;
         --nav-size: 38px;
-        --nav-font-size: 15px;
-    }
-
-    .related-books {
-        padding: var(--container-padding);
-        margin: 3vw 0;
-    }
-
-    .carousel-wrapper {
-        gap: 10px;
-    }
-
-    .book-card {
-        padding: 10px;
-    }
-
-    .book-card h6 {
-        font-size: 12px;
-        height: 38px;
-    }
-
-    .book-card .author {
-        font-size: 10px;
-        margin-bottom: 8px;
     }
 
     .book-card .price-section {
         flex-direction: column;
-        gap: 8px;
-    }
-
-    .book-card .add-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 12px;
-    }
-
-    .carousel-nav {
-        width: 36px;
-        height: 36px;
-    }
-
-    .carousel-nav.prev {
-        right: -16px;
-    }
-
-    .carousel-nav.next {
-        left: -16px;
-    }
-
-    .empty-state-card {
-        min-height: 200px;
-        padding: 1rem;
-    }
-
-    .empty-state-card h4 {
-        font-size: 1rem;
-    }
-
-    .empty-state-card p {
-        font-size: 0.8rem;
+        gap: 5px;
     }
 }

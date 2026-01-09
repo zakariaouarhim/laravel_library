@@ -83,6 +83,20 @@ Route::post('/Dashbord_Admin/Product/add', [BookController::class, 'addProduct']
 Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
 Route::resource('client', Usercontroller::class);
 
+
+
+
+  Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('orders', OrderController::class);
+    
+    // Or explicit routes:
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::put('/orders/{id}', [OrderController::class, 'update'])->name('orders.update');
+    Route::get('/orders/{id}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::post('/orders/{id}', [OrderController::class, 'store'])->name('orders.store');
+});
+
 // Other Routes
 // 
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add.to.cart');
@@ -99,6 +113,8 @@ Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout
 
 
 Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
+Route::post('/checkout/trackmyorder', [CheckoutController::class, 'trackmyorder'])
+     ->name('trackmyorder');
 
 
 Route::get('/success/{id}', [CheckoutController::class, 'success'])->name('success');

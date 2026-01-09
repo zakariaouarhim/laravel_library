@@ -1,15 +1,13 @@
-*{
+.Layout-searchresult{
+    z-index: 1;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-body {
+    padding-top: 60px;
     font-family: 'Tajawal', sans-serif;
     background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
     min-height: 100vh;
     
-    padding-top: 60px;
 }
 
 /* Search Header */
@@ -471,9 +469,9 @@ background: white;
 
 /* Tablets Landscape */
 @media (max-width: 992px) {
-    body {
-        padding-top: 50px;
-    }
+    .Layout-searchresult {
+            padding-top: 40px;
+        }
 
          .search-header {
         padding: 30px 15px 60px;
@@ -499,6 +497,7 @@ background: white;
 
 /* Tablets Portrait */
 @media (max-width: 768px) {
+    
      .search-header {
         padding: 25px 15px 100px;
     }
@@ -542,9 +541,12 @@ background: white;
 
 /* Mobile Large */
 @media (max-width: 576px) {
+    .Layout-searchresult {
+            padding-top: 30px;
+        }
     body {
         padding-top: 40px;
-        padding-bottom: 40px;
+        
     }
 
          .search-header {
@@ -604,6 +606,7 @@ background: white;
 
 /* Mobile Small */
 @media (max-width: 420px) {
+    
      .books-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 10px;

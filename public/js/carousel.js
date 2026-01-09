@@ -5,149 +5,109 @@ class EnhancedCarousel {
         this.nextBtn = document.getElementById(nextBtnId);
         this.indicators = document.getElementById(indicatorsId);
         
-        // Check if all elements exist
-        if (!this.wrapper || !this.prevBtn || !this.nextBtn || !this.indicators) {
-            console.warn(`Carousel elements not found for ${wrapperId}`);
-            return;
-        }
+        if (!this.wrapper || !this.prevBtn || !this.nextBtn || !this.indicators) return;
         
-        this.currentPosition = 0;
-        this.cardWidth = 240; // 220px + 20px gap
-        this.visibleCards = this.calculateVisibleCards();
-        this.totalCards = this.wrapper.children.length;
-        this.maxPosition = Math.max(0, this.totalCards - this.visibleCards);
+        this.cardWidth = 240; // 220px card + 20px gap
         
+        // Check direction for RTL support
+        this.isRTL = document.documentElement.dir === 'rtl';
+
         this.init();
-        this.setupEventListeners();
     }
-    
-    calculateVisibleCards() {
-        const containerWidth = this.wrapper.parentElement.clientWidth;
-        if (containerWidth < 576) return 1;
-        if (containerWidth < 768) return 2;
-        if (containerWidth < 992) return 3;
-        if (containerWidth < 1200) return 4;
-        return 5;
-    }
-    
+
     init() {
         this.createIndicators();
-        this.updateCarousel();
         this.updateNavButtons();
-    }
-    
-    createIndicators() {
-        this.indicators.innerHTML = '';
-        const indicatorCount = Math.ceil(this.totalCards / this.visibleCards);
         
-        for (let i = 0; i < indicatorCount; i++) {
-            const indicator = document.createElement('button');
-            indicator.className = 'indicator';
-            indicator.onclick = () => this.goToSlide(i);
-            this.indicators.appendChild(indicator);
-        }
-        
-        this.updateIndicators();
-    }
-    
-    updateIndicators() {
-        const indicators = this.indicators.querySelectorAll('.indicator');
-        // Calculate which indicator should be active based on current position
-        const activeIndex = Math.floor(this.currentPosition / this.visibleCards);
-        
-        indicators.forEach((indicator, index) => {
-            indicator.classList.toggle('active', index === activeIndex);
-        });
-    }
-    
-    updateCarousel() {
-        // Move by cardWidth for each position (one card at a time)
-        const translateX = this.currentPosition * this.cardWidth;
-        this.wrapper.style.transform = `translateX(${translateX}px)`;
-        this.updateIndicators();
-    }
-    
-    updateNavButtons() {
-        this.prevBtn.disabled = this.currentPosition === 0;
-        this.nextBtn.disabled = this.currentPosition >= this.maxPosition;
-    }
-    
-    move(direction) {
-        // Move one card at a time instead of visibleCards
-        const newPosition = this.currentPosition + direction;
-        
-        if (newPosition >= 0 && newPosition <= this.maxPosition) {
-            this.currentPosition = newPosition;
-        } else if (direction > 0) {
-            this.currentPosition = this.maxPosition;
-        } else {
-            this.currentPosition = 0;
-        }
-        
-        this.updateCarousel();
-        this.updateNavButtons();
-    }
-    
-    goToSlide(slideIndex) {
-        this.currentPosition = Math.min(slideIndex * this.visibleCards, this.maxPosition);
-        this.updateCarousel();
-        this.updateNavButtons();
-    }
-    
-    setupEventListeners() {
-        // Touch/swipe support
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-        
-        this.wrapper.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            isDragging = true;
-        });
-        
-        this.wrapper.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            currentX = e.touches[0].clientX;
-            e.preventDefault();
-        });
-        
-        this.wrapper.addEventListener('touchend', () => {
-            if (!isDragging) return;
-            
-            const diffX = startX - currentX;
-            if (Math.abs(diffX) > 50) {
-                // Move one card at a time for touch swipe as well
-                this.move(diffX > 0 ? 1 : -1);
-            }
-            
-            isDragging = false;
+        // LISTEN FOR SCROLL: Updates dots when user swipes manually
+        this.wrapper.addEventListener('scroll', () => {
+            this.updateIndicators();
+            this.updateNavButtons();
         });
         
         // Window resize
         window.addEventListener('resize', () => {
-            this.visibleCards = this.calculateVisibleCards();
-            this.maxPosition = Math.max(0, this.totalCards - this.visibleCards);
-            this.currentPosition = Math.min(this.currentPosition, this.maxPosition);
             this.createIndicators();
-            this.updateCarousel();
-            this.updateNavButtons();
         });
+    }
+
+    // Move the carousel using Native Scroll
+    move(direction) {
+        // Calculate movement distance
+        // In RTL, "Next" (Left arrow) means moving to negative scroll values
+        const scrollAmount = this.cardWidth * direction;
+        
+        const targetScroll = this.isRTL 
+            ? -(scrollAmount) // RTL needs negative value to go "Next" (Left)
+            : scrollAmount;
+
+        this.wrapper.scrollBy({
+            left: targetScroll,
+            behavior: 'smooth'
+        });
+    }
+
+    createIndicators() {
+        if (!this.indicators) return;
+        this.indicators.innerHTML = '';
+        
+        // Calculate total slides based on scroll width
+        const totalScrollWidth = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+        const totalSlides = Math.ceil(this.wrapper.scrollWidth / this.cardWidth);
+        const visibleSlides = Math.floor(this.wrapper.clientWidth / this.cardWidth);
+        const dotCount = totalSlides - visibleSlides + 1;
+
+        for (let i = 0; i < dotCount; i++) {
+            const indicator = document.createElement('button');
+            indicator.className = 'indicator';
+            // Click to scroll to specific position
+            indicator.onclick = () => {
+                const targetPos = i * this.cardWidth;
+                this.wrapper.scrollTo({
+                    left: this.isRTL ? -targetPos : targetPos,
+                    behavior: 'smooth'
+                });
+            };
+            this.indicators.appendChild(indicator);
+        }
+        this.updateIndicators();
+    }
+
+    updateIndicators() {
+        if (!this.indicators) return;
+        
+        // Calculate current index based on scroll position
+        const currentScroll = Math.abs(this.wrapper.scrollLeft);
+        const currentIndex = Math.round(currentScroll / this.cardWidth);
+        
+        const indicators = this.indicators.querySelectorAll('.indicator');
+        indicators.forEach((ind, index) => {
+            ind.classList.toggle('active', index === currentIndex);
+        });
+    }
+
+    updateNavButtons() {
+        if (!this.prevBtn || !this.nextBtn) return;
+
+        // Use a small buffer (10px) for float math safety
+        const currentScroll = Math.abs(this.wrapper.scrollLeft);
+        const maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+
+        // In RTL, "Next" increases scroll magnitude (goes more negative)
+        // "Prev" goes back to 0
+        this.prevBtn.disabled = currentScroll <= 10; 
+        this.nextBtn.disabled = currentScroll >= (maxScroll - 10);
     }
 }
 
-// Store carousel instances
+// Initialization remains the same
 let carousels = {};
-
-// Initialize carousels when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize first carousel (Arabic books)
     carousels.carousel1 = new EnhancedCarousel('carouselWrapper1', 'prevBtn1', 'nextBtn1', 'indicators1');
-    
-    // Initialize second carousel (English books)
     carousels.carousel2 = new EnhancedCarousel('carouselWrapper2', 'prevBtn2', 'nextBtn2', 'indicators2');
 });
 
-// Global function for compatibility with onclick handlers
+// Helper function
 function moveCarousel(direction, carouselId) {
     if (carousels[carouselId]) {
         carousels[carouselId].move(direction);

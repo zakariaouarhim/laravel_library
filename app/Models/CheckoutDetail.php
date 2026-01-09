@@ -9,7 +9,7 @@ class CheckoutDetail extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'first_name', 'last_name', 'email', 'phone', 'address', 
+          'order_id', 'first_name', 'last_name', 'email', 'phone', 'address', 
         'city', 'zip_code', 'payment_method', 'card_number', 
         'expiry_date', 'cvv', 'subtotal', 'shipping', 'discount', 
         'total', 'status', 'cart_items'
@@ -26,7 +26,7 @@ class CheckoutDetail extends Model
     // Relationship with orders if needed
     public function order()
     {
-        return $this->hasOne(Order::class);
+        return $this->belongsTo(Order::class);
     }
     // Decrypt card details when accessed
     public function getCardNumberAttribute($value)

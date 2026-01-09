@@ -551,46 +551,31 @@ body {
 }
 
 .book-card .add-btn {
-    background: linear-gradient(135deg, #007bff, #0056b3);
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--c-secondary), var(--c-accent-light));
     border: none;
+    border-radius: 12px;
     color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.book-card .add-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    transform: translate(-50%, -50%);
+    gap: 8px;
+    margin-top: 10px;
+    font-size: clamp(0.85rem, 2vw, 1rem);
 }
 
 .book-card .add-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    background: linear-gradient(135deg, #3ba0c4, #90E0EF);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3);
 }
 
-.book-card .add-btn:hover::before {
-    width: 100%;
-    height: 100%;
-}
-
-.book-card .add-btn:active {
-    transform: scale(0.95);
+.book-card .add-btn i {
+    font-size: 1rem;
 }
 
 .book-card .view-btn {
