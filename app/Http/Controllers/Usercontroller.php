@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class Usercontroller extends Controller
 {
@@ -107,6 +108,7 @@ class Usercontroller extends Controller
 
                 // Redirect based on role
                 if ($user->role == "admin") {
+                    
                     return redirect()->route('Dashbord_Admin.dashboard')->with('success', 'Login successful');
                 } else {
                     return redirect()->route('index.page')->with('success', 'Login successful! Welcome back ' . $user->name);
@@ -290,5 +292,74 @@ class Usercontroller extends Controller
         });
         
 
+    }
+    public function dashboard(){
+                    $totalOrders = Order::count();
+                    $totalRevenue = Order::sum('total_price');
+                    $pendingOrders = Order::where('status', 'pending')->count();
+                    $deliveredOrders = Order::where('status', 'delivered')->count();
+                    $processingOrders = Order::where('status', 'processing')->count();
+                    $cancelledOrders = Order::where('status', 'cancelled')->count();
+                    
+                    $recentOrders = Order::latest()->limit(5)->get();
+                    
+                    // Calculate increases (for this month vs last month)
+                    $startThisMonth = Carbon::now()->startOfMonth();
+                    $startLastMonth = Carbon::now()->subMonth()->startOfMonth();
+                    $endLastMonth = Carbon::now()->subMonth()->endOfMonth();
+
+                    $ordersThisMonth = Order::where('created_at', '>=', $startThisMonth)->count();
+                    $ordersLastMonth = Order::whereBetween('created_at', [$startLastMonth, $endLastMonth])->count();
+
+                    $ordersIncrease = $ordersLastMonth > 0
+                        ? round((($ordersThisMonth - $ordersLastMonth) / $ordersLastMonth) * 100)
+                        : 100;
+
+                    $revenueThisMonth = Order::where('created_at', '>=', $startThisMonth)->sum('total_price');
+                    $revenueLastMonth = Order::whereBetween('created_at', [$startLastMonth, $endLastMonth])->sum('total_price');
+
+                    $revenueIncrease = $revenueLastMonth > 0
+                        ? round((($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100)
+                        : 100;    
+                    
+                    $pendingThisMonth = Order::where('status', 'pending')
+                        ->where('created_at', '>=', $startThisMonth)
+                        ->count();
+
+                    $pendingLastMonth = Order::where('status', 'pending')
+                        ->whereBetween('created_at', [$startLastMonth, $endLastMonth])
+                        ->count();
+
+                    $pendingDecrease = $pendingLastMonth > 0
+                        ? round((($pendingLastMonth - $pendingThisMonth) / $pendingLastMonth) * 100)
+                        : 0;
+                    $deliveredThisMonth = Order::where('status', 'delivered')
+                        ->where('created_at', '>=', $startThisMonth)
+                        ->count();
+
+                    $deliveredLastMonth = Order::where('status', 'delivered')
+                        ->whereBetween('created_at', [$startLastMonth, $endLastMonth])
+                        ->count();
+
+                    $deliveredIncrease = $deliveredLastMonth > 0
+                        ? round((($deliveredThisMonth - $deliveredLastMonth) / $deliveredLastMonth) * 100)
+                        : 100;
+
+                    //weekly revenu
+                    $weeklyRevenue = Order::select(
+                            DB::raw('DAYOFWEEK(created_at) as day'),
+                            DB::raw('SUM(total_price) as total')
+                        )
+                        ->where('created_at', '>=', Carbon::now()->startOfWeek())
+                        ->groupBy('day')
+                        ->orderBy('day')
+                        ->get();    
+
+
+                    return view('Dashbord_Admin.dashboard', compact(
+                        'totalOrders', 'totalRevenue', 'pendingOrders', 'deliveredOrders',
+                        'processingOrders', 'cancelledOrders', 'recentOrders',
+                        'ordersIncrease', 'revenueIncrease', 'pendingDecrease', 'deliveredIncrease','weeklyRevenue'
+                    ));        
     }
 }

@@ -69,9 +69,7 @@ Route::get('/test-api', [BookController::class, 'testApiConnection']);
 
 
 // Dashboard Routes
-Route::get('/Dashbord_Admin/dashboard', function () {
-    return view('Dashbord_Admin.dashboard');
-})->name('Dashbord_Admin.dashboard');
+Route::get('/Dashbord_Admin/dashboard', [Usercontroller::class, 'dashboard'])->name('Dashbord_Admin.dashboard');
 Route::resource('orders', OrderController::class);
 Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
 
@@ -87,7 +85,7 @@ Route::resource('client', Usercontroller::class);
 
 
   Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('orders', OrderController::class);
+    //Route::resource('orders', OrderController::class);
     
     // Or explicit routes:
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

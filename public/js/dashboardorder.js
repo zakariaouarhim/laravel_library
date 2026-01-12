@@ -143,13 +143,25 @@
         }
 
         function applyFilters() {
-            const search = document.getElementById('searchInput').value;
+            const search = document.getElementById('searchInput').value.trim();
             const status = document.getElementById('statusFilter').value;
 
-            let url = new URL(window.location.href);
-            if (search) url.searchParams.set('search', search);
-            if (status) url.searchParams.set('status', status);
-            
+            const url = new URL(window.location.href);
+
+            // Handle search filter
+            if (search) {
+                url.searchParams.set('search', search);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            // Handle status filter
+            if (status) {
+                url.searchParams.set('status', status);
+            } else {
+                url.searchParams.delete('status');
+            }
+
             window.location.href = url.toString();
         }
     

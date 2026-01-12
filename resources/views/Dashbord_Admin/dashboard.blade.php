@@ -1,185 +1,326 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-  <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="">
-      <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-      <meta name="generator" content="Hugo 0.84.0">
-      <title>قالب لوحة القيادة </title>
-
-    <!-- Bootstrap RTL CSS -->
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
-
-      <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
-      <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
-      
-      <!-- Favicon -->
-      <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-  </head>
-  <body>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>لوحة القيادة</title>
     
+    <!-- Bootstrap RTL CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
+    
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+<body>
     @include('Dashbord_Admin.dashbordHeader')
-    <br><br>
+    <div class="dashboard_layout">
     <div class="container-fluid">
-    <div class="row">
-      @include('Dashbord_Admin.Sidebar')
+        <div class="row">
+            @include('Dashbord_Admin.Sidebar')
 
-      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 class="h2">لوحة القيادة</h1>
-          <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group me-2">
-              <button type="button" class="btn btn-sm btn-outline-secondary">مشاركة</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary">تصدير</button>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <h1>
+                        <i class="fas fa-chart-line"></i>
+                        لوحة القيادة
+                    </h1>
+                    <div class="header-actions">
+                        <button class="btn-header btn-share">
+                            <i class="fas fa-share-alt me-2"></i>مشاركة
+                        </button>
+                        <button class="btn-header btn-export" onclick="exportData()">
+                            <i class="fas fa-download me-2"></i>تصدير
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card orders">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <div class="stat-title">إجمالي الطلبات</div>
+                        <div class="stat-value">{{ $totalOrders ?? 0 }}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +{{ $ordersIncrease ?? 0 }}% هذا الشهر
+                        </div>
+                    </div>
+
+                    <div class="stat-card revenue">
+                        <div class="stat-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="stat-title">إجمالي الإيرادات</div>
+                        <div class="stat-value">{{ number_format($totalRevenue ?? 0, 2) }} ر.س</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +{{ $revenueIncrease ?? 0 }}% هذا الشهر
+                        </div>
+                    </div>
+
+                    <div class="stat-card pending">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-title">طلبات قيد الانتظار</div>
+                        <div class="stat-value">{{ $pendingOrders ?? 0 }}</div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i>
+                            -{{ $pendingDecrease ?? 0 }}% هذا الشهر
+                        </div>
+                    </div>
+
+                    <div class="stat-card delivered">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-title">طلبات مكتملة</div>
+                        <div class="stat-value">{{ $deliveredOrders ?? 0 }}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +{{ $deliveredIncrease ?? 0 }}% هذا الشهر
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="chart-card">
+                        <h4 class="chart-title">
+                            <i class="fas fa-chart-line"></i>
+                            الإيرادات هذا الأسبوع
+                        </h4>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4 class="chart-title">
+                            <i class="fas fa-chart-pie"></i>
+                            توزيع حالات الطلبات
+                        </h4>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="recent-orders">
+                    <h3>
+                        <i class="fas fa-list"></i>
+                        الطلبات الأخيرة
+                    </h3>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الطلب</th>
+                                    <th>المبلغ</th>
+                                    <th>طريقة الدفع</th>
+                                    <th>الحالة</th>
+                                    <th>التاريخ</th>
+                                    <th>الإجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($recentOrders ?? [] as $order)
+                                <tr>
+                                    <td><span class="order-id">#{{ $order->id }}</span></td>
+                                    <td>{{ number_format($order->total_price, 2) }} ر.س</td>
+                                    <td>
+                                        @if($order->payment_method == 'cod')
+                                            <span class="badge badge-custom badge-pending">الدفع عند الاستلام</span>
+                                        @else
+                                            <span class="badge badge-custom badge-processing">بطاقة ائتمان</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $statusClass = 'badge-pending';
+                                            $statusText = 'قيد الانتظار';
+                                            
+                                            if ($order->status == 'processing') {
+                                                $statusClass = 'badge-processing';
+                                                $statusText = 'قيد المعالجة';
+                                            } elseif ($order->status == 'delivered') {
+                                                $statusClass = 'badge-delivered';
+                                                $statusText = 'مكتمل';
+                                            } elseif ($order->status == 'cancelled') {
+                                                $statusClass = 'badge-cancelled';
+                                                $statusText = 'ملغي';
+                                            }
+                                        @endphp
+                                        <span class="badge badge-custom {{ $statusClass }}">{{ $statusText }}</span>
+                                    </td>
+                                    <td>{{ $order->created_at->format('d-m-Y') }}</td>
+                                    <td>
+                                        <button class="view-btn" onclick="viewOrder({{ $order->id }})">
+                                            <i class="fas fa-eye"></i> عرض
+                                        </button>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                        <p>لا توجد طلبات</p>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+  </div>
+  <!-- Order Details Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-box me-2"></i>تفاصيل الطلب
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-              <span data-feather="calendar"></span>
-              هذا الأسبوع
-            </button>
-          </div>
+            <div class="modal-body" id="modalContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
-
-        <h2>عنوان القسم</h2>
-        <div class="table-responsive">
-          <table class="table table-striped table-sm">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">عنوان</th>
-                <th scope="col">عنوان</th>
-                <th scope="col">عنوان</th>
-                <th scope="col">عنوان</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1,001</td>
-                <td>بيانات</td>
-                <td>عشوائية</td>
-                <td>تثري</td>
-                <td>الجدول</td>
-              </tr>
-              <tr>
-                <td>1,002</td>
-                <td>تثري</td>
-                <td>مبهة</td>
-                <td>تصميم</td>
-                <td>تنسيق</td>
-              </tr>
-              <tr>
-                <td>1,003</td>
-                <td>عشوائية</td>
-                <td>غنية</td>
-                <td>قيمة</td>
-                <td>مفيدة</td>
-              </tr>
-              <tr>
-                <td>1,003</td>
-                <td>معلومات</td>
-                <td>تثري</td>
-                <td>توضيحية</td>
-                <td>عشوائية</td>
-              </tr>
-              <tr>
-                <td>1,004</td>
-                <td>الجدول</td>
-                <td>بيانات</td>
-                <td>تنسيق</td>
-                <td>قيمة</td>
-              </tr>
-              <tr>
-                <td>1,005</td>
-                <td>قيمة</td>
-                <td>مبهة</td>
-                <td>الجدول</td>
-                <td>تثري</td>
-              </tr>
-              <tr>
-                <td>1,006</td>
-                <td>قيمة</td>
-                <td>توضيحية</td>
-                <td>غنية</td>
-                <td>عشوائية</td>
-              </tr>
-              <tr>
-                <td>1,007</td>
-                <td>تثري</td>
-                <td>مفيدة</td>
-                <td>معلومات</td>
-                <td>مبهة</td>
-              </tr>
-              <tr>
-                <td>1,008</td>
-                <td>بيانات</td>
-                <td>عشوائية</td>
-                <td>تثري</td>
-                <td>الجدول</td>
-              </tr>
-              <tr>
-                <td>1,009</td>
-                <td>تثري</td>
-                <td>مبهة</td>
-                <td>تصميم</td>
-                <td>تنسيق</td>
-              </tr>
-              <tr>
-                <td>1,010</td>
-                <td>عشوائية</td>
-                <td>غنية</td>
-                <td>قيمة</td>
-                <td>مفيدة</td>
-              </tr>
-              <tr>
-                <td>1,011</td>
-                <td>معلومات</td>
-                <td>تثري</td>
-                <td>توضيحية</td>
-                <td>عشوائية</td>
-              </tr>
-              <tr>
-                <td>1,012</td>
-                <td>الجدول</td>
-                <td>تثري</td>
-                <td>تنسيق</td>
-                <td>قيمة</td>
-              </tr>
-              <tr>
-                <td>1,013</td>
-                <td>قيمة</td>
-                <td>مبهة</td>
-                <td>الجدول</td>
-                <td>تصميم</td>
-              </tr>
-              <tr>
-                <td>1,014</td>
-                <td>قيمة</td>
-                <td>توضيحية</td>
-                <td>غنية</td>
-                <td>عشوائية</td>
-              </tr>
-              <tr>
-                <td>1,015</td>
-                <td>بيانات</td>
-                <td>مفيدة</td>
-                <td>معلومات</td>
-                <td>الجدول</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </main>
     </div>
-    </div>
+</div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="{{ asset('js/dashboard.js') }}"></script> 
+    <script>
+        // Revenue Chart - Weekly
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        const weeklyRevenue = @json($weeklyRevenue);
+        const revenueData = new Array(7).fill(0);
+        const labels = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
-      <!-- Scripts -->
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-      <script src="{{ asset('js/dashboard.js') }}"></script>
+        weeklyRevenue.forEach(item => {
+            revenueData[item.day - 1] = item.total;
+        });
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels:labels,
+                datasets: [{
+                    label: 'الإيرادات',
+                    data: revenueData,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#3498db',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { family: "'Cairo', sans-serif", size: 12 },
+                            padding: 20,
+                            color: '#2c3e50'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            font: { family: "'Cairo', sans-serif" },
+                            color: '#7f8c8d'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { family: "'Cairo', sans-serif" },
+                            color: '#7f8c8d'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js" integrity="sha384-EbSscX4STvYAC/DxHse8z5gEDaNiKAIGW+EpfzYTfQrgIlHywXXrM9SUIZ0BlyfF" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha384-i+dHPTzZw7YVZOx9lbH5l6lP74sLRtMtwN2XjVqjf3uAGAREAF4LMIUDTWEVs4LI" crossorigin="anonymous"></script><script src="dashboard.js"></script>
-  </body>
+        // Status Distribution Chart - Pie
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['قيد الانتظار', 'قيد المعالجة', 'مكتمل', 'ملغي'],
+                datasets: [{
+                    data: [
+                        {{ $pendingOrders ?? 0 }},
+                        {{ $processingOrders ?? 0 }},
+                        {{ $deliveredOrders ?? 0 }},
+                        {{ $cancelledOrders ?? 0 }}
+                    ],
+                    backgroundColor: [
+                        '#f39c12',
+                        '#3498db',
+                        '#27ae60',
+                        '#e74c3c'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: "'Cairo', sans-serif", size: 12 },
+                            padding: 20,
+                            color: '#2c3e50'
+                        }
+                    }
+                }
+            }
+        });
+
+        
+        function exportData() {
+            alert('سيتم تصدير البيانات قريباً');
+        }
+    </script>
+</body>
 </html>
