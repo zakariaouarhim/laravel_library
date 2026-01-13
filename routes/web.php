@@ -84,9 +84,10 @@ Route::resource('client', Usercontroller::class);
 
 
 
+
   Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     //Route::resource('orders', OrderController::class);
-    
+    Route::get('/client/{id}', [Usercontroller::class, 'showclient'])->name('client.show');
     // Or explicit routes:
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');

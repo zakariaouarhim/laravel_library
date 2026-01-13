@@ -99,7 +99,11 @@
                     <div class="chart-card">
                         <h4 class="chart-title">
                             <i class="fas fa-chart-line"></i>
-                            الإيرادات هذا الأسبوع
+                            الإيرادات هذا <select name="date" id="date">
+                            <option value="weeklyRevenue">الأسبوع</option>
+                            <option value="monthlyRevenue">month</option>
+                            <option value="yearlyRevenue">year</option>
+                            </select>
                         </h4>
                         <div class="chart-container">
                             <canvas id="revenueChart"></canvas>
@@ -149,21 +153,19 @@
                                     </td>
                                     <td>
                                         @php
-                                            $statusClass = 'badge-pending';
-                                            $statusText = 'قيد الانتظار';
-                                            
-                                            if ($order->status == 'processing') {
-                                                $statusClass = 'badge-processing';
-                                                $statusText = 'قيد المعالجة';
-                                            } elseif ($order->status == 'delivered') {
-                                                $statusClass = 'badge-delivered';
-                                                $statusText = 'مكتمل';
-                                            } elseif ($order->status == 'cancelled') {
-                                                $statusClass = 'badge-cancelled';
-                                                $statusText = 'ملغي';
-                                            }
+                                            $statusMap = [
+                                                'pending' => ['class' => 'status-pending', 'text' => 'قيد الانتظار'],
+                                                'processing' => ['class' => 'status-processing', 'text' => 'قيد المعالجة'],
+                                                'shipped' => ['class' => 'status-shipped', 'text' => 'مشحون'],
+                                                'delivered' => ['class' => 'status-delivered', 'text' => 'تم التسليم'],
+                                                'cancelled' => ['class' => 'status-cancelled', 'text' => 'ملغى'],
+                                                'Failed' => ['class' => 'status-failed', 'text' => 'فشل'],
+                                                'Refunded' => ['class' => 'status-refunded', 'text' => 'مسترجع'],
+                                                'returned' => ['class' => 'status-returned', 'text' => 'مرتجع'],
+                                            ];
+                                            $status = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];
                                         @endphp
-                                        <span class="badge badge-custom {{ $statusClass }}">{{ $statusText }}</span>
+                                        <span class="status-badge {{ $status['class'] }}">{{ $status['text'] }}</span>
                                     </td>
                                     <td>{{ $order->created_at->format('d-m-Y') }}</td>
                                     <td>
@@ -211,21 +213,64 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
     <script src="{{ asset('js/dashboard.js') }}"></script> 
     <script>
         // Revenue Chart - Weekly
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        
         const weeklyRevenue = @json($weeklyRevenue);
+        const monthlyRevenue = @json($monthlyRevenue);
+        const yearlyRevenue = @json($yearlyRevenue);
         const revenueData = new Array(7).fill(0);
-        const labels = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        const dateSelect = document.getElementById('date');
+        const weeklabels = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        const monthLabels = [
+            'يناير', 'فبراير', 'مارس', 'أبريل',
+            'ماي', 'يونيو', 'يوليو', 'غشت',
+            'شتنبر', 'أكتوبر', 'نونبر', 'دجنبر'
+        ];
+        const yearLabels = yearlyRevenue.map(item => item.year);
+
+        const monthlyData = new Array(12).fill(0);
+        const yearlyData = yearlyRevenue.map(item => item.total);
+
+        monthlyRevenue.forEach(item => {
+            monthlyData[item.month - 1] = item.total;
+        });
 
         weeklyRevenue.forEach(item => {
             revenueData[item.day - 1] = item.total;
         });
+                    dateSelect.addEventListener('change', function () {
+                        
+
+                    switch (this.value) {
+
+                    case 'weeklyRevenue':
+                        revenueChart.data.labels = weeklabels;
+                        revenueChart.data.datasets[0].data = revenueData;
+                        break;
+
+                    case 'monthlyRevenue':
+                        revenueChart.data.labels = monthLabels;
+                        revenueChart.data.datasets[0].data = monthlyData;
+                        break;
+
+                    case 'yearlyRevenue':
+                        revenueChart.data.labels = yearLabels;
+                        revenueChart.data.datasets[0].data = yearlyData;
+                        break;
+                }
+
+                revenueChart.update();
+            });
+            
         const revenueChart = new Chart(revenueCtx, {
+            
             type: 'line',
             data: {
-                labels:labels,
+                labels:weeklabels,
                 datasets: [{
                     label: 'الإيرادات',
                     data: revenueData,

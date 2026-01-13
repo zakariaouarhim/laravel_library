@@ -8,10 +8,10 @@
     
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/product.css') }}">
-    
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     
   </head>
   <body>

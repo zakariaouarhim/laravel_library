@@ -29,7 +29,7 @@ class Order extends Model
     // Relationship with User (nullable for guest orders)
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(UserModel::class,'user_id');
     }
 
     

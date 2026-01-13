@@ -265,20 +265,45 @@
     color: #664d03;
 }
 
- .badge-processing {
-    background: #d1ecf1;
-    color: #0c5460;
-}
+ .status-pending {
+     background: #fef3cd;
+     color: #664d03;
+ }
 
- .badge-delivered {
-    background: #d4edda;
-    color: #155724;
-}
+ .status-processing {
+     background: #d1ecf1;
+     color: #0c5460;
+ }
 
- .badge-cancelled {
-    background: #f8d7da;
-    color: #721c24;
-}
+ .status-shipped {
+     background: #d4edda;
+     color: #155724;
+ }
+
+ .status-delivered {
+     background: #d4edda;
+     color: #155724;
+ }
+
+ .status-cancelled {
+     background: #f8d7da;
+     color: #721c24;
+ }
+
+ .status-failed {
+     background: #f8d7da;
+     color: #721c24;
+ }
+
+ .status-refunded {
+     background: #cfe2ff;
+     color: #084298;
+ }
+
+ .status-returned {
+     background: #f8d7da;
+     color: #721c24;
+ }
 
  .order-id {
     color: #3498db;

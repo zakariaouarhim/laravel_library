@@ -32,7 +32,10 @@ class UserModel extends Authenticatable
             \Log::info('Creating user with attributes:', $model->getAttributes());
         });
     }
-    
+     public function orders()
+    {
+        return $this->hasMany(Order::class,'user_id');
+    }
     public function reviews() {
         return $this->hasMany(Book_Review::class, 'user_id');
     }

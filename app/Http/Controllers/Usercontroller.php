@@ -143,7 +143,33 @@ class Usercontroller extends Controller
 
     public function index()
     {
-        return view('Dashbord_Admin.client');
+        $clients = UserModel::has('orders')->get();
+        $totalClients = UserModel::has('orders')->count();
+        $newClientsThisMonth = UserModel::whereHas('orders', function ($q) {
+                $q->whereBetween('created_at', [
+                    Carbon::now()->startOfMonth(),
+                    Carbon::now()->endOfMonth()
+                ]);
+            })
+            ->whereDoesntHave('orders', function ($q) {
+                $q->where('created_at', '<', Carbon::now()->startOfMonth());
+            })
+            ->count();
+        $activeClients = UserModel::whereHas('orders', function ($q) {
+                $q->where('created_at', '>=', now()->subDays(30));
+            })
+            ->count();    
+        return view('Dashbord_Admin.client',compact('clients','totalClients','newClientsThisMonth','activeClients'));
+    }
+    public function showclient($id)
+    {
+        $user = UserModel::with([
+            'orders.orderDetails',
+            'orders.checkoutDetail'
+        ])
+        ->findOrFail($id);
+        
+        return response()->json($user);
     }
     public function account()
     {
@@ -354,12 +380,30 @@ class Usercontroller extends Controller
                         ->groupBy('day')
                         ->orderBy('day')
                         ->get();    
-
+                    // Monthly revenue for current year
+                    $monthlyRevenue = Order::select(
+                            DB::raw('MONTH(created_at) as month'),
+                            DB::raw('SUM(total_price) as total')
+                        )
+                        ->whereYear('created_at', Carbon::now()->year)
+                        ->groupBy('month')
+                        ->orderBy('month')
+                        ->get();
+                    // yearly revenue for current year
+                    $yearlyRevenue = Order::select(
+                        DB::raw('YEAR(created_at) as year'),
+                        DB::raw('SUM(total_price) as total')
+                    )
+                    ->groupBy('year')
+                    ->orderBy('year')
+                    ->limit(5)
+                    ->get();    
 
                     return view('Dashbord_Admin.dashboard', compact(
                         'totalOrders', 'totalRevenue', 'pendingOrders', 'deliveredOrders',
                         'processingOrders', 'cancelledOrders', 'recentOrders',
-                        'ordersIncrease', 'revenueIncrease', 'pendingDecrease', 'deliveredIncrease','weeklyRevenue'
+                        'ordersIncrease', 'revenueIncrease', 'pendingDecrease', 'deliveredIncrease',
+                        'weeklyRevenue','monthlyRevenue','yearlyRevenue'
                     ));        
     }
 }
