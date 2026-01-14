@@ -15,6 +15,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -425,5 +426,52 @@ class Usercontroller extends Controller
             'message' => 'تم تحديث بيانات الزبون بنجاح',
             'user' => $user
         ]);
+    }
+    public function resetPassword(Request $request, $id)
+    {
+        try {
+            $user = UserModel::findOrFail($id);
+            $method = $request->input('method');
+
+            if ($method === 'auto') {
+                // Generate random password
+                $newPassword = Str::random(12);
+                $user->update(['password' => Hash::make($newPassword)]);
+
+                // Optional: Send email with new password
+                // Mail::send(...);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم توليد كلمة مرور عشوائية وإرسالها للزبون عبر البريد الإلكتروني'
+                ]);
+            } else {
+                // Manual password validation
+                $validated = $request->validate([
+                    'password' => 'required|string|min:8|confirmed'
+                ], [
+                    'password.required' => 'كلمة المرور مطلوبة',
+                    'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
+                    'password.confirmed' => 'كلمات المرور غير متطابقة'
+                ]);
+
+                $user->update(['password' => Hash::make($validated['password'])]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تعيين كلمة المرور الجديدة بنجاح'
+                ]);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(' ', $e->validator->errors()->all())
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

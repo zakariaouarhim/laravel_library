@@ -89,6 +89,7 @@ Route::resource('client', Usercontroller::class);
     //Route::resource('orders', OrderController::class);
     Route::get('/client/{id}', [Usercontroller::class, 'showclient'])->name('client.show');
     Route::put('/client/{id}', [Usercontroller::class, 'update'])->name('client.update');
+    Route::post('/client/{id}/reset-password', [Usercontroller::class, 'resetPassword'])->name('client.reset-password'); 
     // Or explicit routes:
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');

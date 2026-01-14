@@ -216,9 +216,12 @@
         return div.innerHTML;
     }
 
-        function editClient(clientId) {
+       function editClient(clientId) {
         const editModal = new bootstrap.Modal(document.getElementById('editClientModal'));
         
+        // Show general tab by default
+        document.getElementById('general-tab').click();
+
         // Show loading state
         document.getElementById('editClientForm').style.opacity = '0.5';
         document.querySelector('#editClientModal .btn-primary').disabled = true;
@@ -241,11 +244,14 @@
             return response.json();
         })
         .then(data => {
-            // Populate form with client data
+            // Populate general info form
             document.getElementById('editClientId').value = data.id;
             document.getElementById('editClientName').value = data.name || '';
             document.getElementById('editClientEmail').value = data.email || '';
             document.getElementById('editClientPhone').value = data.phone || '';
+
+            // Set password client ID
+            document.getElementById('passwordClientId').value = data.id;
 
             // Reset form opacity and button state
             document.getElementById('editClientForm').style.opacity = '1';
@@ -273,13 +279,11 @@
         const email = document.getElementById('editClientEmail').value;
         const phone = document.getElementById('editClientPhone').value;
 
-        // Get submit button
         const submitBtn = document.querySelector('#editClientModal .btn-primary');
         submitBtn.disabled = true;
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
 
-        // Send update request
         fetch(`/admin/client/${clientId}`, {
             method: 'PUT',
             headers: {
@@ -303,13 +307,10 @@
         })
         .then(data => {
             if (data.success) {
-                // Show success message
                 showAlert('تم تحديث بيانات الزبون بنجاح!', 'success');
                 
-                // Close modal after 1.5 seconds
                 setTimeout(() => {
                     bootstrap.Modal.getInstance(document.getElementById('editClientModal')).hide();
-                    // Reload page to show updated data
                     location.reload();
                 }, 1500);
             }
@@ -323,9 +324,164 @@
     });
 
     /**
+     * Handle Reset Password Form Submission
+     */
+    document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const clientId = document.getElementById('passwordClientId').value;
+        const method = document.querySelector('input[name="passwordMethod"]:checked').value;
+        const password = method === 'manual' ? document.getElementById('newPassword').value : null;
+        const confirmPassword = method === 'manual' ? document.getElementById('confirmPassword').value : null;
+
+        // Validate passwords match if manual
+        if (method === 'manual') {
+            if (!password || !confirmPassword) {
+                showAlert('يرجى ملء جميع حقول كلمة المرور', 'danger');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showAlert('كلمات المرور غير متطابقة', 'danger');
+                return;
+            }
+            if (password.length < 8) {
+                showAlert('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'danger');
+                return;
+            }
+        }
+
+        const submitBtn = document.querySelector('#resetPasswordForm .btn-danger');
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري التعيين...';
+
+        const requestBody = {
+            method: method
+        };
+
+        if (method === 'manual') {
+            requestBody.password = password;
+            requestBody.password_confirmation = confirmPassword;
+        }
+
+        fetch(`/admin/client/${clientId}/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(requestBody)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message || 'تم تعيين كلمة المرور بنجاح!', 'success');
+                
+                // Clear password fields
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('editClientModal')).hide();
+                    location.reload();
+                }, 1500);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert(error.message || 'خطأ في تعيين كلمة المرور. يرجى المحاولة مرة أخرى.', 'danger');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+
+    /**
+     * Toggle Password Visibility
+     */
+    function togglePasswordVisibility(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (field.type === 'password') {
+            field.type = 'text';
+        } else {
+            field.type = 'password';
+        }
+    }
+
+    /**
+     * Handle Password Method Change
+     */
+    document.querySelectorAll('input[name="passwordMethod"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const manualFields = document.getElementById('manualPasswordFields');
+            const passwordMethods = document.querySelectorAll('.password-method');
+            
+            passwordMethods.forEach(method => method.classList.remove('active'));
+            this.closest('.password-method').classList.add('active');
+
+            if (this.value === 'manual') {
+                manualFields.style.display = 'block';
+                document.getElementById('passwordStrength').style.display = 'block';
+                document.getElementById('newPassword').focus();
+            } else {
+                manualFields.style.display = 'none';
+                document.getElementById('passwordStrength').style.display = 'none';
+            }
+        });
+    });
+
+    /**
+     * Check Password Strength
+     */
+    document.getElementById('newPassword')?.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        let text = '';
+        let className = '';
+
+        if (password.length >= 8) strength += 25;
+        if (password.length >= 12) strength += 25;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+        if (/[0-9]/.test(password)) strength += 12;
+        if (/[^a-zA-Z0-9]/.test(password)) strength += 13;
+
+        if (strength < 25) {
+            text = 'ضعيفة جداً';
+            className = 'strength-weak';
+        } else if (strength < 50) {
+            text = 'ضعيفة';
+            className = 'strength-weak';
+        } else if (strength < 75) {
+            text = 'متوسطة';
+            className = 'strength-fair';
+        } else if (strength < 90) {
+            text = 'قوية';
+            className = 'strength-good';
+        } else {
+            text = 'قوية جداً';
+            className = 'strength-strong';
+        }
+
+        const strengthBar = document.getElementById('strengthBar');
+        strengthBar.style.width = strength + '%';
+        strengthBar.className = 'progress-bar ' + className;
+        document.getElementById('strengthText').textContent = text;
+    });
+
+    /**
      * Show Alert Message
      */
     function showAlert(message, type) {
+        const activeTab = document.querySelector('.tab-pane.active');
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert edit-alert edit-alert-${type} alert-dismissible fade show`;
         alertDiv.innerHTML = `
@@ -334,14 +490,14 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
-        const modalBody = document.querySelector('#editClientModal .modal-body');
+        const modalBody = activeTab.querySelector('.modal-body');
         modalBody.insertBefore(alertDiv, modalBody.firstChild);
 
-        // Auto-remove alert after 5 seconds
         setTimeout(() => {
             alertDiv.remove();
         }, 5000);
     }
+
 
         // Delete client
         function deleteClient(id) {
