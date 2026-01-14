@@ -691,3 +691,102 @@ body {
         align-items: flex-start;
     }
 }
+/* Edit Modal Styles */
+#editClientModal .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+#editClientModal .modal-header {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    border-radius: 15px 15px 0 0;
+    padding: 1.5rem;
+}
+
+#editClientModal .modal-header h5 {
+    font-weight: 700;
+    margin: 0;
+}
+
+#editClientModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+#editClientModal .modal-body {
+    padding: 2rem;
+}
+
+#editClientModal .form-label {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+#editClientModal .form-control {
+    border-radius: 10px;
+    border: 1px solid #e0e6ed;
+    padding: 0.8rem;
+    font-family: 'Cairo', sans-serif;
+    transition: all 0.3s ease;
+}
+
+#editClientModal .form-control:focus {
+    border-color: #f39c12;
+    box-shadow: 0 0 0 0.2rem rgba(243, 156, 18, 0.25);
+    outline: none;
+}
+
+#editClientModal .modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+#editClientModal .btn-primary {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#editClientModal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
+    color: white;
+}
+
+#editClientModal .btn-secondary {
+    background: #95a5a6;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#editClientModal .btn-secondary:hover {
+    background: #7f8c8d;
+    color: white;
+}
+
+/* Alert Styles */
+.edit-alert {
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.edit-alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.edit-alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}

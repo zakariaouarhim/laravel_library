@@ -9,7 +9,7 @@ use Laravel\Scout\Searchable;
 class Book extends Model
 {
     use HasFactory, Searchable;
-
+     protected $table = 'books';
     // Define fillable attributes
     protected $fillable = [
         'title',

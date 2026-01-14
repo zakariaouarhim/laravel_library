@@ -12,6 +12,7 @@ use App\Models\Book_Review;
 use App\Models\Quote;
 use App\Models\ReadingGoal;
 use App\Models\Order;
+use App\Models\OrderDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -141,36 +142,7 @@ class Usercontroller extends Controller
         return redirect()->route('index.page')->with('success', 'Logged out successfully');
     }
 
-    public function index()
-    {
-        $clients = UserModel::has('orders')->get();
-        $totalClients = UserModel::has('orders')->count();
-        $newClientsThisMonth = UserModel::whereHas('orders', function ($q) {
-                $q->whereBetween('created_at', [
-                    Carbon::now()->startOfMonth(),
-                    Carbon::now()->endOfMonth()
-                ]);
-            })
-            ->whereDoesntHave('orders', function ($q) {
-                $q->where('created_at', '<', Carbon::now()->startOfMonth());
-            })
-            ->count();
-        $activeClients = UserModel::whereHas('orders', function ($q) {
-                $q->where('created_at', '>=', now()->subDays(30));
-            })
-            ->count();    
-        return view('Dashbord_Admin.client',compact('clients','totalClients','newClientsThisMonth','activeClients'));
-    }
-    public function showclient($id)
-    {
-        $user = UserModel::with([
-            'orders.orderDetails',
-            'orders.checkoutDetail'
-        ])
-        ->findOrFail($id);
-        
-        return response()->json($user);
-    }
+    
     public function account()
     {
         $user = auth()->user(); // returns Usermodel instance
@@ -319,6 +291,7 @@ class Usercontroller extends Controller
         
 
     }
+    ////////////////////////////admin dashboard 
     public function dashboard(){
                     $totalOrders = Order::count();
                     $totalRevenue = Order::sum('total_price');
@@ -405,5 +378,52 @@ class Usercontroller extends Controller
                         'ordersIncrease', 'revenueIncrease', 'pendingDecrease', 'deliveredIncrease',
                         'weeklyRevenue','monthlyRevenue','yearlyRevenue'
                     ));        
+    }
+    public function index()
+    {
+        $clients = UserModel::has('orders')->get();
+        $totalClients = UserModel::has('orders')->count();
+        $newClientsThisMonth = UserModel::whereHas('orders', function ($q) {
+                $q->whereBetween('created_at', [
+                    Carbon::now()->startOfMonth(),
+                    Carbon::now()->endOfMonth()
+                ]);
+            })
+            ->whereDoesntHave('orders', function ($q) {
+                $q->where('created_at', '<', Carbon::now()->startOfMonth());
+            })
+            ->count();
+        $activeClients = UserModel::whereHas('orders', function ($q) {
+                $q->where('created_at', '>=', now()->subDays(30));
+            })
+            ->count();    
+        return view('Dashbord_Admin.client',compact('clients','totalClients','newClientsThisMonth','activeClients'));
+    }
+    public function showclient($id)
+    {
+        $user = UserModel::with([
+            'orders.orderDetails.book',
+            'orders.checkoutDetail'
+        ])
+        ->findOrFail($id);
+        
+        return response()->json($user);
+    }
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'phone' => 'nullable|string|max:20'
+        ]);
+
+        $user = UserModel::findOrFail($id);
+        $user->update($request->only(['name', 'email', 'phone']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث بيانات الزبون بنجاح',
+            'user' => $user
+        ]);
     }
 }
