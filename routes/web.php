@@ -97,6 +97,11 @@ Route::resource('client', Usercontroller::class);
     Route::get('/orders/{id}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('/orders/{id}', [OrderController::class, 'store'])->name('orders.store');
     //product blade
+    //search
+    Route::get('/products', 
+            [BookController::class, 'showproduct']
+        )->name('products.index');
+
     // Show product (JSON)
     Route::get('/admin/products/{id}', [BookController::class, 'show']);
 

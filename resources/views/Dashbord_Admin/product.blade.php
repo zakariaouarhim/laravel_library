@@ -52,34 +52,43 @@
 
                 <!-- Search and Filter Section -->
                 <div class="search-section">
-                    <div class="search-controls">
-                        <div class="form-group">
+                    <form action="{{ route('admin.products.index') }}" method="GET" class="search-controls" style="width: 100%; display: flex; gap: 15px;">
+                        
+                        <div class="form-group" style="flex: 1;">
                             <label for="searchInput">بحث</label>
-                            <input 
-                                type="text" 
-                                id="searchInput" 
-                                class="form-control" 
-                                placeholder="ابحث عن اسم أو مؤلف..."
-                            >
+                            <div class="input-group">
+                                <input 
+                                    type="text" 
+                                    name="search" 
+                                    id="searchInput" 
+                                    class="form-control" 
+                                    placeholder="ابحث عن اسم أو مؤلف..."
+                                    value="{{ request('search') }}" 
+                                >
+                                <button class="btn btn-outline-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="form-group">
+
+                        <div class="form-group" style="width: 250px;">
                             <label for="categoryFilter">الفئة</label>
-                            <select id="categoryFilter" class="form-select">
+                            <select name="category" id="categoryFilter" class="form-select" onchange="this.form.submit()">
                                 <option value="">جميع الفئات</option>
-                                <option value="1">روايات</option>
-                                <option value="2">كتب دينية</option>
-                                <option value="3">التنمية البشرية</option>
-                                <option value="4">قصص الأطفال</option>
-                                <option value="5">فلسفة</option>
-                                <option value="6">كتب الفكر</option>
-                                <option value="7">علم النفس</option>
-                                <option value="8">علم الاجتماع</option>
+                                @foreach ($categories as $c)
+                                    <option value="{{ $c->id }}" {{ request('category') == $c->id ? 'selected' : '' }}>
+                                        {{ $c->name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
-                        <button class="btn-add" onclick="resetFilters()" style="background: #95a5a6;">
-                            <i class="fas fa-redo me-2"></i>إعادة تعيين
-                        </button>
-                    </div>
+
+                        <div class="form-group" style="display: flex; align-items: end;">
+                            <a href="{{ route('admin.products.index') }}" class="btn-add" style="background: #95a5a6; text-decoration: none; padding: 8px 15px; display: inline-block;">
+                                <i class="fas fa-redo me-2"></i>إعادة تعيين
+                            </a>
+                        </div>
+                    </form>
                 </div>
 
                 <!-- Alerts -->
@@ -124,7 +133,7 @@
                                     <td>
                                         <div class="product-image-cell">
                                             @if($product->image)
-                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->title }}" class="product-image">
+                                                <img src="{{ asset('/' . $product->image) }}" alt="{{ $product->title }}" class="product-image">
                                             @else
                                                 <div style="width: 60px; height: 80px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-book" style="color: #bdc3c7;"></i>
@@ -146,9 +155,9 @@
                                     <td>
                                         <div class="product-price">{{ number_format($product->price, 2) }} ر.س</div>
                                     </td>
-                                    <td>{{ $product->pages_num ?? '-' }}</td>
-                                    <td>{{ $product->language ?? '-' }}</td>
-                                    <td>{{ $product->isbn ?? '-' }}</td>
+                                    <td>{{ $product->Page_Num ?? '-' }}</td>
+                                    <td>{{ $product->Langue ?? '-' }}</td>
+                                    <td>{{ $product->ISBN ?? '-' }}</td>
                                     <td>
                                         <div class="action-buttons">
                                             <button 
@@ -275,14 +284,9 @@
                                     <label class="form-label">الفئة</label>
                                     <select name="Productcategorie" id="Productcategorie" class="form-select" required>
                                         <option value="">اختر فئة</option>
-                                        <option value="1">روايات</option>
-                                        <option value="2">كتب دينية</option>
-                                        <option value="3">التنمية البشرية</option>
-                                        <option value="4">قصص الأطفال</option>
-                                        <option value="5">فلسفة</option>
-                                        <option value="6">كتب الفكر</option>
-                                        <option value="7">علم النفس</option>
-                                        <option value="8">علم الاجتماع</option>
+                                        @foreach ($categories as $c)
+                                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -518,7 +522,7 @@
 
         /**
          * Search Products
-         */
+        
         document.getElementById('searchInput').addEventListener('input', function() {
             const query = this.value.toLowerCase();
             const rows = document.querySelectorAll('#productsTable tbody tr');
@@ -532,7 +536,7 @@
                 const matches = name.includes(query) || author.includes(query);
                 row.style.display = matches ? '' : 'none';
             });
-        });
+        }); */
 
         /**
          * Reset Filters
@@ -632,15 +636,11 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الفئة</label>
-                                    <select id="editProductCategory" name="category_id" class="form-select" required>
-                                        <option value="1">روايات</option>
-                                        <option value="2">كتب دينية</option>
-                                        <option value="3">التنمية البشرية</option>
-                                        <option value="4">قصص الأطفال</option>
-                                        <option value="5">فلسفة</option>
-                                        <option value="6">كتب الفكر</option>
-                                        <option value="7">علم النفس</option>
-                                        <option value="8">علم الاجتماع</option>
+                                    <select name="Productcategorie" id="Productcategorie" class="form-select" required>
+                                        <option value="">اختر فئة</option>
+                                        @foreach ($categories as $c)
+                                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>

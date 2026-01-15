@@ -91,12 +91,54 @@ class BookController extends Controller
         ));
     }
 
-    public function showproduct()
+    public function showproduct(Request $request)
     {
-        $products = Book::with('category')->paginate(10);
-        return view('Dashbord_Admin.product',compact('products'));
-    }
+        $search = $request->search;
+        $categoryId = $request->category;
 
+        $query = Book::with('category');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                ->orWhere('author', 'like', "%{$search}%");
+            });
+        }
+
+        if ($categoryId) {
+            $category = Category::with('parent', 'children')->find($categoryId);
+
+            if ($category) {
+                $categoryIds = collect([
+                    $category->id,
+                    optional($category->parent)->id,
+                    ...$category->children->pluck('id')
+                ])->filter()->unique();
+
+                $query->whereIn('category_id', $categoryIds);
+            }
+        }
+
+        $products = $query->latest()
+                        ->paginate(15)
+                        ->withQueryString();
+
+        //get categories
+        $categories = Category::whereNull('parent_id')->get();
+        // Get statistics for stats cards
+        $totalProducts = Book::count();
+        $availableProducts = Book::where('Quantity', '>', 0)->count();
+        $totalCategories = Book::distinct('category_id')->count('category_id');
+
+        return view('Dashbord_Admin.product', compact(
+            'products',
+            'totalProducts',
+            'availableProducts',
+            'totalCategories',
+            'categories'
+        ));
+    }
+    
     public function getProducts()
     {
         $products = Book::with('category')->get();
@@ -567,7 +609,7 @@ public function addProduct(Request $request)
         ]);
     }
 
-    public function searchBooks(Request $request)
+    public function searchproductBooks(Request $request)
     {
         $query = $request->input('query');
         
