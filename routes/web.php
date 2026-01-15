@@ -78,7 +78,7 @@ Route::get('/Dashbord_Admin/Product/{id}', [BookController::class, 'getProductBy
 Route::put('/Dashbord_Admin/Product/{id}', [BookController::class, 'updateProduct']);
 Route::post('/Dashbord_Admin/Product/add', [BookController::class, 'addProduct'])->name('product.add');
 
-Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
+
 Route::resource('client', Usercontroller::class);
 
 
@@ -90,12 +90,22 @@ Route::resource('client', Usercontroller::class);
     Route::get('/client/{id}', [Usercontroller::class, 'showclient'])->name('client.show');
     Route::put('/client/{id}', [Usercontroller::class, 'update'])->name('client.update');
     Route::post('/client/{id}/reset-password', [Usercontroller::class, 'resetPassword'])->name('client.reset-password'); 
-    // Or explicit routes:
+    // order blade:
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
     Route::put('/orders/{id}', [OrderController::class, 'update'])->name('orders.update');
     Route::get('/orders/{id}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('/orders/{id}', [OrderController::class, 'store'])->name('orders.store');
+    //product blade
+    // Show product (JSON)
+    Route::get('/admin/products/{id}', [BookController::class, 'show']);
+
+    // Update product
+    Route::put('/admin/products/{id}', [ProductController::class, 'update']);
+    Route::post('/admin/products/{id}', [ProductController::class, 'update']);
+
+    // Delete product
+    Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
 });
 
 // Other Routes

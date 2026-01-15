@@ -93,7 +93,8 @@ class BookController extends Controller
 
     public function showproduct()
     {
-        return view('Dashbord_Admin.product');
+        $products = Book::with('category')->paginate(10);
+        return view('Dashbord_Admin.product',compact('products'));
     }
 
     public function getProducts()
