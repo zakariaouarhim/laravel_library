@@ -15,7 +15,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
-    @include('Dashbord_Admin.dashbordHeader')
+    
 
     <div class="container-fluid">
         <div class="row">

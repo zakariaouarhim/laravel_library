@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
 </head>
 <body>
-    @include('Dashbord_Admin.dashbordHeader')
+    
     
     <div class="container-fluid">
         <div class="row">

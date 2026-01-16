@@ -16,7 +16,7 @@
 <body>
     
     <!-- Navbar -->
-    @include('Dashbord_Admin.dashbordHeader')
+    
 
     <div class="container-fluid">
         <div class="row">

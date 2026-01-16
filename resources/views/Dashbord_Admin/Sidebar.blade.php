@@ -1,176 +1,206 @@
-<!-- Refactored Sidebar Navigation -->
 <nav id="sidebarMenu" class="sidebar">
-    <!-- Logo Section -->
+    <!-- Sidebar Header -->
     <div class="sidebar-header">
-        <div class="logo-container">
-            <img src="{{ asset('images/logo.svg') }}" alt="Logo" class="sidebar-logo">
-            <span class="logo-text">أسير الكتب</span>
+        <div class="sidebar-header-content">
+            <div class="logo-container">
+                <a href="{{ route('index.page') }}" class="sidebar-logo-link">
+                    <img src="{{ asset('images/logo.svg') }}" alt="Logo" class="sidebar-logo">
+                </a>
+                <span class="logo-text">مكتبة الفقراء </span>
+            </div>
+            <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="طي القائمة الجانبية">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
         </div>
-        <button class="sidebar-toggle" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
     </div>
 
-    <!-- Main Navigation -->
+    <!-- Sidebar Content -->
     <div class="sidebar-content">
-        <div class="nav-section">
-            <h5 class="section-title">الرئيسية</h5>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('Dashbord_Admin.dashboard') ? 'active' : '' }}" 
-                       href="{{ route('Dashbord_Admin.dashboard') }}">
-                        <i class="fas fa-chart-pie"></i>
-                        <span class="nav-text">لوحة القيادة</span>
-                        <span class="nav-badge">جديد</span>
-                    </a>
-                </li>
-            </ul>
+        <!-- Main Section -->
+        <div class="sidebar-group">
+            <div class="sidebar-group-label">الرئيسية</div>
+            <nav class="sidebar-nav">
+                <a href="{{ route('Dashbord_Admin.dashboard') }}" 
+                   class="sidebar-nav-item {{ request()->routeIs('Dashbord_Admin.dashboard') ? 'active' : '' }}"
+                   title="لوحة القيادة">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 3v1m6.894 1.106l-.707.707M21 12h-1m-1.106 6.894l-.707-.707M12 21v-1m-6.894-1.106l.707-.707M3 12h1m1.106-6.894l.707.707"/><circle cx="12" cy="12" r="4"/>
+                    </svg>
+                    <span class="nav-text">لوحة القيادة</span>
+                    <span class="sidebar-badge">جديد</span>
+                </a>
+            </nav>
         </div>
 
         <!-- Management Section -->
-        <div class="nav-section">
-            <h5 class="section-title">الإدارة</h5>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('orders.index') ? 'active' : '' }}" 
-                       href="{{ route('admin.orders.index') }}">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span class="nav-text">الطلبات</span>
-                        <span class="nav-badge badge-danger">{{ $pendingOrders ?? 0 }}</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('*product*') ? 'active' : '' }}" 
-                       href="{{ route('Dashbord_Admin.product') }}">
-                        <i class="fas fa-book"></i>
-                        <span class="nav-text">المنتجات</span>
-                        <span class="nav-badge">{{ $totalProducts ?? 0 }}</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('client.index') ? 'active' : '' }}" 
-                       href="{{ route('client.index') }}">
-                        <i class="fas fa-users"></i>
-                        <span class="nav-text">الزبائن</span>
-                        <span class="nav-badge">{{ $totalClients ?? 0 }}</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('*shipment*') ? 'active' : '' }}" 
-                       href="{{ route('Dashbord_Admin.Shipment_Management') }}">
-                        <i class="fas fa-truck"></i>
-                        <span class="nav-text">إدارة الشحنات</span>
-                    </a>
-                </li>
-            </ul>
+        <div class="sidebar-group">
+            <div class="sidebar-group-label">الإدارة</div>
+            <nav class="sidebar-nav">
+                <a href="{{ route('admin.orders.index') }}" 
+                   class="sidebar-nav-item {{ request()->routeIs('orders.index') ? 'active' : '' }}"
+                   title="الطلبات">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    <span class="nav-text">الطلبات</span>
+                    <span class="sidebar-badge badge-destructive">{{ $pendingOrders ?? 0 }}</span>
+                </a>
+                <a href="{{ route('Dashbord_Admin.product') }}" 
+                   class="sidebar-nav-item {{ request()->routeIs('*product*') ? 'active' : '' }}"
+                   title="المنتجات">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    <span class="nav-text">المنتجات</span>
+                    <span class="sidebar-badge">{{ $totalProducts ?? 0 }}</span>
+                </a>
+                <a href="{{ route('client.index') }}" 
+                   class="sidebar-nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}"
+                   title="الزبائن">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span class="nav-text">الزبائن</span>
+                    <span class="sidebar-badge">{{ $totalClients ?? 0 }}</span>
+                </a>
+                <a href="{{ route('Dashbord_Admin.Shipment_Management') }}" 
+                   class="sidebar-nav-item {{ request()->routeIs('*shipment*') ? 'active' : '' }}"
+                   title="إدارة الشحنات">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zM7 9h.01M7 13h4"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/>
+                    </svg>
+                    <span class="nav-text">إدارة الشحنات</span>
+                </a>
+            </nav>
         </div>
 
         <!-- System Section -->
-        <div class="nav-section">
-            <h5 class="section-title">النظام</h5>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('*ManagementSystem*') ? 'active' : '' }}" 
-                       href="{{ route('Dashbord_Admin.ManagementSystem') }}">
-                        <i class="fas fa-cogs"></i>
-                        <span class="nav-text">إدارة المكتبة</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-chart-bar"></i>
-                        <span class="nav-text">التقارير</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-plug"></i>
-                        <span class="nav-text">التكاملات</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-cog"></i>
-                        <span class="nav-text">الإعدادات</span>
-                    </a>
-                </li>
-            </ul>
+        <div class="sidebar-group">
+            <div class="sidebar-group-label">النظام</div>
+            <nav class="sidebar-nav">
+                <a href="{{ route('Dashbord_Admin.ManagementSystem') }}" 
+                   class="sidebar-nav-item {{ request()->routeIs('*ManagementSystem*') ? 'active' : '' }}"
+                   title="إدارة المكتبة">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m2.12 2.12l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m2.12-2.12l4.24-4.24"/>
+                    </svg>
+                    <span class="nav-text">إدارة المكتبة</span>
+                </a>
+                <a href="#" class="sidebar-nav-item" title="التقارير">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    <span class="nav-text">التقارير</span>
+                </a>
+                <a href="#" class="sidebar-nav-item" title="التكاملات">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    <span class="nav-text">التكاملات</span>
+                </a>
+                <a href="#" class="sidebar-nav-item" title="الإعدادات">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m2.12 2.12l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m2.12-2.12l4.24-4.24"/>
+                    </svg>
+                    <span class="nav-text">الإعدادات</span>
+                </a>
+            </nav>
         </div>
 
         <!-- Saved Reports Section -->
-        <div class="nav-section saved-reports">
-            <div class="section-header">
-                <h5 class="section-title">التقارير المحفوظة</h5>
+        <div class="sidebar-group sidebar-group-saved">
+            <div class="sidebar-group-header">
+                <div class="sidebar-group-label">التقارير المحفوظة</div>
                 <button class="add-report-btn" title="إضافة تقرير جديد">
-                    <i class="fas fa-plus"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
                 </button>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span class="nav-text">الشهر الحالي</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span class="nav-text">الربع الأخير</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-share-alt"></i>
-                        <span class="nav-text">التفاعل الاجتماعي</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-line-chart"></i>
-                        <span class="nav-text">مبيعات نهاية العام</span>
-                    </a>
-                </li>
-            </ul>
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-nav-item" title="الشهر الحالي">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4m8-4v4M3 10.5h18M5 21h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2z"/>
+                    </svg>
+                    <span class="nav-text">الشهر الحالي</span>
+                </a>
+                <a href="#" class="sidebar-nav-item" title="الربع الأخير">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4m8-4v4M3 10.5h18M5 21h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2z"/>
+                    </svg>
+                    <span class="nav-text">الربع الأخير</span>
+                </a>
+                <a href="#" class="sidebar-nav-item" title="التفاعل الاجتماعي">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="18" cy="5" r="3"/><path d="M21 17v2a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-2"/><path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4"/>
+                    </svg>
+                    <span class="nav-text">التفاعل الاجتماعي</span>
+                </a>
+                <a href="#" class="sidebar-nav-item" title="مبيعات نهاية العام">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-5l-2-3h-7a2 2 0 0 0-2 2z"/><polyline points="15 13 21 13 18 21 15 13"/>
+                    </svg>
+                    <span class="nav-text">مبيعات نهاية العام</span>
+                </a>
+            </nav>
         </div>
     </div>
 
-    <!-- User Section at Bottom -->
+    <!-- Sidebar Footer -->
     <div class="sidebar-footer">
         <div class="user-info">
             <div class="user-avatar">
-                <i class="fas fa-user"></i>
+                <span>{{ substr(Auth::user()->name ?? 'م', 0, 1) }}</span>
             </div>
             <div class="user-details">
-                <h6>{{ Auth::user()->name ?? 'مسؤول' }}</h6>
-                <span>مسؤول النظام</span>
+                <p class="user-name">{{ Auth::user()->name ?? 'مسؤول' }}</p>
+                <p class="user-role">مسؤول النظام</p>
             </div>
         </div>
         <a href="{{ route('logout') }}" class="logout-btn" title="تسجيل الخروج">
-            <i class="fas fa-sign-out-alt"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+            </svg>
         </a>
     </div>
 </nav>
-
-<!-- Overlay for mobile -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
 <script>
     /**
-     * Sidebar Toggle for Mobile
+     * Sidebar Collapse/Expand
      */
-    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-        const content = document.querySelector('.sidebar-content');
-        content.classList.toggle('show');
+    const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+    const sidebar = document.getElementById('sidebarMenu');
+    const mainContent = document.querySelector('.main-content');
+
+    // Load sidebar state from localStorage
+    const sidebarState = localStorage.getItem('sidebarCollapsed');
+    if (sidebarState === 'true') {
+        sidebar.classList.add('collapsed');
+        if (mainContent) {
+            mainContent.classList.add('sidebar-collapsed');
+        }
+    }
+
+    // Toggle sidebar collapse
+    sidebarCollapseBtn?.addEventListener('click', function(e) {
+        e.preventDefault();
+        sidebar.classList.toggle('collapsed');
+        if (mainContent) {
+            mainContent.classList.toggle('sidebar-collapsed');
+        }
+        // Save state
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
     });
 
     /**
      * Close sidebar when clicking on a nav link (mobile)
      */
-    document.querySelectorAll('.nav-link').forEach(link => {
+    document.querySelectorAll('.sidebar-nav-item').forEach(link => {
         link.addEventListener('click', function() {
             if (window.innerWidth <= 768) {
-                const content = document.querySelector('.sidebar-content');
-                content.classList.remove('show');
+                sidebar.classList.remove('open');
             }
         });
     });
