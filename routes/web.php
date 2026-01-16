@@ -75,7 +75,7 @@ Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->n
 
 Route::get('/Dashbord_Admin/Product/data', [BookController::class, 'getProducts']);
 Route::get('/Dashbord_Admin/Product/{id}', [BookController::class, 'getProductById']); 
-Route::put('/Dashbord_Admin/Product/{id}', [BookController::class, 'updateProduct']);
+//Route::put('/Dashbord_Admin/Product/{id}', [BookController::class, 'updateProduct']);
 Route::post('/Dashbord_Admin/Product/add', [BookController::class, 'addProduct'])->name('product.add');
 
 
@@ -98,15 +98,13 @@ Route::resource('client', Usercontroller::class);
     Route::post('/orders/{id}', [OrderController::class, 'store'])->name('orders.store');
     //product blade
     //search
-    Route::get('/products', 
-            [BookController::class, 'showproduct']
-        )->name('products.index');
+    Route::get('/products', [BookController::class, 'showproduct'])->name('products.index');
 
     // Show product (JSON)
-    Route::get('/admin/products/{id}', [BookController::class, 'show']);
+    Route::get('/products/{id}', [BookController::class, 'viewProduct']);
 
     // Update product
-    Route::put('/admin/products/{id}', [ProductController::class, 'update']);
+    Route::put('/products/{id}', [BookController::class, 'updateProduct']);
     Route::post('/admin/products/{id}', [ProductController::class, 'update']);
 
     // Delete product

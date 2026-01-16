@@ -91,53 +91,7 @@ class BookController extends Controller
         ));
     }
 
-    public function showproduct(Request $request)
-    {
-        $search = $request->search;
-        $categoryId = $request->category;
-
-        $query = Book::with('category');
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                ->orWhere('author', 'like', "%{$search}%");
-            });
-        }
-
-        if ($categoryId) {
-            $category = Category::with('parent', 'children')->find($categoryId);
-
-            if ($category) {
-                $categoryIds = collect([
-                    $category->id,
-                    optional($category->parent)->id,
-                    ...$category->children->pluck('id')
-                ])->filter()->unique();
-
-                $query->whereIn('category_id', $categoryIds);
-            }
-        }
-
-        $products = $query->latest()
-                        ->paginate(15)
-                        ->withQueryString();
-
-        //get categories
-        $categories = Category::whereNull('parent_id')->get();
-        // Get statistics for stats cards
-        $totalProducts = Book::count();
-        $availableProducts = Book::where('Quantity', '>', 0)->count();
-        $totalCategories = Book::distinct('category_id')->count('category_id');
-
-        return view('Dashbord_Admin.product', compact(
-            'products',
-            'totalProducts',
-            'availableProducts',
-            'totalCategories',
-            'categories'
-        ));
-    }
+    
     
     public function getProducts()
     {
@@ -200,175 +154,7 @@ class BookController extends Controller
     }
 }
 
-public function updateProduct(Request $request, $id)
-{
-    try {
-        \Log::info('=== UPDATE PRODUCT START ===');
-        \Log::info('Product ID: ' . $id);
-        \Log::info('Request Method: ' . $request->method());
-        \Log::info('Request Data: ', $request->except(['image'])); // Don't log file data
-       
-        // Find the product
-        $product = Book::findOrFail($id);
-        \Log::info('Product found: ' . $product->title);
-        
-        // Validate the request
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'author' => 'required|string|max:255',
-            'Page_Num' => 'nullable|integer|min:1',
-            'Langue' => 'nullable|string|max:100',
-            'Publishing_House' => 'nullable|string|max:255',
-            'ISBN' => 'nullable|string|max:50',
-            'Quantity' => 'required|integer|min:0',
-            'category_id' => 'nullable|integer|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
-        
-        // Update basic fields
-        $product->title = $validated['title'];
-        $product->description = $validated['description'];
-        $product->price = $validated['price'];
-        $product->author = $validated['author'];
-        $product->Page_Num = $validated['Page_Num'] ?? null;
-        $product->Langue = $validated['Langue'] ?? null;
-        $product->Publishing_House = $validated['Publishing_House'] ?? null;
-        $product->ISBN = $validated['ISBN'] ?? null;
-        $product->Quantity = $validated['Quantity'];
-       
-        // Handle category_id
-        if (isset($validated['category_id'])) {
-            $product->category_id = $validated['category_id'];
-        }
-       
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            \Log::info('Processing image upload...');
-            
-            try {
-                $file = $request->file('image');
-                \Log::info('File details: ' . $file->getClientOriginalName() . ' (' . $file->getSize() . ' bytes)');
-                
-                // Delete old image if exists
-                if ($product->image) {
-                    $oldImagePath = public_path($product->image);
-                    if (file_exists($oldImagePath)) {
-                        unlink($oldImagePath);
-                        \Log::info('Old image deleted: ' . $oldImagePath);
-                    }
-                }
-                
-                // Generate unique filename
-                $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $destinationPath = public_path('images/books');
-                
-                // Create directory if it doesn't exist
-                if (!file_exists($destinationPath)) {
-                    if (!mkdir($destinationPath, 0755, true)) {
-                        throw new \Exception('Failed to create upload directory');
-                    }
-                    \Log::info('Created directory: ' . $destinationPath);
-                }
-                
-                // Move the file
-                if ($file->move($destinationPath, $imageName)) {
-                    $imagePath = 'images/books/' . $imageName;
-                    $product->image = $imagePath;
-                    
-                    // Verify file exists
-                    if (file_exists(public_path($imagePath))) {
-                        \Log::info('Image successfully stored: ' . $imagePath);
-                        \Log::info('Full path: ' . public_path($imagePath));
-                    } else {
-                        throw new \Exception('Image file not found after move operation');
-                    }
-                } else {
-                    throw new \Exception('Failed to move uploaded file');
-                }
-                
-            } catch (\Exception $imageError) {
-                \Log::error('Image upload error: ' . $imageError->getMessage());
-                
-                // For AJAX requests, return the error
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Failed to upload image: ' . $imageError->getMessage()
-                    ], 500);
-                }
-                
-                // For regular requests, continue without image
-                \Log::warning('Continuing update without image due to upload error');
-            }
-        }
-       
-        // Save the product
-        \Log::info('Attempting to save product...');
-        $saved = $product->save();
-        \Log::info('Product save result: ' . ($saved ? 'SUCCESS' : 'FAILED'));
-       
-        if (!$saved) {
-            throw new \Exception('Failed to save product to database');
-        }
-       
-        \Log::info('=== UPDATE PRODUCT SUCCESS ===');
-       
-        // Return appropriate response based on request type
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تحديث المنتج بنجاح!',
-                'product' => $product->load('category')
-            ], 200);
-        }
-        
-        return redirect()->back()->with('success', 'Product updated successfully!');
-       
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        \Log::error('Product not found: ' . $e->getMessage());
-        
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'المنتج غير موجود.'
-            ], 404);
-        }
-        
-        return redirect()->back()->withErrors(['error' => 'Product not found.']);
-       
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        \Log::error('Validation failed: ', $e->errors());
-        
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في التحقق من البيانات',
-                'errors' => $e->errors()
-            ], 422);
-        }
-        
-        return redirect()->back()->withErrors($e->errors())->withInput();
-       
-    } catch (\Exception $e) {
-        \Log::error('=== UPDATE PRODUCT ERROR ===');
-        \Log::error('Error Message: ' . $e->getMessage());
-        \Log::error('Error File: ' . $e->getFile());
-        \Log::error('Error Line: ' . $e->getLine());
-        \Log::error('Stack Trace: ' . $e->getTraceAsString());
-        \Log::error('=========================');
-       
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث المنتج: ' . $e->getMessage()
-            ], 500);
-        }
-        
-        return redirect()->back()->withErrors(['error' => 'An error occurred while updating the product.'])->withInput();
-    }
-}
+
 
 public function addProduct(Request $request) 
 {
@@ -1187,5 +973,226 @@ public function testApiConnection()
         ], 500);
     }
 }
+public function showproduct(Request $request)
+    {
+        $search = $request->search;
+        $categoryId = $request->category;
 
+        $query = Book::with('category');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                ->orWhere('author', 'like', "%{$search}%");
+            });
+        }
+
+        if ($categoryId) {
+            $category = Category::with('parent', 'children')->find($categoryId);
+
+            if ($category) {
+                $categoryIds = collect([
+                    $category->id,
+                    optional($category->parent)->id,
+                    ...$category->children->pluck('id')
+                ])->filter()->unique();
+
+                $query->whereIn('category_id', $categoryIds);
+            }
+        }
+
+        $products = $query->latest()
+                        ->paginate(15)
+                        ->withQueryString();
+
+        //get categories
+        $categories = Category::whereNull('parent_id')->get();
+        // Get statistics for stats cards
+        $totalProducts = Book::count();
+        $availableProducts = Book::where('Quantity', '>', 0)->count();
+        $totalCategories = Book::distinct('category_id')->count('category_id');
+
+        return view('Dashbord_Admin.product', compact(
+            'products',
+            'totalProducts',
+            'availableProducts',
+            'totalCategories',
+            'categories'
+        ));
+    }
+    public function viewProduct($id){
+        // Get the book with its category, category's parent, and author relationship
+        $product =  Book::findOrFail($id);
+
+        return response()->json($product);
+    }
+    public function updateProduct(Request $request, $id)
+    {
+        try {
+            \Log::info('=== UPDATE PRODUCT START ===');
+            \Log::info('Product ID: ' . $id);
+            \Log::info('Request Method: ' . $request->method());
+            \Log::info('Request Data: ', $request->except(['image'])); // Don't log file data
+        
+            // Find the product
+            $product = Book::findOrFail($id);
+            \Log::info('Product found: ' . $product->title);
+            
+            // Validate the request
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'author' => 'required|string|max:255',
+                'Page_Num' => 'nullable|integer|min:1',
+                'Langue' => 'nullable|string|max:100',
+                'Publishing_House' => 'nullable|string|max:255',
+                'ISBN' => 'nullable|string|max:50',
+                'Quantity' => 'required|integer|min:0',
+                'category_id' => 'nullable|integer|exists:categories,id',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+            
+            // Update basic fields
+            $product->title = $validated['title'];
+            $product->description = $validated['description'];
+            $product->price = $validated['price'];
+            $product->author = $validated['author'];
+            $product->Page_Num = $validated['Page_Num'] ?? null;
+            $product->Langue = $validated['Langue'] ?? null;
+            $product->Publishing_House = $validated['Publishing_House'] ?? null;
+            $product->ISBN = $validated['ISBN'] ?? null;
+            $product->Quantity = $validated['Quantity'];
+        
+            // Handle category_id
+            if (isset($validated['category_id'])) {
+                $product->category_id = $validated['category_id'];
+            }
+        
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                \Log::info('Processing image upload...');
+                
+                try {
+                    $file = $request->file('image');
+                    \Log::info('File details: ' . $file->getClientOriginalName() . ' (' . $file->getSize() . ' bytes)');
+                    
+                    // Delete old image if exists
+                    if ($product->image) {
+                        $oldImagePath = public_path($product->image);
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                            \Log::info('Old image deleted: ' . $oldImagePath);
+                        }
+                    }
+                    
+                    // Generate unique filename
+                    $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $destinationPath = public_path('images/books');
+                    
+                    // Create directory if it doesn't exist
+                    if (!file_exists($destinationPath)) {
+                        if (!mkdir($destinationPath, 0755, true)) {
+                            throw new \Exception('Failed to create upload directory');
+                        }
+                        \Log::info('Created directory: ' . $destinationPath);
+                    }
+                    
+                    // Move the file
+                    if ($file->move($destinationPath, $imageName)) {
+                        $imagePath = 'images/books/' . $imageName;
+                        $product->image = $imagePath;
+                        
+                        // Verify file exists
+                        if (file_exists(public_path($imagePath))) {
+                            \Log::info('Image successfully stored: ' . $imagePath);
+                            \Log::info('Full path: ' . public_path($imagePath));
+                        } else {
+                            throw new \Exception('Image file not found after move operation');
+                        }
+                    } else {
+                        throw new \Exception('Failed to move uploaded file');
+                    }
+                    
+                } catch (\Exception $imageError) {
+                    \Log::error('Image upload error: ' . $imageError->getMessage());
+                    
+                    // For AJAX requests, return the error
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Failed to upload image: ' . $imageError->getMessage()
+                        ], 500);
+                    }
+                    
+                    // For regular requests, continue without image
+                    \Log::warning('Continuing update without image due to upload error');
+                }
+            }
+        
+            // Save the product
+            \Log::info('Attempting to save product...');
+            $saved = $product->saveQuietly();
+            \Log::info('Product save result: ' . ($saved ? 'SUCCESS' : 'FAILED'));
+        
+            if (!$saved) {
+                throw new \Exception('Failed to save product to database');
+            }
+        
+            \Log::info('=== UPDATE PRODUCT SUCCESS ===');
+        
+            // Return appropriate response based on request type
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تحديث المنتج بنجاح!',
+                    'product' => $product->load('category')
+                ], 200);
+            }
+            
+            return redirect()->back()->with('success', 'Product updated successfully!');
+        
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('Product not found: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المنتج غير موجود.'
+                ], 404);
+            }
+            
+            return redirect()->back()->withErrors(['error' => 'Product not found.']);
+        
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed: ', $e->errors());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل في التحقق من البيانات',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        
+        } catch (\Exception $e) {
+            \Log::error('=== UPDATE PRODUCT ERROR ===');
+            \Log::error('Error Message: ' . $e->getMessage());
+            \Log::error('Error File: ' . $e->getFile());
+            \Log::error('Error Line: ' . $e->getLine());
+            \Log::error('Stack Trace: ' . $e->getTraceAsString());
+            \Log::error('=========================');
+        
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء تحديث المنتج: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->withErrors(['error' => 'An error occurred while updating the product.'])->withInput();
+        }
+    }
 }
