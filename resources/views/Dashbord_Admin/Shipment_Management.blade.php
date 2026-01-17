@@ -70,7 +70,33 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
-
+                <!-- search Section -->
+                <div class="search-section">
+                <form action="{{ route('admin.products.index') }}" method="GET" class="search-controls" style="width: 100%; display: flex; gap: 15px;">
+                        
+                        <div class="form-group" style="flex: 1;">
+                            <label for="searchInput">بحث</label>
+                            <div class="input-group">
+                                <input 
+                                    type="text" 
+                                    name="search" 
+                                    id="searchInput" 
+                                    class="form-control" 
+                                    placeholder="ابحث عن اسم أو رقم الشحنة..."
+                                    value="{{ request('search') }}" 
+                                >
+                                <button class="btn btn-outline-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: end;">
+                            <a href="{{ route('admin.products.index') }}" class="btn-add" style="background: #95a5a6; text-decoration: none; padding: 8px 15px; display: inline-block;">
+                                <i class="fas fa-redo me-2"></i>إعادة تعيين
+                            </a>
+                        </div>
+                </form>
+                </div>         
                 <!-- Table Section -->
                 <div class="table-section">
                     <div class="table-responsive">
@@ -123,6 +149,13 @@
                                             <a href="{{ route('shipments.show', $shipment->id) }}" class="btn-action btn-view">
                                                 <i class="fas fa-eye"></i>عرض
                                             </a>
+                                            <button 
+                                                class="btn-action btn-edit" 
+                                                onclick=""
+                                                title="تعديل"
+                                            >
+                                                <i class="fas fa-edit">تعديل</i>
+                                            </button>
                                             @if($shipment->status == 'pending')
                                                 <form method="POST" action="{{ route('shipments.process', $shipment->id) }}" style="display: inline;">
                                                     @csrf
