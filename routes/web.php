@@ -9,10 +9,12 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\Shipment;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PublisherController;
 
 use Illuminate\Http\Request;
 
@@ -99,16 +101,18 @@ Route::resource('client', Usercontroller::class);
     //product blade
     //search
     Route::get('/products', [BookController::class, 'showproduct'])->name('products.index');
-
     // Show product (JSON)
     Route::get('/products/{id}', [BookController::class, 'viewProduct']);
-
     // Update product
     Route::put('/products/{id}', [BookController::class, 'updateProduct']);
     Route::post('/admin/products/{id}', [ProductController::class, 'update']);
-
     // Delete product
     Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
+    //shipment management blade
+    //search
+    Route::get('/search-book', [BookController::class, 'searchBook']);
+    Route::get('/search-authors', [AuthorController::class, 'search']);
+    Route::get('/search-publishers', [PublisherController::class, 'search']);
 });
 
 // Other Routes

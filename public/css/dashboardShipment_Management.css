@@ -396,6 +396,65 @@ body {
     background: #229954;
 }
 
+.search-phase,
+.item-details-phase {
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    background: #f9f9f9;
+}
+
+.list-group-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f0f0f0;
+}
+
+.shipment-item-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-card-details p {
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.6rem;
+}
+/* Pagination */
+.pagination {
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.page-link {
+    color: #3498db;
+    border-color: #e0e6ed;
+    border-radius: 8px;
+}
+
+.page-link:hover {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
+}
 @media (max-width: 768px) {
     .page-header {
         flex-direction: column;

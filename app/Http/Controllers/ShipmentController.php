@@ -43,98 +43,79 @@ class ShipmentController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'shipment_reference' => 'required|unique:shipments,shipment_reference',
-            'supplier_name' => 'nullable|string|max:255',
-            'arrival_date' => 'required|date',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.isbn' => 'required|string|max:20',
-            'items.*.title' => 'required|string|max:255',
-            'items.*.author' => 'nullable|string|max:255',
-            'items.*.quantity_received' => 'required|integer|min:1',
-            'items.*.cost_price' => 'nullable|numeric|min:0',
-            'items.*.selling_price' => 'required|numeric|min:0',
-        ]);
-    
-        try {
-            // Calculate total books count
-            $totalBooks = array_sum(array_column($validated['items'], 'quantity_received'));
-    
-            // Create shipment with correct field names
-            $shipment = Shipment::create([
-                'shipment_reference' => $validated['shipment_reference'],
-                'supplier_name' => $validated['supplier_name'],
-                'arrival_date' => $validated['arrival_date'],
-                'notes' => $validated['notes'],
-                'total_books' => $totalBooks,
-                'processed_books' => 0,
-                'status' => 'pending'
+{
+    $validated = $request->validate([
+        'shipment_reference' => 'required|unique:shipments',
+        'supplier_name' => 'nullable|string|max:255',
+        'arrival_date' => 'required|date',
+        'notes' => 'nullable|string',
+        'items' => 'required|array|min:1',
+        'items.*.book_id' => 'nullable|exists:books,id',
+        'items.*.isbn' => 'required|string',
+        'items.*.title' => 'required|string',
+        'items.*.author_id' => 'nullable|exists:authors,id',
+        'items.*.publishing_house_id' => 'nullable|exists:publishing_houses,id',
+        'items.*.quantity_received' => 'required|integer|min:1',
+        'items.*.cost_price' => 'nullable|numeric|min:0',
+        'items.*.selling_price' => 'required|numeric|min:0',
+    ]);
+
+    $shipment = Shipment::create([
+        'shipment_reference' => $validated['shipment_reference'],
+        'supplier_name' => $validated['supplier_name'],
+        'arrival_date' => $validated['arrival_date'],
+        'notes' => $validated['notes'],
+        'total_books' => array_sum(array_column($validated['items'], 'quantity_received')),
+        'processed_books' => 0,
+        'status' => 'pending'
+    ]);
+
+    foreach ($validated['items'] as $itemData) {
+        $book = null;
+        
+        // Check if linking to existing book
+        if (!empty($itemData['book_id'])) {
+            $book = Book::find($itemData['book_id']);
+            $book->Quantity += $itemData['quantity_received'];
+            $book->price = $itemData['selling_price'];
+            $book->save();
+        } else {
+            // Create new book with proper relationships
+            $book = Book::create([
+                'title' => $itemData['title'],
+                'author' => 'غير محدد', // Default author string
+                'ISBN' => $itemData['isbn'],
+                'author_id' => $itemData['author_id'],
+                'price' => $itemData['selling_price'],
+                'cost_price' => $itemData['cost_price'] ?? 0,
+                'Quantity' => $itemData['quantity_received'],
+                'Publishing_House' => 'غير محدد', // Default Publishing_House string
+                'publishing_house_id' => $itemData['publishing_house_id'],
+                'category_id' => 1,// Default category
+                'Page_Num' => 0,
+                'Langue' => 'غير محدد',
+                'description' => 'تم إضافته من خلال الشحنة رقم: ' . $validated['shipment_reference'],
+                'image' => 'images/books/default.jpg',
+                'api_data_status' => 'pending'
             ]);
-    
-            // Create shipment items and process books
-            foreach ($validated['items'] as $itemData) {
-                // Create shipment item
-                $shipmentItem = ShipmentItem::create([
-                    'shipment_id' => $shipment->id,
-                    'isbn' => $itemData['isbn'],
-                    'title' => $itemData['title'],
-                    'author' => $itemData['author'],
-                    'quantity_received' => $itemData['quantity_received'],
-                    'cost_price' => $itemData['cost_price'],
-                    'selling_price' => $itemData['selling_price'],
-                ]);
-    
-                // Check if book already exists by ISBN
-                $existingBook = Book::where('ISBN', $itemData['isbn'])->first();
-    
-                if ($existingBook) {
-                    // Update existing book quantity and prices
-                    $existingBook->Quantity += $itemData['quantity_received'];
-                    $existingBook->price = $itemData['selling_price']; // Update selling price
-                    $existingBook->save();
-                    
-                    // Link shipment item to existing book
-                    $shipmentItem->update(['book_id' => $existingBook->id]);
-                } else {
-                    // Create new book entry
-                    $newBook = Book::create([
-                        'title' => $itemData['title'],
-                        'author' => $itemData['author'] ?? 'غير محدد',
-                        'ISBN' => $itemData['isbn'],
-                        'price' => $itemData['selling_price'],
-                        'Quantity' => $itemData['quantity_received'],
-                        'cost_price' => $itemData['cost_price'] ?? 0,
-                        'description' => 'تم إضافته من خلال الشحنة رقم: ' . $validated['shipment_reference'],
-                        'category_id' => 1, // Default category, you might want to make this configurable
-                        'Page_Num' => 0,
-                        'Langue' => 'غير محدد',
-                        'Publishing_House' => 'غير محدد',
-                        'image' => 'images/books/default.jpg', // Default image path
-                        'api_data_status' => 'pending'
-                    ]);
-    
-                    // Link shipment item to new book
-                    $shipmentItem->update(['book_id' => $newBook->id]);
-                }
-            }
-    
-            // Use the correct route name for redirect
-            return redirect()->route('Dashbord_Admin.Shipment_Management')
-                ->with('success', 'تم إنشاء الشحنة بنجاح!');
-    
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput();
-        } catch (\Exception $e) {
-            \Log::error('Error creating shipment: ' . $e->getMessage());
-            return redirect()->back()
-                ->withErrors(['error' => 'فشل في إنشاء الشحنة. يرجى المحاولة مرة أخرى.'])
-                ->withInput();
         }
+
+        ShipmentItem::create([
+            'shipment_id' => $shipment->id,
+            'book_id' => $book->id,
+            'isbn' => $itemData['isbn'],
+            'title' => $itemData['title'],
+            'author_id' => $itemData['author_id'],
+            'quantity_received' => $itemData['quantity_received'],
+            'cost_price' => $itemData['cost_price'],
+            'selling_price' => $itemData['selling_price'],
+            'publishing_house_id' => $itemData['publishing_house_id'],
+        ]);
     }
+
+    return redirect()->route('shipments.index')
+        ->with('success', 'تم إنشاء الشحنة بنجاح!');
+}
 
     public function show(Shipment $shipment)
     {

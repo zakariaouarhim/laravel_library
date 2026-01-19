@@ -1195,4 +1195,21 @@ public function showproduct(Request $request)
             return redirect()->back()->withErrors(['error' => 'An error occurred while updating the product.'])->withInput();
         }
     }
+    public function searchBook(Request $request)
+    {
+        $query = $request->query('q');
+        
+        if (strlen($query) < 3) {
+            return response()->json(['error' => 'Query too short'], 400);
+        }
+        
+        $books = Book::where('ISBN', $query)
+            ->orWhere('title', 'like', "%{$query}%")
+            ->orWhere('author', 'like', "%{$query}%")
+            ->select('id', 'ISBN', 'title', 'author', 'price', 'Quantity', 'cost_price')
+            ->limit(10)
+            ->get();
+        
+        return response()->json($books);
+    }
 }

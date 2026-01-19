@@ -181,6 +181,12 @@
                         </table>
                     </div>
                 </div>
+                <!-- Pagination -->
+                @if($shipments instanceof \Illuminate\Pagination\Paginator || $shipments instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                <nav>
+                    {{ $shipments->links('pagination::bootstrap-4') }}
+                </nav>
+                @endif
             </main>
         </div>
     </div>
@@ -198,20 +204,20 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Header Section -->
+                        <!-- PHASE 1: Shipment Header Section -->
                         <div class="mb-4">
                             <h6 style="color: #2c3e50; font-weight: 600; margin-bottom: 1rem;">معلومات الشحنة</h6>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">رقم الشحنة <span style="color: #e74c3c;">*</span></label>
-                                        <input type="text" class="form-control" name="shipment_reference" required value="{{ old('shipment_reference') }}">
+                                        <input type="text" class="form-control" name="shipment_reference" id="shipmentReference" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">المورد</label>
-                                        <input type="text" class="form-control" name="supplier_name" value="{{ old('supplier_name') }}">
+                                        <input type="text" class="form-control" name="supplier_name" id="supplierName">
                                     </div>
                                 </div>
                             </div>
@@ -219,13 +225,13 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">تاريخ الوصول <span style="color: #e74c3c;">*</span></label>
-                                        <input type="date" class="form-control" name="arrival_date" required value="{{ old('arrival_date') }}">
+                                        <input type="date" class="form-control" name="arrival_date" id="arrivalDate" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">ملاحظات</label>
-                                        <textarea class="form-control" name="notes" rows="2">{{ old('notes') }}</textarea>
+                                        <textarea class="form-control" name="notes" id="notes" rows="2"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -233,71 +239,193 @@
 
                         <hr>
 
-                        <!-- Items Section -->
+                        <!-- PHASE 2: Book Search & Add Section -->
                         <div class="mb-4">
-                            <h6 style="color: #2c3e50; font-weight: 600; margin-bottom: 1rem;">عناصر الشحنة</h6>
-                            <div id="shipmentItems">
-                                <div class="shipment-item">
-                                    <div class="item-header">
-                                        <span class="item-title">
-                                            <i class="fas fa-book"></i>الكتاب #1
-                                        </span>
+                            <h6 style="color: #2c3e50; font-weight: 600; margin-bottom: 1rem;">إضافة الكتب</h6>
+                            
+                            <!-- Search Phase -->
+                            <div class="search-phase mb-4" id="searchPhase">
+                                <div class="mb-3">
+                                    <label class="form-label">البحث عن الكتاب <span style="color: #e74c3c;">*</span></label>
+                                    <div class="input-group">
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            id="bookSearchInput" 
+                                            placeholder="ابحث عن ISBN أو اسم الكتاب..."
+                                            autocomplete="off"
+                                        >
+                                        <button class="btn btn-outline-primary" type="button" id="searchBtn">
+                                            <i class="fas fa-search"></i>بحث
+                                        </button>
+                                    </div>
+                                    <small class="form-text text-muted">ابحث بـ ISBN (أسرع) أو اسم الكتاب أو المؤلف</small>
+                                </div>
+
+                                <!-- Search Results -->
+                                <div id="searchResults" style="display: none; max-height: 300px; overflow-y: auto;">
+                                    <div class="list-group">
+                                        <!-- Results will appear here -->
+                                    </div>
+                                </div>
+
+                                <!-- Existing Book Info -->
+                                <div id="existingBookInfo" class="alert alert-info" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p><strong>الكتاب:</strong> <span id="existingBookTitle"></span></p>
+                                            <p><strong>ISBN:</strong> <span id="existingBookISBN"></span></p>
+                                            <p><strong>المؤلف:</strong> <span id="existingBookAuthor"></span></p>
+                                            <p><strong>الكمية الحالية:</strong> <span id="existingBookQuantity" class="badge bg-success"></span></p>
+                                            <p><strong>السعر الحالي:</strong> <span id="existingBookPrice" class="badge bg-primary"></span> DH</p>
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-center justify-content-end gap-2">
+                                            <button type="button" class="btn btn-success btn-sm" id="selectExistingBtn">
+                                                <i class="fas fa-check"></i>اختيار
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" id="cancelExistingBtn">
+                                                <i class="fas fa-times"></i>إلغاء
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- New Book Form -->
+                                <div id="newBookForm" style="display: none;">
+                                    <div class="alert alert-warning">
+                                        <p><i class="fas fa-info-circle"></i> كتاب جديد - أكمل البيانات المطلوبة</p>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">ISBN <span style="color: #e74c3c;">*</span></label>
-                                                <input type="text" class="form-control" name="items[0][isbn]" required value="{{ old('items.0.isbn') }}">
+                                                <input type="text" class="form-control" id="newBookISBN" placeholder="ISBN">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">عنوان الكتاب <span style="color: #e74c3c;">*</span></label>
-                                                <input type="text" class="form-control" name="items[0][title]" required value="{{ old('items.0.title') }}">
+                                                <input type="text" class="form-control" id="newBookTitle" placeholder="العنوان">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">المؤلف</label>
-                                                <input type="text" class="form-control" name="items[0][author]" value="{{ old('items.0.author') }}">
+                                                <div class="input-group">
+                                                    <input 
+                                                        type="text" 
+                                                        class="form-control" 
+                                                        id="newBookAuthorSearch" 
+                                                        placeholder="ابحث عن المؤلف..."
+                                                        autocomplete="off"
+                                                    >
+                                                    <button class="btn btn-outline-secondary" type="button" id="searchAuthorBtn">
+                                                        <i class="fas fa-search"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="authorSearchResults" class="list-group mt-2" style="display: none; max-height: 150px; overflow-y: auto;">
+                                                    <!-- Author results here -->
+                                                </div>
+                                                <input type="hidden" id="newBookAuthorId">
+                                                <small id="selectedAuthorName" class="text-muted"></small>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">الكمية <span style="color: #e74c3c;">*</span></label>
-                                                <input type="number" class="form-control" name="items[0][quantity_received]" min="1" required value="{{ old('items.0.quantity_received') }}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label class="form-label">سعر التكلفة</label>
-                                                <input type="number" class="form-control" name="items[0][cost_price]" step="0.01" min="0" value="{{ old('items.0.cost_price') }}">
+                                                <label class="form-label">دار النشر</label>
+                                                <div class="input-group">
+                                                    <input 
+                                                        type="text" 
+                                                        class="form-control" 
+                                                        id="newBookPublisherSearch" 
+                                                        placeholder="ابحث عن دار النشر..."
+                                                        autocomplete="off"
+                                                    >
+                                                    <button class="btn btn-outline-secondary" type="button" id="searchPublisherBtn">
+                                                        <i class="fas fa-search"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="publisherSearchResults" class="list-group mt-2" style="display: none; max-height: 150px; overflow-y: auto;">
+                                                    <!-- Publisher results here -->
+                                                </div>
+                                                <input type="hidden" id="newBookPublisherId">
+                                                <small id="selectedPublisherName" class="text-muted"></small>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-8">
-                                            <div class="mb-3">
-                                                <label class="form-label">سعر البيع <span style="color: #e74c3c;">*</span></label>
-                                                <input type="number" class="form-control" name="items[0][selling_price]" step="0.01" min="0" required value="{{ old('items.0.selling_price') }}">
-                                            </div>
+                                        <div class="col-md-12">
+                                            <button type="button" class="btn btn-success" id="proceedNewBookBtn">
+                                                <i class="fas fa-check"></i>متابعة
+                                            </button>
+                                            <button type="button" class="btn btn-warning btn-sm" id="cancelNewBookBtn">
+                                                <i class="fas fa-arrow-left"></i>رجوع
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" class="add-item-btn" onclick="addShipmentItem()">
-                                <i class="fas fa-plus me-2"></i>إضافة كتاب آخر
-                            </button>
+
+                            <!-- Item Details Phase -->
+                            <div class="item-details-phase" id="itemDetailsPhase" style="display: none;">
+                                <div class="alert alert-primary">
+                                    <p><strong id="itemBookTitle"></strong></p>
+                                    <p id="itemBookDetails" style="font-size: 0.9rem; margin-bottom: 0;"></p>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">الكمية <span style="color: #e74c3c;">*</span></label>
+                                            <input type="number" class="form-control" id="itemQuantity" min="1" required value="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">سعر التكلفة</label>
+                                            <input type="number" class="form-control" id="itemCostPrice" step="0.01" min="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">سعر البيع <span style="color: #e74c3c;">*</span></label>
+                                            <input type="number" class="form-control" id="itemSellingPrice" step="0.01" min="0" >
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-success" id="addItemBtn">
+                                        <i class="fas fa-plus"></i>إضافة للشحنة
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="backToSearchBtn">
+                                        <i class="fas fa-arrow-left"></i>رجوع
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Shipment Items List -->
+                        <div class="mb-4">
+                            <h6 style="color: #2c3e50; font-weight: 600; margin-bottom: 1rem;">الكتب المضافة</h6>
+                            <div id="shipmentItemsList">
+                                <p class="text-muted text-center" id="emptyItemsMessage">لم تضف أي كتب حتى الآن</p>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Modal Footer with Hidden Form Fields -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                        <button type="submit" class="btn btn-primary" id="saveShipmentBtn">
+                        <button type="submit" class="btn btn-primary" id="saveShipmentBtn" disabled>
                             <i class="fas fa-save me-2"></i>حفظ الشحنة
                         </button>
                     </div>
+
+                    <!-- Hidden container for item data -->
+                    <div id="itemsDataContainer"></div>
                 </form>
             </div>
         </div>
@@ -305,82 +433,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let itemIndex = 1;
-
-        function addShipmentItem() {
-            const container = document.getElementById('shipmentItems');
-            const newItem = document.createElement('div');
-            newItem.className = 'shipment-item';
-            newItem.innerHTML = `
-                <div class="item-header">
-                    <span class="item-title">
-                        <i class="fas fa-book"></i>الكتاب #${itemIndex + 1}
-                    </span>
-                    <button type="button" class="remove-item-btn" onclick="removeShipmentItem(this)">
-                        <i class="fas fa-trash me-1"></i>حذف
-                    </button>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">ISBN <span style="color: #e74c3c;">*</span></label>
-                            <input type="text" class="form-control" name="items[${itemIndex}][isbn]" required>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">عنوان الكتاب <span style="color: #e74c3c;">*</span></label>
-                            <input type="text" class="form-control" name="items[${itemIndex}][title]" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">المؤلف</label>
-                            <input type="text" class="form-control" name="items[${itemIndex}][author]">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">الكمية <span style="color: #e74c3c;">*</span></label>
-                            <input type="number" class="form-control" name="items[${itemIndex}][quantity_received]" min="1" required>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">سعر التكلفة</label>
-                            <input type="number" class="form-control" name="items[${itemIndex}][cost_price]" step="0.01" min="0">
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label class="form-label">سعر البيع <span style="color: #e74c3c;">*</span></label>
-                            <input type="number" class="form-control" name="items[${itemIndex}][selling_price]" step="0.01" min="0" required>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(newItem);
-            itemIndex++;
-        }
-
-        function removeShipmentItem(button) {
-            const items = document.querySelectorAll('.shipment-item');
-            if (items.length > 1) {
-                button.closest('.shipment-item').remove();
-            } else {
-                alert('يجب أن تحتوي الشحنة على كتاب واحد على الأقل');
-            }
-        }
-
-        document.getElementById('shipmentForm').addEventListener('submit', function(e) {
-            const submitBtn = document.getElementById('saveShipmentBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
-        });
-
-        document.getElementById('addShipmentModal').addEventListener
+    <script src="{{ asset('js/dashboardShipment.js') }}"></script> 
+</body>
+</html>
+             
