@@ -72,7 +72,7 @@
                 @endif
                 <!-- search Section -->
                 <div class="search-section">
-                <form action="{{ route('admin.products.index') }}" method="GET" class="search-controls" style="width: 100%; display: flex; gap: 15px;">
+                <form action="{{ route('admin.shipments.search') }}" method="GET" class="search-controls" style="width: 100%; display: flex; gap: 15px;">
                         
                         <div class="form-group" style="flex: 1;">
                             <label for="searchInput">بحث</label>
@@ -91,7 +91,7 @@
                             </div>
                         </div>
                         <div class="form-group" style="display: flex; align-items: end;">
-                            <a href="{{ route('admin.products.index') }}" class="btn-add" style="background: #95a5a6; text-decoration: none; padding: 8px 15px; display: inline-block;">
+                            <a href="{{ route('admin.Dashbord_Admin.Shipment_Management') }}" class="btn-add" style="background: #95a5a6; text-decoration: none; padding: 8px 15px; display: inline-block;">
                                 <i class="fas fa-redo me-2"></i>إعادة تعيين
                             </a>
                         </div>
@@ -146,18 +146,25 @@
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a href="{{ route('shipments.show', $shipment->id) }}" class="btn-action btn-view">
-                                                <i class="fas fa-eye"></i>عرض
+                                            <a href="{{ route('admin.shipments.show', $shipment->id) }}" class="btn-action btn-view">
+                                                <i class="fas fa-eye"></i>
                                             </a>
                                             <button 
                                                 class="btn-action btn-edit" 
-                                                onclick=""
+                                                onclick="editProduct({{ $shipment->id }})"
                                                 title="تعديل"
                                             >
-                                                <i class="fas fa-edit">تعديل</i>
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button 
+                                                class="btn-action btn-delete" 
+                                                onclick="deleteProduct({{ $shipment->id }})"
+                                                title="حذف"
+                                            >
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                             @if($shipment->status == 'pending')
-                                                <form method="POST" action="{{ route('shipments.process', $shipment->id) }}" style="display: inline;">
+                                                <form method="POST" action="{{ route('admin.shipments.process', $shipment->id) }}" style="display: inline;">
                                                     @csrf
                                                     <button type="submit" class="btn-action btn-process" onclick="return confirm('هل أنت متأكد من معالجة هذه الشحنة؟')">
                                                         <i class="fas fa-cog"></i>معالجة
@@ -195,7 +202,7 @@
     <div class="modal fade" id="addShipmentModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form method="POST" action="{{ route('shipments.store') }}" id="shipmentForm">
+                <form method="POST" action="{{ route('admin.shipments.store') }}" id="shipmentForm">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">

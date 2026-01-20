@@ -26,6 +26,15 @@ class ShipmentController extends Controller
         $shipments = Shipment::with('items')->orderBy('created_at', 'desc')->paginate(10);
         return view('Dashbord_Admin.Shipment_Management', compact('shipments'));
     }
+    public function searchShipment(Request $request)
+    {
+        $search = $request->input('search');
+        $shipments = Shipment::with('items')->where('shipment_reference', 'like', "%$search%")
+            ->orWhere('supplier_name', 'like', "%$search%")
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        return view('Dashbord_Admin.Shipment_Management', compact('shipments'));
+    }
     public function showmanagement(Category $category)     
 {         
     $childCategoryIds = $category->children->pluck('id')->toArray();         
@@ -113,7 +122,7 @@ class ShipmentController extends Controller
         ]);
     }
 
-    return redirect()->route('shipments.index')
+    return redirect()->route('admin.shipments.index')
         ->with('success', 'تم إنشاء الشحنة بنجاح!');
 }
 
@@ -128,7 +137,7 @@ class ShipmentController extends Controller
         try {
             $this->shipmentService->processShipment($shipment);
             
-            return redirect()->route('shipments.show', $shipment->id)
+            return redirect()->route('admin.shipments.show', $shipment->id)
                 ->with('success', 'Shipment processed successfully!');
                 
         } catch (\Exception $e) {
@@ -173,7 +182,7 @@ class ShipmentController extends Controller
 
             $message = "Enrichment completed. Enriched: {$enriched}, Failed: {$failed}";
             
-            return redirect()->route('shipments.show', $shipment->id)
+            return redirect()->route('admin.shipments.show', $shipment->id)
                 ->with('success', $message);
                 
         } catch (\Exception $e) {

@@ -32,11 +32,11 @@ use Illuminate\Http\Request;
 
     
     // Shipment Routes
-    Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
-    Route::get('/shipments/create', [ShipmentController::class, 'create'])->name('shipments.create');
-    Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
-    Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
-    Route::post('/shipments/{shipment}/process', [ShipmentController::class, 'processShipment'])->name('shipments.process');
+    
+    
+    
+    
+    
     Route::post('/shipments/{shipment}/bulk-enrich', [ShipmentController::class, 'bulkEnrich'])->name('shipments.bulk-enrich');
     Route::post('/shipment-items/{item}/enrich', [ShipmentController::class, 'enrichItem'])->name('shipment-items.enrich');
     
@@ -56,7 +56,7 @@ use Illuminate\Http\Request;
 
 // API Routes for AJAX calls
 
-Route::get('/Dashbord_Admin/Shipment_Management', [ShipmentController::class, 'index'])->name('Dashbord_Admin.Shipment_Management');
+
 Route::get('/Dashbord_Admin/ManagementSystem', [ShipmentController::class, 'showmanagement'])->name('Dashbord_Admin.ManagementSystem');
 
 Route::get('products/api', [BookController::class, 'getProductsApi'])->name('products.api');
@@ -99,20 +99,29 @@ Route::resource('client', Usercontroller::class);
     Route::get('/orders/{id}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('/orders/{id}', [OrderController::class, 'store'])->name('orders.store');
     //product blade
-    //search
-    Route::get('/products', [BookController::class, 'showproduct'])->name('products.index');
-    // Show product (JSON)
-    Route::get('/products/{id}', [BookController::class, 'viewProduct']);
-    // Update product
-    Route::put('/products/{id}', [BookController::class, 'updateProduct']);
-    Route::post('/admin/products/{id}', [ProductController::class, 'update']);
-    // Delete product
-    Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
+        //search
+        Route::get('/products', [BookController::class, 'showproduct'])->name('products.index');
+        // Show product (JSON)
+        Route::get('/products/{id}', [BookController::class, 'viewProduct']);
+        // Update product
+        Route::put('/products/{id}', [BookController::class, 'updateProduct']);
+        Route::post('/admin/products/{id}', [ProductController::class, 'update']);
+        // Delete product
+        Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
     //shipment management blade
-    //search
-    Route::get('/search-book', [BookController::class, 'searchBook']);
-    Route::get('/search-authors', [AuthorController::class, 'search']);
-    Route::get('/search-publishers', [PublisherController::class, 'search']);
+        //search
+        Route::get('/search-book', [BookController::class, 'searchBook']);
+        Route::get('/search-authors', [AuthorController::class, 'search']);
+        Route::get('/search-publishers', [PublisherController::class, 'search']);
+        Route::get('/shipments', [ShipmentController::class, 'searchShipment'])->name('shipments.search');
+        //blade shipment management
+        Route::get('/Dashbord_Admin/Shipment_Management', [ShipmentController::class, 'index'])->name('Dashbord_Admin.Shipment_Management');
+        //store
+        Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
+        //show
+        Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
+        //process
+        Route::post('/shipments/{shipment}/process', [ShipmentController::class, 'processShipment'])->name('shipments.process');
 });
 
 // Other Routes

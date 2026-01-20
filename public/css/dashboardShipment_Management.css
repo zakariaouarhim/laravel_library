@@ -433,6 +433,24 @@ body {
     font-size: 0.85rem;
     padding: 0.35rem 0.6rem;
 }
+.btn-edit {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #e67e22;
+    transform: translateY(-2px);
+}
+ .btn-delete {
+     background: #e74c3c;
+     color: white;
+ }
+
+ .btn-delete:hover {
+     background: #c0392b;
+     transform: translateY(-2px);
+ }
 /* Pagination */
 .pagination {
     justify-content: center;
