@@ -122,6 +122,10 @@ Route::resource('client', Usercontroller::class);
         Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
         //process
         Route::post('/shipments/{shipment}/process', [ShipmentController::class, 'processShipment'])->name('shipments.process');
+        //edit shipment
+        Route::get('/shipments/{shipment}/edit', [ShipmentController::class, 'editShipment']);
+        Route::put('/shipments/{shipment}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
+        Route::delete('/shipments/{shipment}/items/{item}', [ShipmentController::class, 'destroyItem']);
 });
 
 // Other Routes

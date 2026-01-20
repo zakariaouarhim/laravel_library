@@ -435,5 +435,94 @@ document.getElementById('addShipmentModal').addEventListener('hidden.bs.modal', 
     document.getElementById('saveShipmentBtn').innerHTML = '<i class="fas fa-save me-2"></i>حفظ الشحنة';
 });
 
-// Set action URL
-//document.getElementById('shipmentForm').action = "{{ route('shipments.store') }}";
+//  ==========Open edit modal=============
+function editshipment(shipmentId) {
+    fetch(`/admin/shipments/${shipmentId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate form with shipment data
+            document.getElementById('editShipmentReference').value = data.shipment_reference;
+            document.getElementById('editSupplierName').value = data.supplier_name || '';
+            document.getElementById('editArrivalDate').value = data.arrival_date;
+            document.getElementById('editStatus').value = data.status;
+            document.getElementById('editNotes').value = data.notes || '';
+
+            // Populate items list
+            const itemsList = document.getElementById('editShipmentItemsList');
+            itemsList.innerHTML = '';
+
+            data.items.forEach((item, index) => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'shipment-item-card';
+                itemCard.innerHTML = `
+                    <div class="item-card-details">
+                        <p><strong>${item.title}</strong></p>
+                        <p><small class="text-muted">ISBN: ${item.isbn}</small></p>
+                        <p><small>الكمية: <strong>${item.quantity_received}</strong> | السعر: <strong>${item.selling_price} DH</strong></small></p>
+                        ${item.cost_price ? `<p><small>سعر التكلفة: ${item.cost_price} DH</small></p>` : ''}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editItem(${shipmentId}, ${item.id})">
+                            <i class="fas fa-edit"></i>تعديل
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem(${shipmentId}, ${item.id})">
+                            <i class="fas fa-trash"></i>حذف
+                        </button>
+                    </div>
+                `;
+                itemsList.appendChild(itemCard);
+            });
+
+            // Set form action
+            document.getElementById('editShipmentForm').action = `/admin/shipments/${shipmentId}`;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('editShipmentModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء تحميل بيانات الشحنة');
+        });
+}
+
+// Edit item
+function editItem(shipmentId, itemId) {
+    alert('تحت التطوير - سيتم تفعيل هذه الميزة قريباً');
+}
+
+// Delete item
+function deleteItem(shipmentId, itemId) {
+    if (confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
+        fetch(`admin/shipments/${shipmentId}/items/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('تم حذف العنصر بنجاح');
+                editshipment(shipmentId); // Reload the modal
+            } else {
+                alert(data.message || 'حدث خطأ');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حذف العنصر');
+        });
+    }
+}
+
+// Form submission
+document.getElementById('editShipmentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('saveEditShipmentBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+
+    this.submit();
+});

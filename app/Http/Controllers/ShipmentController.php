@@ -35,6 +35,70 @@ class ShipmentController extends Controller
             ->paginate(10);
         return view('Dashbord_Admin.Shipment_Management', compact('shipments'));
     }
+    public function editShipment($id){
+        $shipment = Shipment::with('items')->findOrFail($id);
+        return response()->json($shipment);
+    }
+    public function updateShipment(Request $request, Shipment $shipment)
+    {
+        $validated = $request->validate([
+            'supplier_name' => 'nullable|string|max:255',
+            'arrival_date' => 'required|date',
+            'status' => 'required|in:pending,processing,completed,cancelled',
+            'notes' => 'nullable|string',
+        ]);
+
+        try {
+            $shipment->update($validated);
+
+            return redirect()->route('admin.Dashbord_Admin.Shipment_Management')
+                ->with('success', 'تم تحديث الشحنة بنجاح!');
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating shipment: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'فشل في تحديث الشحنة. يرجى المحاولة مرة أخرى.'])
+                ->withInput();
+        }
+    }
+
+    public function destroyItem($shipmentId, $itemId)
+    {
+        try {
+            $item = ShipmentItem::findOrFail($itemId);
+            
+            // Check if item belongs to this shipment
+            if ($item->shipment_id != $shipmentId) {
+                return response()->json(['success' => false, 'message' => 'العنصر لا ينتمي لهذه الشحنة'], 403);
+            }
+
+            // Get the book before deleting item
+            $book = $item->book;
+
+            // Delete the shipment item
+            $item->delete();
+
+            // Optionally: decrease book quantity if needed
+            if ($book) {
+                $book->Quantity -= $item->quantity_received;
+                if ($book->Quantity < 0) {
+                    $book->Quantity = 0;
+                }
+                $book->save();
+            }
+
+            // Update shipment totals
+            $shipment = Shipment::find($shipmentId);
+            $shipment->total_books -= $item->quantity_received;
+            $shipment->save();
+
+            return response()->json(['success' => true, 'message' => 'تم حذف العنصر بنجاح']);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting shipment item: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
+        }
+    }
     public function showmanagement(Category $category)     
 {         
     $childCategoryIds = $category->children->pluck('id')->toArray();         
@@ -122,7 +186,7 @@ class ShipmentController extends Controller
         ]);
     }
 
-    return redirect()->route('admin.shipments.index')
+    return redirect()->route('admin.Dashbord_Admin.Shipment_Management')
         ->with('success', 'تم إنشاء الشحنة بنجاح!');
 }
 

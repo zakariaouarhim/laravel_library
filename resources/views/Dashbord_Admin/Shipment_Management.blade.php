@@ -151,14 +151,14 @@
                                             </a>
                                             <button 
                                                 class="btn-action btn-edit" 
-                                                onclick="editProduct({{ $shipment->id }})"
+                                                onclick="editshipment({{ $shipment->id }})"
                                                 title="تعديل"
                                             >
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button 
                                                 class="btn-action btn-delete" 
-                                                onclick="deleteProduct({{ $shipment->id }})"
+                                                onclick="deleteshipment({{ $shipment->id }})"
                                                 title="حذف"
                                             >
                                                 <i class="fas fa-trash"></i>
@@ -438,6 +438,90 @@
         </div>
     </div>
 
+
+
+    <!-- Edit Shipment Modal -->
+    <div class="modal fade" id="editShipmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST"   id="editShipmentForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-edit me-2"></i>تعديل الشحنة
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Shipment Header Section -->
+                        <div class="mb-4">
+                            <h6 style="color: #2c3e50; font-weight: 600; margin-bottom: 1rem;">معلومات الشحنة</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">رقم الشحنة <span style="color: #e74c3c;">*</span></label>
+                                        <input type="text" class="form-control" id="editShipmentReference" disabled>
+                                        <small class="text-muted">لا يمكن تعديل رقم الشحنة</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">المورد</label>
+                                        <input type="text" class="form-control" id="editSupplierName" name="supplier_name">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">تاريخ الوصول <span style="color: #e74c3c;">*</span></label>
+                                        <input type="date" class="form-control" id="editArrivalDate" name="arrival_date" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">الحالة <span style="color: #e74c3c;">*</span></label>
+                                        <select class="form-control" id="editStatus" name="status" required>
+                                            <option value="pending">في الانتظار</option>
+                                            <option value="processing">قيد المعالجة</option>
+                                            <option value="completed">مكتملة</option>
+                                            <option value="cancelled">ملغاة</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">ملاحظات</label>
+                                        <textarea class="form-control" id="editNotes" name="notes" rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Shipment Items Section -->
+                        <div class="mb-4">
+                            <h6 style="color: #2c3e50; font-weight: 600; margin-bottom: 1rem;">الكتب في الشحنة</h6>
+                            <div id="editShipmentItemsList">
+                                <!-- Items will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" id="saveEditShipmentBtn">
+                            <i class="fas fa-save me-2"></i>حفظ التعديلات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/dashboardShipment.js') }}"></script> 
