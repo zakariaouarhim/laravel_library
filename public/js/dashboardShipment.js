@@ -526,3 +526,44 @@ document.getElementById('editShipmentForm').addEventListener('submit', function(
 
     this.submit();
 });
+
+// =====================Delete Shipment Function============================
+function deleteshipment(shipmentId) {
+    // Show confirmation dialog
+    if (!confirm('هل أنت متأكد من حذف هذه الشحنة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+        return;
+    }
+
+    // Show loading indicator
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    // Send delete request
+    fetch(`/admin/shipments/${shipmentId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تم حذف الشحنة بنجاح');
+            // Reload the page
+            location.reload();
+        } else {
+            alert(data.message || 'حدث خطأ أثناء حذف الشحنة');
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء حذف الشحنة');
+        button.disabled = false;
+        button.innerHTML = originalContent;
+    });
+}

@@ -188,8 +188,39 @@ class ShipmentController extends Controller
 
     return redirect()->route('admin.Dashbord_Admin.Shipment_Management')
         ->with('success', 'تم إنشاء الشحنة بنجاح!');
-}
+    }
+    /////////////////======delete shipment===========
+    public function destroy(Shipment $shipment)
+    {
+        try {
+            // Optional: Check if shipment can be deleted
+            if ($shipment->status === 'completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يمكن حذف شحنة مكتملة'
+                ], 403);
+            }
 
+            // Delete all related shipment items first
+            ShipmentItem::where('shipment_id', $shipment->id)->delete();
+
+            // Delete the shipment
+            $shipment->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الشحنة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting shipment: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    ///////////////////////
     public function show(Shipment $shipment)
     {
         $shipment->load('items.book');

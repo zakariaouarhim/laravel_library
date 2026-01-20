@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css">
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
 </head>
 <body>
@@ -21,7 +21,7 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">تفاصيل الشحنة: {{ $shipment->shipment_reference }}</h1>
-                    <a href="{{ route('Dashbord_Admin.Shipment_Management') }}" class="btn btn-secondary">
+                    <a href="{{ route('admin.Dashbord_Admin.Shipment_Management') }}" class="btn btn-secondary">
                         العودة إلى القائمة
                     </a>
                 </div>

@@ -126,6 +126,8 @@ Route::resource('client', Usercontroller::class);
         Route::get('/shipments/{shipment}/edit', [ShipmentController::class, 'editShipment']);
         Route::put('/shipments/{shipment}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
         Route::delete('/shipments/{shipment}/items/{item}', [ShipmentController::class, 'destroyItem']);
+        //delete shipment 
+        Route::delete('/shipments/{shipment}', [ShipmentController::class, 'destroy'])->name('shipments.destroy');
 });
 
 // Other Routes
