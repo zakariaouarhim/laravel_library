@@ -186,23 +186,7 @@
             });
         });
 
-        /**
-         * Search Products
-        
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const query = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#productsTable tbody tr');
-
-            rows.forEach(row => {
-                if (row.querySelector('.empty-state')) return;
-
-                const name = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
-                const author = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
-
-                const matches = name.includes(query) || author.includes(query);
-                row.style.display = matches ? '' : 'none';
-            });
-        }); */
+      
 
         /**
          * Reset Filters

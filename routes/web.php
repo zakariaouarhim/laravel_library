@@ -65,7 +65,7 @@ Route::get('products/api/{id}', [BookController::class, 'getProductById'])->name
 Route::get('products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
 Route::put('products/api/{id}', [BookController::class, 'updateProduct'])->name('products.api.update');
 
-Route::put('products/{id}', [BookController::class, 'updateProduct'])->name('pro.update');
+
 
 Route::get('/test-api', [BookController::class, 'testApiConnection']);
 

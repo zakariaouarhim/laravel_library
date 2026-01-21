@@ -421,7 +421,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الفئة</label>
-                                    <select name="Productcategorie" id="Productcategorie" class="form-select" required>
+                                    <select name="category_id" id="category_id" class="form-select" required>
                                         <option value="">اختر فئة</option>
                                         @foreach ($categories as $cat)
                                             @if($cat->parent_id == null)
