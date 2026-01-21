@@ -105,9 +105,9 @@ Route::resource('client', Usercontroller::class);
         Route::get('/products/{id}', [BookController::class, 'viewProduct']);
         // Update product
         Route::put('/products/{id}', [BookController::class, 'updateProduct']);
-        Route::post('/admin/products/{id}', [ProductController::class, 'update']);
+        //Route::post('/admin/products/{id}', [ProductController::class, 'update']);
         // Delete product
-        Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
+        //Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
     //shipment management blade
         //search
         Route::get('/search-book', [BookController::class, 'searchBook']);
@@ -126,6 +126,8 @@ Route::resource('client', Usercontroller::class);
         Route::get('/shipments/{shipment}/edit', [ShipmentController::class, 'editShipment']);
         Route::put('/shipments/{shipment}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
         Route::delete('/shipments/{shipment}/items/{item}', [ShipmentController::class, 'destroyItem']);
+        //status
+        Route::patch('/shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.status');
         //delete shipment 
         Route::delete('/shipments/{shipment}', [ShipmentController::class, 'destroy'])->name('shipments.destroy');
 });

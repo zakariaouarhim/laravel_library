@@ -127,8 +127,26 @@
                                     <td>{{ $shipment->processed_books ?? 0 }}</td>
                                     <td>
                                         @php
-                                            $statusClass = $shipment->status == 'completed' ? 'status-completed' : ($shipment->status == 'processing' ? 'status-processing' : 'status-pending');
-                                            $statusText = $shipment->status == 'completed' ? 'مكتملة' : ($shipment->status == 'processing' ? 'قيد المعالجة' : 'في الانتظار');
+                                           switch ($shipment->status) {
+                                                case 'completed':
+                                                    $statusClass = 'status-completed';
+                                                    $statusText = 'مكتملة';
+                                                    break;
+
+                                                case 'processing':
+                                                    $statusClass = 'status-processing';
+                                                    $statusText = 'قيد المعالجة';
+                                                    break;
+
+                                                case 'cancelled':
+                                                    $statusClass = 'status-cancelled';
+                                                    $statusText = 'ملغاة';
+                                                    break;
+
+                                                default:
+                                                    $statusClass = 'status-pending';
+                                                    $statusText = 'في الانتظار';
+                                            }
                                         @endphp
                                         <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
                                     </td>
@@ -156,6 +174,43 @@
                                             >
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            
+                                            
+                                             <!-- Process Button - Only for pending shipments -->
+                                            @if($shipment->status === 'pending')
+                                                <button 
+                                                    type="button"
+                                                    class="btn-action btn-process" 
+                                                    onclick="processShipment({{ $shipment->id }})"
+                                                    title="معالجة الشحنة"
+                                                >
+                                                    <i class="fas fa-cog"></i>
+                                                </button>
+                                            @endif
+
+                                            <!-- Mark Complete Button - Only for processing shipments -->
+                                            @if($shipment->status === 'processing')
+                                                <button 
+                                                    type="button"
+                                                    class="btn-action btn-success" 
+                                                    onclick="completeShipment({{ $shipment->id }})"
+                                                    title="تحديد كمكتملة"
+                                                >
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            @endif
+
+                                            <!-- Cancel Button - For pending and processing only -->
+                                            @if(in_array($shipment->status, ['pending', 'processing']))
+                                                <button 
+                                                    type="button"
+                                                    class="btn-action btn-danger" 
+                                                    onclick="cancelShipment({{ $shipment->id }})"
+                                                    title="إلغاء الشحنة"
+                                                >
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            @endif
                                             <button 
                                                 class="btn-action btn-delete" 
                                                 onclick="deleteshipment({{ $shipment->id }})"
@@ -163,14 +218,6 @@
                                             >
                                                 <i class="fas fa-trash"></i>
                                             </button>
-                                            @if($shipment->status == 'pending')
-                                                <form method="POST" action="{{ route('admin.shipments.process', $shipment->id) }}" style="display: inline;">
-                                                    @csrf
-                                                    <button type="submit" class="btn-action btn-process" onclick="return confirm('هل أنت متأكد من معالجة هذه الشحنة؟')">
-                                                        <i class="fas fa-cog"></i>معالجة
-                                                    </button>
-                                                </form>
-                                            @endif
                                         </div>
                                     </td>
                                 </tr>

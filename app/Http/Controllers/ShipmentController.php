@@ -286,6 +286,49 @@ class ShipmentController extends Controller
                 ->withErrors(['error' => 'Bulk enrichment failed: ' . $e->getMessage()]);
         }
     }
+    public function updateStatus(Request $request, Shipment $shipment)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,processing,completed,cancelled'
+        ]);
+
+        try {
+            $oldStatus = $shipment->status;
+            $newStatus = $validated['status'];
+
+            // Validate status transition
+            $validTransitions = [
+                'pending' => ['processing', 'cancelled'],
+                'processing' => ['completed', 'cancelled'],
+                'completed' => [], // Cannot change from completed
+                'cancelled' => [] // Cannot change from cancelled
+            ];
+
+            if (!in_array($newStatus, $validTransitions[$oldStatus] ?? [])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "لا يمكن تغيير الحالة من '{$oldStatus}' إلى '{$newStatus}'"
+                ], 422);
+            }
+
+            $shipment->update(['status' => $newStatus]);
+
+            \Log::info("Shipment #{$shipment->id} status changed from '{$oldStatus}' to '{$newStatus}'");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث الحالة بنجاح',
+                'status' => $newStatus
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating shipment status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     public function updateProduct(Request $request, $id)
     {
         try {

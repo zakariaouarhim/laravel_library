@@ -567,3 +567,67 @@ function deleteshipment(shipmentId) {
         button.innerHTML = originalContent;
     });
 }
+////===================status================
+
+// Process Shipment - Change from pending to processing
+function processShipment(shipmentId) {
+    if (!confirm('هل أنت متأكد من بدء معالجة هذه الشحنة؟')) {
+        return;
+    }
+
+    updateShipmentStatus(shipmentId, 'processing', 'تم بدء المعالجة بنجاح');
+}
+
+// Complete Shipment - Change from processing to completed
+function completeShipment(shipmentId) {
+    if (!confirm('هل أنت متأكد من إكمال هذه الشحنة؟')) {
+        return;
+    }
+
+    updateShipmentStatus(shipmentId, 'completed', 'تم إكمال الشحنة بنجاح');
+}
+
+// Cancel Shipment - Change to cancelled
+function cancelShipment(shipmentId) {
+    if (!confirm('هل أنت متأكد من إلغاء هذه الشحنة؟')) {
+        return;
+    }
+
+    updateShipmentStatus(shipmentId, 'cancelled', 'تم إلغاء الشحنة');
+}
+
+// Generic function to update shipment status
+function updateShipmentStatus(shipmentId, newStatus, successMessage) {
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/admin/shipments/${shipmentId}/status`, {
+        method: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(successMessage);
+            location.reload();
+        } else {
+            alert(data.message || 'حدث خطأ');
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء تحديث الحالة');
+        button.disabled = false;
+        button.innerHTML = originalContent;
+    });
+}

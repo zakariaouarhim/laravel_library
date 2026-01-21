@@ -75,11 +75,15 @@
                             <label for="categoryFilter">الفئة</label>
                             <select name="category" id="categoryFilter" class="form-select" onchange="this.form.submit()">
                                 <option value="">جميع الفئات</option>
-                                @foreach ($categories as $c)
-                                    <option value="{{ $c->id }}" {{ request('category') == $c->id ? 'selected' : '' }}>
-                                        {{ $c->name }}
-                                    </option>
-                                @endforeach
+                                @foreach ($categories as $cat)
+                                            @if($cat->parent_id == null)
+                                                <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }} style="font-weight: bold;">{{ $cat->name }}</option>
+                                                @foreach($cat->children as $child)
+                                                    <option value="{{ $child->id }}" {{ request('category') == $child->id ? 'selected' : '' }} style="padding-left: 20px;">── {{ $child->name }}</option>
+                                                @endforeach
+                                            @endif
+                                        @endforeach
+                                
                             </select>
                         </div>
 
@@ -284,9 +288,15 @@
                                     <label class="form-label">الفئة</label>
                                     <select name="Productcategorie" id="Productcategorie" class="form-select" required>
                                         <option value="">اختر فئة</option>
-                                        @foreach ($categories as $c)
-                                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                        @foreach ($categories as $cat)
+                                            @if($cat->parent_id == null)
+                                                <option value="{{ $cat->id }}" style="font-weight: bold;">{{ $cat->name }}</option>
+                                                @foreach($cat->children as $child)
+                                                    <option value="{{ $child->id }}" style="padding-left: 20px;">── {{ $child->name }}</option>
+                                                @endforeach
+                                            @endif
                                         @endforeach
+                                        
                                     </select>
                                 </div>
                             </div>
@@ -413,8 +423,13 @@
                                     <label class="form-label">الفئة</label>
                                     <select name="Productcategorie" id="Productcategorie" class="form-select" required>
                                         <option value="">اختر فئة</option>
-                                        @foreach ($categories as $c)
-                                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                        @foreach ($categories as $cat)
+                                            @if($cat->parent_id == null)
+                                                <option value="{{ $cat->id }}" style="font-weight: bold;">{{ $cat->name }}</option>
+                                                @foreach($cat->children as $child)
+                                                    <option value="{{ $child->id }}" style="padding-left: 20px;">── {{ $child->name }}</option>
+                                                @endforeach
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
