@@ -3,94 +3,112 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>المنتجات - نظام إدارة المكتبة</title>
+    <title>نظام إدارة المكتبة</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/ManagementSystem.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
-    
-    <!-- Navbar -->
-    
-
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
             @include('Dashbord_Admin.Sidebar')
 
-            <!-- Main Content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">إدارة المنتجات</h1>
-                    <div>
-                        
-                        <button class="btn btn-info me-2" onclick="showPendingEnrichment()">
+                
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>
+                        <i class="fa-solid fa-gears"></i>
+                        نظام إدارة المكتبة
+                    </h1>
+                    <div class="header-actions">
+                        <button class="btn-action-header secondary" onclick="showPendingEnrichment()" title="الكتب غير المعالجة بـ API">
                             <i class="fas fa-sync"></i>
-                            الكتب غير المعالجة بـ API
+                            كتب غير معالجة
                         </button>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                        <button class="btn-action-header" data-bs-toggle="modal" data-bs-target="#addProductModal" title="إضافة منتج جديد">
                             <i class="fas fa-plus"></i>
-                            إضافة منتج جديد
+                            إضافة منتج
                         </button>
                     </div>
                 </div>
 
-                <!-- Alert for messages -->
+                <!-- Stats Cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">إجمالي المنتجات</div>
+                        <div class="stat-value" id="totalProductsStat">0</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #9b59b6;">
+                        <div class="stat-label">معالجة بـ API</div>
+                        <div class="stat-value" id="enrichedProductsStat">0</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #f39c12;">
+                        <div class="stat-label">في انتظار المعالجة</div>
+                        <div class="stat-value" id="pendingProductsStat">0</div>
+                    </div>
+                </div>
+
+                <!-- Alert Container -->
                 <div id="alertContainer"></div>
 
-                <!-- Search and Filter -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <input type="text" id="searchInput" class="form-control" placeholder="بحث عن المنتجات...">
-                    </div>
-                    <div class="col-md-3">
-                        <select id="statusFilter" class="form-select">
-                            <option value="">جميع الحالات</option>
-                            <option value="enriched">معالج بـ API</option>
-                            <option value="pending">في انتظار المعالجة</option>
-                            <option value="failed">فشل في المعالجة</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-warning" onclick="bulkEnrichSelected()">
-                            <i class="fas fa-magic"></i>
-                            معالجة المحدد بـ API
+                <!-- Search and Filter Section -->
+                <div class="search-section">
+                    <div class="search-controls">
+                        <div class="form-group">
+                            <label for="searchInput">بحث</label>
+                            <input type="text" id="searchInput" class="form-control" placeholder="ابحث عن المنتجات...">
+                        </div>
+                        <div class="form-group">
+                            <label for="statusFilter">حالة API</label>
+                            <select id="statusFilter" class="form-select">
+                                <option value="">جميع الحالات</option>
+                                <option value="enriched">معالج بـ API</option>
+                                <option value="pending">في انتظار المعالجة</option>
+                                <option value="failed">فشل في المعالجة</option>
+                            </select>
+                        </div>
+                        <button class="btn-filter" onclick="bulkEnrichSelected()">
+                            <i class="fas fa-magic"></i>معالجة المحدد
                         </button>
                     </div>
                 </div>
 
-                <!-- Products Table -->
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle" id="productsTable">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>
-                                    <input type="checkbox" id="selectAll">
-                                </th>
-                                <th>#</th>
-                                <th>الصورة</th>
-                                <th>اسم المنتج</th>
-                                <th style="max-width: 300px;">الوصف</th>
-                                <th>السعر</th>
-                                <th>المؤلف</th>
-                                <th>الكمية</th>
-                                <th>ISBN</th>
-                                <th>حالة API</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productsTableBody">
-                            <!-- Rows will be dynamically inserted here -->
-                        </tbody>
-                    </table>
+                <!-- Table Section -->
+                <div class="table-section">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th width="40">
+                                        <input type="checkbox" id="selectAll" class="form-check-input">
+                                    </th>
+                                    <th>#</th>
+                                    <th>الصورة</th>
+                                    <th>المنتج</th>
+                                    <th>الوصف</th>
+                                    <th>السعر</th>
+                                    <th>المؤلف</th>
+                                    <th>الكمية</th>
+                                    <th>ISBN</th>
+                                    <th>حالة API</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <!-- Rows will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Pagination -->
                 <nav aria-label="Products pagination" class="mt-4">
-                    <ul class="pagination justify-content-center" id="paginationContainer">
+                    <ul class="pagination" id="paginationContainer">
                         <!-- Pagination will be inserted here -->
                     </ul>
                 </nav>
@@ -98,27 +116,29 @@
         </div>
     </div>
 
-    <!-- Add Product Modal (Enhanced) -->
+    <!-- Add Product Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="addproductform" method="POST" action="{{ route('product.add') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-title">إضافة منتج جديد</h5>
-                        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+                        <h5 class="modal-title">
+                            <i class="fas fa-plus-circle me-2"></i>إضافة منتج جديد
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">اسم المنتج *</label>
+                                    <label class="form-label">اسم المنتج <span style="color: #e74c3c;">*</span></label>
                                     <input type="text" class="form-control" id="productName" name="productName" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">المؤلف *</label>
+                                    <label class="form-label">المؤلف <span style="color: #e74c3c;">*</span></label>
                                     <input type="text" class="form-control" id="productauthor" name="productauthor" required>
                                 </div>
                             </div>
@@ -132,7 +152,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">السعر *</label>
+                                    <label class="form-label">السعر <span style="color: #e74c3c;">*</span></label>
                                     <input type="number" class="form-control" id="productPrice" step="0.01" name="productPrice" required>
                                 </div>
                             </div>
@@ -169,7 +189,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">الفئة *</label>
+                                    <label class="form-label">الفئة <span style="color: #e74c3c;">*</span></label>
                                     <select name="Productcategorie" id="Productcategorie" class="form-select" required>
                                         @foreach ($categories as $cat)
                                             @if($cat->parent_id == null)
@@ -184,7 +204,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">الكمية *</label>
+                                    <label class="form-label">الكمية <span style="color: #e74c3c;">*</span></label>
                                     <input type="number" class="form-control" id="productQuantity" name="productQuantity" min="0" required>
                                 </div>
                             </div>
@@ -193,6 +213,7 @@
                         <div class="mb-3">
                             <label class="form-label">صورة المنتج</label>
                             <input type="file" class="form-control" id="productImage" accept="image/*" name="productImage">
+                            <div id="imagePreview"></div>
                             <div class="form-text">اختياري - سيتم جلب الصورة من API إذا لم يتم رفعها</div>
                         </div>
                         
@@ -207,20 +228,24 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                        <button type="submit" class="btn btn-primary">حفظ المنتج</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>حفظ المنتج
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Edit Product Modal (Enhanced) -->
+    <!-- Edit Product Modal -->
     <div class="modal fade" id="editProductModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">تعديل المنتج</h5>
-                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>تعديل المنتج
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editProductForm">
@@ -229,13 +254,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">اسم المنتج *</label>
+                                    <label class="form-label">اسم المنتج <span style="color: #e74c3c;">*</span></label>
                                     <input type="text" class="form-control" id="editProductName" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">المؤلف *</label>
+                                    <label class="form-label">المؤلف <span style="color: #e74c3c;">*</span></label>
                                     <input type="text" class="form-control" id="editProductAuthor" required>
                                 </div>
                             </div>
@@ -249,7 +274,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">السعر *</label>
+                                    <label class="form-label">السعر <span style="color: #e74c3c;">*</span></label>
                                     <input type="number" class="form-control" id="editProductPrice" step="0.01" required>
                                 </div>
                             </div>
@@ -285,7 +310,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">الفئة *</label>
+                                    <label class="form-label">الفئة <span style="color: #e74c3c;">*</span></label>
                                     <select id="editProductCategorie" class="form-select" required>
                                         <option value="">اختر الفئة</option>
                                         @foreach ($categories as $cat)
@@ -301,7 +326,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">الكمية *</label>
+                                    <label class="form-label">الكمية <span style="color: #e74c3c;">*</span></label>
                                     <input type="number" class="form-control" id="editProductQuantity" min="0" required>
                                 </div>
                             </div>
@@ -310,6 +335,7 @@
                         <div class="mb-3">
                             <label class="form-label">صورة المنتج الجديدة</label>
                             <input type="file" class="form-control" id="editProductImage" accept="image/*">
+                            <div id="editImagePreview"></div>
                             <div class="form-text">اختياري - اتركه فارغاً للاحتفاظ بالصورة الحالية</div>
                         </div>
                         
@@ -325,42 +351,26 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-primary" onclick="updateProduct()">حفظ التغييرات</button>
+                    <button type="button" class="btn btn-primary" onclick="updateProduct()">
+                        <i class="fas fa-save me-2"></i>حفظ التغييرات
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteProductModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">تأكيد الحذف</h5>
-                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء.</p>
-                    <p class="text-muted">المنتج: <span id="deleteProductName"></span></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">حذف</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Product Details Modal -->
+    <!-- View Product Modal -->
     <div class="modal fade" id="productDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">تفاصيل المنتج</h5>
-                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>تفاصيل المنتج
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="productDetailsContent">
-                    <!-- Product details will be loaded here -->
+                    <!-- Content will be inserted here -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
@@ -369,26 +379,46 @@
         </div>
     </div>
 
-    <!-- Loading Modal -->
-    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
+    <!-- Delete Product Modal -->
+    <div class="modal fade" id="deleteProductModal" tabindex="-1">
+        <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">جاري التحميل...</span>
-                    </div>
-                    <p class="mt-2 mb-0">جاري المعالجة...</p>
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-trash me-2"></i>حذف المنتج
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف المنتج: <strong id="deleteProductName"></strong>؟</p>
+                    <p class="text-danger"><small><i class="fas fa-exclamation-triangle"></i> هذا الإجراء لا يمكن التراجع عنه</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-2"></i>حذف النتج
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="{{ asset('js/ManagementSystem.js') }}"></script> 
-    
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                    <p>جاري المعالجة...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/ManagementSystem.js') }}"></script>
 </body>
 </html>
