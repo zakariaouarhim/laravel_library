@@ -35,15 +35,14 @@
     border-radius: var(--radius-main);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     margin: 40px 0;
-    overflow: hidden;
+    overflow: visible !important;
 }
 
 .related-books h3 {
     color: var(--c-text-dark);
     font-weight: 700;
     font-size: 28px;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
+    
     position: relative;
 }
 
@@ -59,12 +58,16 @@
 }
 
 .carousel-container {
+    margin-left: calc(-1 * var(--container-pad));
+    margin-right: calc(-1 * var(--container-pad));
     position: relative;
     padding: 20px 0;
     z-index: 1;
 }
 
 .carousel-wrapper {
+    padding-left: var(--container-pad);
+    padding-right: var(--container-pad);
     display: flex;
     gap: 20px;
     padding: 20px 0px;
@@ -74,6 +77,8 @@
     -ms-overflow-style: none;
     transition: transform 0.4s var(--ease-smooth);
     scroll-snap-type: x mandatory;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 /* 3. BOOK CARD COMPONENT */
@@ -247,12 +252,12 @@
 }
 
 [dir="rtl"] .carousel-nav.prev {
-    right: -25px;
+    right: 10px;
     left: auto;
 }
 
 [dir="rtl"] .carousel-nav.next {
-    left: -25px;
+    left: 10px;
     right: auto;
 }
 
