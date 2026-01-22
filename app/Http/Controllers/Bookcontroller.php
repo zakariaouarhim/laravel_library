@@ -173,17 +173,16 @@ public function addProduct(Request $request)
         'auto_enrich' => 'nullable|boolean'
     ]);
 
-    // Initialize imagePath variable
-    $imagePath = "images/books/".$validated['productName'];
+    // 1. FIX: Default to null, NOT the product name
+    $imagePath = null; 
 
-    // Save the product image if uploaded
+    // 2. Handle Image Upload
     if ($request->hasFile('productImage')) {
         try {
             $file = $request->file('productImage');
             $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $destinationPath = public_path('images/books');
             
-            // Create directory if it doesn't exist
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
@@ -192,41 +191,53 @@ public function addProduct(Request $request)
             $imagePath = 'images/books/' . $imageName;
         } catch (\Exception $e) {
             \Log::error('Image upload failed: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['productImage' => 'Image upload failed'])->withInput();
+            return response()->json(['success' => false, 'message' => 'Image upload failed'], 500);
         }
     }
 
     try {
-        // Save product to the database
+        // 3. Create the object but don't save yet
         $product = new Book();
         $product->title = $validated['productName'];
         $product->author = $validated['productauthor'];
         $product->price = $validated['productPrice'];
         $product->category_id = $validated['Productcategorie'];
         $product->description = $validated['productDescription'];
-        $product->image = $imagePath;
+        $product->image = $imagePath; // Will be null or the valid path
         $product->Page_Num = $validated['productNumPages'] ?? null;
         $product->Langue = $validated['productLanguage'] ?? null;
         $product->Publishing_House = $validated['ProductPublishingHouse'] ?? null;
         $product->ISBN = $validated['productIsbn'] ?? null;
-        $product->Quantity = $validated['productQuantity']; // Use the form value instead of hardcoding 0
+        $product->Quantity = $validated['productQuantity'];
         $product->api_data_status = 'pending';
-        $product->save();
 
-        // Auto-enrich if requested
+        // 4. FIX: Handle Algolia/Scout Crash Gracefully
+        // We wrap save() in a specific try-catch to allow DB success even if Search fails
+        try {
+            $product->save();
+        } catch (\Exception $e) {
+            // Check if the error is related to Algolia/Scout
+            if (str_contains($e->getMessage(), 'Algolia') || str_contains($e->getMessage(), 'scout')) {
+                \Log::warning('Product saved to DB, but Algolia sync failed: ' . $e->getMessage());
+                // Do NOT re-throw the error. Let the code continue.
+            } else {
+                // If it's a real Database error (SQL), re-throw it so the outer catch block handles it
+                throw $e;
+            }
+        }
+
+        // 5. Enrichment Logic (Only runs if save was successful)
+        $message = 'Product added successfully!';
         if ($request->boolean('auto_enrich')) {
             try {
                 $this->bookService->enrichBookFromAPI($product);
                 $message = 'Product added and enriched successfully!';
             } catch (\Exception $e) {
-                \Log::warning('Failed to enrich book after creation: ' . $e->getMessage());
-                $message = 'Product added successfully, but API enrichment failed.';
+                \Log::warning('Enrichment failed: ' . $e->getMessage());
+                // We don't fail the whole request just because enrichment failed
             }
-        } else {
-            $message = 'Product added successfully!';
         }
 
-        // Return JSON response for AJAX requests
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -235,25 +246,25 @@ public function addProduct(Request $request)
             ]);
         }
         
-        return redirect()->route('Dashbord_Admin.product')->with('success', $message);
+        return redirect()->route('admin.Dashbord_Admin.product')->with('success', $message);
         
     } catch (\Exception $e) {
-        \Log::error('Error adding product: ' . $e->getMessage());
+        \Log::error('CRITICAL Error adding product: ' . $e->getMessage());
         
-        // Delete uploaded image if product save fails
-        if ($imagePath && file_exists(public_path($imagePath))) {
+        // 6. Only delete the image if the PRODUCT FAILED TO SAVE to the DB
+        // If $product exists and has an ID, it means it was saved, so don't delete the image!
+        if (!isset($product->id) && $imagePath && file_exists(public_path($imagePath))) {
             unlink(public_path($imagePath));
         }
         
-        // Return JSON error response for AJAX requests
         if ($request->ajax()) {
             return response()->json([
                 'success' => false,
-                'message' => 'فشل في إضافة المنتج. يرجى المحاولة مرة أخرى.'
+                'message' => 'فشل في إضافة المنتج: ' . $e->getMessage()
             ], 500);
         }
         
-        return redirect()->back()->withErrors(['error' => 'Failed to add product. Please try again.'])->withInput();
+        return redirect()->back()->withErrors(['error' => 'Failed to add product.'.$e->getMessage()])->withInput();
     }
 }
     // New method to enrich a single book

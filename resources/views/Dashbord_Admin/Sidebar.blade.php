@@ -22,7 +22,7 @@
         <div class="sidebar-group">
             <div class="sidebar-group-label">الرئيسية</div>
             <nav class="sidebar-nav">
-                <a href="{{ route('Dashbord_Admin.dashboard') }}" 
+                <a href="{{ route('admin.Dashbord_Admin.dashboard') }}" 
                    class="sidebar-nav-item {{ request()->routeIs('Dashbord_Admin.dashboard') ? 'active' : '' }}"
                    title="لوحة القيادة">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -47,7 +47,7 @@
                     <span class="nav-text">الطلبات</span>
                     <span class="sidebar-badge badge-destructive">{{ $pendingOrders ?? 0 }}</span>
                 </a>
-                <a href="{{ route('Dashbord_Admin.product') }}" 
+                <a href="{{ route('admin.Dashbord_Admin.product') }}" 
                    class="sidebar-nav-item {{ request()->routeIs('*product*') ? 'active' : '' }}"
                    title="المنتجات">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -56,7 +56,7 @@
                     <span class="nav-text">المنتجات</span>
                     <span class="sidebar-badge">{{ $totalProducts ?? 0 }}</span>
                 </a>
-                <a href="{{ route('client.index') }}" 
+                <a href="{{ route('admin.client.index') }}" 
                    class="sidebar-nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}"
                    title="الزبائن">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -80,8 +80,8 @@
         <div class="sidebar-group">
             <div class="sidebar-group-label">النظام</div>
             <nav class="sidebar-nav">
-                <a href="{{ route('Dashbord_Admin.ManagementSystem') }}" 
-                   class="sidebar-nav-item {{ request()->routeIs('*ManagementSystem*') ? 'active' : '' }}"
+                <a href="{{ route('admin.Dashbord_Admin.ManagementSystem') }}" 
+                   class="sidebar-nav-item {{ request()->routeIs('admin.*ManagementSystem*') ? 'active' : '' }}"
                    title="إدارة المكتبة">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="1"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m2.12 2.12l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m2.12-2.12l4.24-4.24"/>

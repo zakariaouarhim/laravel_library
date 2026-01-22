@@ -120,7 +120,7 @@
     <div class="modal fade" id="addProductModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form id="addproductform" method="POST" action="{{ route('product.add') }}" enctype="multipart/form-data">
+                <form id="addproductform" method="POST" action="{{ route('admin.product.add') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">

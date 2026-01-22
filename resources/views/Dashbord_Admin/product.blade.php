@@ -223,7 +223,7 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form id="addProductForm" action="{{ route('product.add') }}" method="POST" enctype="multipart/form-data">
+                <form id="addProductForm" action="{{ route('admin.product.add') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="row">
@@ -281,6 +281,12 @@
                                 <div class="mb-3">
                                     <label class="form-label">دار النشر</label>
                                     <input type="text" class="form-control" name="ProductPublishingHouse" id="ProductPublishingHouse" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">الكمية </label>
+                                    <input type="text" class="form-control" id="productQuantity" name="productQuantity" required>
                                 </div>
                             </div>
                             <div class="col-md-6">

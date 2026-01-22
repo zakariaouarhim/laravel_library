@@ -195,7 +195,7 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form id="clientForm" method="POST" action="{{ route('client.store') }}">
+                <form id="clientForm" method="POST" action="{{ route('admin.client.store') }}">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">

@@ -111,7 +111,7 @@ class Usercontroller extends Controller
                 // Redirect based on role
                 if ($user->role == "admin") {
                     
-                    return redirect()->route('Dashbord_Admin.dashboard')->with('success', 'Login successful');
+                    return redirect()->route('admin.Dashbord_Admin.dashboard')->with('success', 'Login successful');
                 } else {
                     return redirect()->route('index.page')->with('success', 'Login successful! Welcome back ' . $user->name);
                 }
