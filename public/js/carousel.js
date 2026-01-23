@@ -105,6 +105,7 @@ let carousels = {};
 document.addEventListener('DOMContentLoaded', () => {
     carousels.carousel1 = new EnhancedCarousel('carouselWrapper1', 'prevBtn1', 'nextBtn1', 'indicators1');
     carousels.carousel2 = new EnhancedCarousel('carouselWrapper2', 'prevBtn2', 'nextBtn2', 'indicators2');
+    carousels.carousel3 = new EnhancedCarousel('carouselWrapper3', 'prevBtn3', 'nextBtn3', 'indicators3');
 });
 
 // Helper function

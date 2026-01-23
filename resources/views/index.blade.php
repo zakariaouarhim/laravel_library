@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/Index-searchbar.css') }}">
     <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/categories_carousel2.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/categories_carousel.css') }}">
+    
     
     
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
@@ -99,7 +99,7 @@
     
         <!-- carousel categories -->
         @include('categories_carousel2')
-        @include('categories-carousel')
+        
         <!-- Second Carousel - English Books -->
         <div class="related-books">
             <h3>ENGLISH BOOKS</h3>
@@ -181,9 +181,69 @@
                 </div>
             @endif
         </div>
+        <!-- third carousel Carousel - popular Books -->
+        <div class="related-books">
+                <h3> الأكثر مبيعا </h3>
+                
+                <div class="carousel-container">
+                    <div class="carousel-wrapper" id="carouselWrapper3">
+                        @foreach ($popularBooks as $index => $popularBook)
+                        <div class="book-card">
+                            <a href="{{ route('moredetail.page', ['id' => $popularBook->id]) }}">
+                                <img src="{{ asset($popularBook->image ?? 'images/books/default-book.png') }}" 
+                                    class="card-img-top" 
+                                    alt="{{ $popularBook->title }}" 
+                                    loading="lazy">
+                            </a>
+                            <h6>{{ $popularBook->title }}</h6>
+                            
+                            <!-- Display author name from authors table -->
+                            <p class="book-author">
+                                <i class="fas fa-user-edit me-1"></i>
+                                @if($popularBook->primaryAuthor)
+                                    {{ $popularBook->primaryAuthor->name }}
+                                    
+                                @elseif($popularBook->authors->where('pivot.author_type', 'primary')->first())
+                                    {{ $popularBook->authors->where('pivot.author_type', 'primary')->first()->name }}
+                                @elseif($popularBook->authors->isNotEmpty())
+                                    {{ $popularBook->authors->first()->name }}
+                                    @if($popularBook->authors->count() > 1)
+                                        <small class="text-muted">+{{ $popularBook->authors->count() - 1 }} مؤلف آخر</small>
+                                    @endif
+                                @else
+                                    <span class="text-muted">مؤلف غير محدد</span>
+                                @endif
+                            </p>
+                            
+                            
+                            
+                            <div class="price-section">
+                                <div class="text-center mb-3">
+                                    <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
+                                        {{ $popularBook->price + 50 }}
+                                    </span>
+                                    <span class="h5 mb-0 text-danger">{{ $popularBook->price }} درهم</span>
+                                </div>
+                                <button class="add-btn" onclick="addToCart({{ $popularBook->id }},'{{ addslashes($popularBook->title) }}', {{ $popularBook->price }}, '{{ addslashes($book->image) }}')">
+                                    <i class="fas fa-shopping-cart"> <span>أضف إلى السلة</span> </i>
+                                </button>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    <button class="carousel-nav prev" id="prevBtn3" onclick="moveCarousel(-1, 'carousel3')">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="carousel-nav next" id="nextBtn3" onclick="moveCarousel(1, 'carousel3')">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <br>
+                    <div class="carousel-indicators" id="indicators3" hidden="true"></div>
+                </div>
+            </div>
     </div>
      
-    <!--$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ end second categories $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+    
     
 
         
@@ -191,7 +251,7 @@
     <script src="{{ asset('js/carousel.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/Index-searchbar.js') }}"></script>
-    <script src="{{ asset('js/categories_carousel.js') }}"></script>
+    
     <script src="{{ asset('js/categories_carousel2.js') }}"></script>
     <footer>
         @include('footer')

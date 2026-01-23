@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Author;
@@ -10,6 +11,7 @@ use App\Models\PublishingHouse;
 use App\Models\Category;
 use App\Services\BookService;
 use App\Services\APIService;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -169,7 +171,7 @@ public function addProduct(Request $request)
         'productIsbn' => 'nullable|string|max:50',
         'Productcategorie' => 'required|integer|exists:categories,id',
         'productQuantity' => 'required|integer|min:0',
-        'productImage' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'productImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'auto_enrich' => 'nullable|boolean'
     ]);
 
@@ -183,12 +185,23 @@ public function addProduct(Request $request)
             $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $destinationPath = public_path('images/books');
             
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
+            if ($request->hasFile('productImage')) {
+            $file = $request->file('productImage');
+            $imageName = time() . '_' . uniqid() . '.webp';
+            $destinationPath = public_path('images/books');
 
-            $file->move($destinationPath, $imageName);
-            $imagePath = 'images/books/' . $imageName;
+            // 1. Read the image
+            $image = Image::read($file);
+
+            // 2. Resize it (Scale down to 400px width, height follows aspect ratio)
+            $image->scale(width: 400);
+
+            // 3. Encode as WebP and Save
+            // The bridge allows you to chain the save directly after encoding
+            $image->toWebp(80)->save($destinationPath . '/' . $imageName);
+
+    $imagePath = 'images/books/' . $imageName;
+}
         } catch (\Exception $e) {
             \Log::error('Image upload failed: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Image upload failed'], 500);
@@ -679,13 +692,21 @@ public function searchBooksAjax(Request $request)
             'publishingHouse',      // Load publishing house
             'category'              // Load category
         ])->get();
-        
+        $popularBooks = Book::select(
+            'books.*',
+            DB::raw('COUNT(order_details.book_id) as orders_count')
+        )
+        ->join('order_details', 'books.id', '=', 'order_details.book_id')
+        ->groupBy('books.id')
+        ->orderByDesc('orders_count')
+        ->limit(10)
+        ->get();
         // Get categories with children
         $categorie = Category::whereNull('parent_id')
             ->with('children')
             ->take(13)
             ->get();
-        $categorieImages = Category::withImages()->get();
+        
         $categorieIcons = Category::withIcons()
                             ->inRandomOrder()
                             ->limit(12)
@@ -700,7 +721,7 @@ public function searchBooksAjax(Request $request)
             ])
             ->get();
             
-        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','categorieImages','categorieIcons'));
+        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons'));
     }
     // Additional method to handle book creation with author assignment
     public function store(Request $request)
@@ -1061,7 +1082,7 @@ public function showproduct(Request $request)
                 'ISBN' => 'nullable|string|max:50',
                 'Quantity' => 'required|integer|min:0',
                 'category_id' => 'nullable|integer|exists:categories,id',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
             ]);
             
             // Update basic fields
