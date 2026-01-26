@@ -164,8 +164,13 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
+                                    
                                     <label class="form-label">اللغة</label>
-                                    <input type="text" class="form-control" id="productLanguage" name="productLanguage">
+                                    <select name="productLanguage"id="productLanguage" class="form-select"  required>
+                                        @foreach(App\Models\Book::LANGUAGES as $lang)
+                                            <option value="{{ $lang }}">{{ ucfirst($lang) }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -286,8 +291,13 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
+                                    
                                     <label class="form-label">اللغة</label>
-                                    <input type="text" class="form-control" id="editProductLanguage">
+                                    <select name="Langue"id="editProductLanguage" class="form-select"  required>
+                                        @foreach(App\Models\Book::LANGUAGES as $lang)
+                                            <option value="{{ $lang }}">{{ ucfirst($lang) }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>

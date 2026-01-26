@@ -109,7 +109,7 @@ function renderProductsTable(products) {
                     <small class="text-muted">${product.ISBN || 'غير محدد'}</small>
                 </td>
                 <td>
-                    ${renderApiStatus(product.api_status)}
+                    ${renderApiStatus(product.api_data_status)}
                 </td>
                 <td>
                     <div class="btn-group" role="group">
@@ -245,10 +245,10 @@ function viewProduct(id) {
                             <p><strong>السعر:</strong> ${product.price} درهم</p>
                             <p><strong>الكمية:</strong> ${product.Quantity}</p>
                             <p><strong>ISBN:</strong> ${product.ISBN || 'غير محدد'}</p>
-                            <p><strong>عدد الصفحات:</strong> ${product.num_pages || 'غير محدد'}</p>
-                            <p><strong>اللغة:</strong> ${product.language || 'غير محدد'}</p>
-                            <p><strong>دار النشر:</strong> ${product.publishing_house || 'غير محدد'}</p>
-                            <p><strong>حالة API:</strong> ${renderApiStatus(product.api_status)}</p>
+                            <p><strong>عدد الصفحات:</strong> ${product.	Page_Num || 'غير محدد'}</p>
+                            <p><strong>اللغة:</strong> ${product.Langue || 'غير محدد'}</p>
+                            <p><strong>دار النشر:</strong> ${product.Publishing_House || 'غير محدد'}</p>
+                            <p><strong>حالة API:</strong> ${renderApiStatus(product.api_data_status)}</p>
                             <hr>
                             <h6>الوصف:</h6>
                             <p>${product.description || 'لا يوجد وصف'}</p>

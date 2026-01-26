@@ -275,12 +275,12 @@
  }
 
  /* Action Buttons */
- .action-buttons {
+ .btn {
      display: flex;
      gap: 0.5rem;
  }
 
- .btn-action {
+ .btn-sm {
      padding: 0.6rem 1rem;
      border-radius: 8px;
      border: none;
@@ -293,42 +293,42 @@
      gap: 0.3rem;
  }
 
- .btn-view {
+ .btn-outline-info {
      background: #3498db;
      color: white;
  }
 
- .btn-view:hover {
+ .btn-outline-info:hover {
      background: #2980b9;
      transform: translateY(-2px);
  }
 
- .btn-edit {
+ .btn-outline-primary {
      background: #f39c12;
      color: white;
  }
 
- .btn-edit:hover {
+ .btn-outline-primary:hover {
      background: #e67e22;
      transform: translateY(-2px);
  }
 
- .btn-delete {
+ .btn-outline-danger {
      background: #e74c3c;
      color: white;
  }
 
- .btn-delete:hover {
+ .btn-outline-danger:hover {
      background: #c0392b;
      transform: translateY(-2px);
  }
 
- .btn-enrich {
+ .btn-outline-warning {
      background: #9b59b6;
      color: white;
  }
 
- .btn-enrich:hover {
+ .btn-outline-warning:hover {
      background: #8e44ad;
      transform: translateY(-2px);
  }

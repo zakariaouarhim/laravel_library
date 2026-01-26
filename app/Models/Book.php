@@ -10,6 +10,7 @@ class Book extends Model
 {
     use HasFactory, Searchable;
      protected $table = 'books';
+     const LANGUAGES = ['arabic', 'english', 'french', 'spanish', 'german'];
     // Define fillable attributes
     protected $fillable = [
         'title',
