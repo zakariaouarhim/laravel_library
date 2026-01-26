@@ -1,5 +1,5 @@
 <div class="related-books" data-carousel>
-    <h3>{{ $title }}</h3>
+    <h3>{{ $title ?? 'كتب ' }}</h3>
     
     @if($books && $books->count() > 0)
         <div class="carousel-container">
@@ -66,7 +66,23 @@
                     عذراً، لا توجد كتب أخرى متاحة في نفس فئة هذا الكتاب حالياً.<br>
                     يمكنك تصفح مجموعتنا الكاملة من الكتب للعثور على المزيد من الخيارات المثيرة.
                 </p>
+                @if($slot->isNotEmpty())
+                    {{ $slot }}
+                @else
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ route('index.page') }}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>العودة للرئيسية
+                        </a>
+                        <a href="#" class="btn btn-outline-primary" onclick="window.history.back();">
+                            <i class="fas fa-arrow-right me-2"></i>العودة للخلف
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     @endif
 </div>
+
+
+
+

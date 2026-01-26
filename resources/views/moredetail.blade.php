@@ -236,136 +236,136 @@
                 </div>
                 <!-- quotes -->
                 <!-- Quotes Section -->
-<div class="tab-pane fade" id="quotes" role="tabpanel" aria-labelledby="quotes-tab">
-    <!-- Success/Error Messages for Quotes -->
-    @if(session('quote_success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>
-            {{ session('quote_success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if(session('quote_error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            {{ session('quote_error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    <!-- Quotes Display -->
-    <div class="quotes-section mb-4">
-        @if(isset($book->quotes) && $book->quotes->count() > 0)
-            <div class="row">
-                @foreach ($book->quotes->sortByDesc('created_at') as $quote)
-                <div class="col-md-6 mb-4">
-                    <div class="quote-card h-100 border rounded p-4 position-relative bg-light">
-                        <i class="fa-solid fa-quote-right position-absolute text-primary opacity-25" 
-                           style="font-size: 3rem; top: 15px; right: 20px;"></i>
-                           <br>
-                        
-                        <div class="quote-content mb-3" style="padding-top: 20px;">
-                            <p class="mb-3 fst-italic" style="font-size: 1.1rem; line-height: 1.6;">
-                                "{{ $quote->text }}"
-                            </p>
-                            
-                            
+                <div class="tab-pane fade" id="quotes" role="tabpanel" aria-labelledby="quotes-tab">
+                    <!-- Success/Error Messages for Quotes -->
+                    @if(session('quote_success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            {{ session('quote_success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        
-                        <div class="quote-footer d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar me-2">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                        style="width: 32px; height: 32px; font-size: 0.9rem;">
-                                        {{ mb_substr($quote->user->name ?? 'م', 0, 1, 'UTF-8') }}
+                    @endif
+
+                    @if(session('quote_error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            {{ session('quote_error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
+                <!-- Quotes Display -->
+                <div class="quotes-section mb-4">
+                    @if(isset($book->quotes) && $book->quotes->count() > 0)
+                        <div class="row">
+                            @foreach ($book->quotes->sortByDesc('created_at') as $quote)
+                            <div class="col-md-6 mb-4">
+                                <div class="quote-card h-100 border rounded p-4 position-relative bg-light">
+                                    <i class="fa-solid fa-quote-right position-absolute text-primary opacity-25" 
+                                    style="font-size: 3rem; top: 15px; right: 20px;"></i>
+                                    <br>
+                                    
+                                    <div class="quote-content mb-3" style="padding-top: 20px;">
+                                        <p class="mb-3 fst-italic" style="font-size: 1.1rem; line-height: 1.6;">
+                                            "{{ $quote->text }}"
+                                        </p>
+                                        
+                                        
+                                    </div>
+                                    
+                                    <div class="quote-footer d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-2">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                                    style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                                    {{ mb_substr($quote->user->name ?? 'م', 0, 1, 'UTF-8') }}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">{{ $quote->user->name ?? 'مستخدم' }}</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="quote-actions">
+                                            <small class="text-muted me-2">{{ $quote->created_at->diffForHumans() }}</small>
+                                            
+                                            <!-- Like/Unlike button -->
+                                            @auth
+                                            <form class="d-inline" action="{{ route('quotes.toggle-like', $quote->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-primary border-0">
+                                                    <i class="{{ $quote->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart"></i>
+                                                    <span class="ms-1">{{ $quote->likes_count ?? 0 }}</span>
+                                                </button>
+                                            </form>
+                                            @endauth
+                                            
+                                            @guest
+                                            <span class="text-muted">
+                                                <i class="far fa-heart"></i>
+                                                <span class="ms-1">{{ $quote->likes_count ?? 0 }}</span>
+                                            </span>
+                                            @endguest
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <small class="text-muted">{{ $quote->user->name ?? 'مستخدم' }}</small>
-                                </div>
                             </div>
-                            
-                            <div class="quote-actions">
-                                <small class="text-muted me-2">{{ $quote->created_at->diffForHumans() }}</small>
-                                
-                                <!-- Like/Unlike button -->
-                                @auth
-                                <form class="d-inline" action="{{ route('quotes.toggle-like', $quote->id) }}" method="POST">
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center p-5">
+                            <i class="fa-solid fa-quote-right text-muted mb-3" style="font-size: 4rem;"></i>
+                            <h5 class="text-muted">لا توجد اقتباسات بعد</h5>
+                            <p class="text-muted">كن أول من يشارك اقتباس من هذا الكتاب</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Add Quote Form -->
+                @auth
+                @php
+                    // Check if user has already read the book or has permission to add quotes
+                    $canAddQuote = true; // You can add your logic here
+                @endphp
+    
+                    @if($canAddQuote)
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">
+                                    <i class="fa-solid fa-quote-right me-2"></i>أضف اقتباس جديد
+                                </h5>
+                                <form action="{{ route('quotes.store') }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-primary border-0">
-                                        <i class="{{ $quote->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart"></i>
-                                        <span class="ms-1">{{ $quote->likes_count ?? 0 }}</span>
+                                    <input type="hidden" name="book_id" value="{{ $book->id }}">
+
+                                    <div class="mb-3">
+                                        <label for="quote_text" class="form-label">الاقتباس <span class="text-danger">*</span></label>
+                                        <textarea name="text" id="quote_text" class="form-control @error('text') is-invalid @enderror" 
+                                                rows="4" placeholder="اكتب الاقتباس هنا..." required>{{ old('text') }}</textarea>
+                                        <div class="form-text">شارك اقتباسك المفضل من الكتاب</div>
+                                        @error('text')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa-solid fa-plus me-2"></i>إضافة الاقتباس
                                     </button>
                                 </form>
-                                @endauth
-                                
-                                @guest
-                                <span class="text-muted">
-                                    <i class="far fa-heart"></i>
-                                    <span class="ms-1">{{ $quote->likes_count ?? 0 }}</span>
-                                </span>
-                                @endguest
                             </div>
                         </div>
+                    @else
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            يمكنك إضافة اقتباسات بعد قراءة الكتاب أو تقييمه.
+                        </div>
+                    @endif
+                @else
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-user-lock me-2"></i>
+                        يرجى <a href="{{ route('login2.page') }}" class="alert-link">تسجيل الدخول</a> لإضافة اقتباسات ومشاهدة اقتباسات القراء.
                     </div>
+                @endauth
                 </div>
-                @endforeach
-            </div>
-        @else
-            <div class="text-center p-5">
-                <i class="fa-solid fa-quote-right text-muted mb-3" style="font-size: 4rem;"></i>
-                <h5 class="text-muted">لا توجد اقتباسات بعد</h5>
-                <p class="text-muted">كن أول من يشارك اقتباس من هذا الكتاب</p>
-            </div>
-        @endif
-    </div>
-
-    <!-- Add Quote Form -->
-    @auth
-    @php
-        // Check if user has already read the book or has permission to add quotes
-        $canAddQuote = true; // You can add your logic here
-    @endphp
-    
-    @if($canAddQuote)
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3">
-                    <i class="fa-solid fa-quote-right me-2"></i>أضف اقتباس جديد
-                </h5>
-                <form action="{{ route('quotes.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="book_id" value="{{ $book->id }}">
-
-                    <div class="mb-3">
-                        <label for="quote_text" class="form-label">الاقتباس <span class="text-danger">*</span></label>
-                        <textarea name="text" id="quote_text" class="form-control @error('text') is-invalid @enderror" 
-                                rows="4" placeholder="اكتب الاقتباس هنا..." required>{{ old('text') }}</textarea>
-                        <div class="form-text">شارك اقتباسك المفضل من الكتاب</div>
-                        @error('text')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-plus me-2"></i>إضافة الاقتباس
-                    </button>
-                </form>
-            </div>
-        </div>
-    @else
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            يمكنك إضافة اقتباسات بعد قراءة الكتاب أو تقييمه.
-        </div>
-    @endif
-@else
-    <div class="alert alert-info text-center">
-        <i class="fas fa-user-lock me-2"></i>
-        يرجى <a href="{{ route('login2.page') }}" class="alert-link">تسجيل الدخول</a> لإضافة اقتباسات ومشاهدة اقتباسات القراء.
-    </div>
-@endauth
-</div>
                 <!-- Review -->
                 <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
                     <!-- Rating Summary -->
@@ -550,77 +550,16 @@
     </div>
     
 <!-- Sample Books Data -->
-<div class="related-books">
-    <h3>كتب ذات صلة</h3>
-    
-    @if($relatedBooks && $relatedBooks->count() > 0)
-        <div class="carousel-container">
-            <div class="carousel-wrapper" id="carouselWrapper1">
-                @foreach($relatedBooks as $relatedBook)
-                <div class="book-card">
-                    <a href="{{ route('moredetail.page', ['id' => $relatedBook->id]) }}">
-                        <img src="{{ asset($relatedBook->image) }}" class="card-img-top" alt="{{ $relatedBook->title }}" loading="lazy">
-                    </a>
-                    
-                    <h6>{{ $relatedBook->title }}</h6>
-                    <p class="book-author">
-                        <i class="fas fa-user-edit me-1"></i>
-                        @if($relatedBook->primaryAuthor)
-                            {{ $relatedBook->primaryAuthor->name }}
-                        @else
-                            {{ $relatedBook->author ?? 'مؤلف غير معروف' }}
-                        @endif
-                    </p>
-                    <div class="price-section">
-                        <span class="price">{{ $relatedBook->price }} ر.س</span>
-                        <button class="add-btn" 
-                        data-book-id="{{ $relatedBook->id }}"
-                        data-book-title="{{ htmlspecialchars($relatedBook->title, ENT_QUOTES) }}"
-                        data-book-price="{{ $relatedBook->price }}"
-                        data-book-image="{{ htmlspecialchars($relatedBook->image, ENT_QUOTES) }}"
-                        onclick="addCarouselBookToCart(this)">
-                            <i class="fas fa-shopping-cart"></i>
-                        </button>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-            <button class="carousel-nav prev" id="prevBtn1" onclick="moveCarousel(-1, 'carousel1')">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-            <button class="carousel-nav next" id="nextBtn1" onclick="moveCarousel(1, 'carousel1')">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <br>
-            <div class="carousel-indicators" id="indicators1"></div>
-        </div>
-        @else
-        <!-- Stylized empty state message -->
-        <div class="empty-carousel-message">
-            <div class="empty-state-card text-center p-5 border rounded bg-light">
-                <div class="empty-state-icon mb-4">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" 
-                         style="width: 80px; height: 80px;">
-                        <i class="fas fa-books text-primary" style="font-size: 2.5rem;"></i>
-                    </div>
-                </div>
-                <h4 class="text-dark mb-3">لا توجد كتب ذات صلة</h4>
-                <p class="text-muted mb-4">
-                    عذراً، لا توجد كتب أخرى متاحة في نفس فئة هذا الكتاب حالياً.<br>
-                    يمكنك تصفح مجموعتنا الكاملة من الكتب للعثور على المزيد من الخيارات المثيرة.
-                </p>
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="{{ route('index.page') }}" class="btn btn-primary">
-                        <i class="fas fa-home me-2"></i>العودة للرئيسية
-                    </a>
-                    <a href="#" class="btn btn-outline-primary" onclick="window.history.back();">
-                        <i class="fas fa-arrow-right me-2"></i>العودة للخلف
-                    </a>
-                </div>
-            </div>
-        </div>
-    @endif
-</div>
+<x-book-carousel :books="$relatedBooks" title="كتب ذات صلة">
+    <div class="d-flex justify-content-center gap-3">
+        <a href="{{ route('index.page') }}" class="btn btn-primary">
+            <i class="fas fa-home me-2"></i>العودة للرئيسية
+        </a>
+        <a href="#" class="btn btn-outline-primary" onclick="window.history.back();">
+            <i class="fas fa-arrow-right me-2"></i>العودة للخلف
+        </a>
+    </div>
+</x-book-carousel>
 </div>    
     
     <script src="{{ asset('js/moredetail.js') }}"></script>

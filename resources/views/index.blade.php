@@ -37,7 +37,7 @@
     
     <div class="layout-indexpage">
             
-        <x-book-carousel :books="$books" title=" الأكثر مبيعا " />
+        <x-book-carousel :books="$books" title=" All books " />
         <!-- carousel categories -->
         @include('categories_carousel2')
         <x-book-carousel :books="$popularBooks" title=" الأكثر مبيعا " />
