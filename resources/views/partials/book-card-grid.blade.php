@@ -1,3 +1,8 @@
+@php
+    // Get wishlist items for current user
+    $wishlistBookIds = auth()->check() ? auth()->user()->wishlist()->pluck('book_id')->toArray() : [];
+@endphp
+
 <div class="book-item">
     <div class="book-card">
         <div class="card-badges">
@@ -10,7 +15,9 @@
         </div>
 
         <div class="quick-actions">
-            <button class="action-btn" title="إضافة للمفضلة"><i class="far fa-heart"></i></button>
+            <button class="action-btn wishlist-btn" title="إضافة للمفضلة" onclick="toggleWishlist({{ $book->id }}, this)" data-book-id="{{ $book->id }}">
+                <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
+            </button>
             <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
                 <i class="fas fa-shopping-cart"></i>
             </button>

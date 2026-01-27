@@ -69,9 +69,25 @@ class WishlistController extends Controller
                 ], 401);
             }
 
-            $user->wishlist()->detach($bookId);
+            // Validate book exists
+            $book = Book::find($bookId);
+            if (!$book) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'الكتاب غير موجود'
+                ], 404);
+            }
 
-            
+            // Check if book is in wishlist before removing
+            $existsInWishlist = $user->wishlist()->where('book_id', $bookId)->exists();
+            if (!$existsInWishlist) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'الكتاب غير موجود في المفضلة'
+                ], 404);
+            }
+
+            $user->wishlist()->detach($bookId);
 
             return response()->json([
                 'success' => true, 
@@ -79,8 +95,7 @@ class WishlistController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            
-
+            Log::error('Wishlist remove error: ' . $e->getMessage());
             return response()->json([
                 'success' => false, 
                 'message' => 'حدث خطأ أثناء الإزالة'

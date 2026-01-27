@@ -160,7 +160,7 @@ class Usercontroller extends Controller
         ->wishlist()
         ->latest('pivot_created_at') // use pivot table timestamps
         ->first(); // only the last one  
-
+        $wishlist =auth()->user()->wishlist();
         $booksRead = Book_Review::where('user_id', $userId)
         ->where('is_read', 1)
         ->with('book')
@@ -176,7 +176,7 @@ class Usercontroller extends Controller
         $recommendations = $this->getRecommendations($userId);
         /* $orders = // fetch user orders
         $addresses = // fetch user addresses
-        $wishlist = // fetch user wishlist
+        
         $returns = // fetch user returns*/
         $wishlistBookIds = auth()->check()
         ? auth()->user()->wishlist()->pluck('books.id')->toArray()
