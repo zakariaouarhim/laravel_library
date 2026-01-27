@@ -115,10 +115,14 @@
                                 <h6 class="filter-title">اللغة</h6>
                                 <select class="form-select custom-select" name="language">
                                     <option value="">جميع اللغات</option>
-                                    <option value="العربية" {{ request('language') == 'العربية' ? 'selected' : '' }}>العربية</option>
-                                    <option value="الإنجليزية" {{ request('language') == 'الإنجليزية' ? 'selected' : '' }}>الإنجليزية</option>
-                                    <option value="الفرنسية" {{ request('language') == 'الفرنسية' ? 'selected' : '' }}>الفرنسية</option>
+                                     @foreach(App\Models\Book::LANGUAGES as $lang)
+                                        <option value="{{ $lang }}" {{ request('language') == $lang ? 'selected' : '' }}>
+                                            {{ App\Models\Book::LANGUAGE_LABELS[$lang] }}
+                                        </option>
+                                    @endforeach
                                 </select>
+                                
+                                    
                             </div>
                             
                             <!-- Price Range Filter -->
@@ -226,10 +230,13 @@
                     @endforeach
 
                 </div>
-
-                <div class="pagination-container">
-                    {{ $books->links() }}
-                </div>
+                    <!-- Pagination -->
+                    @if($books instanceof \Illuminate\Pagination\Paginator || $books instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                    <nav>
+                        {{ $books->links('pagination::bootstrap-4') }}
+                    </nav>
+                    @endif
+                
                 @endif
                 @else
                 <div class="empty-state">

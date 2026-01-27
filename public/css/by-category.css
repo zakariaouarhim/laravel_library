@@ -675,10 +675,27 @@ body {
 }
 
 /* =================== Pagination =================== */
-.pagination-container {
-    display: flex;
+/* Pagination */
+.pagination {
     justify-content: center;
     margin-top: 2rem;
+}
+
+.page-link {
+    border-radius: 8px;
+    color: #3498db;
+    border-color: #e0e6ed;
+}
+
+.page-link:hover {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
 }
 
 /* =================== Toast Notifications =================== */

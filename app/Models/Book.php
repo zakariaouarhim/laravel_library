@@ -11,6 +11,13 @@ class Book extends Model
     use HasFactory, Searchable;
      protected $table = 'books';
      const LANGUAGES = ['arabic', 'english', 'french', 'spanish', 'german'];
+     const LANGUAGE_LABELS = [
+        'arabic'  => 'العربية',
+        'english' => 'الإنجليزية',
+        'french'  => 'الفرنسية',
+        'spanish' => 'الإسبانية',
+        'german'  => 'الألمانية',
+    ];
     // Define fillable attributes
     protected $fillable = [
         'title',

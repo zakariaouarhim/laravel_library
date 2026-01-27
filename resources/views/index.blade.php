@@ -35,7 +35,7 @@
         @include('Index-searchbar')
     
     
-    <div class="layout-indexpage">
+    <div class="layout-indexpage ">
             
         <x-book-carousel :books="$books" title=" All books " />
         <!-- carousel categories -->
@@ -48,20 +48,22 @@
     
     
 
-        
-    <script src="{{ asset('js/scripts.js') }}"></script>
-    <script src="{{ asset('js/carousel.js') }}"></script>
-    <script src="{{ asset('js/header.js') }}"></script>
-    <script src="{{ asset('js/Index-searchbar.js') }}"></script>
     
-    <script src="{{ asset('js/categories_carousel2.js') }}"></script>
+
+    
     <footer>
         @include('footer')
     </footer>
         
     
     
-
+    
+    <script src="{{ asset('js/scripts.js') }}"></script>
+    <script src="{{ asset('js/carousel.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}"></script>
+    <script src="{{ asset('js/Index-searchbar.js') }}"></script>
+    
+    <script src="{{ asset('js/categories_carousel2.js') }}"></script>
 
 
 </body>
