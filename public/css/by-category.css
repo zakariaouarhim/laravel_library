@@ -42,7 +42,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('/images/pattern.png');
+    background-image: url('/images/pattern.webp');
     opacity: 0.1;
 }
 
@@ -697,7 +697,32 @@ body {
     background-color: #3498db;
     border-color: #3498db;
 }
+/*=================modal==================*/
+#wishlistModal .modal-header.bg-success {
+    background-color: #198754 !important;
+}
 
+#wishlistModal .modal-header.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+#wishlistModal .modal-header.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+#wishlistModal .modal-header.bg-info {
+    background-color: #0dcaf0 !important;
+}
+
+#wishlistModal .modal-body {
+    padding: 20px;
+    font-size: 16px;
+    text-align: center;
+}
+
+#wishlistModal .close-btn {
+    cursor: pointer;
+}
 /* =================== Toast Notifications =================== */
 .toast-container {
     z-index: 1050;

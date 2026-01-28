@@ -197,11 +197,11 @@ Route::get('/index3', function () {
 
 
 /////////////////////////wishlist
-Route::middleware('auth')->group(function () {
+
     Route::post('/wishlist/add/{bookId}', [WishlistController::class, 'add'])->name('wishlist.add');
     Route::post('/wishlist/remove/{bookId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
-});
+
 Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideRecommendation'])->name('recommendations.hide');
 
 

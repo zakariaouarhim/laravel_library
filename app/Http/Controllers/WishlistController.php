@@ -20,6 +20,7 @@ class WishlistController extends Controller
                     'message' => 'الرجاء تسجيل الدخول أولاً'
                 ], 401);
             }
+            
             // Validate book exists
             $book = Book::find($bookId);
             if (!$book) {
@@ -28,8 +29,6 @@ class WishlistController extends Controller
                     'message' => 'الكتاب غير موجود'
                 ], 404);
             }
-
-           
 
             // Check if book is already in wishlist
             $existsInWishlist = $user->wishlist()->where('book_id', $bookId)->exists();
@@ -49,8 +48,7 @@ class WishlistController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            
-
+            Log::error('Wishlist add error: ' . $e->getMessage());
             return response()->json([
                 'success' => false, 
                 'message' => 'حدث خطأ أثناء الإضافة: ' . $e->getMessage()
@@ -116,7 +114,6 @@ class WishlistController extends Controller
         }
     }
 
-    // Add this method for hiding recommendations
     public function hideRecommendation($bookId)
     {
         try {
@@ -128,10 +125,6 @@ class WishlistController extends Controller
                 ], 401);
             }
 
-            // You can implement your logic here to hide recommendations
-            // For example, you might want to store hidden recommendations in a separate table
-            // or add a field to track hidden recommendations per user
-            
             Log::info('Recommendation hidden', [
                 'user_id' => $user->id,
                 'book_id' => $bookId

@@ -1,5 +1,6 @@
 :root {
     --primary-color: #3498db;
+    --secondary-color: #5A84C3;
     --accent-color: #f8f9fa;
     --text-color: #343a40;
     --light-gray: #e9ecef;
@@ -22,10 +23,23 @@ body {
 
 /* Header with Breadcrumb */
 .page-header {
-    background-color: var(--accent-color);
-    padding: 20px 0;
-    margin-bottom: 40px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/images/pattern.webp');
+    opacity: 0.1;
 }
 
 .breadcrumb {
