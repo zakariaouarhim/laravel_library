@@ -53,17 +53,42 @@
             <div class="col-lg-3 mb-4">
                 <!-- Categories Card -->
                 <div class="sidebar-card mb-4">
-                    <div class="sidebar-card-header">
+                   <div class="sidebar-card-header">
                         <h5 class="mb-0"><i class="fas fa-book-open me-2"></i>الأقسام الفرعية</h5>
                     </div>
                     <div class="sidebar-card-body">
-                        @if(isset($category) && $category && count($category->children) > 0)
+                        {{-- Logic to determine which list to show --}}
+                        @php
+                            $displayCategories = collect();
+
+                            if (isset($category) && $category) {
+                                if ($category->children->count() > 0) {
+                                    // Case 1: Use is on a Parent category -> Show Children
+                                    $displayCategories = $category->children;
+                                } elseif ($category->parent) {
+                                    // Case 2: User is on a Child category -> Show Siblings (Parent's children)
+                                    $displayCategories = $category->parent->children;
+                                }
+                            }
+                        @endphp
+
+                        @if($displayCategories->count() > 0)
                             <ul class="category-list">
-                                @foreach ($category->children as $child)
-                                    <li>
-                                        <a href="{{ route('by-category', ['category' => $child->id]) }}" class="category-item">
-                                            <i class="bi bi-caret-left-fill"></i>
-                                            <span>{{ $child->name }}</span>
+                                @foreach ($displayCategories as $item)
+                                    {{-- Add 'active' class logic if you want to highlight the current child --}}
+                                    <li class="{{ (isset($category) && $category->id == $item->id) ? 'active-category' : '' }}">
+                                        <a href="{{ route('by-category', ['category' => $item->id]) }}" class="category-item">
+                                            
+                                            {{-- Change icon if this is the currently selected category --}}
+                                            @if(isset($category) && $category->id == $item->id)
+                                                <i class="bi bi-check-circle-fill text-primary"></i>
+                                            @else
+                                                <i class="bi bi-caret-left-fill"></i>
+                                            @endif
+
+                                            <span class="{{ (isset($category) && $category->id == $item->id) ? 'fw-bold text-primary' : '' }}">
+                                                {{ $item->name }}
+                                            </span>
                                         </a>
                                     </li>
                                 @endforeach
