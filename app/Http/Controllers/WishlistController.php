@@ -51,7 +51,7 @@ class WishlistController extends Controller
             Log::error('Wishlist add error: ' . $e->getMessage());
             return response()->json([
                 'success' => false, 
-                'message' => 'حدث خطأ أثناء الإضافة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء الإضافة'
             ], 500);
         }
     }
@@ -101,6 +101,92 @@ class WishlistController extends Controller
         }
     }
 
+    // Handle guest wishlist in session
+    public function addToSession($bookId)
+    {
+        try {
+            $book = Book::find($bookId);
+            if (!$book) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'الكتاب غير موجود'
+                ], 404);
+            }
+
+            // Get wishlist from session or create new array
+            $wishlist = session()->get('wishlist', []);
+
+            // Check if already in wishlist
+            if (in_array($bookId, $wishlist)) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'الكتاب موجود بالفعل في المفضلة'
+                ], 409);
+            }
+
+            // Add to wishlist
+            $wishlist[] = $bookId;
+            session()->put('wishlist', $wishlist);
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'تم إضافة الكتاب للمفضلة',
+                'book_id' => $bookId
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Session wishlist add error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'حدث خطأ أثناء الإضافة'
+            ], 500);
+        }
+    }
+
+    // Remove from guest wishlist in session
+    public function removeFromSession($bookId)
+    {
+        try {
+            $book = Book::find($bookId);
+            if (!$book) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'الكتاب غير موجود'
+                ], 404);
+            }
+
+            // Get wishlist from session
+            $wishlist = session()->get('wishlist', []);
+
+            // Check if book is in wishlist
+            if (!in_array($bookId, $wishlist)) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'الكتاب غير موجود في المفضلة'
+                ], 404);
+            }
+
+            // Remove from wishlist
+            $wishlist = array_filter($wishlist, function($id) use ($bookId) {
+                return $id != $bookId;
+            });
+
+            session()->put('wishlist', array_values($wishlist));
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'تمت إزالة الكتاب من المفضلة'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Session wishlist remove error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'حدث خطأ أثناء الإزالة'
+            ], 500);
+        }
+    }
+
     public function index()
     {
         try {
@@ -136,15 +222,64 @@ class WishlistController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Hide recommendation error: ' . $e->getMessage(), [
-                'user_id' => Auth::id(),
-                'book_id' => $bookId,
-                'error' => $e->getMessage()
-            ]);
-
+            Log::error('Hide recommendation error: ' . $e->getMessage());
             return response()->json([
                 'success' => false, 
                 'message' => 'حدث خطأ أثناء إخفاء الترشيح'
+            ], 500);
+        }
+    }
+
+    // Sync guest wishlist to database after login
+    public function syncGuestWishlist()
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'الرجاء تسجيل الدخول أولاً'
+                ], 401);
+            }
+
+            // Get guest wishlist from session
+            $guestWishlist = session()->get('wishlist', []);
+
+            if (!empty($guestWishlist)) {
+                // Filter out books that don't exist
+                $validBooks = Book::whereIn('id', $guestWishlist)->pluck('id')->toArray();
+
+                // Get current user wishlist
+                $userWishlist = $user->wishlist()->pluck('book_id')->toArray();
+
+                // Merge: add new books to user wishlist
+                $newBooks = array_diff($validBooks, $userWishlist);
+                
+                if (!empty($newBooks)) {
+                    $user->wishlist()->syncWithoutDetaching($newBooks);
+                }
+
+                // Clear session wishlist
+                session()->forget('wishlist');
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'تم مزامنة المفضلة بنجاح',
+                    'synced_count' => count($newBooks)
+                ]);
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'لا توجد عناصر للمزامنة',
+                'synced_count' => 0
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Sync guest wishlist error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'حدث خطأ أثناء المزامنة'
             ], 500);
         }
     }

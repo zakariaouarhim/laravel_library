@@ -196,14 +196,20 @@ Route::get('/index3', function () {
 
 
 
-/////////////////////////wishlist
+// Wishlist routes for authenticated users
+Route::post('/wishlist/add/{bookId}', [WishlistController::class, 'add'])->name('wishlist.add');
+Route::post('/wishlist/remove/{bookId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+Route::get('/wishlist', [WishlistController::class, 'index'])->middleware('auth')->name('wishlist.index');
 
-    Route::post('/wishlist/add/{bookId}', [WishlistController::class, 'add'])->name('wishlist.add');
-    Route::post('/wishlist/remove/{bookId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
-    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+// Wishlist routes for guests (session-based)
+Route::post('/wishlist-session/add/{bookId}', [WishlistController::class, 'addToSession'])->name('wishlist-session.add');
+Route::post('/wishlist-session/remove/{bookId}', [WishlistController::class, 'removeFromSession'])->name('wishlist-session.remove');
 
+// Sync guest wishlist after login
+Route::post('/wishlist/sync', [WishlistController::class, 'syncGuestWishlist'])->middleware('auth')->name('wishlist.sync');
+
+// Recommendations
 Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideRecommendation'])->name('recommendations.hide');
-
 
 
 /////////////////////////header routes

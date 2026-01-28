@@ -5,8 +5,65 @@ function toggleWishlist(bookId, buttonElement) {
     // Check if already in wishlist by checking if icon is filled (fas)
     const isInWishlist = icon.classList.contains('fas');
     
-    // Determine which route to use
-    const route = isInWishlist ? `/wishlist/remove/${bookId}` : `/wishlist/add/${bookId}`;
+    // Check if user is authenticated
+    const isAuthenticated = document.querySelector('meta[name="auth-user"]')?.getAttribute('content') === 'true';
+    
+    if (isAuthenticated) {
+        // User is logged in - use database
+        const route = isInWishlist ? `/wishlist/remove/${bookId}` : `/wishlist/add/${bookId}`;
+        
+        fetch(route, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token
+            }
+        })
+        .then(response => {
+            const contentType = response.headers.get('content-type');
+            
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format');
+            }
+            
+            return response.json().then(data => ({
+                status: response.status,
+                data: data
+            }));
+        })
+        .then(({ status, data }) => {
+            if (data.success) {
+                showCartAlert(data.message, 'success');
+                
+                // Toggle the icon
+                if (isInWishlist) {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    buttonElement.classList.remove('active');
+                } else {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    buttonElement.classList.add('active');
+                }
+            } else {
+                showCartAlert(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showCartAlert('حدث خطأ في العملية', 'danger');
+        });
+    } else {
+        // User is guest - use session storage
+        handleGuestWishlist(bookId, buttonElement, icon, isInWishlist);
+    }
+}
+
+function handleGuestWishlist(bookId, buttonElement, icon, isInWishlist) {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Send to session via API
+    const route = isInWishlist ? `/wishlist-session/remove/${bookId}` : `/wishlist-session/add/${bookId}`;
     
     fetch(route, {
         method: 'POST',
@@ -15,24 +72,10 @@ function toggleWishlist(bookId, buttonElement) {
             'X-CSRF-TOKEN': token
         }
     })
-    .then(response => {
-        const contentType = response.headers.get('content-type');
-        
-        if (!contentType || !contentType.includes('application/json')) {
-            return response.text().then(text => {
-                throw new Error('Invalid response format');
-            });
-        }
-        
-        return response.json().then(data => ({
-            status: response.status,
-            data: data
-        }));
-    })
-    .then(({ status, data }) => {
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-            // Show success modal
-            showModal(data.message, 'success');
+            showCartAlert(data.message, 'success');
             
             // Toggle the icon
             if (isInWishlist) {
@@ -45,97 +88,60 @@ function toggleWishlist(bookId, buttonElement) {
                 buttonElement.classList.add('active');
             }
         } else {
-            // Show error modal
-            if (status === 401) {
-                showModal(data.message, 'warning', true, bookId);
-            } else {
-                showModal(data.message, 'error');
-            }
+            showCartAlert(data.message, 'danger');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showModal('حدث خطأ في العملية', 'error');
+        showCartAlert('حدث خطأ في العملية', 'danger');
     });
 }
 
-function showModal(message, type = 'info', showLogin = false, bookId = null) {
-    // Create modal HTML if it doesn't exist
-    let modal = document.getElementById('wishlistModal');
+function showCartAlert(message, type = 'success') {
+    // Create alert element
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.setAttribute('role', 'alert');
+    alert.style.position = 'fixed';
+    alert.style.top = '80px'; // Adjust this value based on your header height
+    alert.style.left = '50%';
+    alert.style.transform = 'translateX(-50%)';
+    alert.style.zIndex = '9999';
+    alert.style.minWidth = '300px';
+    alert.style.maxWidth = '500px';
+    alert.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
     
-    if (!modal) {
-        const modalHTML = `
-            <div class="modal fade" id="wishlistModal" tabindex="-1" aria-labelledby="wishlistModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header" id="modalHeader">
-                            <h5 class="modal-title" id="wishlistModalLabel">إشعار</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body" id="modalBody">
-                            <!-- Message will be inserted here -->
-                        </div>
-                        <div class="modal-footer" id="modalFooter">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        modal = document.getElementById('wishlistModal');
-    }
+    // Choose icon based on alert type
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
     
-    // Update modal content based on type
-    const modalBody = modal.querySelector('#modalBody');
-    const modalHeader = modal.querySelector('#modalHeader');
-    const modalFooter = modal.querySelector('#modalFooter');
+    // Get progress bar color based on alert type
+    const progressBarColor = type === 'success' ? 'bg-success' : 
+                            type === 'danger' ? 'bg-danger' : 
+                            type === 'warning' ? 'bg-warning' : 'bg-info';
     
-    modalBody.innerHTML = message;
+    alert.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas ${icon} me-2" style="font-size: 1.5rem;"></i>
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div class="progress mt-2" style="height: 3px; background-color: rgba(228, 21, 21, 0.1);">
+            <div class="progress-bar ${progressBarColor}" role="progressbar" style="width: 100%; transition: width 3s linear;"></div>
+        </div>
+    `;
     
-    // Clear footer buttons
-    const closeBtn = modalFooter.querySelector('.btn-secondary');
-    const otherBtns = modalFooter.querySelectorAll('button:not(.btn-secondary)');
-    otherBtns.forEach(btn => btn.remove());
+    // Add to body
+    document.body.appendChild(alert);
     
-    // Set header background color based on type
-    modalHeader.className = 'modal-header';
-    switch(type) {
-        case 'success':
-            modalHeader.classList.add('bg-success', 'text-white');
-            modalHeader.querySelector('.modal-title').textContent = 'نجح';
-            break;
-        case 'error':
-            modalHeader.classList.add('bg-danger', 'text-white');
-            modalHeader.querySelector('.modal-title').textContent = 'خطأ';
-            break;
-        case 'warning':
-            modalHeader.classList.add('bg-warning', 'text-dark');
-            modalHeader.querySelector('.modal-title').textContent = 'تنبيه';
-            break;
-        case 'info':
-        default:
-            modalHeader.classList.add('bg-info', 'text-white');
-            modalHeader.querySelector('.modal-title').textContent = 'إشعار';
-    }
+    // Start the timer animation (progress bar goes from 100% to 0% in 3 seconds)
+    const progressBar = alert.querySelector('.progress-bar');
+    setTimeout(() => {
+        progressBar.style.width = '0%';
+    }, 10);
     
-    // Add login button if needed
-    if (showLogin) {
-        const loginBtn = document.createElement('button');
-        loginBtn.type = 'button';
-        loginBtn.className = 'btn btn-primary me-2';
-        loginBtn.textContent = 'الذهاب لتسجيل الدخول';
-        loginBtn.onclick = function() {
-            window.location.href = '/login2';
-        };
-        
-        modalFooter.insertBefore(loginBtn, closeBtn);
-    }
-    
-    // Show the modal
-    const bsModal = new bootstrap.Modal(modal, {
-        keyboard: false
-    });
-    bsModal.show();
+    // Auto remove after 3 seconds (when timer finishes)
+    setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => alert.remove(), 150);
+    }, 2000);
 }

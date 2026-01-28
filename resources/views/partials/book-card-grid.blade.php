@@ -1,6 +1,10 @@
 @php
-    // Get wishlist items for current user
-    $wishlistBookIds = auth()->check() ? auth()->user()->wishlist()->pluck('book_id')->toArray() : [];
+    // Get wishlist items for current user or session
+    if (auth()->check()) {
+        $wishlistBookIds = auth()->user()->wishlist()->pluck('book_id')->toArray();
+    } else {
+        $wishlistBookIds = session()->get('wishlist', []);
+    }
 @endphp
 
 <div class="book-item">
