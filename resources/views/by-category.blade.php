@@ -33,12 +33,26 @@
                 <h1 class="hero-title">{{ $category->name }}</h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
+                        {{-- 1. Home Link --}}
                         <li class="breadcrumb-item">
                             <a href="{{ route('index.page') }}"><i class="fas fa-home home-icon"></i> الرئيسية</a>
                         </li>
+
+                        {{-- 2. All Categories Link --}}
                         <li class="breadcrumb-item">
                             <a href="{{ route('categories.index') }}">الأقسام</a>
                         </li>
+
+                        {{-- 3. PARENT CHECK: If this is a child, show the parent link --}}
+                        @if($category->parent)
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('by-category', ['category' => $category->parent->id]) }}">
+                                    {{ $category->parent->name }}
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- 4. Current Category (Active) --}}
                         <li class="breadcrumb-item active" aria-current="page">{{ $category->name }}</li>
                     </ol>
                 </nav>

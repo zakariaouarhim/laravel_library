@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #3498db;
+    --primary-color: #2C4B79;
     --secondary-color: #5A84C3;
     --accent-color: #f8f9fa;
     --text-color: #343a40;
@@ -40,6 +40,7 @@ body {
     bottom: 0;
     background-image: url('/images/pattern.webp');
     opacity: 0.1;
+    pointer-events: none;
 }
 
 .breadcrumb {
@@ -49,18 +50,19 @@ body {
 }
 
 .breadcrumb-item a {
-    color: var(--primary-color);
+    color: var(--accent-color);
     text-decoration: none;
     font-weight: 500;
 }
 
 .breadcrumb-item.active {
-    color: var(--text-color);
+    color: var(--accent-color) !important;
 }
+
 
 .home-icon {
     margin-left: 5px;
-    color: var(--primary-color);
+    color: var(--accent-color);
 }
 
 /* Section Title */

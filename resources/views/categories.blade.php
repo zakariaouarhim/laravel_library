@@ -29,6 +29,7 @@
     <!-- Header with Breadcrumb -->
     <div class="page-header">
         <div class="container">
+            <h1 class="hero-title">الأقسام</h1>
             <div class="d-flex justify-content-between align-items-center">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">

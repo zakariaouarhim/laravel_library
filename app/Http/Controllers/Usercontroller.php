@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class Usercontroller extends Controller
 {
@@ -143,6 +144,154 @@ class Usercontroller extends Controller
         return redirect()->route('index.page')->with('success', 'Logged out successfully');
     }
 
+    // ======================== PASSWORD RESET FUNCTIONS ========================
+
+    /**
+     * Show the forgot password form
+     */
+    public function showForgotPasswordForm()
+    {
+        return view('forgot-password');
+    }
+
+    /**
+     * Send password reset link to email
+     */
+    public function sendResetLink(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:user,email'
+            ], [
+                'email.required' => 'البريد الإلكتروني مطلوب',
+                'email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
+                'email.exists' => 'هذا البريد الإلكتروني غير مسجل في النظام'
+            ]);
+
+            $user = UserModel::where('email', $request->email)->first();
+            
+            // Generate a unique token
+            $token = Str::random(60);
+            
+            // Store the token in database with expiry (1 hour)
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $request->email],
+                [
+                    'token' => Hash::make($token),
+                    'created_at' => now()
+                ]
+            );
+
+            // Send email with reset link
+            // Option 1: Using Mail facade (requires email config)
+            Mail::send('emails.password-reset', [
+                'resetLink' => route('password.reset', ['token' => $token, 'email' => $request->email]),
+                'userName' => $user->name
+            ], function($message) use ($user) {
+                $message->to($user->email)->subject('رابط إعادة تعيين كلمة المرور');
+            });
+
+            Log::info('Password reset link sent to: ' . $request->email);
+
+            return back()->with('success', 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error sending reset link:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'حدث خطأ أثناء إرسال الرابط. يرجى المحاولة لاحقاً'.$e);
+        }
+    }
+
+    /**
+     * Show the reset password form
+     */
+    public function showResetPasswordForm($token, $email)
+    {
+        // Verify token exists and is not expired (older than 1 hour)
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->first();
+
+        if (!$resetRecord) {
+            return redirect()->route('login2.page')->with('error', 'رابط إعادة التعيين غير صحيح أو انتهت صلاحيته');
+        }
+
+        // Check if token is expired (1 hour = 3600 seconds)
+        if (now()->diffInSeconds($resetRecord->created_at) > 3600) {
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+            return redirect()->route('login2.page')->with('error', 'انتهت صلاحية رابط إعادة التعيين. يرجى طلب رابط جديد');
+        }
+
+        return view('reset-password', ['token' => $token, 'email' => $email]);
+    }
+
+    /**
+     * Reset the password
+     */
+    public function resetPassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:user,email',
+                'token' => 'required|string',
+                'password' => 'required|string|min:8|confirmed'
+            ], [
+                'email.required' => 'البريد الإلكتروني مطلوب',
+                'email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
+                'email.exists' => 'هذا البريد الإلكتروني غير موجود',
+                'password.required' => 'كلمة المرور مطلوبة',
+                'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
+                'password.confirmed' => 'كلمات المرور غير متطابقة'
+            ]);
+
+            // Verify token
+            $resetRecord = DB::table('password_reset_tokens')
+                ->where('email', $request->email)
+                ->first();
+
+            if (!$resetRecord || !Hash::check($request->token, $resetRecord->token)) {
+                return back()->with('error', 'رابط إعادة التعيين غير صحيح');
+            }
+
+            // Check expiry
+            if (now()->diffInSeconds($resetRecord->created_at) > 3600) {
+                DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+                return back()->with('error', 'انتهت صلاحية رابط إعادة التعيين');
+            }
+
+            // Update user password
+            $user = UserModel::where('email', $request->email)->first();
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+            // Delete the reset token
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+            Log::info('Password reset successfully for: ' . $request->email);
+
+            return redirect()->route('login2.page')->with('success', 'تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error resetting password:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'حدث خطأ أثناء إعادة تعيين كلمة المرور');
+        }
+    }
+
+    // ======================== EXISTING FUNCTIONS ========================
     
     public function account()
     {
@@ -427,7 +576,7 @@ class Usercontroller extends Controller
             'user' => $user
         ]);
     }
-    public function resetPassword(Request $request, $id)
+    public function resetPasswordAdmin(Request $request, $id)
     {
         try {
             $user = UserModel::findOrFail($id);

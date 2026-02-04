@@ -176,10 +176,7 @@ Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])
 
 Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetail.page');
 
-Route::get('/login2', function () {
-    return view('login2');
-})->name('login2.page');
-Route::get('/logout', [Usercontroller::class, 'logout'])->name('logout');
+
 
 ////////review//////////
 Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store')->middleware('auth');
@@ -247,13 +244,45 @@ Route::get('/search-books', [BookController::class, 'searchBooksAjax'])->name('s
 
 // Authentication Routes
 Auth::routes();
-
-// Resource and Custom Routes
-
-Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser');
-Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin');
 Route::get('/books', [BookController::class, 'index']);
+// Resource and Custom Routes
+// ==================== AUTH ROUTES ====================
 
+// Login page
+Route::get('/login2', function () {
+    return view('login2');
+})->name('login2.page');
+
+// User login
+Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin');
+
+// User registration
+Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser');
+
+// User logout
+Route::get('/logout', [Usercontroller::class, 'logout'])->name('logout');
+
+// ==================== PASSWORD RESET ROUTES ====================
+
+// Show forgot password form
+Route::get('/forgot-password', [Usercontroller::class, 'showForgotPasswordForm'])
+    ->name('password.request')
+    ->middleware('guest');
+
+// Send password reset link
+Route::post('/forgot-password', [Usercontroller::class, 'sendResetLink'])
+    ->name('password.email')
+    ->middleware('guest');
+
+// Show reset password form
+Route::get('/reset-password/{token}/{email}', [Usercontroller::class, 'showResetPasswordForm'])
+    ->name('password.reset')
+    ->middleware('guest');
+
+// Process password reset
+Route::post('/reset-password', [Usercontroller::class, 'resetPassword'])
+    ->name('password.update')
+    ->middleware('guest');
 
 
 Route::get('/settings', [SystemSettingsController::class, 'index'])->name('settings.index');
