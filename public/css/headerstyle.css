@@ -160,112 +160,92 @@
     
 }
 
-/* Search Bar Styles */
-.layout-header .search-bar-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.95);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.layout-header .search-bar-container.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.layout-header .search-bar-content {
-    width: 100%;
-    max-width: 800px;
-    padding: 20px;
-}
-
-.layout-header .search-input {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    font-size: 1.5rem;
-    padding: 15px 25px;
-    border-radius: 50px;
+/* Inline Header Search */
+.layout-header .header-search-form {
     flex: 1;
-    transition: all 0.3s ease;
+    max-width: 450px;
+    margin: 0 15px;
 }
 
-.layout-header .search-input:focus {
+.layout-header .header-search-form .form-control {
+   
+    border-radius: 20px 0 0 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+.layout-header .header-search-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.layout-header .header-search-form .form-control:focus {
     background-color: rgba(255, 255, 255, 0.15);
     border-color: #48CAE4;
-    outline: none;
-    box-shadow: 0 0 20px rgba(72, 202, 228, 0.3);
+    box-shadow: 0 0 0 0.15rem rgba(72, 202, 228, 0.25);
+    color: #fff;
 }
 
-.layout-header .search-input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+.layout-header .header-search-form .btn-primary {
+    
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.2);;
+    padding: 8px 16px;
 }
 
-.layout-header .search-btn {
-    background: linear-gradient(135deg, #03045E, #48CAE4);
-    border: none;
-    color: white;
-    padding: 15px 30px;
-    border-radius: 50px;
-    margin-left: 10px;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
+.layout-header .header-search-form .btn-primary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #48CAE4;
 }
 
-.layout-header .search-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 20px rgba(72, 202, 228, 0.4);
-}
-
-.layout-header .btn-close-search {
-    background-color: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 50px;
-    margin-left: 10px;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-}
-
-.layout-header .btn-close-search:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: white;
-}
-
-.search-results-header{
+/* Search Results Dropdown */
+.search-results-header {
     position: absolute;
     top: 100%;
-    width: 40%;
-    max-width: 800px;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    max-height: 300px;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    max-height: 350px;
     overflow-y: auto;
+    display: none;
+    margin-top: 4px;
 }
 
-/* Responsive search bar */
-@media (max-width: 768px) {
-    .layout-header .search-input {
-        font-size: 1.2rem;
-        padding: 12px 20px;
+.search-results-header .list-group-item {
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.search-results-header .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .layout-header .header-search-form {
+        max-width: 250px;
+        margin: 0 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .layout-header .header-search-form {
+        max-width: 180px;
+        margin: 0 8px;
     }
 
-    .layout-header .search-btn,
-    .layout-header .btn-close-search {
-        padding: 12px 20px;
-        font-size: 1rem;
+    .layout-header .header-search-form .form-control {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    .layout-header .header-search-form .btn-primary {
+        padding: 6px 12px;
     }
 }

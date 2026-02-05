@@ -7,58 +7,49 @@
             <img src="{{ asset('images/logo.svg') }}" alt="شعار المكتبة" class="d-inline-block align-text-top">
         </a>
 
+        <!-- Search Bar -->
+        <form action="{{ route('search.results') }}" method="GET" class="header-search-form position-relative">
+            <div class="input-group">
+                <input
+                    type="search"
+                    name="query"
+                    id="searchInputHeader"
+                    class="form-control"
+                    placeholder="ابحث عن كتاب، مؤلف، ناشر..."
+                    oninput="searchBooksAutocomplete(this.value, 'searchResultsHeader')"
+                    autocomplete="off"
+                    required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+            <div id="searchResultsHeader" class="search-results-header"></div>
+        </form>
+
         <!-- Toggler for mobile view -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
             aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto">
-                <!-- Arabic Books Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="arabicBooksDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        الكتب العربية
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="arabicBooksDropdown">
-                        <li><a class="dropdown-item" href="#">روايات</a></li>
-                        <li><a class="dropdown-item" href="#">الكتب العلمية</a></li>
-                        <li><a class="dropdown-item" href="#">التاريخ</a></li>
-                        <li><a class="dropdown-item" href="#">كتب الأطفال</a></li>
-                    </ul>
-                </li>
-
-                <!-- English Books Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="englishBooksDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        الكتب الإنجليزية
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="englishBooksDropdown">
-                        <li><a class="dropdown-item" href="#">Fiction</a></li>
-                        <li><a class="dropdown-item" href="#">Science</a></li>
-                        <li><a class="dropdown-item" href="#">History</a></li>
-                        <li><a class="dropdown-item" href="#">Children's Books</a></li>
-                    </ul>
-                </li>
-
-                <!-- Static Links -->
-                <li class="nav-item">
-                    <a class="nav-link" href="#">الأكثر مبيعًا</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">الإصدارات الحديثة</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">المجموعات</a>
-                </li>
-            </ul>
+            <!-- Empty spacer to push everything to the left -->
+            <div class="me-auto"></div>
 
             <div class="d-flex align-items-center">
-                <!-- Search Button -->
-                <a href="javascript:void(0);" class="nav-link position-relative me-2" onclick="toggleSearchBar()">
-                    <i class="bi bi-search text-white fs-4"></i>
-                </a>
+                <!-- Static Links -->
+                <ul class="navbar-nav flex-row me-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#popular-books">الأكثر مبيعًا</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#all-books">الإصدارات الحديثة</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">المجموعات</a>
+                    </li>
+                </ul>
 
                 <!-- Cart Icon -->
                 <a href="javascript:void(0);" class="nav-link position-relative" onclick="showCartModal()">
@@ -151,37 +142,6 @@
         </div>
     </div>
 </nav>
-
-<!-- Search Bar (Hidden by default) -->
-<div id="searchBar" class="search-bar-container">
-    <div class="container">
-        <div class="search-bar-content">
-            <form action="{{ route('search.results') }}" method="GET" class="d-flex align-items-center position-relative">
-                <input 
-                    type="text" 
-                    name="query"
-                    id="searchInputHeader"
-                    class="form-control search-input" 
-                    placeholder="ابحث عن الكتب، المؤلفين، الناشرين..." 
-                    oninput="searchBooksAutocomplete(this.value, 'searchResultsHeader')"
-                    autocomplete="off"
-                    autofocus
-                    required>
-                <button type="submit" class="btn btn-primary search-btn">
-                    <i class="bi bi-search"></i>
-                </button>
-                <button type="button" class="btn btn-close-search" onclick="toggleSearchBar()">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-                
-                <!-- Search Results Container -->
-                <div id="searchResultsHeader" class="search-results-header">
-                    <!-- Results will be inserted here -->
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 @include('cartmodals')
 </div>

@@ -117,42 +117,6 @@ let lastScrollTop = 0;
 
 
 
-///////////////////////////////
-function toggleSearchBar() {
-    const searchBar = document.getElementById('searchBar');
-    const searchInput = searchBar.querySelector('.search-input');
-    
-    if (searchBar.classList.contains('active')) {
-        searchBar.classList.remove('active');
-        document.body.style.overflow = '';
-    } else {
-        searchBar.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => {
-            searchInput.focus();
-        }, 300);
-    }
-}
-
-// Close search bar when clicking outside
-document.addEventListener('click', function(event) {
-    const searchBar = document.getElementById('searchBar');
-    const searchButton = event.target.closest('[onclick="toggleSearchBar()"]');
-    
-    if (searchBar.classList.contains('active') && 
-        !searchBar.contains(event.target) && 
-        !searchButton) {
-        toggleSearchBar();
-    }
-});
-
-// Close search bar with ESC key
-document.addEventListener('keydown', function(event) {
-    const searchBar = document.getElementById('searchBar');
-    if (event.key === 'Escape' && searchBar.classList.contains('active')) {
-        toggleSearchBar();
-    }
-});
 /*///////////////search//////////////////////////*/
 // Autocomplete search function
 // Unified search function that works for both index page and header
@@ -221,12 +185,23 @@ function searchBooksAutocomplete(query, containerId = 'searchResults') {
 
 // Hide autocomplete when clicking outside
 document.addEventListener('click', function(event) {
+    // Index page search
     const searchInput = document.getElementById('searchInput');
     const resultsContainer = document.getElementById('searchResults');
-    
-    if (searchInput && resultsContainer && 
-        !searchInput.contains(event.target) && 
+
+    if (searchInput && resultsContainer &&
+        !searchInput.contains(event.target) &&
         !resultsContainer.contains(event.target)) {
         resultsContainer.style.display = 'none';
+    }
+
+    // Header search
+    const headerSearchInput = document.getElementById('searchInputHeader');
+    const headerResults = document.getElementById('searchResultsHeader');
+
+    if (headerSearchInput && headerResults &&
+        !headerSearchInput.contains(event.target) &&
+        !headerResults.contains(event.target)) {
+        headerResults.style.display = 'none';
     }
 });

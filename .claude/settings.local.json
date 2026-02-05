@@ -3,7 +3,10 @@
     "allow": [
       "Bash(php artisan migrate:status:*)",
       "Bash(php artisan config:clear:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "WebFetch(domain:www.livredepoche.com)",
+      "WebFetch(domain:www.aseeralkotb.com)",
+      "WebFetch(domain:www.aseeralkotb.sa)"
     ]
   }
 }

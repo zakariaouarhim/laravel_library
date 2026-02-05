@@ -37,10 +37,14 @@
     
     <div class="layout-indexpage ">
             
-        <x-book-carousel :books="$books" title=" All books " />
+        <div id="all-books">
+            <x-book-carousel :books="$books" title=" All books " />
+        </div>
         <!-- carousel categories -->
         @include('categories_carousel2')
-        <x-book-carousel :books="$popularBooks" title=" الأكثر مبيعا " />
+        <div id="popular-books">
+            <x-book-carousel :books="$popularBooks" title=" الأكثر مبيعا " />
+        </div>
         <x-book-carousel :books="$EnglichBooks" title=" EnglichBooks  " />
         
     </div>
