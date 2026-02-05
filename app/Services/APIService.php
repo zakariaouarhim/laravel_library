@@ -236,4 +236,126 @@ class APIService
     {
         return $apiData['items'][0]['volumeInfo']['imageLinks']['thumbnail'] ?? null;
     }
+
+    /**
+     * Fetch book data by title and author (fallback when ISBN is not available)
+     */
+    public function fetchBookDataByTitle($title, $author = null)
+    {
+        if (empty($title)) {
+            throw new \Exception('Title is required for API fetch by title');
+        }
+
+        \Log::info('APIService fetching by title: ' . $title . ', author: ' . ($author ?? 'N/A'));
+
+        // Create cache key from title+author
+        $cacheKey = 'title_' . md5($title . '_' . ($author ?? ''));
+
+        // Check cache first
+        $cachedData = $this->getCachedData($cacheKey);
+        if ($cachedData) {
+            \Log::info('Found cached data for title search: ' . $title);
+            return $cachedData;
+        }
+
+        try {
+            // For Arabic/non-Latin titles, use simple query format (works better)
+            // Don't use intitle:/inauthor: prefixes as they don't work well with Arabic
+            $responseData = $this->fetchFromAPIWithTitleAuthor($title, $author);
+
+            // Cache the response
+            $this->cacheResponse($cacheKey, $responseData);
+
+            return $responseData;
+
+        } catch (\Exception $e) {
+            \Log::error('API fetch by title failed: ' . $title . ' - Error: ' . $e->getMessage());
+            throw new \Exception('Failed to fetch book data by title from API: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Fetch from API using title and author as separate parameters
+     * This method works better with Arabic and non-Latin text
+     */
+    protected function fetchFromAPIWithTitleAuthor($title, $author = null, $maxRetries = 3)
+    {
+        $attempt = 0;
+        $lastException = null;
+
+        while ($attempt < $maxRetries) {
+            $attempt++;
+
+            try {
+                \Log::info("API fetch attempt {$attempt} for title: {$title}");
+
+                // Build a simple query - Google handles encoding internally
+                // For Arabic books, simple query works better than intitle:/inauthor:
+                $query = $title;
+                if (!empty($author)) {
+                    $query .= ' ' . $author;
+                }
+
+                $response = Http::withOptions([
+                    'verify' => false,
+                    'timeout' => 30,
+                    'connect_timeout' => 10
+                ])->retry(2, 1000)
+                ->get("https://www.googleapis.com/books/v1/volumes", [
+                    'q' => $query,
+                    'key' => $this->apiKey,
+                    'maxResults' => 10,
+                    'printType' => 'books'
+                ]);
+
+                if (!$response->successful()) {
+                    throw new \Exception('API request failed with status: ' . $response->status() . ' - ' . $response->body());
+                }
+
+                $responseData = $response->json();
+
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new \Exception('Invalid JSON response from API: ' . json_last_error_msg());
+                }
+
+                \Log::info('API Response received successfully', [
+                    'title' => $title,
+                    'has_items' => isset($responseData['items']),
+                    'total_items' => $responseData['totalItems'] ?? 0
+                ]);
+
+                // If no results with combined query, try title only
+                if ((!isset($responseData['items']) || empty($responseData['items'])) && !empty($author)) {
+                    \Log::info('No results with author, trying title only: ' . $title);
+
+                    $response = Http::withOptions([
+                        'verify' => false,
+                        'timeout' => 30,
+                        'connect_timeout' => 10
+                    ])->get("https://www.googleapis.com/books/v1/volumes", [
+                        'q' => $title,
+                        'key' => $this->apiKey,
+                        'maxResults' => 10,
+                        'printType' => 'books'
+                    ]);
+
+                    if ($response->successful()) {
+                        $responseData = $response->json();
+                    }
+                }
+
+                return $responseData;
+
+            } catch (\Exception $e) {
+                $lastException = $e;
+                \Log::warning("API fetch attempt {$attempt} failed for title {$title}: " . $e->getMessage());
+
+                if ($attempt < $maxRetries) {
+                    sleep(pow(2, $attempt - 1));
+                }
+            }
+        }
+
+        throw $lastException;
+    }
 }

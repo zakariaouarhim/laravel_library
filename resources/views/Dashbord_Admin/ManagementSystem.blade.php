@@ -427,6 +427,101 @@
         </div>
     </div>
 
+    <!-- Enrichment Preview Modal -->
+    <div class="modal fade" id="enrichPreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-search me-2"></i>معاينة بيانات API
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="enrichPreviewLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <p>جاري البحث عن بيانات الكتاب...</p>
+                    </div>
+
+                    <div id="enrichPreviewContent" style="display: none;">
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>مهم:</strong> يرجى مراجعة البيانات بعناية قبل التأكيد. تأكد من أن الكتاب المعروض هو نفس الكتاب الذي تريد إثراءه.
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-book me-2"></i>الكتاب الحالي: <span id="previewCurrentTitle" class="text-primary"></span>
+                                        </h6>
+                                        <p class="mb-0">
+                                            <i class="fas fa-arrow-left me-2"></i>نتيجة API: <span id="previewApiTitle" class="text-success fw-bold"></span>
+                                            <span id="previewSearchMethod" class="badge bg-secondary ms-2"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th width="20%">الحقل</th>
+                                        <th width="35%">القيمة الحالية</th>
+                                        <th width="35%">قيمة API</th>
+                                        <th width="10%">سيتم التحديث</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="enrichPreviewTable">
+                                    <!-- Preview rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="previewImageSection" class="row mt-3" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-secondary text-white">الصورة الحالية</div>
+                                    <div class="card-body text-center">
+                                        <img id="previewCurrentImage" src="" alt="Current" style="max-height: 150px; object-fit: contain;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">صورة API</div>
+                                    <div class="card-body text-center">
+                                        <img id="previewApiImage" src="" alt="API" style="max-height: 150px; object-fit: contain;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="enrichPreviewError" class="alert alert-danger" style="display: none;">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <span id="enrichPreviewErrorMessage"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" id="enrichPreviewBookId">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>إلغاء
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnRejectEnrichment" onclick="rejectEnrichment()" style="display: none;">
+                        <i class="fas fa-ban me-2"></i>رفض البيانات
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnConfirmEnrichment" onclick="confirmEnrichment()" style="display: none;">
+                        <i class="fas fa-check me-2"></i>تأكيد وتطبيق البيانات
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/ManagementSystem.js') }}"></script>

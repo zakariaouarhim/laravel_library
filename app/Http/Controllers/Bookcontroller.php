@@ -111,9 +111,11 @@ class BookController extends Controller
 
         // Apply search filter (title, author, ISBN)
         if (!empty($search)) {
-            $query->where('title', 'like', "%$search%")
-                ->orWhere('author', 'like', "%$search%")
-                ->orWhere('ISBN', 'like', "%$search%");
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%$search%")
+                  ->orWhere('author', 'like', "%$search%")
+                  ->orWhere('ISBN', 'like', "%$search%");
+            });
         }
 
         // Apply status filter (api_data_status)
@@ -124,10 +126,35 @@ class BookController extends Controller
         // Paginate results (10 per page)
         $products = $query->paginate(10);
 
+        // Get stats for the cards
+        $stats = [
+            'total' => Book::count(),
+            'enriched' => Book::where('api_data_status', 'enriched')->count(),
+            'pending' => Book::where('api_data_status', 'pending')->orWhereNull('api_data_status')->count(),
+        ];
+
         // Format the response
         return response()->json([
             'success' => true,
             'data' => $products,
+            'stats' => $stats,
+        ]);
+    }
+
+    /**
+     * Get API stats for dashboard cards
+     */
+    public function getProductsApiStats()
+    {
+        $stats = [
+            'total' => Book::count(),
+            'enriched' => Book::where('api_data_status', 'enriched')->count(),
+            'pending' => Book::where('api_data_status', 'pending')->orWhereNull('api_data_status')->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'stats' => $stats,
         ]);
     }
     
@@ -376,7 +403,180 @@ public function addProduct(Request $request)
         ], 500);
     }
 }
-    
+
+    /**
+     * Preview API enrichment data without applying it
+     * Allows user to review and confirm before applying changes
+     */
+    public function previewEnrichment(Book $book)
+    {
+        try {
+            \Log::info('Previewing enrichment for book ID: ' . $book->id);
+
+            $apiData = null;
+            $searchMethod = null;
+
+            // Try ISBN first if available
+            $isbn = $this->extractISBN($book);
+
+            if (!empty($isbn)) {
+                \Log::info('Trying ISBN search first: ' . $isbn);
+                try {
+                    $apiData = $this->apiService->fetchBookDataByISBN($isbn);
+                    if (isset($apiData['items']) && !empty($apiData['items'])) {
+                        $searchMethod = 'ISBN';
+                    } else {
+                        $apiData = null;
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('ISBN search failed: ' . $e->getMessage());
+                    $apiData = null;
+                }
+            }
+
+            // Fallback to title+author search
+            if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
+                $title = $book->title;
+                $author = $book->author;
+
+                if (empty($title)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'الكتاب ليس له عنوان أو ISBN للبحث'
+                    ], 422);
+                }
+
+                \Log::info('Trying title+author search: ' . $title);
+                $apiData = $this->apiService->fetchBookDataByTitle($title, $author);
+
+                if (!isset($apiData['items']) || empty($apiData['items'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'لم يتم العثور على بيانات لهذا الكتاب في API'
+                    ], 404);
+                }
+
+                $searchMethod = 'title+author';
+            }
+
+            // Extract the book info from API response
+            $bookInfo = $apiData['items'][0]['volumeInfo'] ?? [];
+
+            // Get image URL
+            $imageUrl = null;
+            if (isset($apiData['items'][0]['volumeInfo']['imageLinks'])) {
+                $imageLinks = $apiData['items'][0]['volumeInfo']['imageLinks'];
+                $imageUrl = $imageLinks['thumbnail'] ?? $imageLinks['smallThumbnail'] ?? null;
+                // Get higher quality image
+                if ($imageUrl) {
+                    $imageUrl = str_replace('zoom=1', 'zoom=2', $imageUrl);
+                    $imageUrl = str_replace('&edge=curl', '', $imageUrl);
+                }
+            }
+
+            // Prepare preview data comparing current vs API values
+            $previewData = [
+                'title' => [
+                    'current' => $book->title,
+                    'api' => $bookInfo['title'] ?? null,
+                    'will_update' => !empty($bookInfo['title']) && strlen(trim($bookInfo['title'])) > strlen(trim($book->title ?? ''))
+                ],
+                'author' => [
+                    'current' => $book->author,
+                    'api' => isset($bookInfo['authors']) ? implode(', ', $bookInfo['authors']) : null,
+                    'will_update' => !empty($bookInfo['authors']) && strlen(implode(', ', $bookInfo['authors'] ?? [])) > strlen(trim($book->author ?? ''))
+                ],
+                'description' => [
+                    'current' => $book->description ? substr($book->description, 0, 200) . '...' : null,
+                    'api' => isset($bookInfo['description']) ? substr(strip_tags($bookInfo['description']), 0, 200) . '...' : null,
+                    'will_update' => !empty($bookInfo['description']) && (strlen($bookInfo['description']) > strlen($book->description ?? '') * 1.5 || strlen($book->description ?? '') < 50)
+                ],
+                'page_count' => [
+                    'current' => $book->Page_Num,
+                    'api' => $bookInfo['pageCount'] ?? null,
+                    'will_update' => !empty($bookInfo['pageCount']) && (empty($book->Page_Num) || $book->Page_Num == 0)
+                ],
+                'publisher' => [
+                    'current' => $book->Publishing_House,
+                    'api' => $bookInfo['publisher'] ?? null,
+                    'will_update' => !empty($bookInfo['publisher']) && strlen($bookInfo['publisher']) > strlen($book->Publishing_House ?? '')
+                ],
+                'language' => [
+                    'current' => $book->Langue,
+                    'api' => isset($bookInfo['language']) ? $this->mapLanguageCode($bookInfo['language']) : null,
+                    'will_update' => !empty($bookInfo['language']) && (empty($book->Langue) || $book->Langue === 'Unknown')
+                ],
+                'image' => [
+                    'current' => $book->image,
+                    'api' => $imageUrl,
+                    'will_update' => $imageUrl && (empty($book->image) || $book->image === 'images/books/default-book.png')
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'book' => [
+                    'id' => $book->id,
+                    'title' => $book->title,
+                    'author' => $book->author
+                ],
+                'search_method' => $searchMethod,
+                'preview' => $previewData,
+                'api_book_title' => $bookInfo['title'] ?? 'Unknown',
+                'message' => 'تمت معاينة البيانات بنجاح. يرجى مراجعة البيانات قبل التأكيد.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error previewing enrichment for book ID ' . $book->id . ': ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء معاينة البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Extract ISBN from book (helper method)
+     */
+    protected function extractISBN(Book $book)
+    {
+        $isbn = $book->ISBN ?? $book->isbn ?? null;
+
+        if (empty($isbn) || trim($isbn) === '') {
+            return null;
+        }
+
+        $cleanIsbn = preg_replace('/[^0-9X]/', '', strtoupper($isbn));
+
+        if (strlen($cleanIsbn) !== 10 && strlen($cleanIsbn) !== 13) {
+            return null;
+        }
+
+        return $cleanIsbn;
+    }
+
+    /**
+     * Map language code to full name
+     */
+    protected function mapLanguageCode($langCode)
+    {
+        $languageMap = [
+            'en' => 'English',
+            'fr' => 'French',
+            'es' => 'Spanish',
+            'de' => 'German',
+            'ar' => 'Arabic',
+            'it' => 'Italian',
+            'pt' => 'Portuguese',
+            'ru' => 'Russian',
+            'ja' => 'Japanese',
+            'zh' => 'Chinese',
+            'ko' => 'Korean'
+        ];
+
+        return $languageMap[strtolower($langCode)] ?? ucfirst($langCode);
+    }
 
     // New method to get books that need enrichment
     public function getPendingEnrichment()
@@ -388,8 +588,9 @@ public function addProduct(Request $request)
     // New method to bulk enrich books
     public function bulkEnrichBooks(Request $request)
     {
-        $bookIds = $request->input('book_ids', []);
-        
+        // Accept both 'book_ids' and 'product_ids' for compatibility
+        $bookIds = $request->input('book_ids', $request->input('product_ids', []));
+
         if (empty($bookIds)) {
             return response()->json(['success' => false, 'message' => 'No books selected'], 400);
         }
@@ -413,6 +614,7 @@ public function addProduct(Request $request)
         return response()->json([
             'success' => true,
             'enriched' => $enriched,
+            'enriched_count' => $enriched, // Alias for JS compatibility
             'failed' => $failed,
             'errors' => $errors,
             'message' => "Enrichment completed. Enriched: {$enriched}, Failed: {$failed}"

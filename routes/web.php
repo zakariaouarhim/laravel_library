@@ -42,6 +42,7 @@ use Illuminate\Http\Request;
     
     // Book Management Routes (Enhanced)
     Route::post('/books/{book}/enrich', [Bookcontroller::class, 'enrichBook'])->name('books.enrich');
+    Route::get('/books/{book}/preview-enrich', [Bookcontroller::class, 'previewEnrichment'])->name('books.preview-enrich');
     Route::get('/books/pending-enrichment', [Bookcontroller::class, 'getPendingEnrichment'])->name('books.pending-enrichment');
     Route::post('/books/bulk-enrich', [Bookcontroller::class, 'bulkEnrichBooks'])->name('books.bulk-enrich');
     Route::get('/debug-enrich/{id}', [BookController::class, 'debugEnrich']);
@@ -60,8 +61,7 @@ use Illuminate\Http\Request;
 
 
 Route::get('products/api', [BookController::class, 'getProductsApi'])->name('products.api');
-Route::get('products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
-
+Route::get('products/api/stats', [BookController::class, 'getProductsApiStats'])->name('products.api.stats');
 Route::get('products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
 Route::put('products/api/{id}', [BookController::class, 'updateProduct'])->name('products.api.update');
 

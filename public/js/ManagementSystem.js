@@ -56,6 +56,13 @@ function loadProducts(page = 1) {
             if (response.success) {
                 renderProductsTable(response.data.data);
                 renderPagination(response.data);
+                // Update stats if available
+                if (response.stats) {
+                    updateStatsCards(response.stats);
+                } else {
+                    // Fetch stats separately if not included
+                    loadStats();
+                }
             } else {
                 showAlert('حدث خطأ في تحميل البيانات', 'danger');
             }
@@ -64,6 +71,26 @@ function loadProducts(page = 1) {
             console.log('Error details:', xhr.responseText);
             showAlert('خطأ في الاتصال بالخادم', 'danger');
         });
+}
+
+// Load statistics for stats cards
+function loadStats() {
+    $.get('/products/api/stats')
+        .done(function(response) {
+            if (response.success) {
+                updateStatsCards(response.stats);
+            }
+        })
+        .fail(function(xhr, status, error) {
+            console.log('Failed to load stats:', error);
+        });
+}
+
+// Update stats cards with data
+function updateStatsCards(stats) {
+    $('#totalProductsStat').text(stats.total || 0);
+    $('#enrichedProductsStat').text(stats.enriched || 0);
+    $('#pendingProductsStat').text(stats.pending || 0);
 }
 
 // Render products table
@@ -122,7 +149,7 @@ function renderProductsTable(products) {
                         <button class="btn btn-sm btn-outline-warning" onclick="enrichProduct(${product.id})" title="إثراء API">
                             <i class="fas fa-magic"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${product.id}, '${product.name}')" title="حذف">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${product.id}, '${product.title}')" title="حذف">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -440,82 +467,149 @@ function confirmDelete() {
     productToDelete = null;
 }
 
-// Enrich single product
+// Enrich single product - Now shows preview first for user confirmation
 function enrichProduct(id) {
-    // Show loading state
-    const enrichButton = $(`[onclick="enrichProduct(${id})"]`);
-    const originalText = enrichButton.text();
-    enrichButton.prop('disabled', true).text('جاري الإثراء...');
-    
+    // Show the preview modal
+    $('#enrichPreviewModal').modal('show');
+    $('#enrichPreviewLoading').show();
+    $('#enrichPreviewContent').hide();
+    $('#enrichPreviewError').hide();
+    $('#btnConfirmEnrichment').hide();
+    $('#btnRejectEnrichment').hide();
+    $('#enrichPreviewBookId').val(id);
+
+    // Fetch preview data
+    $.get(`/books/${id}/preview-enrich`)
+        .done(function(response) {
+            $('#enrichPreviewLoading').hide();
+
+            if (response.success) {
+                displayEnrichmentPreview(response);
+                $('#enrichPreviewContent').show();
+                $('#btnConfirmEnrichment').show();
+                $('#btnRejectEnrichment').show();
+            } else {
+                $('#enrichPreviewErrorMessage').text(response.message || 'فشل في جلب بيانات المعاينة');
+                $('#enrichPreviewError').show();
+            }
+        })
+        .fail(function(xhr) {
+            $('#enrichPreviewLoading').hide();
+            let errorMessage = 'حدث خطأ في جلب بيانات المعاينة';
+
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMessage = response.message || errorMessage;
+            } catch (e) {}
+
+            $('#enrichPreviewErrorMessage').text(errorMessage);
+            $('#enrichPreviewError').show();
+        });
+}
+
+// Display enrichment preview data in the modal
+function displayEnrichmentPreview(response) {
+    const preview = response.preview;
+    const book = response.book;
+
+    // Set title info
+    $('#previewCurrentTitle').text(book.title || 'غير محدد');
+    $('#previewApiTitle').text(response.api_book_title || 'غير محدد');
+    $('#previewSearchMethod').text(response.search_method === 'ISBN' ? 'بحث بـ ISBN' : 'بحث بالعنوان');
+
+    // Field labels in Arabic
+    const fieldLabels = {
+        'title': 'العنوان',
+        'author': 'المؤلف',
+        'description': 'الوصف',
+        'page_count': 'عدد الصفحات',
+        'publisher': 'دار النشر',
+        'language': 'اللغة',
+        'image': 'الصورة'
+    };
+
+    // Build preview table
+    let tableHtml = '';
+    for (const [field, data] of Object.entries(preview)) {
+        if (field === 'image') continue; // Handle image separately
+
+        const willUpdate = data.will_update;
+        const rowClass = willUpdate ? 'table-success' : '';
+        const updateIcon = willUpdate ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-minus text-muted"></i>';
+
+        tableHtml += `
+            <tr class="${rowClass}">
+                <td><strong>${fieldLabels[field] || field}</strong></td>
+                <td>${data.current || '<span class="text-muted">فارغ</span>'}</td>
+                <td>${data.api || '<span class="text-muted">غير متوفر</span>'}</td>
+                <td class="text-center">${updateIcon}</td>
+            </tr>
+        `;
+    }
+    $('#enrichPreviewTable').html(tableHtml);
+
+    // Handle image preview
+    if (preview.image && preview.image.api) {
+        $('#previewImageSection').show();
+        $('#previewCurrentImage').attr('src', '/' + (preview.image.current || 'images/books/default-book.png'));
+        $('#previewApiImage').attr('src', preview.image.api);
+    } else {
+        $('#previewImageSection').hide();
+    }
+}
+
+// Confirm and apply enrichment data
+function confirmEnrichment() {
+    const bookId = $('#enrichPreviewBookId').val();
+
+    if (!bookId) {
+        showAlert('معرف الكتاب مفقود', 'danger');
+        return;
+    }
+
+    // Show loading
+    $('#btnConfirmEnrichment').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>جاري التطبيق...');
+    $('#btnRejectEnrichment').prop('disabled', true);
+
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-    
-    $.post(`/books/${id}/enrich`)
+
+    $.post(`/books/${bookId}/enrich`)
         .done(function(response) {
+            $('#enrichPreviewModal').modal('hide');
+
             if (response.success) {
-                showAlert('تم إثراء المنتج بنجاح', 'success');
+                showAlert('تم إثراء الكتاب بنجاح', 'success');
                 loadProducts(currentPage);
-                
-                // Update button to show enriched state
-                enrichButton.removeClass('btn-warning').addClass('btn-success')
-                    .text('تم الإثراء').prop('disabled', true);
             } else {
-                showAlert(response.message || 'فشل في إثراء المنتج', 'warning');
-                enrichButton.prop('disabled', false).text(originalText);
+                showAlert(response.message || 'فشل في إثراء الكتاب', 'warning');
             }
         })
-        .fail(function(xhr, status, error) {
-            // Reset button state
-            enrichButton.prop('disabled', false).text(originalText);
-            
-            let errorMessage = 'حدث خطأ في إثراء المنتج';
-            
-            if (xhr.status === 409) {
-                // Conflict - book is being processed
-                errorMessage = 'الكتاب قيد المعالجة حالياً. يرجى المحاولة بعد قليل.';
-                showAlert(errorMessage, 'info');
-                
-                // Retry after 30 seconds
-                setTimeout(() => {
-                    enrichButton.prop('disabled', false).text(originalText);
-                }, 30000);
-                
-            } else if (xhr.status === 422) {
-                // Validation error
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    errorMessage = response.message || 'خطأ في التحقق من البيانات';
-                } catch (e) {
-                    // Use default error message
-                }
-                showAlert(errorMessage, 'warning');
-                
-            } else if (xhr.status === 500) {
-                // Server error
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    errorMessage = response.message || 'حدث خطأ في الخادم';
-                } catch (e) {
-                    // Use default error message
-                }
-                showAlert(errorMessage, 'danger');
-                
-            } else {
-                // Other errors
-                showAlert(errorMessage, 'danger');
-            }
-            
-            // Log detailed error information for debugging
-            console.log('Enrich Error Details:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                responseText: xhr.responseText,
-                error: error
-            });
+        .fail(function(xhr) {
+            $('#enrichPreviewModal').modal('hide');
+            let errorMessage = 'حدث خطأ في إثراء الكتاب';
+
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMessage = response.message || errorMessage;
+            } catch (e) {}
+
+            showAlert(errorMessage, 'danger');
+        })
+        .always(function() {
+            // Reset button states
+            $('#btnConfirmEnrichment').prop('disabled', false).html('<i class="fas fa-check me-2"></i>تأكيد وتطبيق البيانات');
+            $('#btnRejectEnrichment').prop('disabled', false);
         });
+}
+
+// Reject enrichment - just close the modal
+function rejectEnrichment() {
+    $('#enrichPreviewModal').modal('hide');
+    showAlert('تم إلغاء عملية الإثراء', 'info');
 }
 
 // Optional: Add a function to check if a book is currently being processed

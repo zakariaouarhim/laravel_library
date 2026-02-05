@@ -7,79 +7,110 @@ use Illuminate\Support\Facades\DB;
 class BookService
 {
     public function enrichBookFromAPI(Book $book)
-{
-    // Check if already enriched
-    if ($book->api_data_status === 'enriched') {
-        \Log::info('Book already enriched, skipping: ' . $book->id);
-        return $book;
-    }
-
-    // Use DB transaction to ensure atomicity
-    return DB::transaction(function () use ($book) {
-        // Set status to processing with timestamp
-        $book->update([
-            'api_data_status' => 'processing',
-            'api_last_updated' => now()
-        ]);
-
-        try {
-            \Log::info('Starting book enrichment for book ID: ' . $book->id);
-            \Log::info('Book title: ' . $book->title);
-            
-            // Get ISBN - handle both possible field names
-            $isbn = $this->extractISBN($book);
-            
-            if (empty($isbn)) {
-                throw new \Exception('Book has no valid ISBN for enrichment. Book ID: ' . $book->id);
-            }
-            
-            \Log::info('Using ISBN for enrichment: ' . $isbn);
-            
-            // Fetch data from API
-            $apiData = (new APIService())->fetchBookDataByISBN($isbn);
-            
-            if (!isset($apiData['items']) || empty($apiData['items'])) {
-                throw new \Exception('No book data found for ISBN: ' . $isbn);
-            }
-            
-            // Map and validate the data
-            $mappedData = $this->mapApiData($apiData, $book);
-            
-            if (empty($mappedData)) {
-                throw new \Exception('No useful data could be extracted from API response');
-            }
-            
-            \Log::info('Mapped data fields: ' . implode(', ', array_keys($mappedData)));
-            
-            // Update book with enriched data
-            $book->update($mappedData);
-            
-            // Set final status
-            $book->update([
-                'api_data_status' => 'enriched',
-                'api_last_updated' => now(),
-                'api_error_message' => null // Clear any previous error
-            ]);
-            
-            \Log::info('Book enrichment completed successfully for book ID: ' . $book->id);
-            
-            return $book->fresh(); // Return fresh instance from database
-            
-        } catch (\Exception $e) {
-            \Log::error('Error in enrichBookFromAPI for book ID ' . $book->id . ': ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
-            // Update status to failed with error message
-            $book->update([
-                'api_data_status' => 'failed',
-                'api_last_updated' => now(),
-                'api_error_message' => substr($e->getMessage(), 0, 500)
-            ]);
-            
-            throw $e; // Re-throw the exception to be handled by the controller
+    {
+        // Check if already enriched
+        if ($book->api_data_status === 'enriched') {
+            \Log::info('Book already enriched, skipping: ' . $book->id);
+            return $book;
         }
-    });
-}
+
+        // Use DB transaction to ensure atomicity
+        return DB::transaction(function () use ($book) {
+            // Set status to processing with timestamp
+            $book->update([
+                'api_data_status' => 'processing',
+                'api_last_updated' => now()
+            ]);
+
+            try {
+                \Log::info('Starting book enrichment for book ID: ' . $book->id);
+                \Log::info('Book title: ' . $book->title);
+
+                $apiService = new APIService();
+                $apiData = null;
+                $searchMethod = null;
+
+                // Try ISBN first if available
+                $isbn = $this->extractISBN($book);
+
+                if (!empty($isbn)) {
+                    \Log::info('Trying ISBN search first: ' . $isbn);
+                    try {
+                        $apiData = $apiService->fetchBookDataByISBN($isbn);
+                        if (isset($apiData['items']) && !empty($apiData['items'])) {
+                            $searchMethod = 'ISBN';
+                            \Log::info('Found data using ISBN: ' . $isbn);
+                        } else {
+                            \Log::info('No results from ISBN search, will try title search');
+                            $apiData = null;
+                        }
+                    } catch (\Exception $e) {
+                        \Log::warning('ISBN search failed: ' . $e->getMessage() . ', will try title search');
+                        $apiData = null;
+                    }
+                }
+
+                // Fallback to title+author search if ISBN failed or not available
+                if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
+                    $title = $book->title;
+                    $author = $book->author;
+
+                    if (empty($title)) {
+                        throw new \Exception('Book has no ISBN and no title for enrichment. Book ID: ' . $book->id);
+                    }
+
+                    \Log::info('Trying title+author search: ' . $title . ' by ' . ($author ?? 'unknown'));
+                    $apiData = $apiService->fetchBookDataByTitle($title, $author);
+
+                    if (!isset($apiData['items']) || empty($apiData['items'])) {
+                        throw new \Exception('No book data found for title: ' . $title);
+                    }
+
+                    $searchMethod = 'title+author';
+                    \Log::info('Found data using title+author search');
+                }
+
+                // Map and validate the data
+                $mappedData = $this->mapApiData($apiData, $book);
+
+                if (empty($mappedData)) {
+                    \Log::info('No fields need updating - current data is already good');
+                }
+
+                \Log::info('Mapped data fields: ' . implode(', ', array_keys($mappedData)));
+
+                // Update book with enriched data
+                if (!empty($mappedData)) {
+                    $book->update($mappedData);
+                }
+
+                // Set final status
+                $book->update([
+                    'api_data_status' => 'enriched',
+                    'api_last_updated' => now(),
+                    'api_error_message' => null, // Clear any previous error
+                    'api_search_method' => $searchMethod // Track which method was used
+                ]);
+
+                \Log::info('Book enrichment completed successfully for book ID: ' . $book->id . ' using ' . $searchMethod);
+
+                return $book->fresh(); // Return fresh instance from database
+
+            } catch (\Exception $e) {
+                \Log::error('Error in enrichBookFromAPI for book ID ' . $book->id . ': ' . $e->getMessage());
+                \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+                // Update status to failed with error message
+                $book->update([
+                    'api_data_status' => 'failed',
+                    'api_last_updated' => now(),
+                    'api_error_message' => substr($e->getMessage(), 0, 500)
+                ]);
+
+                throw $e; // Re-throw the exception to be handled by the controller
+            }
+        });
+    }
     
     protected function extractISBN(Book $book)
     {
@@ -184,21 +215,24 @@ class BookService
             }
         }
         
-        // Handle image URL
-        $imageUrl = APIService::getBookCoverUrl($apiData);
-        if ($imageUrl && filter_var($imageUrl, FILTER_VALIDATE_URL)) {
-            $mappedData['original_image'] = $imageUrl;
-            
-            // Optionally download and store locally
-            try {
-                if (class_exists('App\Services\ImageService')) {
-                    $localImagePath = (new ImageService())->downloadAndStoreImage($imageUrl);
+        // Handle image URL - only download if book doesn't have an image
+        $currentImage = trim($book->image ?? '');
+        if (empty($currentImage) || $currentImage === 'images/books/default-book.png') {
+            $imageUrl = APIService::getBookCoverUrl($apiData);
+            if ($imageUrl && filter_var($imageUrl, FILTER_VALIDATE_URL)) {
+                // Store original URL for reference
+                $mappedData['original_image'] = $imageUrl;
+
+                // Download and store the image locally
+                try {
+                    $localImagePath = $this->downloadAndStoreBookImage($imageUrl, $book->id);
                     if ($localImagePath) {
-                        $mappedData['local_image_path'] = $localImagePath;
+                        $mappedData['image'] = $localImagePath; // This is the field used for display
+                        \Log::info('Downloaded and saved image for book ID ' . $book->id . ': ' . $localImagePath);
                     }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to download image for book ID ' . $book->id . ': ' . $e->getMessage());
                 }
-            } catch (\Exception $e) {
-                \Log::warning('Failed to download image for book ID ' . $book->id . ': ' . $e->getMessage());
             }
         }
         
@@ -212,6 +246,62 @@ class BookService
         return $mappedData;
     }
     
+    /**
+     * Download and store book cover image locally
+     */
+    protected function downloadAndStoreBookImage($imageUrl, $bookId)
+    {
+        try {
+            // Get higher quality image by modifying Google Books URL
+            $highQualityUrl = str_replace('zoom=1', 'zoom=2', $imageUrl);
+            $highQualityUrl = str_replace('&edge=curl', '', $highQualityUrl);
+
+            // Download the image
+            $imageContent = @file_get_contents($highQualityUrl);
+            if ($imageContent === false) {
+                // Fallback to original URL
+                $imageContent = @file_get_contents($imageUrl);
+            }
+
+            if ($imageContent === false) {
+                throw new \Exception('Failed to download image from URL');
+            }
+
+            // Determine file extension from content type or URL
+            $extension = 'jpg';
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($imageContent);
+
+            if (strpos($mimeType, 'png') !== false) {
+                $extension = 'png';
+            } elseif (strpos($mimeType, 'webp') !== false) {
+                $extension = 'webp';
+            }
+
+            // Generate unique filename
+            $filename = 'api_' . $bookId . '_' . time() . '.' . $extension;
+            $destinationPath = public_path('images/books');
+
+            // Create directory if it doesn't exist
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            // Save the image
+            $fullPath = $destinationPath . '/' . $filename;
+            if (file_put_contents($fullPath, $imageContent) === false) {
+                throw new \Exception('Failed to save image to disk');
+            }
+
+            // Return relative path for database storage
+            return 'images/books/' . $filename;
+
+        } catch (\Exception $e) {
+            \Log::error('Error downloading book image: ' . $e->getMessage());
+            return null;
+        }
+    }
+
     protected function mapLanguageCode($langCode)
     {
         $languageMap = [

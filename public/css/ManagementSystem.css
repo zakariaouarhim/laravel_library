@@ -467,3 +467,79 @@
          max-width: 150px;
      }
  }
+
+ /* ============================================
+    Enrichment Preview Modal Styles
+    ============================================ */
+ #enrichPreviewModal .modal-header {
+     background: linear-gradient(135deg, #17a2b8, #138496);
+ }
+
+ #enrichPreviewModal .modal-header .modal-title {
+     font-weight: 600;
+ }
+
+ #enrichPreviewModal .table th {
+     background-color: #2c3e50;
+     color: white;
+     font-weight: 600;
+ }
+
+ #enrichPreviewModal .table-success {
+     background-color: rgba(40, 167, 69, 0.15) !important;
+ }
+
+ #enrichPreviewModal .table-success td {
+     border-color: rgba(40, 167, 69, 0.3);
+ }
+
+ #enrichPreviewModal .alert-warning {
+     border-right: 4px solid #ffc107;
+     background-color: #fff3cd;
+ }
+
+ #enrichPreviewModal .card {
+     border: none;
+     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+ }
+
+ #enrichPreviewModal .card-header {
+     font-weight: 600;
+ }
+
+ #enrichPreviewModal #previewApiTitle {
+     font-size: 1.1rem;
+ }
+
+ #enrichPreviewModal .badge {
+     font-size: 0.75rem;
+     padding: 0.4em 0.8em;
+ }
+
+ #enrichPreviewModal .modal-footer {
+     gap: 0.5rem;
+ }
+
+ #enrichPreviewModal .btn-success {
+     background: linear-gradient(135deg, #28a745, #218838);
+     border: none;
+ }
+
+ #enrichPreviewModal .btn-danger {
+     background: linear-gradient(135deg, #dc3545, #c82333);
+     border: none;
+ }
+
+ /* Image preview cards */
+ #previewImageSection .card {
+     transition: transform 0.2s ease;
+ }
+
+ #previewImageSection .card:hover {
+     transform: scale(1.02);
+ }
+
+ #previewImageSection img {
+     border-radius: 8px;
+     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
