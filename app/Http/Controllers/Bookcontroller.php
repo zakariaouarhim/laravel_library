@@ -537,6 +537,195 @@ public function addProduct(Request $request)
     }
 
     /**
+     * Apply selected enrichment fields from API
+     * Allows user to choose which fields to update
+     */
+    public function applySelectedEnrichment(Request $request, Book $book)
+    {
+        try {
+            $selectedFields = $request->input('selected_fields', []);
+
+            if (empty($selectedFields)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم اختيار أي حقول للتحديث'
+                ], 400);
+            }
+
+            \Log::info('Applying selected enrichment for book ID: ' . $book->id . ', fields: ' . implode(', ', $selectedFields));
+
+            // Fetch API data again
+            $apiData = null;
+            $isbn = $this->extractISBN($book);
+
+            if (!empty($isbn)) {
+                try {
+                    $apiData = $this->apiService->fetchBookDataByISBN($isbn);
+                    if (!isset($apiData['items']) || empty($apiData['items'])) {
+                        $apiData = null;
+                    }
+                } catch (\Exception $e) {
+                    $apiData = null;
+                }
+            }
+
+            // Fallback to title search
+            if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
+                $apiData = $this->apiService->fetchBookDataByTitle($book->title, $book->author);
+            }
+
+            if (!isset($apiData['items']) || empty($apiData['items'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم العثور على بيانات من API'
+                ], 404);
+            }
+
+            $bookInfo = $apiData['items'][0]['volumeInfo'] ?? [];
+            $updateData = [];
+            $updatedFields = [];
+
+            // Map selected fields to database columns
+            $fieldMapping = [
+                'title' => 'title',
+                'author' => 'author',
+                'description' => 'description',
+                'page_count' => 'Page_Num',
+                'publisher' => 'Publishing_House',
+                'language' => 'Langue'
+            ];
+
+            foreach ($selectedFields as $field) {
+                if ($field === 'title' && isset($bookInfo['title'])) {
+                    $updateData['title'] = $bookInfo['title'];
+                    $updatedFields[] = 'title';
+                }
+                elseif ($field === 'author' && isset($bookInfo['authors'])) {
+                    $updateData['author'] = implode(', ', $bookInfo['authors']);
+                    $updatedFields[] = 'author';
+                }
+                elseif ($field === 'description' && isset($bookInfo['description'])) {
+                    $updateData['description'] = strip_tags($bookInfo['description']);
+                    $updatedFields[] = 'description';
+                }
+                elseif ($field === 'page_count' && isset($bookInfo['pageCount'])) {
+                    $updateData['Page_Num'] = $bookInfo['pageCount'];
+                    $updatedFields[] = 'page_count';
+                }
+                elseif ($field === 'publisher' && isset($bookInfo['publisher'])) {
+                    $updateData['Publishing_House'] = $bookInfo['publisher'];
+                    $updatedFields[] = 'publisher';
+                }
+                elseif ($field === 'language' && isset($bookInfo['language'])) {
+                    $updateData['Langue'] = $this->mapLanguageCode($bookInfo['language']);
+                    $updatedFields[] = 'language';
+                }
+                elseif ($field === 'image') {
+                    // Handle image download
+                    $imageUrl = null;
+                    if (isset($bookInfo['imageLinks'])) {
+                        $imageLinks = $bookInfo['imageLinks'];
+                        $imageUrl = $imageLinks['thumbnail'] ?? $imageLinks['smallThumbnail'] ?? null;
+                        if ($imageUrl) {
+                            $imageUrl = str_replace('zoom=1', 'zoom=2', $imageUrl);
+                            $imageUrl = str_replace('&edge=curl', '', $imageUrl);
+                        }
+                    }
+
+                    if ($imageUrl) {
+                        try {
+                            $localPath = $this->downloadAndStoreBookImage($imageUrl, $book->id);
+                            if ($localPath) {
+                                $updateData['image'] = $localPath;
+                                $updatedFields[] = 'image';
+                            }
+                        } catch (\Exception $e) {
+                            \Log::warning('Failed to download image: ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
+
+            if (empty($updateData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم العثور على بيانات للحقول المحددة'
+                ], 400);
+            }
+
+            // Update the book
+            $updateData['api_data_status'] = 'enriched';
+            $updateData['api_last_updated'] = now();
+            $book->update($updateData);
+
+            \Log::info('Successfully updated book ID: ' . $book->id . ' with fields: ' . implode(', ', $updatedFields));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث الحقول المحددة بنجاح',
+                'updated_fields' => $updatedFields,
+                'book' => $book->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error applying selected enrichment for book ID ' . $book->id . ': ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تطبيق البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download and store book cover image locally
+     */
+    protected function downloadAndStoreBookImage($imageUrl, $bookId)
+    {
+        try {
+            $highQualityUrl = str_replace('zoom=1', 'zoom=2', $imageUrl);
+            $highQualityUrl = str_replace('&edge=curl', '', $highQualityUrl);
+
+            $imageContent = @file_get_contents($highQualityUrl);
+            if ($imageContent === false) {
+                $imageContent = @file_get_contents($imageUrl);
+            }
+
+            if ($imageContent === false) {
+                throw new \Exception('Failed to download image from URL');
+            }
+
+            $extension = 'jpg';
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($imageContent);
+
+            if (strpos($mimeType, 'png') !== false) {
+                $extension = 'png';
+            } elseif (strpos($mimeType, 'webp') !== false) {
+                $extension = 'webp';
+            }
+
+            $filename = 'api_' . $bookId . '_' . time() . '.' . $extension;
+            $destinationPath = public_path('images/books');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $fullPath = $destinationPath . '/' . $filename;
+            if (file_put_contents($fullPath, $imageContent) === false) {
+                throw new \Exception('Failed to save image to disk');
+            }
+
+            return 'images/books/' . $filename;
+
+        } catch (\Exception $e) {
+            \Log::error('Error downloading book image: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Extract ISBN from book (helper method)
      */
     protected function extractISBN(Book $book)

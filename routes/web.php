@@ -43,6 +43,7 @@ use Illuminate\Http\Request;
     // Book Management Routes (Enhanced)
     Route::post('/books/{book}/enrich', [Bookcontroller::class, 'enrichBook'])->name('books.enrich');
     Route::get('/books/{book}/preview-enrich', [Bookcontroller::class, 'previewEnrichment'])->name('books.preview-enrich');
+    Route::post('/books/{book}/enrich-selected', [Bookcontroller::class, 'applySelectedEnrichment'])->name('books.enrich-selected');
     Route::get('/books/pending-enrichment', [Bookcontroller::class, 'getPendingEnrichment'])->name('books.pending-enrichment');
     Route::post('/books/bulk-enrich', [Bookcontroller::class, 'bulkEnrichBooks'])->name('books.bulk-enrich');
     Route::get('/debug-enrich/{id}', [BookController::class, 'debugEnrich']);

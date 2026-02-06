@@ -507,10 +507,16 @@ function enrichProduct(id) {
         });
 }
 
+// Store preview data globally for use in confirmEnrichment
+let currentPreviewData = null;
+
 // Display enrichment preview data in the modal
 function displayEnrichmentPreview(response) {
     const preview = response.preview;
     const book = response.book;
+
+    // Store preview data for later use
+    currentPreviewData = preview;
 
     // Set title info
     $('#previewCurrentTitle').text(book.title || 'غير محدد');
@@ -528,34 +534,61 @@ function displayEnrichmentPreview(response) {
         'image': 'الصورة'
     };
 
-    // Build preview table
+    // Build preview table with checkboxes
     let tableHtml = '';
     for (const [field, data] of Object.entries(preview)) {
         if (field === 'image') continue; // Handle image separately
 
-        const willUpdate = data.will_update;
-        const rowClass = willUpdate ? 'table-success' : '';
-        const updateIcon = willUpdate ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-minus text-muted"></i>';
+        const hasApiData = data.api !== null && data.api !== undefined;
+        const isChecked = hasApiData ? 'checked' : '';
+        const isDisabled = !hasApiData ? 'disabled' : '';
+        const rowClass = hasApiData ? '' : 'table-secondary';
+        const availableIcon = hasApiData ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-minus text-muted"></i>';
 
         tableHtml += `
             <tr class="${rowClass}">
+                <td class="text-center">
+                    <input type="checkbox" class="form-check-input field-checkbox"
+                           data-field="${field}" ${isChecked} ${isDisabled}>
+                </td>
                 <td><strong>${fieldLabels[field] || field}</strong></td>
                 <td>${data.current || '<span class="text-muted">فارغ</span>'}</td>
                 <td>${data.api || '<span class="text-muted">غير متوفر</span>'}</td>
-                <td class="text-center">${updateIcon}</td>
+                <td class="text-center">${availableIcon}</td>
             </tr>
         `;
     }
     $('#enrichPreviewTable').html(tableHtml);
 
-    // Handle image preview
+    // Handle image preview with checkbox
     if (preview.image && preview.image.api) {
         $('#previewImageSection').show();
         $('#previewCurrentImage').attr('src', '/' + (preview.image.current || 'images/books/default-book.png'));
         $('#previewApiImage').attr('src', preview.image.api);
+
+        // Add image checkbox if not exists
+        if ($('#imageFieldCheckbox').length === 0) {
+            $('#previewImageSection').prepend(`
+                <div class="mb-2">
+                    <input type="checkbox" class="form-check-input field-checkbox"
+                           id="imageFieldCheckbox" data-field="image" checked>
+                    <label class="form-check-label" for="imageFieldCheckbox">
+                        <strong>تطبيق الصورة من API</strong>
+                    </label>
+                </div>
+            `);
+        } else {
+            $('#imageFieldCheckbox').prop('checked', true);
+        }
     } else {
         $('#previewImageSection').hide();
     }
+
+    // Setup select all checkbox handler
+    $('#selectAllFields').off('change').on('change', function() {
+        const isChecked = $(this).is(':checked');
+        $('.field-checkbox:not(:disabled)').prop('checked', isChecked);
+    });
 }
 
 // Confirm and apply enrichment data
@@ -564,6 +597,17 @@ function confirmEnrichment() {
 
     if (!bookId) {
         showAlert('معرف الكتاب مفقود', 'danger');
+        return;
+    }
+
+    // Collect selected fields
+    const selectedFields = [];
+    $('.field-checkbox:checked').each(function() {
+        selectedFields.push($(this).data('field'));
+    });
+
+    if (selectedFields.length === 0) {
+        showAlert('يرجى اختيار حقل واحد على الأقل للتطبيق', 'warning');
         return;
     }
 
@@ -577,18 +621,25 @@ function confirmEnrichment() {
         }
     });
 
-    $.post(`/books/${bookId}/enrich`)
-        .done(function(response) {
+    // Send selected fields to the server
+    $.ajax({
+        url: `/books/${bookId}/enrich-selected`,
+        method: 'POST',
+        data: {
+            selected_fields: selectedFields
+        },
+        success: function(response) {
             $('#enrichPreviewModal').modal('hide');
 
             if (response.success) {
-                showAlert('تم إثراء الكتاب بنجاح', 'success');
+                const updatedCount = response.updated_fields ? response.updated_fields.length : selectedFields.length;
+                showAlert(`تم تطبيق ${updatedCount} حقل/حقول بنجاح`, 'success');
                 loadProducts(currentPage);
             } else {
                 showAlert(response.message || 'فشل في إثراء الكتاب', 'warning');
             }
-        })
-        .fail(function(xhr) {
+        },
+        error: function(xhr) {
             $('#enrichPreviewModal').modal('hide');
             let errorMessage = 'حدث خطأ في إثراء الكتاب';
 
@@ -598,12 +649,14 @@ function confirmEnrichment() {
             } catch (e) {}
 
             showAlert(errorMessage, 'danger');
-        })
-        .always(function() {
+        },
+        complete: function() {
             // Reset button states
             $('#btnConfirmEnrichment').prop('disabled', false).html('<i class="fas fa-check me-2"></i>تأكيد وتطبيق البيانات');
             $('#btnRejectEnrichment').prop('disabled', false);
-        });
+            currentPreviewData = null;
+        }
+    });
 }
 
 // Reject enrichment - just close the modal

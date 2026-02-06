@@ -469,10 +469,13 @@
                             <table class="table table-bordered table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th width="20%">الحقل</th>
+                                        <th width="5%">
+                                            <input type="checkbox" id="selectAllFields" class="form-check-input" checked title="تحديد الكل">
+                                        </th>
+                                        <th width="15%">الحقل</th>
                                         <th width="35%">القيمة الحالية</th>
                                         <th width="35%">قيمة API</th>
-                                        <th width="10%">سيتم التحديث</th>
+                                        <th width="10%">متوفر</th>
                                     </tr>
                                 </thead>
                                 <tbody id="enrichPreviewTable">
