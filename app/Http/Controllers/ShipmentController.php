@@ -24,7 +24,13 @@ class ShipmentController extends Controller
     public function index()
     {
         $shipments = Shipment::with('items')->orderBy('created_at', 'desc')->paginate(10);
-        return view('Dashbord_Admin.Shipment_Management', compact('shipments'));
+
+        // Get total counts from database (not paginated)
+        $totalShipments = Shipment::count();
+        $processingCount = Shipment::where('status', 'processing')->count();
+        $completedCount = Shipment::where('status', 'completed')->count();
+
+        return view('Dashbord_Admin.Shipment_Management', compact('shipments', 'totalShipments', 'processingCount', 'completedCount'));
     }
     public function searchShipment(Request $request)
     {
@@ -33,7 +39,13 @@ class ShipmentController extends Controller
             ->orWhere('supplier_name', 'like', "%$search%")
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        return view('Dashbord_Admin.Shipment_Management', compact('shipments'));
+
+        // Get total counts from database (not paginated)
+        $totalShipments = Shipment::count();
+        $processingCount = Shipment::where('status', 'processing')->count();
+        $completedCount = Shipment::where('status', 'completed')->count();
+
+        return view('Dashbord_Admin.Shipment_Management', compact('shipments', 'totalShipments', 'processingCount', 'completedCount'));
     }
     public function editShipment($id){
         $shipment = Shipment::with('items')->findOrFail($id);

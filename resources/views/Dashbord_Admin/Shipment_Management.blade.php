@@ -38,15 +38,15 @@
                 <div class="stats-row">
                     <div class="stat-card">
                         <div class="stat-label">إجمالي الشحنات</div>
-                        <div class="stat-value">{{ $shipments->count() ?? 0 }}</div>
+                        <div class="stat-value">{{ $totalShipments ?? 0 }}</div>
                     </div>
                     <div class="stat-card" style="border-left-color: #f39c12;">
                         <div class="stat-label">قيد المعالجة</div>
-                        <div class="stat-value">{{ $shipments->where('status', 'processing')->count() ?? 0 }}</div>
+                        <div class="stat-value">{{ $processingCount ?? 0 }}</div>
                     </div>
                     <div class="stat-card" style="border-left-color: #27ae60;">
                         <div class="stat-label">مكتملة</div>
-                        <div class="stat-value">{{ $shipments->where('status', 'completed')->count() ?? 0 }}</div>
+                        <div class="stat-value">{{ $completedCount ?? 0 }}</div>
                     </div>
                 </div>
 
@@ -570,8 +570,9 @@
         </div>
     </div>
     <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/dashboardShipment.js') }}"></script> 
+    <script src="{{ asset('js/dashboardShipment.js') }}"></script>
 </body>
 </html>
              

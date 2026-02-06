@@ -166,7 +166,7 @@
                                 <div class="mb-3">
                                     
                                     <label class="form-label">اللغة</label>
-                                    <select name="productLanguage"id="productLanguage" class="form-select"  required>
+                                    <select name="productLanguage" id="productLanguage" class="form-select" required>
                                         @foreach(App\Models\Book::LANGUAGES as $lang)
                                             <option value="{{ $lang }}">{{ ucfirst($lang) }}</option>
                                         @endforeach
@@ -293,7 +293,7 @@
                                 <div class="mb-3">
                                     
                                     <label class="form-label">اللغة</label>
-                                    <select name="Langue"id="editProductLanguage" class="form-select"  required>
+                                    <select name="Langue" id="editProductLanguage" class="form-select" required>
                                         @foreach(App\Models\Book::LANGUAGES as $lang)
                                             <option value="{{ $lang }}">{{ ucfirst($lang) }}</option>
                                         @endforeach
@@ -406,7 +406,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                     <button type="button" class="btn btn-danger" onclick="confirmDelete()">
-                        <i class="fas fa-trash me-2"></i>حذف النتج
+                        <i class="fas fa-trash me-2"></i>حذف المنتج
                     </button>
                 </div>
             </div>
