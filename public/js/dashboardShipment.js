@@ -5,7 +5,8 @@ let currentItem = {
     author_id: null,
     author_name: null,
     publishing_house_id: null,
-    publisher_name: null
+    publisher_name: null,
+    language: null
 };
 
 let shipmentItems = [];
@@ -119,6 +120,7 @@ document.getElementById('proceedNewBookBtn').addEventListener('click', function(
     const isbn = document.getElementById('newBookISBN').value.trim();
     const title = document.getElementById('newBookTitle').value.trim();
     const sellingPrice = document.getElementById('itemSellingPrice').value;
+    const language = document.getElementById('newBookLanguage').value;
 
     if (!isbn) {
         alert('الرجاء إدخال ISBN');
@@ -126,6 +128,10 @@ document.getElementById('proceedNewBookBtn').addEventListener('click', function(
     }
     if (!title) {
         alert('الرجاء إدخال عنوان الكتاب');
+        return;
+    }
+    if (!language) {
+        alert('الرجاء اختيار اللغة');
         return;
     }
 
@@ -136,7 +142,8 @@ document.getElementById('proceedNewBookBtn').addEventListener('click', function(
         author_id: document.getElementById('newBookAuthorId').value || null,
         author_name: document.getElementById('selectedAuthorName').textContent.replace('✓ تم اختيار: ', ''),
         publishing_house_id: document.getElementById('newBookPublisherId').value || null,
-        publisher_name: document.getElementById('selectedPublisherName').textContent.replace('✓ تم اختيار: ', '')
+        publisher_name: document.getElementById('selectedPublisherName').textContent.replace('✓ تم اختيار: ', ''),
+        language: language
     };
 
     proceedToItemDetails();
@@ -295,6 +302,7 @@ function addItemToShipment() {
         author_name: currentItem.author_name,
         publishing_house_id: currentItem.publishing_house_id,
         publisher_name: currentItem.publisher_name,
+        language: currentItem.language,
         quantity_received: quantity,
         cost_price: costPrice || null,
         selling_price: sellingPrice
@@ -352,6 +360,7 @@ function updateHiddenFormFields() {
             <input type="hidden" name="items[${idx}][title]" value="${item.title}">
             <input type="hidden" name="items[${idx}][author_id]" value="${item.author_id || ''}">
             <input type="hidden" name="items[${idx}][publishing_house_id]" value="${item.publishing_house_id || ''}">
+            <input type="hidden" name="items[${idx}][language]" value="${item.language || ''}">
             <input type="hidden" name="items[${idx}][quantity_received]" value="${item.quantity_received}">
             <input type="hidden" name="items[${idx}][cost_price]" value="${item.cost_price || ''}">
             <input type="hidden" name="items[${idx}][selling_price]" value="${item.selling_price}">
@@ -387,7 +396,8 @@ function resetForNextItem() {
         author_id: null,
         author_name: null,
         publishing_house_id: null,
-        publisher_name: null
+        publisher_name: null,
+        language: null
     };
 
     document.getElementById('itemDetailsPhase').style.display = 'none';
@@ -403,6 +413,7 @@ function resetForNextItem() {
     document.getElementById('newBookPublisherSearch').value = '';
     document.getElementById('newBookAuthorId').value = '';
     document.getElementById('newBookPublisherId').value = '';
+    document.getElementById('newBookLanguage').value = '';
     document.getElementById('selectedAuthorName').textContent = '';
     document.getElementById('selectedPublisherName').textContent = '';
 }
@@ -433,6 +444,20 @@ document.getElementById('addShipmentModal').addEventListener('hidden.bs.modal', 
     resetSearchPhase();
     document.getElementById('saveShipmentBtn').disabled = true;
     document.getElementById('saveShipmentBtn').innerHTML = '<i class="fas fa-save me-2"></i>حفظ الشحنة';
+});
+
+// Fetch next shipment reference when modal opens
+document.getElementById('addShipmentModal').addEventListener('shown.bs.modal', function() {
+    fetch('/admin/shipments/next-reference')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('shipmentReference').value = data.reference;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching next shipment reference:', error);
+        });
 });
 
 //  ==========Open edit modal=============

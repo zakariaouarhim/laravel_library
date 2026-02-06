@@ -21,6 +21,38 @@ class ShipmentController extends Controller
         $this->bookService = $bookService;
     }
 
+    /**
+     * Generate the next shipment reference number
+     * Format: SHIP-YYYY-XXX (e.g., SHIP-2026-001)
+     */
+    public function getNextShipmentReference()
+    {
+        $currentYear = date('Y');
+        $prefix = "SHIP-{$currentYear}-";
+
+        // Find the last shipment reference for the current year
+        $lastShipment = Shipment::where('shipment_reference', 'like', $prefix . '%')
+            ->orderBy('shipment_reference', 'desc')
+            ->first();
+
+        if ($lastShipment) {
+            // Extract the number part and increment
+            $lastNumber = (int) substr($lastShipment->shipment_reference, -3);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            // First shipment of the year
+            $nextNumber = 1;
+        }
+
+        // Format with leading zeros (e.g., 001, 002, etc.)
+        $nextReference = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+        return response()->json([
+            'success' => true,
+            'reference' => $nextReference
+        ]);
+    }
+
     public function index()
     {
         $shipments = Shipment::with('items')->orderBy('created_at', 'desc')->paginate(10);
@@ -156,6 +188,7 @@ class ShipmentController extends Controller
         'items.*.title' => 'required|string',
         'items.*.author_id' => 'nullable|exists:authors,id',
         'items.*.publishing_house_id' => 'nullable|exists:publishing_houses,id',
+        'items.*.language' => 'nullable|string|in:arabic,english,french,spanish,german',
         'items.*.quantity_received' => 'required|integer|min:1',
         'items.*.cost_price' => 'nullable|numeric|min:0',
         'items.*.selling_price' => 'required|numeric|min:0',
@@ -194,7 +227,7 @@ class ShipmentController extends Controller
                 'publishing_house_id' => $itemData['publishing_house_id'],
                 'category_id' => 1,// Default category
                 'Page_Num' => 0,
-                'Langue' => 'غير محدد',
+                'Langue' => $itemData['language'] ?? 'arabic',
                 'description' => 'تم إضافته من خلال الشحنة رقم: ' . $validated['shipment_reference'],
                 'image' => 'images/books/default.jpg',
                 'api_data_status' => 'pending'

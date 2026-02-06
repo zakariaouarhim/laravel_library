@@ -275,7 +275,8 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">رقم الشحنة <span style="color: #e74c3c;">*</span></label>
-                                        <input type="text" class="form-control" name="shipment_reference" id="shipmentReference" required>
+                                        <input type="text" class="form-control" name="shipment_reference" id="shipmentReference" required readonly style="background-color: #e9ecef;">
+                                        <small class="text-muted">يتم إنشاء الرقم تلقائياً</small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -416,6 +417,28 @@
                                                 </div>
                                                 <input type="hidden" id="newBookPublisherId">
                                                 <small id="selectedPublisherName" class="text-muted"></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">اللغة <span style="color: #e74c3c;">*</span></label>
+                                                <select class="form-control" id="newBookLanguage" >
+                                                    <option value="">اختر اللغة</option>
+                                                    @foreach(App\Models\Book::LANGUAGES as $lang)
+                                                        <option value="{{ $lang }}">
+                                                            @switch($lang)
+                                                                @case('arabic') عربي @break
+                                                                @case('english') إنجليزي @break
+                                                                @case('french') فرنسي @break
+                                                                @case('spanish') إسباني @break
+                                                                @case('german') ألماني @break
+                                                                @default {{ $lang }}
+                                                            @endswitch
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             </div>
                                         </div>
                                     </div>

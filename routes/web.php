@@ -124,6 +124,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/shipments', [ShipmentController::class, 'searchShipment'])->name('shipments.search');
         //blade shipment management
         Route::get('/Dashbord_Admin/Shipment_Management', [ShipmentController::class, 'index'])->name('Dashbord_Admin.Shipment_Management');
+        //get next shipment reference
+        Route::get('/shipments/next-reference', [ShipmentController::class, 'getNextShipmentReference'])->name('shipments.next-reference');
         //store
         Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
         //show
