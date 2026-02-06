@@ -446,6 +446,8 @@ function editshipment(shipmentId) {
             document.getElementById('editArrivalDate').value = data.arrival_date;
             document.getElementById('editStatus').value = data.status;
             document.getElementById('editNotes').value = data.notes || '';
+            document.getElementById('editTotalBooks').value = data.total_books || 0;
+            document.getElementById('editProcessedBooks').value = data.processed_books || 0;
 
             // Populate items list
             const itemsList = document.getElementById('editShipmentItemsList');

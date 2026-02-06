@@ -556,6 +556,20 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">إجمالي الكتب</label>
+                                        <input type="number" class="form-control" id="editTotalBooks" name="total_books" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">الكتب المعالجة</label>
+                                        <input type="number" class="form-control" id="editProcessedBooks" name="processed_books" min="0">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <hr>

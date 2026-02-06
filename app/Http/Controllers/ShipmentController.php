@@ -72,6 +72,8 @@ class ShipmentController extends Controller
             'arrival_date' => 'required|date',
             'status' => 'required|in:pending,processing,completed,cancelled',
             'notes' => 'nullable|string',
+            'total_books' => 'nullable|integer|min:0',
+            'processed_books' => 'nullable|integer|min:0',
         ]);
 
         try {
