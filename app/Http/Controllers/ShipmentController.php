@@ -35,10 +35,24 @@ class ShipmentController extends Controller
     public function searchShipment(Request $request)
     {
         $search = $request->input('search');
-        $shipments = Shipment::with('items')->where('shipment_reference', 'like', "%$search%")
-            ->orWhere('supplier_name', 'like', "%$search%")
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $status = $request->input('status');
+
+        $query = Shipment::with('items');
+
+        // Apply search filter (grouped to work correctly with status filter)
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('shipment_reference', 'like', "%$search%")
+                  ->orWhere('supplier_name', 'like', "%$search%");
+            });
+        }
+
+        // Apply status filter
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
+        $shipments = $query->orderBy('created_at', 'desc')->paginate(10);
 
         // Get total counts from database (not paginated)
         $totalShipments = Shipment::count();

@@ -73,22 +73,32 @@
                 <!-- search Section -->
                 <div class="search-section">
                 <form action="{{ route('admin.shipments.search') }}" method="GET" class="search-controls" style="width: 100%; display: flex; gap: 15px;">
-                        
+
                         <div class="form-group" style="flex: 1;">
                             <label for="searchInput">بحث</label>
                             <div class="input-group">
-                                <input 
-                                    type="text" 
-                                    name="search" 
-                                    id="searchInput" 
-                                    class="form-control" 
+                                <input
+                                    type="text"
+                                    name="search"
+                                    id="searchInput"
+                                    class="form-control"
                                     placeholder="ابحث عن اسم أو رقم الشحنة..."
-                                    value="{{ request('search') }}" 
+                                    value="{{ request('search') }}"
                                 >
                                 <button class="btn btn-outline-primary" type="submit">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
+                        </div>
+                        <div class="form-group" style="width: 180px;">
+                            <label for="statusFilter">الحالة</label>
+                            <select name="status" id="statusFilter" class="form-select">
+                                <option value="">الكل</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>معلقة</option>
+                                <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>قيد المعالجة</option>
+                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>مكتملة</option>
+                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ملغاة</option>
+                            </select>
                         </div>
                         <div class="form-group" style="display: flex; align-items: end;">
                             <a href="{{ route('admin.Dashbord_Admin.Shipment_Management') }}" class="btn-add" style="background: #95a5a6; text-decoration: none; padding: 8px 15px; display: inline-block;">
