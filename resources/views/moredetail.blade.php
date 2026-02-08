@@ -29,10 +29,11 @@
     <div class="container-fluid py-5">
         <div class="row g-0">
             <!-- Book Image Section -->
-            <div class="col-md-5 d-flex align-items-center justify-content-center position-relative">
-                <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" class="img-fluid rounded shadow" aria-describedby="book-title">
+            <div class="col-md-5 d-flex align-items-start justify-content-center position-relative">
+                <div class="book-image-wrapper"> 
+                    <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" class="img-fluid rounded shadow" aria-describedby="book-title">
+                </div>
             </div>
-
             <!-- Book Information Section -->
             <div class="col-md-7 p-4">
                 <h1 id="book-title" class="fw-bold mb-3">{{ $book->title }}</h1>

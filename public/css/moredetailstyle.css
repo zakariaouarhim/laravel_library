@@ -32,37 +32,60 @@
 }
 
 /* --- Book Image Section Enhancement --- */
-.Layout-moredetail .col-md-5 img {
-    align-self: start;
-    margin-top: 20px;
+/* 1. The Wrapper: Shrinks to fit the image exactly */
+.book-image-wrapper {
+    position: relative;
+    display: inline-block;
+    /* Makes div size depend on content (the image) */
+    width: 100%;
+    max-width: 400px;
+    /* Controls the max size of the book */
+    margin: 20px auto;
+    /* Centers the block if it's smaller than the column */
 }
 
-.Layout-moredetail .col-md-5::before {
+/* 2. The Decorative Background: Now attached to the wrapper */
+.book-image-wrapper::before {
     content: '';
     position: absolute;
-    align-self: start;
-    margin-top: 20px;
-    width: 420px;
-    height: 540px;
+    top: 50%;
+    left: 50%;
+
+    /* Now relative to the image size, not the whole column */
+    width: 100%;
+    height: 100%;
+
+    /* Slightly larger than the image for the effect */
+    transform: translate(-50%, -50%) rotate(-3deg) scale(1.05);
+
     background: linear-gradient(45deg, rgba(0, 123, 255, 0.1), rgba(40, 167, 69, 0.1));
     border-radius: 15px;
     z-index: 0;
-    transform: rotate(-3deg);
 }
 
-.Layout-moredetail .col-md-5 img {
-    width: 400px;
-    height: 520px;
+/* 3. The Image Itself */
+.book-image-wrapper img {
+    position: relative;
+    /* sits on top of ::before */
+    z-index: 1;
+
+    display: block;
+    width: 100%;
+    height: auto;
+
     object-fit: cover;
     border-radius: 15px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    position: relative;
-    z-index: 1;
     border: 3px solid rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+
+    /* Animation */
+    opacity: 0;
+    animation: fadeInImage 0.8s ease forwards;
 }
 
-.Layout-moredetail .col-md-5 img:hover {
+/* Hover Effects */
+.book-image-wrapper img:hover {
     transform: translateY(-5px) scale(1.02);
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
 }
