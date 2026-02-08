@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
+use Illuminate\Support\Carbon;
 
 class Book extends Model
 {
@@ -25,6 +26,7 @@ class Book extends Model
         'author_id',        // New primary author ID
         'description',
         'price',
+        'discount',
         'category_id',
         'image',
         'Page_Num',
@@ -71,7 +73,12 @@ class Book extends Model
     {
        return $this->belongsTo(Category::class, 'category_id');
     }
-
+    public function getIsNewAttribute()
+    {
+        return $this->created_at
+            ? $this->created_at->gt(now()->subDays(30))
+            : false;
+    }
     public function toSearchableArray()
     {
         return [

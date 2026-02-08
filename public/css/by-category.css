@@ -599,19 +599,32 @@ body {
 }
 
 .card-badges {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    margin-top: -22px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 3;
 }
 
 .card-badges .badge {
-    display: block;
-    margin-bottom: 5px;
     font-size: 12px;
-    padding: 4px 8px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    border: 2px solid #fff; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
-
+.book-card .book-image-wrapper {
+    display: block;
+    margin-bottom: 0;
+    /* Important: Remove default margins so we can control the overlap precisely */
+    position: relative;
+    z-index: 1;
+}
 .quick-actions {
     position: absolute;
     top: 10px;
