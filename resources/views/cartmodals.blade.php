@@ -27,7 +27,7 @@
             </div>
             <div class="modal-footer d-flex justify-content-between">
                 <button type="button" class="btn btn-primary" id="checkoutButton" onclick="submitCheckoutForm()">إتمام الشراء ✔️</button>
-                <button type="button" class="btn btn-outline-warning" data-bs-dismiss="modal">سلّة التسوق</button>
+                <a href="{{ route('cart.page') }}" class="btn btn-outline-warning">سلّة التسوق</a>
             </div>
         </div>
     </div>

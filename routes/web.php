@@ -156,6 +156,7 @@ Route::post('/checkout/store-cart', function (Request $request) {
     return redirect()->route('checkout.page');
 })->name('checkout.store-cart'); // Different name
 
+Route::get('/cart', [CartController::class, 'showCart'])->name('cart.page');
 Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.page');
 
 

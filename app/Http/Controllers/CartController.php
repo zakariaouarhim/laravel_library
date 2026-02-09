@@ -122,6 +122,39 @@ class CartController extends Controller
         ], 500);
     }
 }
+public function showCart() {
+    $cart = [];
+
+    if (Auth::check()) {
+        $userCart = Cart::with('items.book')->where('user_id', Auth::id())->first();
+
+        if ($userCart) {
+            foreach ($userCart->items as $item) {
+                $cart[$item->book_id] = [
+                    'id' => $item->book_id,
+                    'title' => $item->book->title,
+                    'price' => $item->book->price,
+                    'image' => $item->book->image,
+                    'quantity' => $item->quantity
+                ];
+            }
+        }
+    } else {
+        $cart = session()->get('cart', []);
+    }
+
+    $subtotal = 0;
+    foreach($cart as $item) {
+        $subtotal += $item['price'] * $item['quantity'];
+    }
+
+    $shipping = 25.00;
+    $discount = 0.00;
+    $total = $subtotal + $shipping - $discount;
+
+    return view('cart.index', compact('cart', 'subtotal', 'shipping', 'discount', 'total'));
+}
+
 public function showCheckout() {
     $cart = [];
      

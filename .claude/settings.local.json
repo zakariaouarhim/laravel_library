@@ -9,7 +9,8 @@
       "WebFetch(domain:www.aseeralkotb.sa)",
       "Bash(find:*)",
       "Bash(del \"\\\\?\\\\c:\\\\laravel\\\\library_fokara\\\\nul\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(if not exist \"c:\\\\laravel\\\\library_fokara\\\\resources\\\\views\\\\cart\" mkdir \"c:\\\\laravel\\\\library_fokara\\\\resources\\\\views\\\\cart\")"
     ]
   }
 }
