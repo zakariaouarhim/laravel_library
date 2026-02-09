@@ -236,22 +236,42 @@ public function addProduct(Request $request)
     }
 
     try {
-        // 3. Create the object but don't save yet
+        // 3. Find or create Author
+        $authorName = trim($validated['productauthor']);
+        $author = Author::firstOrCreate(
+            ['name' => $authorName],
+            ['status' => 'active']
+        );
+
+        // 4. Find or create Publishing House
+        $publishingHouseId = null;
+        $publishingHouseName = trim($validated['ProductPublishingHouse'] ?? '');
+        if (!empty($publishingHouseName)) {
+            $publishingHouse = PublishingHouse::firstOrCreate(
+                ['name' => $publishingHouseName],
+                ['status' => 'active']
+            );
+            $publishingHouseId = $publishingHouse->id;
+        }
+
+        // 5. Create the object but don't save yet
         $product = new Book();
         $product->title = $validated['productName'];
-        $product->author = $validated['productauthor'];
+        $product->author = $authorName;
+        $product->author_id = $author->id;
         $product->price = $validated['productPrice'];
         $product->category_id = $validated['Productcategorie'];
         $product->description = $validated['productDescription'];
         $product->image = $imagePath; // Will be null or the valid path
         $product->Page_Num = $validated['productNumPages'] ?? null;
         $product->Langue = $validated['productLanguage'] ?? null;
-        $product->Publishing_House = $validated['ProductPublishingHouse'] ?? null;
+        $product->Publishing_House = $publishingHouseName ?: null;
+        $product->publishing_house_id = $publishingHouseId;
         $product->ISBN = $validated['productIsbn'] ?? null;
         $product->Quantity = $validated['productQuantity'];
         $product->api_data_status = 'pending';
 
-        // 4. FIX: Handle Algolia/Scout Crash Gracefully
+        // 6. FIX: Handle Algolia/Scout Crash Gracefully
         // We wrap save() in a specific try-catch to allow DB success even if Search fails
         try {
             $product->save();
@@ -265,6 +285,11 @@ public function addProduct(Request $request)
                 throw $e;
             }
         }
+
+        // 7. Create book_authors pivot entry
+        $product->authors()->syncWithoutDetaching([
+            $author->id => ['author_type' => 'primary']
+        ]);
 
         // 5. Enrichment Logic (Only runs if save was successful)
         $message = 'Product added successfully!';
@@ -1476,14 +1501,34 @@ public function showproduct(Request $request)
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
             ]);
             
+            // Find or create Author
+            $authorName = trim($validated['author']);
+            $author = Author::firstOrCreate(
+                ['name' => $authorName],
+                ['status' => 'active']
+            );
+
+            // Find or create Publishing House
+            $publishingHouseId = null;
+            $publishingHouseName = trim($validated['Publishing_House'] ?? '');
+            if (!empty($publishingHouseName)) {
+                $publishingHouse = PublishingHouse::firstOrCreate(
+                    ['name' => $publishingHouseName],
+                    ['status' => 'active']
+                );
+                $publishingHouseId = $publishingHouse->id;
+            }
+
             // Update basic fields
             $product->title = $validated['title'];
             $product->description = $validated['description'];
             $product->price = $validated['price'];
-            $product->author = $validated['author'];
+            $product->author = $authorName;
+            $product->author_id = $author->id;
             $product->Page_Num = $validated['Page_Num'] ?? null;
             $product->Langue = $validated['Langue'] ?? null;
-            $product->Publishing_House = $validated['Publishing_House'] ?? null;
+            $product->Publishing_House = $publishingHouseName ?: null;
+            $product->publishing_house_id = $publishingHouseId;
             $product->ISBN = $validated['ISBN'] ?? null;
             $product->Quantity = $validated['Quantity'];
         
@@ -1561,7 +1606,12 @@ public function showproduct(Request $request)
             if (!$saved) {
                 throw new \Exception('Failed to save product to database');
             }
-        
+
+            // Update book_authors pivot entry
+            $product->authors()->sync([
+                $author->id => ['author_type' => 'primary']
+            ]);
+
             \Log::info('=== UPDATE PRODUCT SUCCESS ===');
         
             // Return appropriate response based on request type

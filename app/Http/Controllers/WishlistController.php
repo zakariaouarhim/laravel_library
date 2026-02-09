@@ -191,7 +191,7 @@ class WishlistController extends Controller
     {
         try {
             $user = Auth::user();
-            $wishlist = $user->wishlist()->with(['author', 'category'])->get();
+            $wishlist = $user->wishlist()->with(['primaryAuthor', 'category'])->get();
             
             return view('wishlist.index', compact('wishlist'));
         } catch (\Exception $e) {

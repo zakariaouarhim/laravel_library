@@ -98,7 +98,7 @@
                             <li><a class="dropdown-item" href="{{ route('account.page') }}">حسابي</a></li>
                             <li><a class="dropdown-item" href="#">الطلبات</a></li>
                             <li><a class="dropdown-item" href="#">طلبات الإسترجاع</a></li>
-                            <li><a class="dropdown-item" href="#">قائمة الأمنيات</a></li>
+                            <li><a class="dropdown-item" href="{{ route('wishlist.index') }}">قائمة الأمنيات</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item text-danger" href="{{ route('logout') }}">

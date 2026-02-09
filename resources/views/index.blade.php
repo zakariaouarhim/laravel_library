@@ -7,18 +7,13 @@
     
     <!-- Bootstrap RTL CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
-
     <!-- Correct CSS linking -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/Index-searchbar.css') }}">
     <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/categories_carousel2.css') }}">
-    
-    
-    
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-
     <!-- Font Awesome -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Scheherazade+New&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -30,11 +25,9 @@
 </head>
 
 <body>
-    
         @include('header')
         @include('Index-searchbar')
-    
-    
+
     <div class="layout-indexpage ">
             
         <div id="all-books">
@@ -48,25 +41,15 @@
         <x-book-carousel :books="$EnglichBooks" title=" EnglichBooks  " />
         
     </div>
-     
-    
-    
 
-    
-
-    
     <footer>
         @include('footer')
     </footer>
-        
-    
-    
     
     <script src="{{ asset('js/scripts.js') }}"></script>
     <script src="{{ asset('js/carousel.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/Index-searchbar.js') }}"></script>
-    
     <script src="{{ asset('js/categories_carousel2.js') }}"></script>
 
 

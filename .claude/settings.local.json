@@ -6,7 +6,10 @@
       "Bash(php artisan:*)",
       "WebFetch(domain:www.livredepoche.com)",
       "WebFetch(domain:www.aseeralkotb.com)",
-      "WebFetch(domain:www.aseeralkotb.sa)"
+      "WebFetch(domain:www.aseeralkotb.sa)",
+      "Bash(find:*)",
+      "Bash(del \"\\\\?\\\\c:\\\\laravel\\\\library_fokara\\\\nul\")",
+      "Bash(git add:*)"
     ]
   }
 }
