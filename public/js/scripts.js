@@ -1,8 +1,8 @@
 function addToCart(bookId, bookTitle, bookPrice, bookImage) {
     console.log("Parameters:", { bookId, bookTitle, bookPrice, bookImage });
     
-    // Get the button element that was clicked
-    const button = event.target.closest('.add-btn');
+    // Get the button element that was clicked (supports both .add-btn and .action-btn)
+    const button = event.target.closest('.add-btn') || event.target.closest('.action-btn');
     
     fetch(`/add-to-cart/${bookId}`, {
         method: 'POST',

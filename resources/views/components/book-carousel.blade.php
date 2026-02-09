@@ -1,14 +1,41 @@
+@php
+    if (auth()->check()) {
+        $wishlistBookIds = auth()->user()->wishlist()->pluck('book_id')->toArray();
+    } else {
+        $wishlistBookIds = session()->get('wishlist', []);
+    }
+@endphp
+
 <div class="related-books" data-carousel>
     <h3>{{ $title ?? 'كتب ' }}</h3>
-    
+
     @if($books && $books->count() > 0)
         <div class="carousel-container">
             <div class="carousel-wrapper" data-carousel-wrapper>
                 @foreach($books as $book)
                 <div class="book-card">
+                    <div class="quick-actions">
+                        <button class="action-btn wishlist-btn" title="إضافة للمفضلة" onclick="toggleWishlist({{ $book->id }}, this)" data-book-id="{{ $book->id }}">
+                            <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
+                        </button>
+                        <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    </div>
+
                     <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">
                         <img src="{{ asset($book->image) }}" class="card-img-top" alt="{{ $book->title }}" loading="lazy">
                     </a>
+
+                    <div class="card-badges">
+                        @if($book->is_new ?? false)
+                            <span class="badge bg-success">جديد</span>
+                        @endif
+                        @if($book->discount ?? 0 > 0)
+                            <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
+                        @endif
+                    </div>
+
                     <h6>{{ $book->title }}</h6>
                     <p class="book-author">
                         <i class="fas fa-user-edit me-1"></i>

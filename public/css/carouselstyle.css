@@ -298,7 +298,66 @@
     background: var(--c-primary);
     transform: scale(1.2);
 }
+/*quick action*/
+.quick-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.3s ease;
+}
 
+.book-card:hover .quick-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+.action-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #007bff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: scale(1.1);
+}
+/*card-badges*/
+.card-badges {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    margin-top: -22px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 3;
+}
+
+.card-badges .badge {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 /* 5. UTILITIES & ANIMATIONS */
 .loading {
     display: flex;

@@ -21,6 +21,9 @@
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+        <meta name="auth-user" content="true">
+    @endauth
 </head>
 <body>
     @include('header')
@@ -566,6 +569,7 @@
     <script src="{{ asset('js/moredetail.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
     <script src="{{ asset('js/carousel.js') }}"></script>
+    <script src="{{ asset('js/card.js') }}"></script>
     <script src="{{ asset('js/scripts.js') }}"></script>
     
     <script>
