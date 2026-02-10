@@ -183,142 +183,16 @@ background: white;
     padding: 20px 0;
 }
 
-/* Individual Book Card */
- .book-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
+/* Card styles moved to book-card.css */
 
- .book-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #48CAE4, #ADE8F4);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-    transform-origin: right;
-}
-
- .book-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 60px rgba(0, 123, 255, 0.2);
-    border-color: #48CAE4;
-}
-
- .book-card:hover::before {
-    transform: scaleX(1);
-}
-
-/* Book Image */
- .book-card img.card-img-top {
+/* Search results grid override: cards fill full column width */
+.books-grid .book-item {
     width: 100%;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    transition: transform 0.3s ease;
 }
 
- .book-card:hover img.card-img-top {
-    transform: scale(1.05);
-}
-
-/* Book Title */
- .book-card h6 {
-    font-size: clamp(0.95rem, 2vw, 1.1rem);
-    font-weight: 700;
-    color: #03045E;
-    margin: 10px 0;
-    min-height: 48px;
-    line-height: 1.4;
-}
-
-/* Book Author */
- .book-card .book-author {
-    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-    color: #6c757d;
-    margin: 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-wrap: wrap;
-}
-
- .book-card .book-author i {
-    color: #48CAE4;
-}
-
-/* Book Publisher */
- .book-card .book-publisher {
-    font-size: clamp(0.75rem, 1.6vw, 0.85rem);
-    color: #6c757d;
-    margin: 5px 0;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-wrap: wrap;
-}
-
- .book-card .book-publisher i {
-    color: #48CAE4;
-}
-
-/* Price Section */
- .book-card .price-section {
-    margin-top: auto;
-    padding-top: 15px;
-    border-top: 1px solid #e2e8f0;
-}
-
- .book-card .price-section .text-through {
-    color: #a0aec0;
-    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-}
-
- .book-card .price-section .text-danger {
-    color: #e53e3e;
-    font-weight: 700;
-    font-size: clamp(1rem, 2.2vw, 1.2rem);
-}
-
-/* Add to Cart Button */
- .book-card .add-btn {
+.books-grid .book-item .book-card {
     width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #48CAE4, #ADE8F4);
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 10px;
-    font-size: clamp(0.85rem, 2vw, 1rem);
-}
-
- .book-card .add-btn:hover {
-    background: linear-gradient(135deg, #3ba0c4, #90E0EF);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3);
-}
-
- .book-card .add-btn i {
-    font-size: 1rem;
+    max-width: 100%;
 }
 
 /* No Results */
@@ -482,14 +356,6 @@ background: white;
         gap: 18px;
     }
 
-         .book-card {
-        padding: 15px;
-    }
-
-        .book-card img.card-img-top {
-        height: 250px;
-    }
-
          .search-info {
         padding: 15px;
     }
@@ -518,14 +384,6 @@ background: white;
         grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
         gap: 15px;
         padding: 15px 0;
-    }
-
-         .book-card img.card-img-top {
-        height: 220px;
-    }
-
-         .book-card h6 {
-        min-height: 40px;
     }
 
          .search-info {
@@ -571,18 +429,6 @@ background: white;
         gap: 12px;
     }
 
-         .book-card {
-        padding: 12px;
-    }
-
-         .book-card img.card-img-top {
-        height: 200px;
-    }
-
-        .book-card .add-btn {
-        padding: 10px;
-    }
-
          .search-info {
         padding: 12px;
         margin-bottom: 20px;
@@ -612,14 +458,6 @@ background: white;
         gap: 10px;
     }
 
-     .book-card img .card-img-top {
-        height: 180px;
-    }
-
-     .book-card h6 {
-        min-height: 36px;
-    }
-
      .search-box button i {
         display: none;
     }
@@ -640,15 +478,6 @@ background: white;
      .books-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
-    }
-
-     .book-card {
-        padding: 10px;
-    }
-
-     .book-card img .card-img-top {
-        height: 160px;
-        margin-bottom: 10px;
     }
 }
 

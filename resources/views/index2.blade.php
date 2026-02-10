@@ -6,6 +6,7 @@
     <title>مكتبة بيع الكتب</title>
     <!-- Correct CSS linking -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
     <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/Index-searchbar.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">

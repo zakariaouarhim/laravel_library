@@ -81,145 +81,34 @@
     padding-bottom: 20px;
 }
 
-/* 3. BOOK CARD COMPONENT */
-.book-card {
+/* 3. BOOK CARD - Carousel-specific overrides (base styles in book-card.css) */
+.carousel-wrapper .book-card {
     flex: 0 0 var(--card-width);
     display: flex;
     flex-direction: column;
-    position: relative;
-    background: white;
-    border-radius: var(--radius-main);
-    padding: 20px;
-    text-align: center;
-    border: 2px solid transparent;
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    transition: all 0.3s var(--ease-smooth);
 }
 
-/* Top accent border animation */
-.book-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--c-secondary), var(--c-accent-light));
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.3s ease;
-}
-
-.book-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--c-secondary);
-}
-
-.book-card:hover::before {
-    transform: scaleX(1);
-}
-
-/* Card Elements */
-.book-card img.card-img-top {
-    width: 100%;
+.carousel-wrapper .book-card img.card-img-top {
     height: var(--card-img-h);
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    transition: transform 0.3s ease;
 }
 
-.book-card:hover img.card-img-top {
-    transform: scale(1.05);
-}
-
-.book-card h6 {
-    font-size: clamp(0.95rem, 2vw, 1.1rem);
-    font-weight: 700;
-    color: var(--c-text-dark);
-    margin: 10px 0;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.4;
-}
-
-.book-card .book-author {
-    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-    color: var(--c-text-muted);
-    margin: 8px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    flex-wrap: wrap;
-    min-height: 20px;
-}
-
-.book-card .book-author i {
-    color: var(--c-secondary);
-}
-
-/* Price Section (Footer) */
-.book-card .price-section {
+.carousel-wrapper .book-card .price-section {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: auto;
     gap: 10px;
     flex-shrink: 0;
-    padding-top: 15px;
-    border-top: 1px solid var(--c-border);
 }
 
-.book-card .price-section>div {
+.carousel-wrapper .book-card .price-section>div {
     width: 100%;
     text-align: center;
 }
 
-.book-card .price-section .text-through {
-    text-decoration: line-through;
-    color: var(--c-text-muted);
-    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-}
-
-.book-card .price-section .text-danger {
-    color: #e53e3e;
-    font-weight: 700;
-    font-size: clamp(1rem, 2.2vw, 1.2rem);
-}
-
-/* Add Button (Specific Modifier) */
-.book-card .add-btn {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, var(--c-secondary), var(--c-accent-light));
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
+.carousel-wrapper .book-card .book-author {
     justify-content: center;
-    gap: 8px;
-    margin-top: 10px;
-    font-size: clamp(0.85rem, 2vw, 1rem);
-}
-
-.book-card .add-btn:hover {
-    background: linear-gradient(135deg, #3ba0c4, #90E0EF);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(72, 202, 228, 0.3);
-}
-
-.book-card .add-btn i {
-    font-size: 1rem;
+    min-height: 20px;
 }
 
 /* 4. NAVIGATION CONTROLS */
@@ -298,66 +187,7 @@
     background: var(--c-primary);
     transform: scale(1.2);
 }
-/*quick action*/
-.quick-actions {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    opacity: 0;
-    transform: translateX(10px);
-    transition: all 0.3s ease;
-}
-
-.book-card:hover .quick-actions {
-    opacity: 1;
-    transform: translateX(0);
-}
-.action-btn {
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #007bff;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.action-btn:hover {
-    background: #007bff;
-    color: white;
-    transform: scale(1.1);
-}
-/*card-badges*/
-.card-badges {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    height: 30px;
-    margin-top: -22px;
-    margin-bottom: 10px;
-    position: relative;
-    z-index: 3;
-}
-
-.card-badges .badge {
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: 12px;
-    border: 2px solid #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+/* Quick actions, action-btn, card-badges: moved to book-card.css */
 /* 5. UTILITIES & ANIMATIONS */
 .loading {
     display: flex;
@@ -458,12 +288,12 @@
         border-radius: 12px;
     }
 
-    .book-card {
+    .carousel-wrapper .book-card {
         padding: 15px;
         border-radius: 12px;
     }
 
-    .book-card h6 {
+    .carousel-wrapper .book-card h6 {
         font-size: 14px;
         min-height: 42px;
     }
@@ -490,23 +320,23 @@
         margin: 4vw 0;
     }
 
-    .book-card {
+    .carousel-wrapper .book-card {
         padding: 12px;
     }
 
-    .book-card .add-btn {
+    .carousel-wrapper .book-card .add-btn {
         width: 100%;
         height: 38px;
         padding: 0;
         gap: 0;
     }
 
-    .book-card .add-btn span,
-    .book-card .add-btn i+text {
+    .carousel-wrapper .book-card .add-btn span,
+    .carousel-wrapper .book-card .add-btn i+text {
         display: none;
     }
 
-    .book-card .add-btn i {
+    .carousel-wrapper .book-card .add-btn i {
         font-size: 1.1rem;
     }
 }
@@ -520,7 +350,7 @@
         --nav-size: 38px;
     }
 
-    .book-card .price-section {
+    .carousel-wrapper .book-card .price-section {
         flex-direction: column;
         gap: 5px;
     }

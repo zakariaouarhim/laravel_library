@@ -11,6 +11,7 @@
     <!-- Correct CSS linking -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/searchresult.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
 
     <!-- Font Awesome -->
@@ -114,121 +115,16 @@
             <div class="books-grid">
                 <!-- Books from search results -->
                 @foreach ($books as $book)
-                <div class="book-card">
-                    <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">
-                        <img src="{{ asset($book->image ?? 'images/books/default-book.png') }}" 
-                            class="card-img-top" 
-                            alt="{{ $book->title }}" 
-                            loading="lazy">
-                    </a>
-                    <h6>{{ $book->title }}</h6>
-                    
-                    <!-- Display author name from authors table -->
-                    <p class="book-author">
-                        <i class="fas fa-user-edit me-1"></i>
-                        @if($book->primaryAuthor)
-                            {{ $book->primaryAuthor->name }}
-                            @if($book->primaryAuthor->nationality)
-                                <small class="text-muted">({{ $book->primaryAuthor->nationality }})</small>
-                            @endif
-                        @elseif($book->authors->where('pivot.author_type', 'primary')->first())
-                            {{ $book->authors->where('pivot.author_type', 'primary')->first()->name }}
-                        @elseif($book->authors->isNotEmpty())
-                            {{ $book->authors->first()->name }}
-                            @if($book->authors->count() > 1)
-                                <small class="text-muted">+{{ $book->authors->count() - 1 }} مؤلف آخر</small>
-                            @endif
-                        @else
-                            <span class="text-muted">مؤلف غير محدد</span>
-                        @endif
-                    </p>
-                    
-                    <!-- Optional: Display publishing house -->
-                    @if($book->publishingHouse)
-                    <p class="book-publisher">
-                        <i class="fas fa-building me-1"></i>
-                        <small class="text-muted">{{ $book->publishingHouse->name }}</small>
-                    </p>
-                    @elseif($book->Publishing_House)
-                    <p class="book-publisher">
-                        <i class="fas fa-building me-1"></i>
-                        <small class="text-muted">{{ $book->Publishing_House }}</small>
-                    </p>
-                    @endif
-                    
-                    <div class="price-section">
-                        <div class="text-center mb-3">
-                            <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
-                                {{ $book->price + 50 }}
-                            </span>
-                            <span class="h5 mb-0 text-danger">{{ $book->price }} درهم</span>
-                        </div>
-                        <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
-                            <i class="fas fa-shopping-cart"></i>
-                        </button>
-                    </div>
-                </div>
+                    @include('partials.book-card-grid', ['book' => $book])
                 @endforeach
                 
                 <!-- Related books -->
                     
                 @if ($relatedBooks)
-                @foreach ($relatedBooks as $relatedBook)
-                <div class="book-card">
-                    <a href="{{ route('moredetail.page', ['id' => $relatedBook->id]) }}">
-                        <img src="{{ asset($relatedBook->image ?? 'images/books/default-book.png') }}" 
-                            class="card-img-top" 
-                            alt="{{ $relatedBook->title }}" 
-                            loading="lazy">
-                    </a>
-                    <h6>{{ $relatedBook->title }}</h6>
-                    
-                    <!-- Display author name from authors table -->
-                    <p class="book-author">
-                        <i class="fas fa-user-edit me-1"></i>
-                        @if($relatedBook->primaryAuthor)
-                            {{ $relatedBook->primaryAuthor->name }}
-                            @if($relatedBook->primaryAuthor->nationality)
-                                <small class="text-muted">({{ $relatedBook->primaryAuthor->nationality }})</small>
-                            @endif
-                        @elseif($relatedBook->authors->where('pivot.author_type', 'primary')->first())
-                            {{ $relatedBook->authors->where('pivot.author_type', 'primary')->first()->name }}
-                        @elseif($relatedBook->authors->isNotEmpty())
-                            {{ $relatedBook->authors->first()->name }}
-                            @if($relatedBook->authors->count() > 1)
-                                <small class="text-muted">+{{ $relatedBook->authors->count() - 1 }} مؤلف آخر</small>
-                            @endif
-                        @else
-                            <span class="text-muted">مؤلف غير محدد</span>
-                        @endif
-                    </p>
-                    
-                    <!-- Optional: Display publishing house -->
-                    @if($relatedBook->publishingHouse)
-                    <p class="book-publisher">
-                        <i class="fas fa-building me-1"></i>
-                        <small class="text-muted">{{ $relatedBook->publishingHouse->name }}</small>
-                    </p>
-                    @elseif($relatedBook->Publishing_House)
-                    <p class="book-publisher">
-                        <i class="fas fa-building me-1"></i>
-                        <small class="text-muted">{{ $relatedBook->Publishing_House }}</small>
-                    </p>
-                    @endif
-                    
-                    <div class="price-section">
-                        <div class="text-center mb-3">
-                            <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
-                                {{ $relatedBook->price + 50 }}
-                            </span>
-                            <span class="h5 mb-0 text-danger">{{ $relatedBook->price }} درهم</span>
-                        </div>
-                        <button class="add-btn" onclick="addToCart({{ $relatedBook->id }},'{{ addslashes($relatedBook->title) }}', {{ $relatedBook->price }}, '{{ addslashes($relatedBook->image) }}')">
-                            <i class="fas fa-shopping-cart"></i>
-                        </button>
-                    </div>
-                </div>
-                @endforeach @endif
+                @foreach ($relatedBooks as $book)
+                    @include('partials.book-card-grid', ['book' => $book])
+                @endforeach
+                @endif
         </div>
                 
             
@@ -301,7 +197,7 @@
         <script src="{{ asset('js/header.js') }}"></script>
         <script src="{{ asset('js/Index-searchbar.js') }}"></script>
         <script src="{{ asset('js/scripts.js') }}"></script>
-        <script src="{{ asset('js/Index-searchbar.js') }}"></script>
+        <script src="{{ asset('js/card.js') }}"></script>
    @include('footer') 
 </body>
 </html>

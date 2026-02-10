@@ -510,3 +510,15 @@
 .layout-checkout #cartToast.show {
     animation: toastInDownCheckout 0.3s;
 }
+
+/* Sticky Order Summary */
+.layout-checkout .checkout-summary-sticky {
+    position: sticky;
+    top: 80px;
+}
+
+@media (max-width: 992px) {
+    .layout-checkout .checkout-summary-sticky {
+        position: static;
+    }
+}

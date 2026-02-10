@@ -4,41 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إتمام الشراء</title>
-    
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
     <link rel="stylesheet" href="{{ asset('css/checkout.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-    
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-
     <!-- Bootstrap RTL CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    
+    <!-- Google Fonts - Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+        <meta name="auth-user" content="true">
+    @endauth
 </head>
 <body>
     @include('header')
-    <!-- Cart Toast Component -->
-    <div class="layout-checkout">
-    <div class="toast-container position-relative w-100 d-flex justify-content-start px-3">
-        <div id="cartToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-            <!-- Toast message will be inserted here -->
+
+    <!-- Hero Banner -->
+    <div class="category-hero">
+        <div class="container">
+            <div class="hero-content text-center">
+                <h1 class="hero-title"><i class="fas fa-credit-card me-2"></i> إتمام الشراء</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a href="{{ url('/') }}"><i class="fas fa-home home-icon"></i> الرئيسية</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('cart.page') }}">سلّة التسوق</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">إتمام الشراء</li>
+                    </ol>
+                </nav>
             </div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="إغلاق"></button>
-        </div>
         </div>
     </div>
-        <div class="container checkout-section py-5">
-            <!-- Main Checkout Form -->
-            <!-- Add this at the top of your form to display errors -->
+
+    <div class="layout-checkout">
+        <!-- Toast -->
+        <div class="toast-container position-relative w-100 d-flex justify-content-start px-3">
+            <div id="cartToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="إغلاق"></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container checkout-section py-4">
+            <!-- Alerts -->
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -50,15 +67,11 @@
             @endif
 
             @if (session('error'))
-                <div class="alert alert-danger">
-                    {{ session('error') }}
-                </div>
+                <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
             @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
+                <div class="alert alert-success">{{ session('success') }}</div>
             @endif
 
             <form id="checkoutForm" action="{{ route('checkout.submit') }}" method="POST">
@@ -68,47 +81,43 @@
                         <!-- Shopping Cart Section -->
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                                <h2 class="fs-5 m-0">سلة التسوق</h2>
-                                <span class="text-muted" id="countcart">{{ count($cart) }} منتجات</span>
+                                <h2 class="fs-5 m-0"><i class="fas fa-shopping-bag me-2"></i> سلة التسوق</h2>
+                                <span class="text-muted" id="countcart">{{ count($cart) }} منتج</span>
                             </div>
                             <div class="card-body" id="cartContent">
                                 @if(count($cart) > 0)
-                                <h3 class="mb-4">مراجعة الطلب</h3>
                                 <div class="cart-items">
                                     @foreach($cart as $id => $item)
                                         <div class="d-flex align-items-center mb-3 pb-3 border-bottom" id="element{{ $id }}" data-item-id="{{ $id }}">
-                                            <img src="{{ asset($item['image']) }}" 
-                                                class="img-fluid rounded me-3" 
+                                            <img src="{{ asset($item['image']) }}"
+                                                class="img-fluid rounded me-3"
                                                 style="width: 80px; height: 110px; object-fit: cover;"
-                                                onerror="this.src='{{ asset('images/placeholder-book.jpg') }}'">
+                                                onerror="this.src='{{ asset('images/book-placeholder.png') }}'">
                                             <div class="flex-grow-1">
                                                 <h3 class="fs-6 mb-1">{{ $item['title'] }}</h3>
                                                 <div class="d-flex align-items-center">
                                                     <span class="fw-bold text-primary me-3">{{ number_format($item['price'] * $item['quantity'], 2) }} ر.س</span>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="d-flex align-items-center">
                                                 <label class="me-2">الكمية:</label>
                                                 <div class="quantity-control-group">
                                                     <button type="button" class="quantity-btn quantity-decrease">-</button>
-                                                    <input type="number" 
+                                                    <input type="number"
                                                         id="quantity_{{ $id }}"
-                                                        name="display_quantity[{{ $id }}]" 
-                                                        class="quantity-input" 
-                                                        value="{{ $item['quantity'] }}" 
+                                                        name="display_quantity[{{ $id }}]"
+                                                        class="quantity-input"
+                                                        value="{{ $item['quantity'] }}"
                                                         min="1"
                                                         data-price="{{ $item['price'] }}"
                                                         readonly>
-                                                    <!-- Hidden input for form submission -->
                                                     <input type="hidden" name="cart_quantities[{{ $id }}]" value="{{ $item['quantity'] }}" class="hidden-quantity">
                                                     <button type="button" class="quantity-btn quantity-increase">+</button>
                                                 </div>
-                                                <!-- Edit and Save Buttons -->
                                                 <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-btn">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
-                                                    
                                                 <button type="button" class="delete-item-btn" title="حذف المنتج" onclick="removeFromCart2({{ $id }})">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
@@ -129,13 +138,13 @@
                         <!-- Shipping Information Section -->
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-white">
-                                <h2 class="fs-5 m-0">معلومات الشحن</h2>
+                                <h2 class="fs-5 m-0"><i class="fas fa-truck me-2"></i> معلومات الشحن</h2>
                             </div>
                             <div class="card-body">
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">الاسم الأول <span class="text-danger">*</span></label>
-                                        <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror" 
+                                        <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror"
                                             value="{{ old('first_name') }}" required>
                                         @error('first_name')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -143,7 +152,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">الاسم الأخير <span class="text-danger">*</span></label>
-                                        <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror" 
+                                        <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror"
                                             value="{{ old('last_name') }}" required>
                                         @error('last_name')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -153,7 +162,7 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
-                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
                                             value="{{ old('email') }}" required>
                                         @error('email')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -161,7 +170,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
-                                        <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror" 
+                                        <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror"
                                             pattern="[0-9]{10}" value="{{ old('phone') }}" required>
                                         @error('phone')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -170,7 +179,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">العنوان التفصيلي <span class="text-danger">*</span></label>
-                                    <textarea name="address" class="form-control @error('address') is-invalid @enderror" 
+                                    <textarea name="address" class="form-control @error('address') is-invalid @enderror"
                                             rows="3" required>{{ old('address') }}</textarea>
                                     @error('address')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -186,7 +195,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">الرمز البريدي <span class="text-danger">*</span></label>
-                                        <input type="text" name="zip_code" class="form-control @error('zip_code') is-invalid @enderror" 
+                                        <input type="text" name="zip_code" class="form-control @error('zip_code') is-invalid @enderror"
                                             pattern="[0-9]{5}" value="{{ old('zip_code') }}" required>
                                         @error('zip_code')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -199,13 +208,13 @@
                         <!-- Payment Method Section -->
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-white">
-                                <h2 class="fs-5 m-0">طريقة الدفع</h2>
+                                <h2 class="fs-5 m-0"><i class="fas fa-wallet me-2"></i> طريقة الدفع</h2>
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <div class="payment-method-card">
-                                            <input type="radio" name="payment_method" id="cashOnDelivery" value="cod" 
+                                            <input type="radio" name="payment_method" id="cashOnDelivery" value="cod"
                                                 {{ old('payment_method', 'cod') == 'cod' ? 'checked' : '' }}>
                                             <label for="cashOnDelivery" class="form-check-label">
                                                 <i class="fas fa-money-bill-wave"></i>
@@ -234,8 +243,8 @@
                                         <div class="col-12 mb-3">
                                             <label for="cardNumber" class="form-label">رقم البطاقة</label>
                                             <div class="input-group">
-                                                <input type="text" id="cardNumber" name="card_number" 
-                                                    class="form-control @error('card_number') is-invalid @enderror" 
+                                                <input type="text" id="cardNumber" name="card_number"
+                                                    class="form-control @error('card_number') is-invalid @enderror"
                                                     placeholder="1234 5678 9012 3456"
                                                     value="{{ old('card_number') }}"
                                                     data-inputmask="'mask': '9999 9999 9999 9999'">
@@ -247,8 +256,8 @@
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="expiryDate" class="form-label">تاريخ الانتهاء</label>
-                                            <input type="text" id="expiryDate" name="expiry_date" 
-                                                class="form-control @error('expiry_date') is-invalid @enderror" 
+                                            <input type="text" id="expiryDate" name="expiry_date"
+                                                class="form-control @error('expiry_date') is-invalid @enderror"
                                                 placeholder="MM/YY"
                                                 value="{{ old('expiry_date') }}"
                                                 data-inputmask="'mask': '99/99'">
@@ -258,8 +267,8 @@
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="cvv" class="form-label">CVV</label>
-                                            <input type="text" id="cvv" name="cvv" 
-                                                class="form-control @error('cvv') is-invalid @enderror" 
+                                            <input type="text" id="cvv" name="cvv"
+                                                class="form-control @error('cvv') is-invalid @enderror"
                                                 placeholder="123"
                                                 value="{{ old('cvv') }}"
                                                 data-inputmask="'mask': '999'">
@@ -273,11 +282,11 @@
                         </div>
                     </div>
 
-                    <!-- Order Summary Section -->
+                    <!-- Order Summary Section (Sticky) -->
                     <div class="col-lg-4">
-                        <div class="card shadow-sm">
+                        <div class="card shadow-sm checkout-summary-sticky">
                             <div class="card-header bg-white">
-                                <h2 class="fs-5 m-0">ملخص الطلب</h2>
+                                <h2 class="fs-5 m-0"><i class="fas fa-receipt me-2"></i> ملخص الطلب</h2>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
@@ -288,7 +297,7 @@
                                     </div>
                                     <div id="couponMessage" class="mt-2 small"></div>
                                 </div>
-                                
+
                                 <div class="order-summary">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span>المجموع الفرعي:</span>
@@ -313,9 +322,9 @@
                                     <span class="submit-text">إتمام عملية الشراء</span>
                                     <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                                 </button>
-                                
+
                                 <div class="form-check mt-3">
-                                    <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" 
+                                    <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox"
                                         id="termsCheck" name="terms" required {{ old('terms') ? 'checked' : '' }}>
                                     <label class="form-check-label small" for="termsCheck">
                                         أوافق على <a href="#">الشروط والأحكام</a>
@@ -329,15 +338,13 @@
                     </div>
                 </div>
             </form>
-
-
         </div>
     </div>
+
     @include('footer')
 
     <!-- Scripts -->
     <script>
-        // Define global routes for JavaScript
         window.routes = {
             updateCartQuantity: "{{ route('cart.update-quantity') }}"
         };
@@ -346,6 +353,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6/jquery.inputmask.min.js"></script>
     <script src="{{ asset('js/checkout.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
-    
 </body>
 </html>
