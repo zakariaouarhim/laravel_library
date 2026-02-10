@@ -237,7 +237,7 @@ class CheckoutController extends Controller
         ]);
     }
     public function trackmyorder(Request $request){
-         $input = trim($request->input('trackOrderInput'));
+        $input = trim($request->input('trackOrderInput'));
          
 
         $order = Order::where('tracking_number', $input)

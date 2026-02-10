@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CheckoutDetail;
 use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
  
 
 
@@ -117,9 +118,33 @@ class OrderController extends Controller
 
         return redirect()->route('admin.orders.index')->with('success', 'تم حذف الطلب بنجاح');
     }
-    /*public function index()
+    /**
+     * Show authenticated user's orders
+     */
+    public function myOrders(Request $request)
     {
-        return view('Dashbord_Admin.orders');
-    }*/
+        $userId = Auth::id();
+        $status = $request->input('status');
 
+        $query = Order::where('user_id', $userId)
+            ->with(['orderDetails.book', 'checkoutDetail']);
+
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $orders = $query->latest()->paginate(10)->appends($request->query());
+
+        // Count orders by status for this user
+        $statusCounts = [
+            'all'        => Order::where('user_id', $userId)->count(),
+            'pending'    => Order::where('user_id', $userId)->where('status', 'pending')->count(),
+            'processing' => Order::where('user_id', $userId)->where('status', 'processing')->count(),
+            'shipped'    => Order::where('user_id', $userId)->where('status', 'shipped')->count(),
+            'delivered'  => Order::where('user_id', $userId)->where('status', 'delivered')->count(),
+            'cancelled'  => Order::where('user_id', $userId)->where('status', 'cancelled')->count(),
+        ];
+
+        return view('my-orders', compact('orders', 'status', 'statusCounts'));
+    }
 }

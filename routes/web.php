@@ -215,6 +215,7 @@ Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideR
 
 /////////////////////////header routes
 Route::get('/account', [UserController::class, 'account'])->name('account.page');
+Route::get('/my-orders', [OrderController::class, 'myOrders'])->middleware('auth')->name('my-orders.index');
 
 ///////////category////////////
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
