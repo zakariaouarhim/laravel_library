@@ -881,41 +881,91 @@ public function addProduct(Request $request)
 public function searchResults(Request $request)
 {
     $query      = $request->input('query');
-    $filter     = $request->input('filter');
     $categoryId = $request->input('category');
+    $sort       = $request->input('sort');
 
-    $categories = Category::whereNull('parent_id')->take(13)->get();
+    $categories = Category::whereNull('parent_id')->with('children')->get();
+    $publishingHouses = PublishingHouse::active()->get();
 
     // 🔍 1. Search
     $books = $this->searchBooks2($query);
 
     // 🎛 2. Apply filters
-    $books = $this->applyFilters($books, $filter, $categoryId);
+    if ($categoryId) {
+        $books = $books->where('category_id', (int) $categoryId);
+    }
+    if ($request->filled('language')) {
+        $books = $books->where('Langue', $request->input('language'));
+    }
+    if ($request->filled('price_min')) {
+        $books = $books->where('price', '>=', (float) $request->input('price_min'));
+    }
+    if ($request->filled('price_max')) {
+        $books = $books->where('price', '<=', (float) $request->input('price_max'));
+    }
 
-    // 🔗 3. Related books 
+    // 🔀 3. Sort
+    $books = match ($sort) {
+        'newest'     => $books->sortByDesc('created_at')->values(),
+        'price_asc'  => $books->sortBy('price')->values(),
+        'price_desc' => $books->sortByDesc('price')->values(),
+        'title'      => $books->sortBy('title')->values(),
+        default      => $books->values(),
+    };
+
+    // 🔗 4. Related books
     $relatedBooks = $this->getRelatedBooks($books);
+    $totalCount = $books->count() + $relatedBooks->count();
 
-    $count_relatedBooks = $books->count() + $relatedBooks->count();
+    // 📄 5. Paginate the collection
+    $perPage = 12;
+    $page = $request->input('page', 1);
+    $paginatedBooks = new \Illuminate\Pagination\LengthAwarePaginator(
+        $books->forPage($page, $perPage)->values(),
+        $books->count(),
+        $perPage,
+        $page,
+        ['path' => $request->url(), 'query' => $request->query()]
+    );
+
+    // 🏷 6. Related categories
     $relatedCategories = collect();
-
-    // If user searched by category → get related
     if ($categoryId) {
         $relatedCategories = $this->relatedCategories($categoryId);
     }
-
-    // Fallback to popular categories
     if ($relatedCategories->isEmpty()) {
         $relatedCategories = $this->popularCategories();
     }
 
-    return view('search-results', compact(
-        'books',
-        'query',
-        'relatedBooks',
-        'count_relatedBooks',
-        'categories',
-        'relatedCategories'
-    ));
+    // 📂 7. Detect primary category from results and reorder sidebar
+    $primaryCategoryId = $books->groupBy('category_id')
+        ->sortByDesc(fn($group) => $group->count())
+        ->keys()
+        ->first();
+
+    // Find the parent category ID (in case primaryCategoryId is a child)
+    $primaryParentId = null;
+    if ($primaryCategoryId) {
+        $primaryCat = Category::find($primaryCategoryId);
+        $primaryParentId = $primaryCat?->parent_id ?? $primaryCategoryId;
+    }
+
+    // Reorder: put the primary parent category first
+    if ($primaryParentId) {
+        $categories = $categories->sortByDesc(fn($cat) => $cat->id == $primaryParentId)->values();
+    }
+
+    return view('search-results', [
+        'books'              => $paginatedBooks,
+        'allBooksCount'      => $books->count(),
+        'query'              => $query,
+        'relatedBooks'       => $relatedBooks,
+        'count_relatedBooks' => $totalCount,
+        'categories'         => $categories,
+        'relatedCategories'  => $relatedCategories,
+        'publishingHouses'   => $publishingHouses,
+        'primaryParentId'    => $primaryParentId,
+    ]);
 }
 private function searchBooks2(?string $query)
 {

@@ -4,200 +4,337 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نتائج البحث</title>
-    
-     <!-- Bootstrap RTL CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
 
-    <!-- Correct CSS linking -->
+    <!-- Bootstrap RTL CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
     <link rel="stylesheet" href="{{ asset('css/searchresult.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-
     <!-- Font Awesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Scheherazade+New&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
 </head>
-<body  style="min-height: 100vh; display: flex; flex-direction: column; margin: 0;">
+<body>
     @include('header')
-    <!-- Search Header -->
-    <div class="Layout-searchresult">
-        <div class="search-header">
-            <div class="container">
-                <div class="search-box-container">
-                    <h1 class="text-white text-center mb-4" style="font-family: 'Amiri', serif; font-size: 32px;">ابحث عن كتابك المفضل</h1>
-                    <form action="#" method="GET" class="search-box">
-                        <input 
-                            type="text" 
-                            name="query" 
-                            placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع..."
-                            oninput="searchBooksAutocomplete(this.value)"
-                            value="{{ $query }}">
-                            
-                        <button type="submit">
-                            <i class="fas fa-search"></i> بحث
-                        </button>
-                        <!-- Search Results Container for Autocomplete -->
-                        <div id="searchResults" class="search-results" style="z-index: 9999 !important;" >
-                            <!-- Search results will be inserted here dynamically -->
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
-        <!-- Results Container -->
-        <div class="results-container">
-            <!-- Search Info -->
-            <div class="search-info">
-                <div>
-                    <h2>نتائج البحث عن: <span class="results-count">"{{ $query }}"</span></h2>
-                    <p style="margin: 5px 0 0; color: #718096;">تم العثور على <strong>{{ $count_relatedBooks }} كتاب</strong></p>
-                </div>
-                <!-- FILTER FORM -->
-                <form method="GET" action="{{ route('search.results') }}"
-                    class="filter-buttons d-flex gap-2 flex-wrap">
-
-                    <!-- keep search query -->
-                    <input type="hidden" name="query" value="{{ request('query') }}">
-
-                    <!-- CATEGORY DROPDOWN -->
-                    <select name="category" class="filter-btn"
-                            onchange="this.form.submit()">
-                        <option value=""style="color:black; font-weight: 700;">كل التصنيفات</option>
-
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}"
-                                {{ request('category') == $category->id ? 'selected' : '' }} style="color:black; font-weight: 400;">
-                                *{{ $category->name }}
-                            </option>
-
-                            @foreach ($category->children as $child)
-                                <option value="{{ $child->id }}"
-                                    {{ request('category') == $child->id ? 'selected' : '' }} style="color:black">
-                                    — {{ $child->name }}
-                                </option>
-                            @endforeach
-                        @endforeach
-                    </select>
-
-                    <!-- FILTER BUTTONS -->
-                    <button type="submit"  name="filter" value=""
-                        class="filter-btn {{ !request('filter') ? 'active' : '' }}">
-                        الكل
+    <!-- Hero Banner with Search Box -->
+    <div class="search-hero">
+        <div class="container">
+            <div class="hero-content text-center">
+                <h1 class="hero-title">ابحث عن كتابك المفضل</h1>
+                <form action="{{ route('search.results') }}" method="GET" class="search-box">
+                    <input type="hidden" name="category" value="{{ request('category') }}">
+                    <input type="hidden" name="sort" value="{{ request('sort') }}">
+                    <input
+                        type="text"
+                        name="query"
+                        placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع..."
+                        oninput="searchBooksAutocomplete(this.value)"
+                        value="{{ $query }}">
+                    <button type="submit">
+                        <i class="fas fa-search"></i> بحث
                     </button>
-
-                    <button type="submit"  name="filter" value="author"
-                        class="filter-btn {{ request('filter') == 'author' ? 'active' : '' }}">
-                        المؤلف
-                    </button>
-
-                    <button type="submit" name="filter" value="price_high"
-                        class="filter-btn {{ request('filter') == 'price_high' ? 'active' : '' }}">
-                        السعر ↑
-                    </button>
-
-                    <button type="submit"  name="filter" value="price_low"
-                        class="filter-btn {{ request('filter') == 'price_low' ? 'active' : '' }}">
-                        السعر ↓
-                    </button>
-
-                </form>
-                
-            </div>
-
-            <!-- Books Grid -->
-            <div class="books-grid">
-                <!-- Books from search results -->
-                @foreach ($books as $book)
-                    @include('partials.book-card-grid', ['book' => $book])
-                @endforeach
-                
-                <!-- Related books -->
-                    
-                @if ($relatedBooks)
-                @foreach ($relatedBooks as $book)
-                    @include('partials.book-card-grid', ['book' => $book])
-                @endforeach
-                @endif
-        </div>
-                
-            
-
-            <!-- Uncomment for No Results State -->
-            @if ($count_relatedBooks==0)
-                
-            
-            <div class="no-results">
-                <div class="no-results-icon">
-                    <i class="fas fa-search"></i>
-                </div>
-                <h3>لم نعثر على نتائج</h3>
-                <p>
-                   عذراً، لم نتمكن من العثور على كتب تطابق بحثك. جرب كلمات مفتاحية أخرى أو
-                    <a href="{{ route('index.page') }}">تصفح اقتراحاتنا</a>
-                </p>
-                
-                @if ($relatedCategories->isNotEmpty())
-                <div class="suggestions">
-                    <h4>
-                        {{ request('category') ? 'تصنيفات ذات صلة:' : 'تصنيفات شائعة:' }}
-                    </h4>
-                    <div class="suggestion-tags">
-                        @foreach ($relatedCategories as $category)
-                            <a href="{{ route('by-category', ['category' => $category->id]) }}"
-                            class="suggestion-tag">
-                            {{ $category->name }}
-                            </a>
-                        @endforeach
+                    <div id="searchResults" class="search-results" style="z-index: 9999 !important;">
                     </div>
-                </div>
-                
-                @endif
-
+                </form>
+                <nav aria-label="breadcrumb" class="mt-3">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a href="{{ route('index.page') }}"><i class="fas fa-home home-icon"></i> الرئيسية</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">نتائج البحث: "{{ $query }}"</li>
+                    </ol>
+                </nav>
             </div>
-            @endif
         </div>
     </div>
-        
-        <script>
-            // Filter functionality
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
 
-            // Favorite button functionality
-            document.querySelectorAll('.btn-favorite').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const icon = this.querySelector('i');
-                    if (icon.classList.contains('far')) {
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                        this.style.background = '#fee';
-                        this.style.borderColor = '#fc8181';
-                        this.style.color = '#e53e3e';
-                    } else {
-                        icon.classList.remove('fas');
-                        icon.classList.add('far');
-                        this.style.background = '#f7fafc';
-                        this.style.borderColor = '#e2e8f0';
-                        this.style.color = '#718096';
-                    }
+    <div class="container py-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <!-- Categories Card -->
+                <div class="sidebar-card mb-4">
+                    <div class="sidebar-card-header">
+                        <h5 class="mb-0"><i class="fas fa-book-open me-2"></i>التصنيفات</h5>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div class="category-list">
+                            @foreach ($categories as $index => $category)
+                                @php
+                                    $hasChildren = $category->children->count() > 0;
+                                    $isParentActive = request('category') == $category->id;
+                                    $isChildActive = $hasChildren && $category->children->pluck('id')->contains((int) request('category'));
+                                    $isExpanded = $isParentActive || $isChildActive;
+                                @endphp
+                                <div class="category-parent {{ $index >= 7 ? 'd-none extra-category' : '' }} {{ $isParentActive ? 'active-category' : '' }}">
+                                    <div class="d-flex align-items-center category-item-row">
+                                        <a href="{{ route('search.results', array_merge(request()->query(), ['category' => $category->id, 'page' => 1])) }}" class="category-item flex-grow-1">
+                                            @if($isParentActive)
+                                                <i class="bi bi-check-circle-fill text-primary"></i>
+                                            @else
+                                                <i class="bi bi-caret-left-fill"></i>
+                                            @endif
+                                            <span class="{{ $isParentActive ? 'fw-bold text-primary' : '' }}">
+                                                {{ $category->name }}
+                                            </span>
+                                        </a>
+                                        @if($hasChildren)
+                                            <button type="button" class="category-toggle {{ $isExpanded ? '' : 'collapsed' }}"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#catChildren{{ $category->id }}"
+                                                aria-expanded="{{ $isExpanded ? 'true' : 'false' }}">
+                                                <i class="bi bi-chevron-down"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                    @if($hasChildren)
+                                        <div class="collapse {{ $isExpanded ? 'show' : '' }}" id="catChildren{{ $category->id }}">
+                                            @foreach ($category->children as $child)
+                                                <div class="category-child {{ request('category') == $child->id ? 'active-category' : '' }}">
+                                                    <a href="{{ route('search.results', array_merge(request()->query(), ['category' => $child->id, 'page' => 1])) }}" class="category-item">
+                                                        @if(request('category') == $child->id)
+                                                            <i class="bi bi-check-circle-fill text-primary"></i>
+                                                        @else
+                                                            <i class="bi bi-dash"></i>
+                                                        @endif
+                                                        <span class="{{ request('category') == $child->id ? 'fw-bold text-primary' : '' }}">
+                                                            {{ $child->name }}
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if($categories->count() > 7)
+                            <button type="button" id="showMoreCategoriesBtn" class="btn btn-link mt-2 p-0 w-100 text-center" style="font-size: 0.9rem;">
+                                <i class="fas fa-chevron-down me-1"></i> عرض المزيد
+                            </button>
+                        @endif
+
+                        @if(request('category'))
+                            <a href="{{ route('search.results', ['query' => $query]) }}" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+                                <i class="fas fa-times me-1"></i>إزالة فلتر التصنيف
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Filter Card -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>تصفية النتائج</h5>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <form method="GET" action="{{ route('search.results') }}">
+                            <input type="hidden" name="query" value="{{ $query }}">
+                            @if(request('category'))
+                                <input type="hidden" name="category" value="{{ request('category') }}">
+                            @endif
+                            @if(request('sort'))
+                                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                            @endif
+
+                            <!-- Language Filter -->
+                            <div class="filter-section">
+                                <h6 class="filter-title">اللغة</h6>
+                                <select class="form-select custom-select" name="language">
+                                    <option value="">جميع اللغات</option>
+                                    @foreach(App\Models\Book::LANGUAGES as $lang)
+                                        <option value="{{ $lang }}" {{ request('language') == $lang ? 'selected' : '' }}>
+                                            {{ App\Models\Book::LANGUAGE_LABELS[$lang] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Price Range Filter -->
+                            <div class="filter-section">
+                                <h6 class="filter-title">نطاق السعر</h6>
+                                <div class="price-range">
+                                    <div class="range-inputs mt-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text">من</span>
+                                            <input type="number" class="form-control" name="price_min"
+                                                placeholder="0" value="{{ request('price_min') }}">
+                                            <span class="input-group-text">ر.س</span>
+                                        </div>
+                                        <div class="input-group mt-2">
+                                            <span class="input-group-text">إلى</span>
+                                            <input type="number" class="form-control" name="price_max"
+                                                placeholder="1000" value="{{ request('price_max') }}">
+                                            <span class="input-group-text">ر.س</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-filter w-100">
+                                <i class="fas fa-filter me-2"></i>تطبيق الفلتر
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Content Header -->
+                <div class="content-header">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="results-count">
+                            <p>نتائج البحث عن: <strong>"{{ $query }}"</strong> — عرض <span class="fw-bold">{{ $books->count() }}</span> من <span class="fw-bold">{{ $allBooksCount }}</span> كتاب</p>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="view-options me-3">
+                                <a href="{{ request()->fullUrlWithQuery(['view' => 'grid']) }}"
+                                    class="btn btn-view {{ request('view', 'grid') == 'grid' ? 'active' : '' }}">
+                                    <i class="fas fa-th"></i>
+                                </a>
+                                <a href="{{ request()->fullUrlWithQuery(['view' => 'list']) }}"
+                                    class="btn btn-view {{ request('view') == 'list' ? 'active' : '' }}">
+                                    <i class="fas fa-list"></i>
+                                </a>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sort dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-sort me-1"></i> ترتيب حسب
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
+                                    <li><a class="dropdown-item {{ request('sort') == 'newest' ? 'active' : '' }}"
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'newest']) }}">
+                                        <i class="fas fa-calendar-alt me-2"></i>الأحدث
+                                    </a></li>
+                                    <li><a class="dropdown-item {{ request('sort') == 'price_asc' ? 'active' : '' }}"
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'price_asc']) }}">
+                                        <i class="fas fa-sort-amount-down-alt me-2"></i>السعر: من الأقل للأعلى
+                                    </a></li>
+                                    <li><a class="dropdown-item {{ request('sort') == 'price_desc' ? 'active' : '' }}"
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'price_desc']) }}">
+                                        <i class="fas fa-sort-amount-down me-2"></i>السعر: من الأعلى للأقل
+                                    </a></li>
+                                    <li><a class="dropdown-item {{ request('sort') == 'title' ? 'active' : '' }}"
+                                        href="{{ request()->fullUrlWithQuery(['sort' => 'title']) }}">
+                                        <i class="fas fa-sort-alpha-down me-2"></i>العنوان: أ-ي
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if($books->count() > 0)
+                    @php $viewMode = request('view', 'grid'); @endphp
+                    <div class="books-container {{ $viewMode === 'list' ? 'list-view' : 'grid-view' }}">
+                        @foreach ($books as $book)
+                            @if($viewMode === 'list')
+                                @include('partials.book-card-list', ['book' => $book])
+                            @else
+                                @include('partials.book-card-grid', ['book' => $book])
+                            @endif
+                        @endforeach
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav>
+                        {{ $books->links('pagination::bootstrap-4') }}
+                    </nav>
+
+                    <!-- Related Books -->
+                    @if($relatedBooks && $relatedBooks->count() > 0)
+                        <div class="related-section mt-5">
+                            <h4 class="mb-3"><i class="fas fa-book me-2"></i>كتب ذات صلة</h4>
+                            <div class="books-container grid-view">
+                                @foreach ($relatedBooks as $book)
+                                    @include('partials.book-card-grid', ['book' => $book])
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                @else
+                    <!-- No Results State -->
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-search"></i></div>
+                        <h3>لم نعثر على نتائج</h3>
+                        <p>
+                            عذراً، لم نتمكن من العثور على كتب تطابق بحثك. جرب كلمات مفتاحية أخرى أو
+                            <a href="{{ route('index.page') }}">تصفح اقتراحاتنا</a>
+                        </p>
+
+                        @if ($relatedCategories->isNotEmpty())
+                            <div class="suggestions mt-4">
+                                <h4>
+                                    {{ request('category') ? 'تصنيفات ذات صلة:' : 'تصنيفات شائعة:' }}
+                                </h4>
+                                <div class="suggestion-tags d-flex flex-wrap gap-2 justify-content-center mt-3">
+                                    @foreach ($relatedCategories as $cat)
+                                        <a href="{{ route('by-category', ['category' => $cat->id]) }}" class="btn btn-outline-primary btn-sm rounded-pill">
+                                            {{ $cat->name }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+            <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto">السلة</strong>
+                    <small class="text-muted toast-time">الآن</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="successToastMessage"></div>
+            </div>
+            <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto">إشعار</strong>
+                    <small class="text-muted toast-time">الآن</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="notificationToastMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    @include('footer')
+
+    <!-- Scripts -->
+    <script src="{{ asset('js/header.js') }}"></script>
+    <script src="{{ asset('js/Index-searchbar.js') }}"></script>
+    <script src="{{ asset('js/scripts.js') }}"></script>
+    <script src="{{ asset('js/card.js') }}"></script>
+    <script>
+        // Show more categories toggle
+        const showMoreBtn = document.getElementById('showMoreCategoriesBtn');
+        if (showMoreBtn) {
+            let expanded = false;
+            showMoreBtn.addEventListener('click', function () {
+                expanded = !expanded;
+                document.querySelectorAll('.extra-category').forEach(el => {
+                    el.classList.toggle('d-none', !expanded);
                 });
+                this.innerHTML = expanded
+                    ? '<i class="fas fa-chevron-up me-1"></i> عرض أقل'
+                    : '<i class="fas fa-chevron-down me-1"></i> عرض المزيد';
             });
-        </script>
-        <script src="{{ asset('js/header.js') }}"></script>
-        <script src="{{ asset('js/Index-searchbar.js') }}"></script>
-        <script src="{{ asset('js/scripts.js') }}"></script>
-        <script src="{{ asset('js/card.js') }}"></script>
-   @include('footer') 
+        }
+    </script>
 </body>
 </html>
