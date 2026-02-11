@@ -26,6 +26,11 @@ class Order extends Model
     {
         return $this->hasOne(CheckoutDetail::class);
     }
+    public function returnRequests()
+    {
+        return $this->hasMany(ReturnRequest::class);
+    }
+
     // Relationship with User (nullable for guest orders)
     public function user()
     {

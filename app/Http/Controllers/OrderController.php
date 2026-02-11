@@ -147,4 +147,19 @@ class OrderController extends Controller
 
         return view('my-orders', compact('orders', 'status', 'statusCounts'));
     }
+
+    /**
+     * Cancel an order (customer action)
+     */
+    public function cancelOrder(Request $request, $id)
+    {
+        $order = Order::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->whereIn('status', ['pending', 'processing'])
+            ->firstOrFail();
+
+        $order->update(['status' => 'cancelled']);
+
+        return redirect()->route('my-orders.index')->with('success', 'تم إلغاء الطلب بنجاح');
+    }
 }

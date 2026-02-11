@@ -15,6 +15,7 @@ use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PublisherController;
+use App\Http\Controllers\ReturnRequestController;
 
 use Illuminate\Http\Request;
 
@@ -216,6 +217,9 @@ Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideR
 /////////////////////////header routes
 Route::get('/account', [UserController::class, 'account'])->name('account.page');
 Route::get('/my-orders', [OrderController::class, 'myOrders'])->middleware('auth')->name('my-orders.index');
+Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->middleware('auth')->name('orders.cancel');
+Route::get('/return-requests', [ReturnRequestController::class, 'index'])->middleware('auth')->name('return-requests.index');
+Route::post('/return-requests', [ReturnRequestController::class, 'store'])->middleware('auth')->name('return-requests.store');
 
 ///////////category////////////
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');

@@ -42,6 +42,13 @@
     </div>
 
     <div class="container py-5">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <!-- Status Filter Tabs -->
         <div class="status-tabs-wrapper mb-4">
             <ul class="nav nav-pills status-tabs">
@@ -218,6 +225,22 @@
                                                 <i class="fas fa-map-marker-alt me-1"></i>تتبع الطلب
                                             </button>
                                         </form>
+                                    @endif
+
+                                    @if(in_array($order->status, ['pending', 'processing']))
+                                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="d-inline"
+                                              onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-cancel-order">
+                                                <i class="fas fa-times-circle me-1"></i>إلغاء الطلب
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    @if($order->status === 'delivered')
+                                        <a href="{{ route('return-requests.index') }}" class="btn btn-return-request">
+                                            <i class="fas fa-undo me-1"></i>طلب إسترجاع
+                                        </a>
                                     @endif
                                 </div>
                             </div>
