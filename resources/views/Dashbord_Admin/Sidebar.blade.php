@@ -47,7 +47,16 @@
                     <span class="nav-text">الطلبات</span>
                     <span class="sidebar-badge badge-destructive">{{ $pendingOrders ?? 0 }}</span>
                 </a>
-                <a href="{{ route('admin.Dashbord_Admin.product') }}" 
+                <a href="{{ route('admin.return-requests.index') }}"
+                   class="sidebar-nav-item {{ request()->routeIs('admin.return-requests.*') ? 'active' : '' }}"
+                   title="طلبات الإسترجاع">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                    </svg>
+                    <span class="nav-text">طلبات الإسترجاع</span>
+                    <span class="sidebar-badge badge-destructive">{{ $pendingReturns ?? 0 }}</span>
+                </a>
+                <a href="{{ route('admin.Dashbord_Admin.product') }}"
                    class="sidebar-nav-item {{ request()->routeIs('*product*') ? 'active' : '' }}"
                    title="المنتجات">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

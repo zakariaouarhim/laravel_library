@@ -93,4 +93,87 @@ class ReturnRequestController extends Controller
 
         return redirect()->route('return-requests.index')->with('success', 'تم إرسال طلب الإسترجاع بنجاح');
     }
+
+    /**
+     * Admin: list all return requests
+     */
+    public function adminIndex(Request $request)
+    {
+        $query = ReturnRequest::with(['order.user', 'order.orderDetails.book', 'order.checkoutDetail']);
+
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                  ->orWhere('order_id', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $returnRequests = $query->latest()->paginate(15);
+
+        $pendingCount  = ReturnRequest::where('status', 'pending')->count();
+        $approvedCount = ReturnRequest::where('status', 'approved')->count();
+        $rejectedCount = ReturnRequest::where('status', 'rejected')->count();
+        $refundedCount = ReturnRequest::where('status', 'refunded')->count();
+
+        $pendingReturns = $pendingCount;
+
+        return view('Dashbord_Admin.return_requests', compact(
+            'returnRequests',
+            'pendingCount',
+            'approvedCount',
+            'rejectedCount',
+            'refundedCount',
+            'pendingReturns'
+        ));
+    }
+
+    /**
+     * Admin: show a single return request (JSON for modal)
+     */
+    public function adminShow($id)
+    {
+        $returnRequest = ReturnRequest::with(['order.orderDetails.book', 'order.checkoutDetail', 'user'])
+            ->findOrFail($id);
+
+        return response()->json($returnRequest);
+    }
+
+    /**
+     * Admin: update return request status and notes
+     */
+    public function adminUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'status'      => 'required|in:pending,approved,rejected,refunded',
+            'admin_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $returnRequest = ReturnRequest::findOrFail($id);
+
+        $oldStatus = $returnRequest->status;
+        $newStatus = $request->status;
+
+        $returnRequest->status = $newStatus;
+        $returnRequest->admin_notes = $request->admin_notes;
+
+        if ($oldStatus === 'pending' && $newStatus !== 'pending') {
+            $returnRequest->resolved_at = now();
+        }
+
+        $returnRequest->save();
+
+        if ($newStatus === 'refunded' && $returnRequest->order) {
+            $returnRequest->order->update(['status' => 'Refunded']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث طلب الإسترجاع بنجاح',
+        ]);
+    }
 }

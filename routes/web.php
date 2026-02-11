@@ -104,6 +104,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::put('/orders/{id}', [OrderController::class, 'update'])->name('orders.update');
         Route::get('/orders/{id}/edit', [OrderController::class, 'edit'])->name('orders.edit');
         Route::post('/orders/{id}', [OrderController::class, 'store'])->name('orders.store');
+    // return requests admin:
+        Route::get('/return-requests', [ReturnRequestController::class, 'adminIndex'])->name('return-requests.index');
+        Route::get('/return-requests/{id}', [ReturnRequestController::class, 'adminShow'])->name('return-requests.show');
+        Route::put('/return-requests/{id}', [ReturnRequestController::class, 'adminUpdate'])->name('return-requests.update');
     //product blade
         //route
         Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
