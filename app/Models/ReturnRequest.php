@@ -19,6 +19,7 @@ class ReturnRequest extends Model
         'admin_notes',
         'payment_method',
         'refund_amount',
+        'guest_email',
         'resolved_at',
     ];
 

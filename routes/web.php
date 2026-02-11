@@ -16,6 +16,7 @@ use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\ReturnRequestController;
+use App\Http\Controllers\OrderManageController;
 
 use Illuminate\Http\Request;
 
@@ -173,6 +174,10 @@ Route::post('/checkout/trackmyorder', [CheckoutController::class, 'trackmyorder'
 
 Route::get('/success/{id}', [CheckoutController::class, 'success'])->name('success');
 
+// Order management via token (no auth required)
+Route::get('/order/manage', [OrderManageController::class, 'show'])->name('order.manage');
+Route::post('/order/manage/cancel', [OrderManageController::class, 'cancel'])->name('order.manage.cancel');
+Route::post('/order/manage/return', [OrderManageController::class, 'returnRequest'])->name('order.manage.return');
 
 Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart'])
     ->name('cart.remove');

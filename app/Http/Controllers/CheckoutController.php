@@ -9,7 +9,8 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Cart; 
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
@@ -109,6 +110,7 @@ class CheckoutController extends Controller
                 'billing_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
                 'payment_method' => $validated['payment_method'],
                 'tracking_number' => 'TR-' . Str::upper(Str::random(10)),
+                'management_token' => Str::random(64),
             ]);
 
             Log::info('Order record created', ['id' => $order->id]);
@@ -150,6 +152,25 @@ class CheckoutController extends Controller
 
             Log::info('Order details created');
 
+            // Send order confirmation email
+            try {
+                $order->load('orderDetails.book');
+                $customerName = $validated['first_name'] . ' ' . $validated['last_name'];
+                $manageUrl = url('/order/manage?token=' . $order->management_token);
+
+                Mail::send('emails.order-confirmation', [
+                    'order' => $order,
+                    'customerName' => $customerName,
+                    'manageUrl' => $manageUrl,
+                ], function ($message) use ($validated) {
+                    $message->to($validated['email'])->subject('تأكيد الطلب - أسير الكتب');
+                });
+
+                Log::info('Order confirmation email sent', ['email' => $validated['email']]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send order confirmation email', ['error' => $e->getMessage()]);
+            }
+
             // Clear the cart after successful order
             if (Auth::check()) {
                 // Clear database cart for authenticated users
@@ -189,8 +210,9 @@ class CheckoutController extends Controller
     public function success($orderId)
     {
         try {
-            $order = Order::with('orderDetails')->findOrFail($orderId);
-            return view('success', compact('order'));
+            $order = Order::with('orderDetails.book')->findOrFail($orderId);
+            $manageUrl = url('/order/manage?token=' . $order->management_token);
+            return view('success', compact('order', 'manageUrl'));
         } catch (\Exception $e) {
             Log::error('Success page error', ['order_id' => $orderId, 'error' => $e->getMessage()]);
             return redirect()->route('index.page')->with('error', 'الطلب غير موجود');

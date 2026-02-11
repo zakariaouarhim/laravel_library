@@ -101,6 +101,22 @@
                     </div>
                 </div>
                 
+                @if(isset($manageUrl))
+                <div class="order-card manage-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        إدارة الطلب
+                    </h2>
+                    <p style="color: #555; margin-bottom: 1rem;">يمكنك إدارة طلبك (إلغاء أو طلب إسترجاع) من خلال الرابط التالي. تم إرسال نفس الرابط إلى بريدك الإلكتروني.</p>
+                    <div class="manage-link-box">
+                        <a href="{{ $manageUrl }}" class="btn btn-custom btn-manage-custom">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            إدارة الطلب
+                        </a>
+                    </div>
+                </div>
+                @endif
+
                 <div class="action-buttons">
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                         <a href="{{ route('index.page') }}" class="btn btn-custom btn-primary-custom">

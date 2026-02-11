@@ -398,6 +398,28 @@ body {
     }
 }
 
+/* Manage Order Card */
+.manage-card {
+    border: 2px dashed #3498db;
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05), rgba(72, 202, 228, 0.05));
+}
+
+.manage-link-box {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.btn-manage-custom {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+}
+
+.btn-manage-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+    color: white;
+}
+
 @media (max-width: 768px) {
     .success-title {
         font-size: 2rem;

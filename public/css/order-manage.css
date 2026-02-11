@@ -1,0 +1,423 @@
+* {
+    font-family: 'Cairo', sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding-top: 60px;
+}
+
+.manage-container {
+    min-height: 100vh;
+    padding: 2rem 1rem;
+}
+
+.manage-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Page Header */
+.manage-header {
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.manage-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #3498db, #48CAE4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+}
+
+.manage-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.manage-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.manage-header p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+}
+
+/* Cards */
+.manage-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-title i {
+    color: #3498db;
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+}
+
+.info-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 12px;
+    border-right: 3px solid #3498db;
+}
+
+.info-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.total-price {
+    color: #27ae60;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 0.4rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+
+.status-pending {
+    background: #fef3cd;
+    color: #664d03;
+}
+
+.status-processing {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-shipped {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-delivered {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-refunded {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.status-returned {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Books List */
+.books-list {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.book-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-right: 3px solid #3498db;
+}
+
+.book-item:last-child {
+    margin-bottom: 0;
+}
+
+.book-info {
+    flex: 1;
+}
+
+.book-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.2rem;
+}
+
+.book-quantity {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+.book-price {
+    font-weight: 600;
+    color: #3498db;
+    font-size: 1.05rem;
+}
+
+/* Actions Card */
+.actions-card {
+    border: 2px solid #e9ecef;
+}
+
+.action-section {
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.action-section:last-child {
+    margin-bottom: 0;
+}
+
+.action-info h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.action-info p {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+    color: white;
+}
+
+.btn-return {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.btn-return:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
+    color: white;
+}
+
+.action-section .form-control {
+    border-radius: 10px;
+    border: 1px solid #e0e6ed;
+    font-family: 'Cairo', sans-serif;
+}
+
+.action-section .form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.active-return-notice,
+.no-actions-notice {
+    color: #0c5460;
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    padding: 1rem;
+    border-radius: 10px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Return Requests History */
+.return-item {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    border-right: 4px solid #3498db;
+}
+
+.return-item:last-child {
+    margin-bottom: 0;
+}
+
+.return-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.return-id {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 0.95rem;
+}
+
+.return-status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.ret-pending {
+    background: #fef3cd;
+    color: #664d03;
+}
+
+.ret-approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.ret-rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.ret-refunded {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.return-reason {
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.return-admin-notes {
+    background: #e8f0fe;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    border-right: 3px solid #3498db;
+}
+
+.return-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-top: 0.5rem;
+}
+
+/* Back Button */
+.btn-back {
+    background: linear-gradient(135deg, #3498db, #48CAE4);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.8rem 2.5rem;
+    font-weight: 600;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+    color: white;
+}
+
+/* Alerts */
+.alert {
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .manage-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .return-meta {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .manage-card {
+        padding: 1.5rem;
+    }
+
+    .book-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

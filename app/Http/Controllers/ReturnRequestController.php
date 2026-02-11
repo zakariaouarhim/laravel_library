@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\ReturnRequest;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class ReturnRequestController extends Controller
 {
@@ -137,7 +139,7 @@ class ReturnRequestController extends Controller
      */
     public function adminShow($id)
     {
-        $returnRequest = ReturnRequest::with(['order.orderDetails.book', 'order.checkoutDetail', 'user'])
+        $returnRequest = ReturnRequest::with(['order.user', 'order.orderDetails.book', 'order.checkoutDetail'])
             ->findOrFail($id);
 
         return response()->json($returnRequest);
@@ -169,6 +171,54 @@ class ReturnRequestController extends Controller
 
         if ($newStatus === 'refunded' && $returnRequest->order) {
             $returnRequest->order->update(['status' => 'Refunded']);
+        }
+
+        // Send status change email if status actually changed
+        if ($oldStatus !== $newStatus) {
+            try {
+                $returnRequest->load('order.checkoutDetail');
+                $order = $returnRequest->order;
+
+                // Determine customer email and name
+                $customerEmail = $returnRequest->guest_email;
+                $customerName = null;
+
+                if ($order && $order->checkoutDetail) {
+                    $customerEmail = $customerEmail ?: $order->checkoutDetail->email;
+                    $customerName = $order->checkoutDetail->first_name . ' ' . $order->checkoutDetail->last_name;
+                }
+
+                if (!$customerName && $order && $order->user) {
+                    $customerName = $order->user->name;
+                    $customerEmail = $customerEmail ?: $order->user->email;
+                }
+
+                if ($customerEmail) {
+                    $statusMap = [
+                        'pending'  => 'قيد المراجعة',
+                        'approved' => 'مقبول',
+                        'rejected' => 'مرفوض',
+                        'refunded' => 'تم الاسترداد',
+                    ];
+
+                    $manageUrl = ($order && $order->management_token)
+                        ? url('/order/manage?token=' . $order->management_token)
+                        : null;
+
+                    Mail::send('emails.return-request-status', [
+                        'returnRequest' => $returnRequest,
+                        'customerName'  => $customerName ?: 'عميلنا العزيز',
+                        'statusText'    => $statusMap[$newStatus] ?? $newStatus,
+                        'manageUrl'     => $manageUrl,
+                    ], function ($message) use ($customerEmail) {
+                        $message->to($customerEmail)->subject('تحديث طلب الإسترجاع - أسير الكتب');
+                    });
+
+                    Log::info('Return request status email sent', ['email' => $customerEmail, 'status' => $newStatus]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send return request status email', ['error' => $e->getMessage()]);
+            }
         }
 
         return response()->json([

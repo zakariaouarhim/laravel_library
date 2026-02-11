@@ -1,0 +1,190 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    direction: rtl;
+    text-align: right;
+}
+
+.email-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.header {
+    text-align: center;
+    padding: 30px 20px;
+    color: white;
+}
+
+.header.status-approved {
+    background: linear-gradient(135deg, #27ae60, #229954);
+}
+
+.header.status-rejected {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.header.status-refunded {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.header.status-pending {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.header-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.content {
+    padding: 30px 40px;
+    color: #555;
+    line-height: 1.8;
+}
+
+.content p {
+    margin: 12px 0;
+    font-size: 15px;
+}
+
+.name {
+    color: #3498db;
+    font-weight: bold;
+}
+
+.return-details {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-right: 4px solid #3498db;
+}
+
+.return-details h2 {
+    font-size: 16px;
+    color: #333;
+    margin: 0 0 15px 0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #777;
+    font-size: 14px;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.status-text.status-approved {
+    color: #27ae60;
+}
+
+.status-text.status-rejected {
+    color: #e74c3c;
+}
+
+.status-text.status-refunded {
+    color: #3498db;
+}
+
+.status-text.status-pending {
+    color: #f39c12;
+}
+
+.admin-notes {
+    background-color: #e8f0fe;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-right: 4px solid #3498db;
+}
+
+.admin-notes h2 {
+    font-size: 16px;
+    color: #333;
+    margin: 0 0 10px 0;
+}
+
+.admin-notes p {
+    font-size: 14px;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.info-box {
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.info-box.approved {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.info-box.rejected {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.info-box.refunded {
+    background-color: #cfe2ff;
+    border: 1px solid #b6d4fe;
+    color: #084298;
+}
+
+.manage-section {
+    text-align: center;
+    margin: 25px 0;
+}
+
+.manage-button {
+    margin: 15px 0;
+}
+
+.manage-button a {
+    background-color: #3498db;
+    color: white;
+    padding: 12px 35px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 15px;
+    display: inline-block;
+}
+
+.footer {
+    border-top: 2px solid #f0f0f0;
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+}

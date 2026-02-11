@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'status', 'total_price', 'shipping_address',
         'billing_address', 'payment_method', 'tracking_number',
+        'management_token',
         'customer_name',    // For guest orders
         'customer_email',   // For guest orders
         'customer_phone',   // For guest orders
