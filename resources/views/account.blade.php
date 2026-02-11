@@ -37,8 +37,26 @@
         <div class="profile-header">
             <div class="container">
                 <div class="text-center">
-                    <img src="{{ session('user_avatar') ? asset('storage/' . session('user_avatar')) : asset('images/author/user_avatar1.jpg') }}" 
+                    @auth
+                    <div class="avatar-wrapper" onclick="document.getElementById('avatarInput').click()">
+                        <img src="{{ session('user_avatar') ? asset('storage/' . session('user_avatar')) : asset('images/author/user_avatar1.jpg') }}"
+                             alt="الصورة الشخصية" class="profile-avatar" id="avatarPreview">
+                        <div class="avatar-overlay">
+                            <i class="fas fa-camera"></i>
+                            <span>تغيير الصورة</span>
+                        </div>
+                    </div>
+                    <form id="avatarForm" action="{{ route('avatar.upload') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                        @csrf
+                        <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="document.getElementById('avatarForm').submit();">
+                    </form>
+                    @else
+                    <img src="{{ asset('images/author/user_avatar1.jpg') }}"
                          alt="الصورة الشخصية" class="profile-avatar">
+                    @endauth
+                    @if($errors->has('avatar'))
+                        <div class="text-warning mt-2" style="font-size:0.85rem;">{{ $errors->first('avatar') }}</div>
+                    @endif
                     <h2>{{ session('user_name', 'المستخدم') }}</h2>
                     <p class="mb-0">{{ session('user_email', 'user@example.com') }}</p>
                     <p class="mb-0">
@@ -480,7 +498,7 @@
                         @endforeach
                         
                         <div class="text-center mt-3">
-                            <a href="#" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ route('recommendations.index') }}" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-arrow-left me-1"></i>
                                 عرض المزيد من الترشيحات
                             </a>

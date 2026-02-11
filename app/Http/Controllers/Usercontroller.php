@@ -11,6 +11,7 @@ use App\Models\PublishingHouse;
 use App\Models\Book_Review;
 use App\Models\Quote;
 use App\Models\ReadingGoal;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class Usercontroller extends Controller
 {
@@ -104,6 +107,7 @@ class Usercontroller extends Controller
                     'user_name' => $user->name,
                     'user_email' => $user->email,
                     'user_role' => $user->role,
+                    'user_avatar' => $user->avatar,
                     'is_logged_in' => true,
                     'user_updated_at' => $user->created_at->locale('ar')->translatedFormat('F Y') // Arabic month/year
                 ]);
@@ -372,7 +376,95 @@ class Usercontroller extends Controller
         return back()->with('success', 'تم تحديث هدف القراءة بنجاح');
     }
 
-   
+    public function recommendations(Request $request)
+    {
+        $userId = auth()->id();
+
+        // Get user's favorite category IDs (from reviews rated 4+)
+        $favoriteCategories = Book_Review::where('user_id', $userId)
+            ->where('rating', '>=', 4)
+            ->with('book.category')
+            ->get()
+            ->pluck('book.category.id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        // Get reviewed book IDs
+        $reviewedBookIds = Book_Review::where('user_id', $userId)
+            ->pluck('book_id')
+            ->toArray();
+
+        // Build the query
+        $query = Book::query()->with(['category', 'primaryAuthor']);
+
+        // Category filter
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->input('category'));
+        } elseif ($favoriteCategories->isNotEmpty()) {
+            // Default: show books from favorite categories
+            $query->whereIn('category_id', $favoriteCategories);
+        }
+
+        // Hide already reviewed toggle (default: hide them)
+        $hideReviewed = $request->input('hide_reviewed', '1');
+        if ($hideReviewed === '1' && !empty($reviewedBookIds)) {
+            $query->whereNotIn('id', $reviewedBookIds);
+        }
+
+        // Language filter
+        if ($request->filled('language')) {
+            $query->where('Langue', $request->input('language'));
+        }
+
+        // Price range
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $request->input('price_min'));
+        }
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $request->input('price_max'));
+        }
+
+        // Sorting
+        switch ($request->input('sort')) {
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'title':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'rating':
+                $query->withAvg('reviews', 'rating')
+                      ->orderByDesc('reviews_avg_rating');
+                break;
+            case 'newest':
+            default:
+                $query->latest();
+                break;
+        }
+
+        $books = $query->paginate(12)->appends($request->query());
+
+        // All categories for sidebar (parent categories with children)
+        $categories = Category::whereNull('parent_id')
+            ->with('children')
+            ->get();
+
+        // Wishlist for heart icons
+        $wishlistBookIds = auth()->user()->wishlist()->pluck('books.id')->toArray();
+
+        return view('recommendations', compact(
+            'books',
+            'categories',
+            'favoriteCategories',
+            'wishlistBookIds',
+            'hideReviewed'
+        ));
+    }
+
     private function getRecommendations($userId, $limit = 5)
     {
         
@@ -622,5 +714,43 @@ class Usercontroller extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,jpg,png,webp|max:2048|dimensions:max_width=2000,max_height=2000',
+        ], [
+            'avatar.required' => 'يرجى اختيار صورة',
+            'avatar.image' => 'الملف يجب أن يكون صورة',
+            'avatar.mimes' => 'الصورة يجب أن تكون بصيغة jpeg, jpg, png أو webp',
+            'avatar.max' => 'حجم الصورة يجب ألا يتجاوز 2 ميغابايت',
+            'avatar.dimensions' => 'أبعاد الصورة يجب ألا تتجاوز 2000x2000 بكسل',
+        ]);
+
+        $user = Auth::user();
+
+        // Delete old avatar if exists
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        // Read, resize and convert to WebP
+        $image = Image::read($request->file('avatar'));
+        $image->scale(width: 300);
+        $encoded = $image->toWebp(80);
+
+        // Generate unique filename and save
+        $filename = 'avatars/' . uniqid('avatar_') . '.webp';
+        Storage::disk('public')->put($filename, (string) $encoded);
+
+        // Update user record
+        $user->avatar = $filename;
+        $user->save();
+
+        // Update session
+        session(['user_avatar' => $filename]);
+
+        return redirect()->route('account.page')->with('success', 'تم تحديث الصورة الشخصية بنجاح');
     }
 }

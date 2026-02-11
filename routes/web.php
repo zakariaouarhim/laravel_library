@@ -224,11 +224,13 @@ Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideR
 
 
 /////////////////////////header routes
-Route::get('/account', [UserController::class, 'account'])->name('account.page');
+Route::get('/account', [UserController::class, 'account'])->middleware('auth')->name('account.page');
+Route::post('/account/avatar', [Usercontroller::class, 'uploadAvatar'])->middleware('auth')->name('avatar.upload');
 Route::get('/my-orders', [OrderController::class, 'myOrders'])->middleware('auth')->name('my-orders.index');
 Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->middleware('auth')->name('orders.cancel');
 Route::get('/return-requests', [ReturnRequestController::class, 'index'])->middleware('auth')->name('return-requests.index');
 Route::post('/return-requests', [ReturnRequestController::class, 'store'])->middleware('auth')->name('return-requests.store');
+Route::get('/recommendations', [Usercontroller::class, 'recommendations'])->middleware('auth')->name('recommendations.index');
 
 ///////////category////////////
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');

@@ -13,7 +13,7 @@ class UserModel extends Authenticatable
     protected $table = 'user';
     
     // Fixed the fillable fields - removed extra space and corrected 'Email' to 'email'
-    protected $fillable = ['name', 'email', 'password', 'role','created_at','updated_at'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'avatar', 'created_at', 'updated_at'];
     
     // Hide password from JSON output
     protected $hidden = ['password', 'remember_token'];
