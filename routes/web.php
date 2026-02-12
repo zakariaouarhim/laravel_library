@@ -17,6 +17,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\ReturnRequestController;
 use App\Http\Controllers\OrderManageController;
+use App\Http\Controllers\AccessoryController;
 
 use Illuminate\Http\Request;
 
@@ -246,6 +247,9 @@ Route::get('/recommendations', [Usercontroller::class, 'recommendations'])->midd
 ///////////category////////////
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/categories/{category}', [BookController::class, 'byCategory'])->name('by-category');
+
+///////////accessories////////////
+Route::get('/accessories', [AccessoryController::class, 'index'])->name('accessories.index');
 
 // Quote routes
 Route::middleware('auth')->group(function () {

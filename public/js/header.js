@@ -146,7 +146,7 @@ function searchBooksAutocomplete(query, containerId = 'searchResults') {
                     
                     html += `
                         <a href="/moredetail/${book.id}" class="list-group-item list-group-item-action d-flex align-items-center p-3">
-                            <img src="${imageUrl}" 
+                            <img src="/${imageUrl}" 
                                  alt="${book.title}" 
                                  style="width: 50px; height: 70px; object-fit: cover; margin-left: 15px; border-radius: 4px;">
                             <div class="flex-grow-1">

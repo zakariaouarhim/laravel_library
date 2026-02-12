@@ -22,6 +22,7 @@ class Book extends Model
     // Define fillable attributes
     protected $fillable = [
         'title',
+        'type',
         'author',           // Keep for backward compatibility
         'author_id',        // New primary author ID
         'description',
@@ -219,6 +220,18 @@ class Book extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    // Scope for books only
+    public function scopeBooks($query)
+    {
+        return $query->where('type', 'book');
+    }
+
+    // Scope for accessories only
+    public function scopeAccessories($query)
+    {
+        return $query->where('type', 'accessory');
     }
 
     // Check if book is in stock

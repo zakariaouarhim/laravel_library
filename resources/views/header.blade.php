@@ -47,7 +47,7 @@
                         <a class="nav-link" href="#all-books">الإصدارات الحديثة</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">المجموعات</a>
+                        <a class="nav-link" href="{{ route('accessories.index') }}">الإكسسوارات</a>
                     </li>
                 </ul>
 
