@@ -1,0 +1,325 @@
+/* =================== List View Styles =================== */
+
+.books-container.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+/* Image container - FIRST element */
+.books-container.list-view img {
+    width: 120px !important;
+    height: 160px !important;
+    min-width: 120px !important;
+    min-height: 160px !important;
+    max-width: 120px !important;
+    max-height: 160px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: transform 0.3s ease !important;
+
+    flex-shrink: 0 !important;
+}
+
+.list-view .book-card {
+    display: flex;
+    flex-direction: row;
+    height: auto;
+}
+
+.list-view .book-image-wrapper {
+    flex: 0 0 200px;
+    height: 250px;
+}
+
+.list-view .book-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.list-view .book-title,
+.list-view .book-author,
+.list-view .book-publisher {
+    height: auto;
+    max-width: 100%;
+    white-space: normal;
+}
+
+.list-view .book-actions {
+    margin-top: auto;
+}
+
+/* =================== Book List Item Styling =================== */
+.book-item.list-style {
+    background: #ffffff;
+    border: 1px solid #e8ecf1;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.book-item.list-style:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color, #2C4B79);
+}
+
+/* Book Image Styling - Specific to list style */
+.book-item.list-style img {
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.book-item.list-style:hover img {
+    transform: scale(1.05);
+}
+
+/* Book Title Styling - Specific to list style */
+.book-item.list-style h5 {
+    margin-bottom: 10px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.book-item.list-style h5 a {
+    color: var(--text-color, #2c3e50);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.book-item.list-style h5 a:hover {
+    color: var(--primary-color, #2C4B79);
+    text-decoration: underline;
+}
+
+/* Author Information - Specific to list style */
+.book-item.list-style p:first-of-type {
+    color: var(--text-light, #6c757d);
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.book-item.list-style p:first-of-type i {
+    color: var(--secondary-color, #5A84C3);
+    margin-right: 6px;
+}
+
+/* Description Text - Specific to list style */
+.book-item.list-style .text-muted {
+    color: var(--text-light, #6c757d) !important;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+/* Price Section - Specific to list style */
+.book-item.list-style .d-flex.align-items-center {
+    background: var(--accent-color, #f8f9fa);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+/* Current Price - Specific to list style */
+.book-item.list-style .fw-bold.text-primary {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(#007bff) !important;
+    margin-right: 15px;
+}
+
+/* Original Price (Strikethrough) - Specific to list style */
+.book-item.list-style del {
+    color: var(--danger-color, #dc3545) !important;
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* Add to Cart Button - Specific to list style */
+.book-item.list-style .btn-outline-primary {
+    border: 2px solid var(--primary-color, #2C4B79);
+    color: var(--primary-color, #2C4B79);
+    background: transparent;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+
+}
+
+.book-item.list-style .btn-outline-primary:hover {
+    background: var(--primary-color, #2C4B79);
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(44, 75, 121, 0.3);
+}
+
+.book-item.list-style .btn-outline-primary i {
+    margin-right: 6px;
+}
+
+/* Responsive Design - Specific to list style */
+@media (max-width: 768px) {
+    .book-item.list-style {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .book-item.list-style img {
+        width: 100px;
+        height: 130px;
+        margin-right: 0;
+        margin-bottom: 15px;
+        align-self: center;
+    }
+
+    .book-item.list-style .d-flex.align-items-center {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .book-item.list-style .fw-bold.text-primary {
+        margin-right: 0;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .book-item.list-style .btn-outline-primary {
+        margin-top: 10px;
+        margin-left: 0 !important;
+        width: 100%;
+    }
+}
+
+/* RTL Support for Arabic text - Specific to list style */
+[dir="rtl"] .book-item.list-style img {
+    margin-right: 0;
+    margin-left: 20px;
+}
+
+[dir="rtl"] .book-item.list-style p:first-of-type i {
+    margin-right: 0;
+    margin-left: 6px;
+}
+
+[dir="rtl"] .book-item.list-style .fw-bold.text-primary {
+    margin-right: 0;
+    margin-left: 15px;
+}
+
+[dir="rtl"] .book-item.list-style .btn-outline-primary i {
+    margin-right: 0;
+    margin-left: 6px;
+}
+
+/* List Style Animation */
+.book-item.list-style {
+    animation: listFadeInUp 0.5s ease-out;
+}
+
+@keyframes listFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Price Badge Effect - Specific to list style */
+.book-item.list-style .fw-bold.text-primary {
+    position: relative;
+    display: inline-block;
+}
+
+.book-item.list-style .fw-bold.text-primary::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+    border-radius: 2px;
+}
+
+/* Hover effect for the entire card - Specific to list style */
+.book-item.list-style::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(44, 75, 121, 0.05), rgba(90, 132, 195, 0.05));
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.book-item.list-style:hover::before {
+    opacity: 1;
+}
+
+/* =================== List View Container Overrides =================== */
+/* Target the specific structure in list view */
+.books-container.list-view .book-item.list-style {
+    display: flex !important;
+    align-items: flex-start !important;
+}
+
+/* The content div after image */
+.books-container.list-view .book-item.list-style>div {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+}
+
+/* The bottom div with price and button */
+.books-container.list-view .book-item.list-style .d-flex.align-items-center {
+    display: flex !important;
+    justify-content: flex-start !important;
+    /* Start from left */
+    align-items: center !important;
+    gap: 15px !important;
+    margin-top: auto !important;
+}
+
+/* Remove ms-auto effect and set fixed position */
+.books-container.list-view .book-item.list-style .btn.ms-auto {
+    margin-left: 50px !important;
+    /* Change this number to adjust position */
+
+}
+
+/* OR use this to position button at specific distance from price */
+.books-container.list-view .book-item.list-style .d-flex.align-items-center {
+    padding-left: 20px !important;
+    /* Push everything from left */
+}
+
+.books-containers.list-view .book-item.list-style .btn {
+    margin-left: 30px !important;
+    /* Exact space from price to button */
+}
+
+/* For RTL (Arabic) */
+[dir="rtl"] .books-container.list-view .book-item.list-style .btn.ms-auto {
+    margin-left: 0 !important;
+
+}
