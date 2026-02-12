@@ -65,7 +65,15 @@
                     <span class="nav-text">المنتجات</span>
                     <span class="sidebar-badge">{{ $totalProducts ?? 0 }}</span>
                 </a>
-                <a href="{{ route('admin.client.index') }}" 
+                <a href="{{ route('admin.Dashbord_Admin.accessories') }}"
+                   class="sidebar-nav-item {{ request()->routeIs('admin.*accessories*') ? 'active' : '' }}"
+                   title="الإكسسوارات">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span class="nav-text">الإكسسوارات</span>
+                </a>
+                <a href="{{ route('admin.client.index') }}"
                    class="sidebar-nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}"
                    title="الزبائن">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

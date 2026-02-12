@@ -150,6 +150,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/shipments/{shipment}', [ShipmentController::class, 'destroy'])->name('shipments.destroy');
     //management system
         Route::get('/Dashbord_Admin/ManagementSystem', [ShipmentController::class, 'showmanagement'])->name('Dashbord_Admin.ManagementSystem');
+    // accessories management
+        Route::get('/Dashbord_Admin/Accessories', [AccessoryController::class, 'adminIndex'])->name('Dashbord_Admin.accessories');
+        Route::post('/accessories', [AccessoryController::class, 'adminStore'])->name('accessories.store');
+        Route::get('/accessories/{id}', [AccessoryController::class, 'adminShow'])->name('accessories.show');
+        Route::put('/accessories/{id}', [AccessoryController::class, 'adminUpdate'])->name('accessories.update');
+        Route::delete('/accessories/{id}', [AccessoryController::class, 'adminDestroy'])->name('accessories.destroy');
     // authors management
         Route::get('/Dashbord_Admin/Authors', [AuthorController::class, 'index'])->name('Dashbord_Admin.authors');
         Route::get('/authors/api', [AuthorController::class, 'getAuthorsApi'])->name('authors.api');

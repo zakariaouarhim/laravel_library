@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Intervention\Image\Laravel\Facades\Image;
 
 class AccessoryController extends Controller
 {
+    /**
+     * Public accessories page
+     */
     public function index(Request $request)
     {
         $query = Book::accessories();
@@ -57,5 +61,162 @@ class AccessoryController extends Controller
         })->get();
 
         return view('accessories', compact('accessories', 'categories'));
+    }
+
+    /**
+     * Admin accessories list
+     */
+    public function adminIndex(Request $request)
+    {
+        $query = Book::accessories()->with('category');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        if ($request->filled('category')) {
+            $category = Category::with('children')->find($request->category);
+            if ($category) {
+                $categoryIds = collect([
+                    $category->id,
+                    ...$category->children->pluck('id')
+                ])->filter()->unique();
+                $query->whereIn('category_id', $categoryIds);
+            }
+        }
+
+        $accessories = $query->latest()->paginate(15)->withQueryString();
+
+        $categories = Category::whereNull('parent_id')->with('children')->get();
+
+        $totalAccessories = Book::accessories()->count();
+        $availableAccessories = Book::accessories()->where('Quantity', '>', 0)->count();
+        $totalCategories = Book::accessories()->distinct('category_id')->count('category_id');
+
+        return view('Dashbord_Admin.accessories', compact(
+            'accessories',
+            'totalAccessories',
+            'availableAccessories',
+            'totalCategories',
+            'categories'
+        ));
+    }
+
+    /**
+     * Store new accessory
+     */
+    public function adminStore(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0',
+            'category_id' => 'required|integer|exists:categories,id',
+            'Quantity' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        $imagePath = null;
+
+        if ($request->hasFile('image')) {
+            try {
+                $file = $request->file('image');
+                $imageName = time() . '_' . uniqid() . '.webp';
+                $destinationPath = public_path('images/accessories');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $image = Image::read($file);
+                $image->scale(width: 400);
+                $image->toWebp(80)->save($destinationPath . '/' . $imageName);
+
+                $imagePath = 'images/accessories/' . $imageName;
+            } catch (\Exception $e) {
+                \Log::error('Accessory image upload failed: ' . $e->getMessage());
+                return back()->withErrors(['image' => 'فشل رفع الصورة'])->withInput();
+            }
+        }
+
+        Book::create([
+            'title' => $validated['title'],
+            'type' => 'accessory',
+            'description' => $validated['description'],
+            'price' => $validated['price'],
+            'discount' => $validated['discount'] ?? null,
+            'category_id' => $validated['category_id'],
+            'Quantity' => $validated['Quantity'],
+            'image' => $imagePath,
+        ]);
+
+        return back()->with('success', 'تمت إضافة الإكسسوار بنجاح');
+    }
+
+    /**
+     * Show accessory details (JSON for AJAX)
+     */
+    public function adminShow($id)
+    {
+        $accessory = Book::accessories()->with('category')->findOrFail($id);
+        return response()->json($accessory);
+    }
+
+    /**
+     * Update accessory
+     */
+    public function adminUpdate(Request $request, $id)
+    {
+        $accessory = Book::accessories()->findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0',
+            'category_id' => 'required|integer|exists:categories,id',
+            'Quantity' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            try {
+                $file = $request->file('image');
+                $imageName = time() . '_' . uniqid() . '.webp';
+                $destinationPath = public_path('images/accessories');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $image = Image::read($file);
+                $image->scale(width: 400);
+                $image->toWebp(80)->save($destinationPath . '/' . $imageName);
+
+                $validated['image'] = 'images/accessories/' . $imageName;
+            } catch (\Exception $e) {
+                \Log::error('Accessory image update failed: ' . $e->getMessage());
+                return response()->json(['success' => false, 'message' => 'فشل رفع الصورة'], 500);
+            }
+        } else {
+            unset($validated['image']);
+        }
+
+        $accessory->update($validated);
+
+        return response()->json(['success' => true, 'message' => 'تم تحديث الإكسسوار بنجاح']);
+    }
+
+    /**
+     * Delete accessory
+     */
+    public function adminDestroy($id)
+    {
+        $accessory = Book::accessories()->findOrFail($id);
+        $accessory->delete();
+
+        return response()->json(['success' => true, 'message' => 'تم حذف الإكسسوار بنجاح']);
     }
 }
