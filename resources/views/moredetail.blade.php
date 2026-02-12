@@ -155,7 +155,7 @@
                             <div class="author-avatar me-3">
                                 
                                 @if(isset($book->primaryAuthor) && $book->primaryAuthor && $book->primaryAuthor->profile_image)
-                                <img src="{{ asset($book->primaryAuthor->profile_image) }}" alt="{{ $book->author }}" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                                <img src="{{ Storage::url($book->primaryAuthor->profile_image) }}" alt="{{ $book->author }}" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
                                 @else
                                     <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
                                         {{ mb_substr($book->author, 0, 1, 'UTF-8') }}

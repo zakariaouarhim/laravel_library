@@ -12,7 +12,12 @@
       "Bash(git add:*)",
       "Bash(if not exist \"c:\\\\laravel\\\\library_fokara\\\\resources\\\\views\\\\cart\" mkdir \"c:\\\\laravel\\\\library_fokara\\\\resources\\\\views\\\\cart\")",
       "Bash(grep:*)",
-      "Bash(php -r:*)"
+      "Bash(php -r:*)",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(php test_wiki_api.php:*)",
+      "Bash(php:*)",
+      "Bash(git status:*)"
     ]
   }
 }

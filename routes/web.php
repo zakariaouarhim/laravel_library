@@ -148,7 +148,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         //delete shipment 
         Route::delete('/shipments/{shipment}', [ShipmentController::class, 'destroy'])->name('shipments.destroy');
     //management system
-        Route::get('/Dashbord_Admin/ManagementSystem', [ShipmentController::class, 'showmanagement'])->name('Dashbord_Admin.ManagementSystem');    
+        Route::get('/Dashbord_Admin/ManagementSystem', [ShipmentController::class, 'showmanagement'])->name('Dashbord_Admin.ManagementSystem');
+    // authors management
+        Route::get('/Dashbord_Admin/Authors', [AuthorController::class, 'index'])->name('Dashbord_Admin.authors');
+        Route::get('/authors/api', [AuthorController::class, 'getAuthorsApi'])->name('authors.api');
+        Route::get('/authors/check-duplicates', [AuthorController::class, 'checkDuplicates'])->name('authors.check-duplicates');
+        Route::post('/authors/import-from-books', [AuthorController::class, 'importFromBooks'])->name('authors.import-from-books');
+        Route::post('/authors/resolve-duplicate', [AuthorController::class, 'resolveDuplicate'])->name('authors.resolve-duplicate');
+        Route::get('/authors/{id}', [AuthorController::class, 'show'])->name('authors.show');
+        Route::put('/authors/{id}', [AuthorController::class, 'update'])->name('authors.update');
+        Route::delete('/authors/{id}', [AuthorController::class, 'destroy'])->name('authors.destroy');
+        Route::get('/authors/{id}/preview-enrich', [AuthorController::class, 'previewEnrichment'])->name('authors.preview-enrich');
+        Route::post('/authors/{id}/apply-enrich', [AuthorController::class, 'applyEnrichment'])->name('authors.apply-enrich');
 });
 
 // Other Routes
