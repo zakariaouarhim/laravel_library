@@ -39,7 +39,10 @@
         <!-- carousel categories -->
         @include('categories_carousel2')
         <div id="popular-books">
-            <x-book-carousel :books="$popularBooks" title=" الأكثر مبيعا " />
+        <x-book-carousel :books="$popularBooks" title=" الأكثر مبيعا " />
+        </div>
+        <div id="Accessories">
+        <x-book-carousel :books="$accessories" title="  إكسسوارات القراءة " />
         </div>
         <x-book-carousel :books="$EnglichBooks" title=" EnglichBooks  " />
         

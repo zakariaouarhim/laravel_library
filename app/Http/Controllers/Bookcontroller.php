@@ -1186,8 +1186,9 @@ public function searchBooksAjax(Request $request)
                 'publishingHouse'   // Publishing house relationship
             ])
             ->get();
+        $accessories = Book::accessories()->limit(10)->get();
             
-        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons'));
+        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories'));
     }
     // Additional method to handle book creation with author assignment
     public function store(Request $request)

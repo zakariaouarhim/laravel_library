@@ -9,8 +9,6 @@
 
 <div class="book-item">
     <div class="book-card">
-        
-
         <div class="quick-actions">
             <button class="action-btn wishlist-btn" title="إضافة للمفضلة" onclick="toggleWishlist({{ $book->id }}, this)" data-book-id="{{ $book->id }}">
                 <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
@@ -35,7 +33,11 @@
         
         <div class="book-details">
             <h6><a href="{{ route('moredetail.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h6>
-            <p class="author"><i class="fas fa-user-edit"></i> {{ $book->author }}</p>
+            @if ($book->author)
+                <p class="author"><i class="fas fa-user-edit"></i> {{ $book->author }}</p>
+            @endif
+            
+
             <div class="price-section">
                 <span class="price">{{ $book->price }} <span class="currency">ر.س</span></span>
                 @if($book->original_price ?? 0 > $book->price)
