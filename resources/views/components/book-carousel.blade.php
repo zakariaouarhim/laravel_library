@@ -14,6 +14,12 @@
             <div class="carousel-wrapper" data-carousel-wrapper>
                 @foreach($books as $book)
                 <div class="book-card">
+                    <!-- Image wrapper with link - FULL WIDTH -->
+                    <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="book-image-wrapper">
+                        <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" loading="lazy">
+                    </a>
+
+                    <!-- Quick Actions on top of image -->
                     <div class="quick-actions">
                         <button class="action-btn wishlist-btn" title="إضافة للمفضلة" onclick="toggleWishlist({{ $book->id }}, this)" data-book-id="{{ $book->id }}">
                             <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
@@ -23,10 +29,7 @@
                         </button>
                     </div>
 
-                    <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">
-                        <img src="{{ asset($book->image) }}" class="card-img-top" alt="{{ $book->title }}" loading="lazy">
-                    </a>
-
+                    <!-- Badges positioned over image -->
                     <div class="card-badges">
                         @if($book->is_new ?? false)
                             <span class="badge bg-success">جديد</span>
@@ -36,18 +39,21 @@
                         @endif
                     </div>
 
+                    <!-- Card Content -->
                     <h6>{{ $book->title }}</h6>
+                    
                     <p class="book-author">
                         <i class="fas fa-user-edit me-1"></i>
                         @if($book->primaryAuthor)
-                            {{ $book->primaryAuthor->name }}
+                            <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
                             @if($book->primaryAuthor->nationality)
                                 <small class="text-muted">({{ $book->primaryAuthor->nationality }})</small>
                             @endif
                         @elseif($book->authors->where('pivot.author_type', 'primary')->first())
-                            {{ $book->authors->where('pivot.author_type', 'primary')->first()->name }}
+                            @php $pivotAuthor = $book->authors->where('pivot.author_type', 'primary')->first(); @endphp
+                            <a href="{{ route('author.show', $pivotAuthor->id) }}">{{ $pivotAuthor->name }}</a>
                         @elseif($book->authors->isNotEmpty())
-                            {{ $book->authors->first()->name }}
+                            <a href="{{ route('author.show', $book->authors->first()->id) }}">{{ $book->authors->first()->name }}</a>
                             @if($book->authors->count() > 1)
                                 <small class="text-muted">+{{ $book->authors->count() - 1 }} مؤلف آخر</small>
                             @endif
@@ -55,6 +61,7 @@
                             <span class="text-muted">مؤلف غير محدد</span>
                         @endif
                     </p>
+                    
                     <div class="price-section">
                         <div class="text-center mb-3">
                             <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
@@ -109,7 +116,3 @@
         </div>
     @endif
 </div>
-
-
-
-

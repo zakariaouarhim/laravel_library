@@ -15,6 +15,42 @@ use Illuminate\Support\Facades\DB;
 class AuthorController extends Controller
 {
     /**
+     * Public: Show author profile page
+     */
+    public function publicShow($id)
+    {
+        $author = Author::active()->findOrFail($id);
+
+        // Group books by author role (from pivot table)
+        $primaryBooks = $author->booksByType('primary')->paginate(12, ['*'], 'page');
+        $coAuthorBooks = $author->booksByType('co-author')->get();
+        $translatedBooks = $author->booksByType('translator')->get();
+        $editedBooks = $author->booksByType('editor')->get();
+        $illustratedBooks = $author->booksByType('illustrator')->get();
+
+        // Also include books linked via author_id FK that may not be in the pivot table
+        $pivotBookIds = $primaryBooks->pluck('id')
+            ->merge($coAuthorBooks->pluck('id'))
+            ->merge($translatedBooks->pluck('id'))
+            ->merge($editedBooks->pluck('id'))
+            ->merge($illustratedBooks->pluck('id'));
+
+        $primaryBooksViaFk = $author->primaryBooks()
+            ->whereNotIn('id', $pivotBookIds)
+            ->get();
+
+        return view('author', compact(
+            'author',
+            'primaryBooks',
+            'primaryBooksViaFk',
+            'coAuthorBooks',
+            'translatedBooks',
+            'editedBooks',
+            'illustratedBooks'
+        ));
+    }
+
+    /**
      * Search authors (existing - used for dropdowns)
      */
     public function search(Request $request)

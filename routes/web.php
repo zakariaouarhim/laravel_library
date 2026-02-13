@@ -257,6 +257,9 @@ Route::get('/categories/{category}', [BookController::class, 'byCategory'])->nam
 ///////////accessories////////////
 Route::get('/accessories', [AccessoryController::class, 'index'])->name('accessories.index');
 
+///////////author profile////////////
+Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('author.show');
+
 // Quote routes
 Route::middleware('auth')->group(function () {
     // Store new quote

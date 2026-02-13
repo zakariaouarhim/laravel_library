@@ -41,7 +41,13 @@
             <!-- Book Information Section -->
             <div class="col-md-7 p-4">
                 <h1 id="book-title" class="fw-bold mb-3">{{ $book->title }}</h1>
-                <p class="text-muted">{{ $book->author }}</p>
+                <p class="text-muted">
+                    @if($book->primaryAuthor)
+                        <a href="{{ route('author.show', $book->primaryAuthor->id) }}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed #6c757d;">{{ $book->primaryAuthor->name }}</a>
+                    @else
+                        {{ $book->author }}
+                    @endif
+                </p>
 
                 <div class="d-flex align-items-center mb-3">
                     <span class="fs-4 text-primary fw-bold">{{ $book->price }} ريال</span>
