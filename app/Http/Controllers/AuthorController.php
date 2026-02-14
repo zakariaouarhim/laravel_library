@@ -15,6 +15,66 @@ use Illuminate\Support\Facades\DB;
 class AuthorController extends Controller
 {
     /**
+     * Public: Browse all authors
+     */
+    public function publicIndex(Request $request)
+    {
+        $query = Author::active()->withCount('primaryBooks');
+
+        // Search
+        if ($request->filled('q')) {
+            $search = $request->input('q');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nationality', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by nationality
+        if ($request->filled('nationality')) {
+            $query->where('nationality', $request->input('nationality'));
+        }
+
+        // Letter filter (first letter of name)
+        if ($request->filled('letter')) {
+            $query->where('name', 'like', $request->input('letter') . '%');
+        }
+
+        // Sorting
+        $sort = $request->input('sort', 'name');
+        switch ($sort) {
+            case 'books':
+                $query->orderBy('primary_books_count', 'desc');
+                break;
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            default:
+                $query->orderBy('name', 'asc');
+        }
+
+        $authors = $query->paginate(24);
+
+        // Get unique nationalities for filter
+        $nationalities = Author::active()
+            ->whereNotNull('nationality')
+            ->where('nationality', '!=', '')
+            ->distinct()
+            ->pluck('nationality')
+            ->sort();
+
+        // If AJAX request, return JSON
+        if ($request->ajax()) {
+            return response()->json([
+                'authors' => $authors->items(),
+                'total' => $authors->total(),
+            ]);
+        }
+
+        return view('authors', compact('authors', 'nationalities'));
+    }
+
+    /**
      * Public: Show author profile page
      */
     public function publicShow($id)

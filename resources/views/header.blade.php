@@ -49,6 +49,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('accessories.index') }}">الإكسسوارات</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('authors.index') }}">المؤلفون</a>
+                    </li>
                 </ul>
 
                 <!-- Cart Icon -->

@@ -257,7 +257,8 @@ Route::get('/categories/{category}', [BookController::class, 'byCategory'])->nam
 ///////////accessories////////////
 Route::get('/accessories', [AccessoryController::class, 'index'])->name('accessories.index');
 
-///////////author profile////////////
+///////////authors////////////
+Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.index');
 Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('author.show');
 
 // Quote routes

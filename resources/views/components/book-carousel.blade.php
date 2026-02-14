@@ -63,12 +63,10 @@
                     </p>
                     
                     <div class="price-section">
-                        <div class="text-center mb-3">
-                            <span class="h6 mb-0 text-gray text-through mr-2" style="text-decoration:line-through">
-                                {{ $book->price + 50 }}
-                            </span>
-                            <span class="h5 mb-0 text-danger">{{ $book->price }} درهم</span>
-                        </div>
+                        <span class="price">{{ $book->price }} <span class="currency">ر.س</span></span>
+                        @if(($book->discount ?? 0) > 0)
+                            <span class="original-price">{{ round($book->price / (1 - $book->discount / 100)) }} <span class="currency">ر.س</span></span>
+                        @endif
                         <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
                             <i class="fas fa-shopping-cart"></i>
                         </button>
