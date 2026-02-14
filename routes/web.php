@@ -18,6 +18,7 @@ use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\ReturnRequestController;
 use App\Http\Controllers\OrderManageController;
 use App\Http\Controllers\AccessoryController;
+use App\Http\Controllers\PageController;
 
 use Illuminate\Http\Request;
 
@@ -260,6 +261,11 @@ Route::get('/accessories', [AccessoryController::class, 'index'])->name('accesso
 ///////////authors////////////
 Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.index');
 Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('author.show');
+
+///////////pages////////////
+Route::get('/about', [PageController::class, 'about'])->name('about.page');
+Route::get('/contact', [PageController::class, 'contact'])->name('contact.page');
+Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store');
 
 // Quote routes
 Route::middleware('auth')->group(function () {
