@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Author;
 use App\Models\Category;
+use App\Models\PublishingHouse;
 use App\Models\ContactMessage;
 
 class PageController extends Controller
@@ -61,8 +62,13 @@ class PageController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
+        $publishers = PublishingHouse::active()
+            ->select('id', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
         return response()
-            ->view('sitemap', compact('books', 'accessories', 'authors', 'categories'))
+            ->view('sitemap', compact('books', 'accessories', 'authors', 'categories', 'publishers'))
             ->header('Content-Type', 'text/xml');
     }
 }

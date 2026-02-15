@@ -262,6 +262,10 @@ Route::get('/accessories', [AccessoryController::class, 'index'])->name('accesso
 Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.index');
 Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('author.show');
 
+///////////publishers////////////
+Route::get('/publishers', [PublisherController::class, 'publicIndex'])->name('publishers.index');
+Route::get('/publisher/{id}', [PublisherController::class, 'publicShow'])->name('publisher.show');
+
 ///////////pages////////////
 Route::get('/about', [PageController::class, 'about'])->name('about.page');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact.page');

@@ -34,6 +34,7 @@
                             <li><a href="{{ route('categories.index') }}"><i class="fas fa-chevron-left"></i> التصنيفات</a></li>
                             <li><a href="{{ route('authors.index') }}"><i class="fas fa-chevron-left"></i> المؤلفون</a></li>
                             <li><a href="{{ route('accessories.index') }}"><i class="fas fa-chevron-left"></i> الإكسسوارات</a></li>
+                            <li><a href="{{ route('publishers.index') }}"><i class="fas fa-chevron-left"></i> دور النشر</a></li>
                         </ul>
                     </div>
 

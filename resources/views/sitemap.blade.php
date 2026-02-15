@@ -31,6 +31,11 @@
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
     </url>
+    <url>
+        <loc>{{ route('publishers.index') }}</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
 
     {{-- Books --}}
     @foreach($books as $book)
@@ -77,6 +82,18 @@
         @endif
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
+    </url>
+    @endforeach
+
+    {{-- Publishers --}}
+    @foreach($publishers as $publisher)
+    <url>
+        <loc>{{ route('publisher.show', $publisher->id) }}</loc>
+        @if($publisher->updated_at)
+        <lastmod>{{ $publisher->updated_at->toW3cString() }}</lastmod>
+        @endif
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
     </url>
     @endforeach
 </urlset>

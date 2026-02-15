@@ -18,7 +18,8 @@
       "Bash(php test_wiki_api.php:*)",
       "Bash(php:*)",
       "Bash(git status:*)",
-      "Bash(ls \"c:\\\\laravel\\\\library_fokara\\\\app\\\\View\\\\Composers\"\" 2>nul || echo \"Directory does not exist \")"
+      "Bash(ls \"c:\\\\laravel\\\\library_fokara\\\\app\\\\View\\\\Composers\"\" 2>nul || echo \"Directory does not exist \")",
+      "Bash(git log:*)"
     ]
   }
 }
