@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إكسسوارات القراءة</title>
+    <title>إكسسوارات القراءة - مكتبة الفقراء</title>
+    @include('partials.meta-tags', [
+        'metaTitle' => 'إكسسوارات القراءة - مكتبة الفقراء',
+        'metaDescription' => 'تسوق إكسسوارات القراءة من مكتبة الفقراء. فواصل كتب، حوامل، أضواء قراءة والمزيد.',
+    ])
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">

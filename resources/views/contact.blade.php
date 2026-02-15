@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>اتصل بنا - مكتبة الفقراء</title>
-    <meta name="description" content="تواصل مع مكتبة الفقراء. نحن هنا لمساعدتك والإجابة على جميع استفساراتك.">
+    @include('partials.meta-tags', [
+        'metaTitle' => 'اتصل بنا - مكتبة الفقراء',
+        'metaDescription' => 'تواصل مع مكتبة الفقراء. نحن هنا لمساعدتك والإجابة على جميع استفساراتك.',
+    ])
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">

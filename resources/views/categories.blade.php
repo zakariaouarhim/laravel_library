@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الأقسام</title>
+    <title>الأقسام - مكتبة الفقراء</title>
+    @include('partials.meta-tags', [
+        'metaTitle' => 'الأقسام - مكتبة الفقراء',
+        'metaDescription' => 'تصفح جميع أقسام وتصنيفات الكتب المتوفرة في مكتبة الفقراء.',
+    ])
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/categories.css') }}">

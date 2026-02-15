@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المؤلفون - مكتبة الفقراء</title>
-    <meta name="description" content="تصفح جميع المؤلفين المتوفرين في مكتبة الفقراء. اكتشف كتبهم وسيرهم الذاتية.">
+    @include('partials.meta-tags', [
+        'metaTitle' => 'المؤلفون - مكتبة الفقراء',
+        'metaDescription' => 'تصفح جميع المؤلفين المتوفرين في مكتبة الفقراء. اكتشف كتبهم وسيرهم الذاتية.',
+    ])
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">

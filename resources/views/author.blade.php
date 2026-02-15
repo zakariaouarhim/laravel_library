@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $author->name }} - مكتبة الفقراء</title>
-    <meta name="description" content="{{ Str::limit($author->biography, 160) }}">
+    @include('partials.meta-tags', [
+        'metaTitle' => $author->name . ' - مكتبة الفقراء',
+        'metaDescription' => Str::limit($author->biography ?? 'اكتشف كتب ' . $author->name . ' المتوفرة في مكتبة الفقراء', 160),
+        'metaImage' => $author->profile_image ? asset('storage/' . $author->profile_image) : asset('images/logo.svg'),
+        'metaType' => 'profile',
+        'metaUrl' => route('author.show', $author->id),
+    ])
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">

@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل الكتاب</title>
+    <title>{{ $book->title }} - مكتبة الفقراء</title>
+    @include('partials.meta-tags', [
+        'metaTitle' => $book->title . ' - مكتبة الفقراء',
+        'metaDescription' => Str::limit($book->description ?? $book->title . ' - اشترِ الآن من مكتبة الفقراء بأفضل سعر', 160),
+        'metaImage' => $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/logo.svg'),
+        'metaType' => 'product',
+        'metaUrl' => route('moredetail.page', $book->id),
+    ])
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/moredetailstyle.css') }}">

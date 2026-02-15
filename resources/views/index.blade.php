@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة بيع الكتب</title>
-    
+    <title>مكتبة الفقراء - كتب بأسعار مناسبة للجميع</title>
+    @include('partials.meta-tags', [
+        'metaTitle' => 'مكتبة الفقراء - كتب بأسعار مناسبة للجميع',
+        'metaDescription' => 'مكتبة الفقراء - متجر إلكتروني لبيع الكتب بأسعار مناسبة. اكتشف تشكيلة واسعة من الكتب العربية والمترجمة في مختلف المجالات.',
+    ])
+
     <!-- Bootstrap RTL CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
     <!-- Correct CSS linking -->

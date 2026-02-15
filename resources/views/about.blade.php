@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>من نحن - مكتبة الفقراء</title>
-    <meta name="description" content="تعرف على مكتبة الفقراء، رسالتنا وقيمنا في نشر المعرفة وتوفير الكتب بأسعار مناسبة للجميع.">
+    @include('partials.meta-tags', [
+        'metaTitle' => 'من نحن - مكتبة الفقراء',
+        'metaDescription' => 'تعرف على مكتبة الفقراء، رسالتنا وقيمنا في نشر المعرفة وتوفير الكتب بأسعار مناسبة للجميع.',
+    ])
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
