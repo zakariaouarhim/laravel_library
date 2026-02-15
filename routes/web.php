@@ -266,6 +266,7 @@ Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('autho
 Route::get('/about', [PageController::class, 'about'])->name('about.page');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact.page');
 Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store');
+Route::get('/sitemap', [PageController::class, 'sitemap'])->name('sitemap');
 
 // Quote routes
 Route::middleware('auth')->group(function () {

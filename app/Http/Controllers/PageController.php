@@ -39,4 +39,30 @@ class PageController extends Controller
 
         return back()->with('success', 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.');
     }
+
+    public function sitemap()
+    {
+        $books = Book::where('type', 'book')
+            ->select('id', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        $accessories = Book::where('type', 'accessory')
+            ->select('id', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        $authors = Author::active()
+            ->select('id', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        $categories = Category::select('id', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return response()
+            ->view('sitemap', compact('books', 'accessories', 'authors', 'categories'))
+            ->header('Content-Type', 'text/xml');
+    }
 }
