@@ -12,12 +12,29 @@ class CategoryController extends Controller
     
     public function index()
     {
-        $categorie= category::whereNull('parent_id')->with('children')->get();
+        $categorie = Category::whereNull('parent_id')
+            ->with(['children' => function ($q) {
+                $q->withCount(['books' => function ($q) {
+                    $q->where('type', 'book');
+                }]);
+            }])
+            ->withCount(['books' => function ($q) {
+                $q->where('type', 'book');
+            }])
+            ->get();
 
-    // Fetch categories with their counts
-    
-    
-    return view('categories', compact('categorie'));
+        // Calculate total books (own + children) for each parent
+        foreach ($categorie as $cat) {
+            $cat->total_books = $cat->books_count + $cat->children->sum('books_count');
+        }
+
+        // Sort by total books descending
+        $categorie = $categorie->sortByDesc('total_books')->values();
+
+        $totalBooks = Book::where('type', 'book')->count();
+        $totalCategories = Category::count();
+
+        return view('categories', compact('categorie', 'totalBooks', 'totalCategories'));
     }
     
 }
