@@ -113,7 +113,12 @@
                     </div>
                     <div class="col-sm-4">
                         <div class="p-2 border rounded">
-                            <span class="fw-bold"><i class="fas fa-building me-2"></i>دار النشر:</span> {{ $book->Publishing_House }} 
+                            <span class="fw-bold"><i class="fas fa-building me-2"></i>دار النشر:</span>
+                            @if($book->publishingHouse)
+                                <a href="{{ route('publisher.show', $book->publishing_house_id) }}" class="publisher-link">{{ $book->publishingHouse->name }}</a>
+                            @else
+                                {{ $book->Publishing_House }}
+                            @endif
                         </div>
                     </div>
                     <div class="delivery-option d-flex align-items-center">
@@ -123,7 +128,23 @@
                             <p class="mb-0 text-muted">يصلك خلال 2-5 أيام عمل</p>
                         </div>
                     </div>
-                        
+
+                    <!-- Social Sharing -->
+                    <div class="share-buttons">
+                        <span class="share-label"><i class="fas fa-share-alt"></i> مشاركة:</span>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('moredetail.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="share-btn share-facebook" title="مشاركة على فيسبوك">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?text={{ urlencode($book->title . ' - مكتبة الفقراء') }}&url={{ urlencode(route('moredetail.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="share-btn share-twitter" title="مشاركة على تويتر">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://api.whatsapp.com/send?text={{ urlencode('اطلع على هذا الكتاب: ' . $book->title . ' ' . route('moredetail.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="share-btn share-whatsapp" title="مشاركة على واتساب">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <button class="share-btn share-copy" title="نسخ الرابط" onclick="copyBookLink()">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
 
                 </div>
             </div>
@@ -578,6 +599,10 @@
         </a>
     </div>
 </x-book-carousel>
+
+@if($publisherBooks->count() > 0)
+    <x-book-carousel :books="$publisherBooks" title="المزيد من {{ $book->publishingHouse->name ?? 'دار النشر' }}" />
+@endif
 </div>    
     
     <script src="{{ asset('js/moredetail.js') }}"></script>
@@ -587,8 +612,18 @@
     <script src="{{ asset('js/scripts.js') }}"></script>
     
     <script>
-        
-    
+        function copyBookLink() {
+            navigator.clipboard.writeText(window.location.href).then(function() {
+                var btn = document.querySelector('.share-copy');
+                var icon = btn.querySelector('i');
+                icon.className = 'fas fa-check';
+                btn.title = 'تم النسخ!';
+                setTimeout(function() {
+                    icon.className = 'fas fa-link';
+                    btn.title = 'نسخ الرابط';
+                }, 2000);
+            });
+        }
 
         // Function for carousel books
         function addCarouselBookToCart(button) {

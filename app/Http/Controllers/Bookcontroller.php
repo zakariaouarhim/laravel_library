@@ -27,7 +27,7 @@ class BookController extends Controller
     public function show($id)
     {
         // Get the book with its category, category's parent, and author relationship
-        $book = Book::with(['category.parent', 'primaryAuthor'])->findOrFail($id);
+        $book = Book::with(['category.parent', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
         
         // Get all authors
         $authors = Author::active()->get();
@@ -83,6 +83,17 @@ class BookController extends Controller
                 ->get();
         }
         
+        // Get other books from the same publisher
+        $publisherBooks = collect();
+        if ($book->publishing_house_id) {
+            $publisherBooks = Book::with('primaryAuthor')
+                ->where('publishing_house_id', $book->publishing_house_id)
+                ->where('id', '!=', $book->id)
+                ->where('type', 'book')
+                ->take(10)
+                ->get();
+        }
+
         // Track recently viewed books in session
         $recentlyViewed = session()->get('recently_viewed', []);
         $recentlyViewed = array_diff($recentlyViewed, [$id]);
@@ -96,7 +107,8 @@ class BookController extends Controller
             'authors',
             'publishingHouses',
             'primaryAuthor',
-            'authorBooks'
+            'authorBooks',
+            'publisherBooks'
         ));
     }
 
