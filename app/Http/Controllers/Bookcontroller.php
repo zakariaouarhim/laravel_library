@@ -83,12 +83,19 @@ class BookController extends Controller
                 ->get();
         }
         
+        // Track recently viewed books in session
+        $recentlyViewed = session()->get('recently_viewed', []);
+        $recentlyViewed = array_diff($recentlyViewed, [$id]);
+        array_unshift($recentlyViewed, (int) $id);
+        $recentlyViewed = array_slice($recentlyViewed, 0, 10);
+        session()->put('recently_viewed', $recentlyViewed);
+
         return view('moredetail', compact(
-            'book', 
-            'relatedBooks', 
-            'authors', 
-            'publishingHouses', 
-            'primaryAuthor', 
+            'book',
+            'relatedBooks',
+            'authors',
+            'publishingHouses',
+            'primaryAuthor',
             'authorBooks'
         ));
     }
@@ -1187,8 +1194,21 @@ public function searchBooksAjax(Request $request)
             ])
             ->get();
         $accessories = Book::accessories()->limit(10)->get();
-            
-        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories'));
+
+        // Get recently viewed books from session
+        $recentlyViewedIds = session()->get('recently_viewed', []);
+        $recentlyViewed = collect();
+        if (!empty($recentlyViewedIds)) {
+            $recentlyViewed = Book::with('primaryAuthor')
+                ->whereIn('id', $recentlyViewedIds)
+                ->where('type', 'book')
+                ->get()
+                ->sortBy(function ($book) use ($recentlyViewedIds) {
+                    return array_search($book->id, $recentlyViewedIds);
+                })->values();
+        }
+
+        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed'));
     }
     // Additional method to handle book creation with author assignment
     public function store(Request $request)

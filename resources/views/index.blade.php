@@ -49,7 +49,13 @@
         <x-book-carousel :books="$accessories" title="  إكسسوارات القراءة " />
         </div>
         <x-book-carousel :books="$EnglichBooks" title=" EnglichBooks  " />
-        
+
+        @if($recentlyViewed->count() > 0)
+        <div id="recently-viewed">
+            <x-book-carousel :books="$recentlyViewed" title=" شاهدت مؤخراً " />
+        </div>
+        @endif
+
     </div>
 
     <footer>
