@@ -84,6 +84,8 @@
         </div>
     </footer>
 
+    @include('partials.cookie-consent')
+
     <!-- Back to Top Button -->
     <button id="backToTop" class="btn btn-primary rounded-circle position-fixed" aria-label="العودة للأعلى">
         <i class="fas fa-arrow-up"></i>

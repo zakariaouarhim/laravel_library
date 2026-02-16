@@ -98,7 +98,7 @@ class Usercontroller extends Controller
                 'password' => $validatedData['password']
             ];
 
-            if (Auth::attempt($credentials)) {
+            if (Auth::attempt($credentials, $requestlogin->has('remember'))) {
                 $user = Auth::user();
                 
                 // Store user info in session for backward compatibility

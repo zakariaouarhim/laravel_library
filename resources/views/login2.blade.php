@@ -64,8 +64,11 @@
                     <input type="password" class="form-control" id="loginPassword" name="password" required autocomplete="current-password">
                 </div>
                 
-                <!-- Forgot Password Link -->
-                <div class="mb-3 text-end">
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                        <label class="form-check-label small" for="remember">تذكرني</label>
+                    </div>
                     <a href="{{ route('password.request') }}" class="text-decoration-none text-primary small">هل نسيت كلمة المرور؟</a>
                 </div>
 
