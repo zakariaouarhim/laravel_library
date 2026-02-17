@@ -3,8 +3,8 @@
    ============================================ */
 :root {
     --color-primary: #5de1e6;
-    --color-primary-dark: #00695C;
-    --color-primary-darker: #004D40;
+    --color-primary-dark: #2C4B79;
+    --color-primary-darker: #1a3a5c;
     --color-accent: #48cae4;
     --color-accent-secondary: #ff8a65;
 
@@ -12,7 +12,6 @@
     --color-white-alpha-90: rgba(255, 255, 255, 0.9);
     --color-white-alpha-40: rgba(255, 255, 255, 0.4);
     --color-white-alpha-30: rgba(255, 255, 255, 0.3);
-    --color-white-alpha-20: rgba(255, 255, 255, 0.2);
 
     --color-black-alpha-10: rgba(0, 0, 0, 0.1);
     --color-black-alpha-15: rgba(0, 0, 0, 0.15);
@@ -26,7 +25,6 @@
     --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --shadow-sm: 0 4px 8px var(--color-black-alpha-20);
-    --shadow-md: 0 4px 15px var(--color-black-alpha-10);
     --shadow-lg: 0 10px 40px var(--color-black-alpha-10);
     --shadow-xl: 0 12px 40px var(--color-black-alpha-30);
 
@@ -45,18 +43,24 @@
 
 /* ============================================
    Hero Section
+   KEY FIX: flex-direction column + space-between
+   pushes search to center-top and categories to bottom
    ============================================ */
 .layout-searchbar .hero-search-section {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    background: linear-gradient(135deg, #2C4B79 0%, #1a3a5c 50%, #48CAE4 100%);
     position: relative;
-    min-height: 100vh;
-    height: 500px;
+    min-height: 420px;
+    /* reduced from 100vh so it's not full screen */
     display: flex;
     flex-direction: column;
+    /* stack children vertically */
     align-items: center;
+    /* center horizontally */
     justify-content: center;
+    /* search-container sits in the middle vertically */
     overflow: hidden;
-    padding: 40px 1rem;
+    padding: 40px 1rem 0;
+    /* NO bottom padding — categories will sit at very bottom */
 }
 
 .layout-searchbar .hero-search-section::before {
@@ -87,6 +91,7 @@
 
 /* ============================================
    Search Container
+   KEY FIX: margin-bottom pushes it up from categories
    ============================================ */
 .layout-searchbar .search-container {
     background-color: var(--color-black-alpha-20);
@@ -97,22 +102,23 @@
     position: relative;
     z-index: var(--z-index-content);
     width: 100%;
+    margin-bottom: 30px;
+    /* space between search box and categories */
 }
 
 .layout-searchbar .search-container h1 {
-    font-size: 3.5rem;
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
     font-weight: 800;
     margin-bottom: 1.5rem;
     background: linear-gradient(135deg, var(--color-white) 0%, var(--color-bg-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 2px 4px var(--color-black-alpha-10);
     animation: fadeInUp 0.8s ease-out;
 }
 
 .layout-searchbar .search-container p {
-    font-size: 1.3rem;
+    font-size: clamp(0.9rem, 2.5vw, 1.3rem);
     margin-bottom: 2rem;
     color: var(--color-white-alpha-90);
     animation: fadeInUp 0.8s ease-out 0.2s both;
@@ -126,19 +132,6 @@
 /* ============================================
    Search Box
    ============================================ */
-.search-box-container {
-    position: relative;
-    z-index: var(--z-index-search-box);
-    max-width: 100%;
-    padding: 0 15px;
-}
-
-.search-box-container h1 {
-    font-family: 'cairo',sans-serif;
-    font-size: clamp(24px, 5vw, 32px);
-    margin-bottom: 20px;
-}
-
 .search-box {
     max-width: 700px;
     margin: 0 auto;
@@ -147,8 +140,7 @@
     width: 100%;
 }
 
-.search-box input,
-.layout-searchbar .search-container .form-control {
+.search-box input {
     width: 100%;
     padding: 18px 140px 18px 25px;
     background: var(--color-white-alpha-90);
@@ -161,8 +153,7 @@
     box-sizing: border-box;
 }
 
-.search-box input:focus,
-.layout-searchbar .search-container .form-control:focus {
+.search-box input:focus {
     outline: none;
     background: rgba(255, 255, 255, 0.95);
     border-color: var(--color-accent);
@@ -189,7 +180,7 @@
 
 .search-box button:hover {
     transform: translateY(-50%) scale(1.05);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 20px rgba(44, 75, 121, 0.4);
 }
 
 /* ============================================
@@ -197,34 +188,32 @@
    ============================================ */
 .search-results {
     display: none;
-    position: absolute !important;
-    top: calc(100% + 5px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    background-color: var(--color-white) !important;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: var(--color-white);
     color: black;
     border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-xl) !important;
+    box-shadow: var(--shadow-xl);
     text-align: right;
     max-height: 400px;
     overflow-y: auto;
-    z-index: var(--z-index-dropdown) !important;
+    z-index: var(--z-index-dropdown);
 }
 
 .search-results .list-group-item {
     border: none;
     border-bottom: 1px solid var(--color-border-light);
     padding: 12px 15px;
-    background-color: var(--color-white) !important;
+    background-color: var(--color-white);
     cursor: pointer;
     transition: background-color 0.2s ease;
-    position: relative;
-    z-index: var(--z-index-dropdown-item) !important;
 }
 
 .search-results .list-group-item:hover {
-    background-color: var(--color-bg-light) !important;
+    background-color: var(--color-bg-light);
 }
 
 .search-results .list-group-item:last-child {
@@ -234,14 +223,18 @@
 
 /* ============================================
    Category Buttons
+   KEY FIX: removed negative margin, sits naturally
+   at the bottom of the hero with mt-auto to push down
    ============================================ */
 .layout-searchbar .categories-wrapper {
     width: 80%;
     max-width: 1000px;
-    margin: -50px auto 30px;
-    padding: 0 20px;
+    padding: 15px 20px;
     position: relative;
     z-index: var(--z-index-category);
+    /* sits at the bottom of the hero */
+    margin-top: auto;
+    width: 100%;
 }
 
 .layout-searchbar .category-rows {
@@ -267,7 +260,6 @@
     font-weight: 600;
     cursor: pointer;
     text-align: center;
-    text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -301,21 +293,8 @@
     box-shadow: 0 6px 12px var(--color-black-alpha-30);
 }
 
-.layout-searchbar .category-btn.featured {
-    background-color: var(--color-primary);
-    padding: 12px 20px;
-    font-size: 1rem;
-    min-width: 160px;
-}
-
 .layout-searchbar .category-btn.small {
     background-color: var(--color-primary-dark);
-}
-
-.layout-searchbar .category-icon {
-    margin-right: 5px;
-    font-weight: bold;
-    color: var(--color-accent-secondary);
 }
 
 /* ============================================
@@ -349,85 +328,29 @@
    Responsive Design
    ============================================ */
 
-/* Large Desktop and Above - 1920px+ (Original design) */
-@media (min-width: 1920px) {
-    .layout-searchbar .hero-search-section {
-        height: 500px;
-        padding: 60px 20px;
-    }
-
-    .layout-searchbar .search-container h1 {
-        font-size: 3.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .layout-searchbar .search-container p {
-        font-size: 1.3rem;
-        margin-bottom: 2rem;
-    }
-
-    .search-box input {
-        padding: 18px 140px 18px 25px;
-        font-size: 1.1rem;
-    }
-
-    .search-box button {
-        padding: 12px 25px;
-        font-size: 15px;
-    }
-}
-
-/* Desktop - 1024px to 1919px (Original design) */
-@media (min-width: 1024px) and (max-width: 1919px) {
-    .layout-searchbar .hero-search-section {
-        height: 500px;
-        padding: 40px 20px;
-    }
-
-    .layout-searchbar .categories-wrapper {
-        width: 80%;
-        max-width: 1000px;
-        margin: -50px auto 30px;
-    }
-}
-
-/* Tablet - 768px to 1023px */
+/* Tablet — up to 1023px */
 @media (max-width: 1023px) {
     .layout-searchbar .hero-search-section {
-        height: auto;
-        min-height: 70vh;
-        padding: 30px 1rem;
+        min-height: 380px;
+        padding: 30px 1rem 0;
     }
 
     .layout-searchbar .search-container {
         padding: 20px 15px;
+        margin-bottom: 25px;
     }
 
-    .layout-searchbar .search-container h1 {
-        font-size: clamp(2rem, 5vw, 2.8rem);
-        margin-bottom: 1rem;
-    }
-
-    .layout-searchbar .search-container p {
-        font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-        margin-bottom: 1.5rem;
-    }
-
-    .search-box input,
-    .layout-searchbar .search-container .form-control {
+    .search-box input {
         padding: 14px 110px 14px 18px;
-        font-size: clamp(13px, 2.2vw, 1rem);
     }
 
     .search-box button {
         padding: 10px 18px;
-        font-size: clamp(12px, 1.8vw, 14px);
     }
 
     .layout-searchbar .categories-wrapper {
-        width: 90%;
-        margin: -40px auto 25px;
-        padding: 0 10px;
+        width: 100%;
+        padding: 12px 10px;
     }
 
     .layout-searchbar .category-btn {
@@ -440,57 +363,33 @@
     .search-results {
         max-height: 350px;
     }
-
-    .search-results .list-group-item {
-        padding: 10px 12px;
-        font-size: 0.95rem;
-    }
 }
 
-/* Large Mobile - 576px to 767px */
+/* Mobile — up to 767px */
 @media (max-width: 767px) {
     .layout-searchbar .hero-search-section {
-        height: auto;
-        min-height: 60vh;
-        padding: 25px 1rem;
+        min-height: 340px;
+        padding: 25px 1rem 0;
     }
 
     .layout-searchbar .search-container {
         padding: 18px 12px;
+        margin-bottom: 20px;
     }
 
-    .layout-searchbar .search-container h1 {
-        font-size: clamp(1.5rem, 5vw, 2.2rem);
-        margin-bottom: 0.8rem;
-    }
-
-    .layout-searchbar .search-container p {
-        font-size: clamp(0.9rem, 2.2vw, 1rem);
-        margin-bottom: 1.2rem;
-    }
-
-    .search-box {
-        width: 100%;
-    }
-
-    .search-box input,
-    .layout-searchbar .search-container .form-control {
+    .search-box input {
         padding: 13px 100px 13px 16px;
-        font-size: clamp(13px, 2vw, 0.95rem);
         border-radius: 25px;
     }
 
     .search-box button {
         left: 8px;
         padding: 9px 15px;
-        font-size: clamp(11px, 1.8vw, 13px);
         border-radius: 20px;
     }
 
     .layout-searchbar .categories-wrapper {
-        width: 95%;
-        margin: -35px auto 20px;
-        padding: 0 8px;
+        padding: 10px 8px;
     }
 
     .layout-searchbar .category-btn {
@@ -505,45 +404,27 @@
         max-height: 300px;
         border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
     }
-
-    .search-results .list-group-item {
-        padding: 10px 12px;
-        font-size: 0.9rem;
-    }
 }
 
-/* Small Mobile - 480px to 575px */
+/* Small mobile — up to 575px */
 @media (max-width: 575px) {
     .layout-searchbar .hero-search-section {
-        height: auto;
-        min-height: 55vh;
-        padding: 20px 0.75rem;
+        min-height: 300px;
+        padding: 20px 0.75rem 0;
     }
 
     .layout-searchbar .search-container {
         padding: 15px 10px;
+        margin-bottom: 15px;
     }
 
-    .layout-searchbar .search-container h1 {
-        font-size: clamp(1.2rem, 5vw, 1.8rem);
-        margin-bottom: 0.6rem;
-    }
-
-    .layout-searchbar .search-container p {
-        font-size: clamp(0.85rem, 2vw, 0.95rem);
-        margin-bottom: 1rem;
-    }
-
-    .search-box input,
-    .layout-searchbar .search-container .form-control {
+    .search-box input {
         padding: 12px 90px 12px 15px;
-        font-size: 0.9rem;
     }
 
     .search-box button {
         left: 7px;
         padding: 8px 12px;
-        font-size: 12px;
     }
 
     .search-box button i {
@@ -551,9 +432,7 @@
     }
 
     .layout-searchbar .categories-wrapper {
-        width: 98%;
-        margin: -30px auto 18px;
-        padding: 0 5px;
+        padding: 8px 5px;
     }
 
     .layout-searchbar .category-row {
@@ -570,108 +449,22 @@
 
     .search-results {
         max-height: 250px;
-        font-size: 0.85rem;
-    }
-
-    .search-results .list-group-item {
-        padding: 8px 10px;
-        font-size: 0.85rem;
     }
 }
 
-/* Extra Small Mobile - Below 480px */
-@media (max-width: 479px) {
-    .layout-searchbar .hero-search-section {
-        height: auto;
-        min-height: 50vh;
-        padding: 18px 0.5rem;
-    }
-
-    .layout-searchbar .search-container {
-        padding: 12px 8px;
-    }
-
-    .layout-searchbar .search-container h1 {
-        font-size: clamp(1rem, 4.5vw, 1.5rem);
-        margin-bottom: 0.5rem;
-    }
-
-    .layout-searchbar .search-container p {
-        font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-        margin-bottom: 0.8rem;
-    }
-
-    .search-box input,
-    .layout-searchbar .search-container .form-control {
-        padding: 11px 85px 11px 14px;
-        font-size: 0.85rem;
-    }
-
-    .search-box button {
-        left: 6px;
-        padding: 7px 10px;
-        font-size: 11px;
-    }
-
-    .layout-searchbar .categories-wrapper {
-        width: 100%;
-        margin: -25px auto 15px;
-        padding: 0 5px;
-    }
-
-    .layout-searchbar .category-row {
-        gap: 6px;
-    }
-
-    .layout-searchbar .category-btn {
-        min-width: 75px;
-        max-width: 140px;
-        padding: 6px 6px;
-        font-size: 0.65rem;
-        flex: 0 1 calc(50% - 3px);
-    }
-
-    .search-results {
-        max-height: 220px;
-        font-size: 0.8rem;
-    }
-
-    .search-results .list-group-item {
-        padding: 7px 9px;
-        font-size: 0.8rem;
-    }
-}
-
-/* Landscape Orientation - Mobile */
+/* Landscape mobile */
 @media (max-height: 500px) and (orientation: landscape) {
     .layout-searchbar .hero-search-section {
-        height: auto;
         min-height: auto;
-        padding: 15px 1rem;
-    }
-
-    .layout-searchbar .search-container h1 {
-        font-size: clamp(1.2rem, 4vw, 1.8rem);
-        margin-bottom: 0.5rem;
-    }
-
-    .layout-searchbar .search-container p {
-        font-size: 0.9rem;
-        margin-bottom: 0.8rem;
+        padding: 15px 1rem 0;
     }
 
     .search-box input {
         padding: 12px 90px 12px 15px;
-        font-size: 0.9rem;
     }
 
     .search-box button {
         padding: 8px 12px;
-        font-size: 12px;
-    }
-
-    .layout-searchbar .categories-wrapper {
-        margin: -25px auto 15px;
     }
 
     .layout-searchbar .category-btn {
