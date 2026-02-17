@@ -1,12 +1,3 @@
-@php
-    // Get wishlist items for current user or session
-    if (auth()->check()) {
-        $wishlistBookIds = auth()->user()->wishlist()->pluck('book_id')->toArray();
-    } else {
-        $wishlistBookIds = session()->get('wishlist', []);
-    }
-@endphp
-
 <div class="book-item">
     <div class="book-card">
         <div class="quick-actions">
@@ -19,7 +10,7 @@
         </div>
 
         <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="book-image-wrapper">
-            <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}">
+            <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" loading="lazy">
         </a>
 
         <div class="card-badges">

@@ -1,36 +1,388 @@
+/* ===== Reset & Base ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    background-color: #f8f9fa;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    min-height: 100vh;
+    background: #f0f2f5;
+    overflow-x: hidden;
 }
 
-.form-container {
-    max-width: 400px;
-    margin: auto;
-    margin-top: 40px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+/* ===== Main Wrapper ===== */
+.login-wrapper {
+    display: flex;
+    min-height: 100vh;
 }
 
-.logo-container {
+/* ===== Left Banner Panel ===== */
+.login-banner {
+    flex: 0 0 45%;
+    background: linear-gradient(135deg, #2C4B79 0%, #48CAE4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.login-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -30%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.banner-content {
+    position: relative;
+    z-index: 1;
     text-align: center;
-    margin-bottom: 20px;
+    padding: 40px;
+    animation: fadeInUp 0.8s ease-out;
 }
 
-.logo-container img {
-    max-width: 250px;
+.banner-logo {
+    max-width: 220px;
+    height: auto;
+    filter: brightness(0) invert(1);
+    margin-bottom: 30px;
+}
+
+.banner-title {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.banner-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+}
+
+.banner-decoration {
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.15);
+    animation: float 3s ease-in-out infinite;
+}
+
+/* ===== Right Form Panel ===== */
+.login-form-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 60px;
+    background: #fff;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* ===== Mobile Logo (hidden on desktop) ===== */
+.mobile-logo {
+    display: none;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.mobile-logo img {
+    max-width: 180px;
     height: auto;
 }
 
-.form-title {
-    text-align: center;
-    font-size: 1.5rem;
+/* ===== Tab Buttons ===== */
+.form-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 30px;
+    background: #f0f2f5;
+    border-radius: 12px;
+    padding: 5px;
+}
+
+.form-tab {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.form-tab:hover {
+    color: #2C4B79;
+}
+
+.form-tab.active {
+    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(44, 75, 121, 0.3);
+}
+
+.form-tab i {
+    font-size: 0.9rem;
+}
+
+/* ===== Form Styles ===== */
+.auth-form {
+    max-width: 420px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ===== Custom Input Group ===== */
+.input-group-custom {
+    position: relative;
     margin-bottom: 20px;
 }
 
-.toggle-link {
-    text-align: center;
-    margin-top: 15px;
+.input-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2C4B79;
+    font-size: 0.9rem;
+    z-index: 2;
+    pointer-events: none;
 }
 
+.input-group-custom .form-control {
+    padding: 14px 45px 14px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    text-align: right;
+}
+
+.input-group-custom .form-control:focus {
+    border-color: #48CAE4;
+    box-shadow: 0 0 0 3px rgba(72, 202, 228, 0.15);
+    background: #fff;
+    outline: none;
+}
+
+.input-group-custom .form-control::placeholder {
+    color: #adb5bd;
+}
+
+/* ===== Password Toggle ===== */
+.password-toggle {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #adb5bd;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    color: #2C4B79;
+}
+
+/* ===== Form Options (Remember + Forgot) ===== */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.form-options .form-check-label {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.form-options .form-check-input {
+    border-color: #2C4B79;
+}
+
+.form-options .form-check-input:checked {
+    background-color: #2C4B79;
+    border-color: #2C4B79;
+}
+
+.forgot-link {
+    font-size: 0.9rem;
+    color: #2C4B79;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.forgot-link:hover {
+    color: #48CAE4;
+}
+
+/* ===== Submit Button ===== */
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(44, 75, 121, 0.25);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44, 75, 121, 0.35);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+.btn-submit-register {
+    background: linear-gradient(135deg, #198754, #20c997);
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.25);
+}
+
+.btn-submit-register:hover {
+    box-shadow: 0 6px 20px rgba(25, 135, 84, 0.35);
+}
+
+/* ===== Back to Home ===== */
+.back-home {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.back-home a {
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.back-home a:hover {
+    color: #2C4B79;
+}
+
+/* ===== Alerts ===== */
+.auth-form .alert,
+.login-form-panel > .alert {
+    border-radius: 10px;
+    font-size: 0.9rem;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* Form transition */
+.auth-form {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 992px) {
+    .login-banner {
+        display: none;
+    }
+
+    .mobile-logo {
+        display: block;
+    }
+
+    .login-form-panel {
+        padding: 30px 25px;
+    }
+
+    .login-wrapper {
+        background: #fff;
+    }
+}
+
+@media (max-width: 576px) {
+    .form-tabs {
+        margin-bottom: 20px;
+    }
+
+    .form-tab {
+        padding: 10px 15px;
+        font-size: 0.85rem;
+    }
+
+    .input-group-custom .form-control {
+        padding: 12px 40px 12px 40px;
+        font-size: 0.9rem;
+    }
+
+    .btn-submit {
+        padding: 12px;
+    }
+
+    .form-options {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}

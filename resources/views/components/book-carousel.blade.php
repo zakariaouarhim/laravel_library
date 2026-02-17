@@ -1,11 +1,3 @@
-@php
-    if (auth()->check()) {
-        $wishlistBookIds = auth()->user()->wishlist()->pluck('book_id')->toArray();
-    } else {
-        $wishlistBookIds = session()->get('wishlist', []);
-    }
-@endphp
-
 <div class="related-books" data-carousel>
     <h3>{{ $title ?? 'كتب ' }}</h3>
 

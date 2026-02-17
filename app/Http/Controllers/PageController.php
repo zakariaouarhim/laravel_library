@@ -8,16 +8,19 @@ use App\Models\Author;
 use App\Models\Category;
 use App\Models\PublishingHouse;
 use App\Models\ContactMessage;
+use Illuminate\Support\Facades\Cache;
 
 class PageController extends Controller
 {
     public function about()
     {
-        $stats = [
-            'books' => Book::where('type', 'book')->count(),
-            'authors' => Author::active()->count(),
-            'categories' => Category::count(),
-        ];
+        $stats = Cache::remember('about_stats', 3600, function () {
+            return [
+                'books' => Book::where('type', 'book')->count(),
+                'authors' => Author::active()->count(),
+                'categories' => Category::count(),
+            ];
+        });
 
         return view('about', compact('stats'));
     }
@@ -43,32 +46,32 @@ class PageController extends Controller
 
     public function sitemap()
     {
-        $books = Book::where('type', 'book')
-            ->select('id', 'updated_at')
-            ->orderBy('updated_at', 'desc')
-            ->get();
-
-        $accessories = Book::where('type', 'accessory')
-            ->select('id', 'updated_at')
-            ->orderBy('updated_at', 'desc')
-            ->get();
-
-        $authors = Author::active()
-            ->select('id', 'updated_at')
-            ->orderBy('updated_at', 'desc')
-            ->get();
-
-        $categories = Category::select('id', 'updated_at')
-            ->orderBy('updated_at', 'desc')
-            ->get();
-
-        $publishers = PublishingHouse::active()
-            ->select('id', 'updated_at')
-            ->orderBy('updated_at', 'desc')
-            ->get();
+        $sitemapData = Cache::remember('sitemap_data', 3600, function () {
+            return [
+                'books' => Book::where('type', 'book')
+                    ->select('id', 'updated_at')
+                    ->orderBy('updated_at', 'desc')
+                    ->get(),
+                'accessories' => Book::where('type', 'accessory')
+                    ->select('id', 'updated_at')
+                    ->orderBy('updated_at', 'desc')
+                    ->get(),
+                'authors' => Author::active()
+                    ->select('id', 'updated_at')
+                    ->orderBy('updated_at', 'desc')
+                    ->get(),
+                'categories' => Category::select('id', 'updated_at')
+                    ->orderBy('updated_at', 'desc')
+                    ->get(),
+                'publishers' => PublishingHouse::active()
+                    ->select('id', 'updated_at')
+                    ->orderBy('updated_at', 'desc')
+                    ->get(),
+            ];
+        });
 
         return response()
-            ->view('sitemap', compact('books', 'accessories', 'authors', 'categories', 'publishers'))
+            ->view('sitemap', $sitemapData)
             ->header('Content-Type', 'text/xml');
     }
 }

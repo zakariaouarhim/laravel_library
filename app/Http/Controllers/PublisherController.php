@@ -80,7 +80,7 @@ class PublisherController extends Controller
             $q->where('type', 'book');
         }])->findOrFail($id);
 
-        $books = $publisher->books()->where('type', 'book')->paginate(12);
+        $books = $publisher->books()->where('type', 'book')->with('primaryAuthor')->paginate(12);
 
         return view('publisher', compact('publisher', 'books'));
     }

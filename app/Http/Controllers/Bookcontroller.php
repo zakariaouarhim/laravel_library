@@ -12,6 +12,7 @@ use App\Models\Category;
 use App\Services\BookService;
 use App\Services\APIService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class BookController extends Controller
 {
@@ -865,28 +866,24 @@ public function addProduct(Request $request)
                         ->orWhere('ISBN', 'LIKE', "%{$query}%")
                         ->get();
             
-            // If no results, try n-gram approach
+            // If no results, try n-gram approach with DB query
             if ($books->isEmpty()) {
                 $tokens = [];
                 for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
                     $tokens[] = mb_substr($query, $i, 3);
                 }
-                
-                $allBooks = Book::all();
-                $matchingBooks = $allBooks->filter(function($book) use ($tokens) {
-                    $matchCount = 0;
-                    foreach ($tokens as $token) {
-                        if (mb_stripos($book->title, $token) !== false || 
-                            mb_stripos($book->author, $token) !== false) {
-                            $matchCount++;
+
+                if (!empty($tokens)) {
+                    $ngramQuery = Book::where(function ($q) use ($tokens) {
+                        foreach ($tokens as $token) {
+                            $q->orWhere('title', 'LIKE', "%{$token}%")
+                              ->orWhere('author', 'LIKE', "%{$token}%");
                         }
-                    }
-                    return $matchCount >= count($tokens) * 0.5;
-                })->take(10);
-                
-                $books = $matchingBooks->values();
+                    })->take(10)->get();
+                    $books = $ngramQuery;
+                }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'books' => $books
@@ -1011,20 +1008,16 @@ private function smartFallbackSearch(string $query)
         $tokens[] = mb_substr($query, $i, 3);
     }
 
-    return Book::all()->filter(function ($book) use ($tokens) {
-        $matchCount = 0;
+    if (empty($tokens)) {
+        return collect();
+    }
 
+    return Book::where(function ($q) use ($tokens) {
         foreach ($tokens as $token) {
-            if (
-                mb_stripos($book->title, $token) !== false ||
-                mb_stripos($book->author, $token) !== false
-            ) {
-                $matchCount++;
-            }
+            $q->orWhere('title', 'LIKE', "%{$token}%")
+              ->orWhere('author', 'LIKE', "%{$token}%");
         }
-
-        return $matchCount >= count($tokens) * 0.5;
-    })->values();
+    })->take(20)->get();
 }
 private function applyFilters($books, ?string $filter, ?int $categoryId)
 {
@@ -1136,19 +1129,14 @@ public function searchBooksAjax(Request $request)
                 $tokens[] = mb_substr($query, $i, 3);
             }
             
-            $allBooks = Book::all();
-            $matchingBooks = $allBooks->filter(function($book) use ($tokens) {
-                $matchCount = 0;
-                foreach ($tokens as $token) {
-                    if (mb_stripos($book->title, $token) !== false || 
-                        mb_stripos($book->author, $token) !== false) {
-                        $matchCount++;
+            if (!empty($tokens)) {
+                $books = Book::where(function ($q) use ($tokens) {
+                    foreach ($tokens as $token) {
+                        $q->orWhere('title', 'LIKE', "%{$token}%")
+                          ->orWhere('author', 'LIKE', "%{$token}%");
                     }
-                }
-                return $matchCount >= count($tokens) * 0.5;
-            })->take(5);
-            
-            $books = $matchingBooks->values();
+                })->take(5)->get();
+            }
         }
         
         return response()->json([
@@ -1177,25 +1165,33 @@ public function searchBooksAjax(Request $request)
             'publishingHouse',      // Load publishing house
             'category'              // Load category
         ])->get();
-        $popularBooks = Book::select(
-            'books.*',
-            DB::raw('COUNT(order_details.book_id) as orders_count')
-        )
-        ->join('order_details', 'books.id', '=', 'order_details.book_id')
-        ->groupBy('books.id')
-        ->orderByDesc('orders_count')
-        ->limit(10)
-        ->get();
-        // Get categories with children
-        $categorie = Category::whereNull('parent_id')
-            ->with('children')
-            ->take(13)
+        $popularBooks = Cache::remember('popular_books', 1800, function () {
+            return Book::select(
+                'books.*',
+                DB::raw('COUNT(order_details.book_id) as orders_count')
+            )
+            ->join('order_details', 'books.id', '=', 'order_details.book_id')
+            ->groupBy('books.id')
+            ->orderByDesc('orders_count')
+            ->with(['primaryAuthor', 'authors'])
+            ->limit(10)
             ->get();
-        
-        $categorieIcons = Category::withIcons()
-                            ->inRandomOrder()
-                            ->limit(12)
-                            ->get();
+        });
+
+        // Get categories with children
+        $categorie = Cache::remember('nav_categories', 3600, function () {
+            return Category::whereNull('parent_id')
+                ->with('children')
+                ->take(13)
+                ->get();
+        });
+
+        $categorieIcons = Cache::remember('category_icons', 3600, function () {
+            return Category::withIcons()
+                ->inRandomOrder()
+                ->limit(12)
+                ->get();
+        });
 
         // Get English books with relationships
         $EnglichBooks = Book::where('Langue', 'English')
@@ -1205,7 +1201,7 @@ public function searchBooksAjax(Request $request)
                 'publishingHouse'   // Publishing house relationship
             ])
             ->get();
-        $accessories = Book::accessories()->limit(10)->get();
+        $accessories = Book::accessories()->with('primaryAuthor')->limit(10)->get();
 
         // Get recently viewed books from session
         $recentlyViewedIds = session()->get('recently_viewed', []);
@@ -1353,7 +1349,7 @@ public function searchBooksAjax(Request $request)
         }
         
         // Final result with pagination
-        $books = $query->paginate(12)->appends($request->query());
+        $books = $query->with(['primaryAuthor', 'publishingHouse'])->paginate(12)->appends($request->query());
         return view('by-category', compact(
             'books',
             'category',
