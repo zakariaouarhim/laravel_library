@@ -7,7 +7,7 @@
     <!-- Correct CSS linking -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     
-    <link rel="stylesheet" href="{{ asset('css/headerstyle2.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
 
     <!-- Bootstrap RTL CSS -->

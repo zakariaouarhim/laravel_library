@@ -12,10 +12,12 @@ function showCartModal() {
             }
             if (!data.success || Object.keys(data.cart).length === 0) {
                 modalBody.innerHTML = `
-                <div class="text-center py-4">
-                    <i class="bi bi-cart-x fs-1 text-muted"></i>
-                    <p class="mt-2">سلّة التسوق فارغة</p>
-                    <a href="{{ route('index.page') }}" class="btn btn-primary mt-2">تصفح الكتب</a>
+                <div class="text-center py-5">
+                    <div style="width:70px;height:70px;margin:0 auto 16px;background:linear-gradient(135deg,rgba(44,75,121,0.1),rgba(72,202,228,0.1));border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-shopping-bag" style="font-size:1.8rem;color:#2C4B79;"></i>
+                    </div>
+                    <p class="text-muted mb-3">سلّة التسوق فارغة</p>
+                    <a href="/" class="btn" style="background:linear-gradient(135deg,#2C4B79,#48CAE4);color:#fff;border-radius:10px;padding:8px 24px;font-weight:600;">تصفح الكتب</a>
                 </div>`;
             } else {
                 let total = 0;
@@ -35,8 +37,8 @@ function showCartModal() {
                                 <span class="fw-bold">${(item.price * item.quantity).toFixed(2)} ر.س</span>
                             </div>
                         </div>
-                        <button  type="button"class="btn btn-outline-danger btn-sm ms-2" onclick="removeFromCart('${item.id}')">
-                            <i class="bi bi-trash"></i>
+                        <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="removeFromCart('${item.id}')">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
                     `;
@@ -98,22 +100,7 @@ function removeFromCart(itemId) {
     })
     .catch(error => console.error('Error:', error));
 }
-let lastScrollTop = 0;
-    const navbar = document.getElementById("mainNavbar");
-
-    window.addEventListener("scroll", function () {
-        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-
-        if (currentScroll > lastScrollTop) {
-            // Scrolling down → hide navbar
-            navbar.style.top = "-100px";
-        } else {
-            // Scrolling up → show navbar
-            navbar.style.top = "0";
-        }
-
-        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-    });
+// Sticky scroll behavior is handled in header.blade.php
 
 
 
@@ -169,7 +156,7 @@ function searchBooksAutocomplete(query, containerId = 'searchResults') {
             } else {
                 resultsContainer.innerHTML = `
                     <div class="p-3 text-center text-muted">
-                        <i class="bi bi-search"></i> لم يتم العثور على نتائج
+                        <i class="fas fa-search"></i> لم يتم العثور على نتائج
                     </div>
                 `;
                 resultsContainer.style.display = 'block';

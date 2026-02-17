@@ -30,11 +30,9 @@ class AppServiceProvider extends ServiceProvider
     {
        Schema::defaultStringLength(191);
 
-       View::composer('header', function ($view) {
+        View::composer('header', function ($view) {
            $navCategories = Cache::remember('header_nav_categories', 3600, function () {
-               return Category::whereNull('parent_id')
-                   ->with('children')
-                   ->get();
+               return Category::parentWithChildren()->get();
            });
            $view->with('navCategories', $navCategories);
        });
