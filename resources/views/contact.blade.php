@@ -151,8 +151,8 @@
                         <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" class="social-link">
                             <i class="fab fa-whatsapp"></i>
                         </a>
-                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-link">
-                            <i class="fab fa-twitter"></i>
+                        <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" class="social-link">
+                            <i class="fab fa-tiktok"></i>
                         </a>
                     </div>
                 </div>

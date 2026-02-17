@@ -18,6 +18,7 @@ use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\ReturnRequestController;
 use App\Http\Controllers\OrderManageController;
 use App\Http\Controllers\AccessoryController;
+use App\Http\Controllers\AdminContactController;
 use App\Http\Controllers\PageController;
 
 use Illuminate\Http\Request;
@@ -168,6 +169,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/authors/{id}', [AuthorController::class, 'destroy'])->name('authors.destroy');
         Route::get('/authors/{id}/preview-enrich', [AuthorController::class, 'previewEnrichment'])->name('authors.preview-enrich');
         Route::post('/authors/{id}/apply-enrich', [AuthorController::class, 'applyEnrichment'])->name('authors.apply-enrich');
+    // contact messages management
+        Route::get('/contact-messages', [AdminContactController::class, 'index'])->name('contact-messages.index');
+        Route::get('/contact-messages/{id}', [AdminContactController::class, 'show'])->name('contact-messages.show');
+        Route::patch('/contact-messages/{id}/toggle-read', [AdminContactController::class, 'toggleRead'])->name('contact-messages.toggle-read');
+        Route::delete('/contact-messages/{id}', [AdminContactController::class, 'destroy'])->name('contact-messages.destroy');
 });
 
 // Other Routes
