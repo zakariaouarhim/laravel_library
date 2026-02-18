@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
 
        View::composer('Dashbord_Admin.Sidebar', AdminSidebarComposer::class);
 
-       View::composer(['components.book-carousel', 'partials.book-card-grid'], function ($view) {
+       View::composer(['components.book-carousel', 'partials.book-card-grid', 'moredetail', 'moredetail2'], function ($view) {
            static $wishlistBookIds = null;
            if ($wishlistBookIds === null) {
                if (auth()->check()) {

@@ -214,6 +214,7 @@ Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])
 /////////////
 
 Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetail.page');
+Route::get('/moredetail-v2/{id}', [BookController::class, 'showV2'])->name('moredetail2.page');
 
 
 
@@ -235,7 +236,7 @@ Route::get('/index3', function () {
 // Wishlist routes for authenticated users
 Route::post('/wishlist/add/{bookId}', [WishlistController::class, 'add'])->name('wishlist.add');
 Route::post('/wishlist/remove/{bookId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
-Route::get('/wishlist', [WishlistController::class, 'index'])->middleware('auth')->name('wishlist.index');
+Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
 
 // Wishlist routes for guests (session-based)
 Route::post('/wishlist-session/add/{bookId}', [WishlistController::class, 'addToSession'])->name('wishlist-session.add');

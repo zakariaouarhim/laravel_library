@@ -9,7 +9,7 @@
             </button>
         </div>
 
-        <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="book-image-wrapper">
+        <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
             <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" loading="lazy">
         </a>
 
@@ -22,7 +22,7 @@
             @endif
         </div>
 
-        <h6><a href="{{ route('moredetail.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h6>
+        <h6><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h6>
         @if ($book->primaryAuthor)
             <p class="book-author">
                 <i class="fas fa-user-edit"></i>

@@ -65,8 +65,6 @@ function addCarouselBookToCart(button) {
     const bookImage = button.getAttribute('data-book-image');
     const quantity = 1; // Carousel books default to quantity 1
     
-    console.log("Adding carousel book:", { bookId, bookTitle, bookPrice, bookImage, quantity });
-    
     performAddToCart(bookId, bookTitle, bookPrice, bookImage, quantity, button);
 }
 
@@ -105,8 +103,6 @@ function performAddToCart(bookId, bookTitle, bookPrice, bookImage, quantity, but
                     }, 1500);
                 }, 300);
             }
-            
-            console.log(`تمت إضافة الكتاب: ${bookTitle} (ID: ${bookId}) إلى السلة`);
             
             // Update cart count
             updateCartCount(data.cartCount);

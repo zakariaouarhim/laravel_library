@@ -23,8 +23,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
@@ -58,7 +56,9 @@
 
                 <div class="d-flex align-items-center mb-3">
                     <span class="fs-4 text-primary fw-bold">{{ $book->price }} ريال</span>
-                    <span class="badge bg-danger ms-3">10% خصم</span>
+                    @if($book->discount ?? 0 > 0)
+                        <span class="badge bg-danger ms-3">{{ $book->discount }}% خصم</span>
+                    @endif
                 </div>
 
                 <div class="mb-4">
@@ -78,25 +78,26 @@
                 @endif
                 </div>
 
-                <p class="mb-4">{{ $book->description }}</p>
-                {{--  --}}
-                
-                {{--  --}}
-
                 <div class="d-flex align-items-center mb-4">
                     <div class="input-group" style="max-width: 120px;">
                         <input type="number" class="form-control text-center" value="1" min="1" aria-label="عدد النسخ">
                     </div>
                     
-                    <button class="btn btn-primary ms-3" 
-                            id="addToCartButton" 
+                    <button class="btn btn-primary ms-3"
+                            id="addToCartButton"
                             aria-label="أضف الكتاب للسلة"
-                            data-book-id="{{ $book->id }}" 
-                            data-title="{{ $book->title }}" 
-                            data-price="{{ $book->price }}" 
+                            data-book-id="{{ $book->id }}"
+                            data-title="{{ $book->title }}"
+                            data-price="{{ $book->price }}"
                             data-image="{{ $book->image }}"
                             onclick="addToCartM({{ $book->id }})">
-                        أضف إلى السلة
+                        <i class="fas fa-shopping-cart me-1"></i> أضف إلى السلة
+                    </button>
+                    <button class="btn ms-2 wishlist-btn"
+                            title="{{ in_array($book->id, $wishlistBookIds) ? 'إزالة من المفضلة' : 'أضف للمفضلة' }}"
+                            onclick="toggleWishlist({{ $book->id }}, this)"
+                            style="border:2px solid #dc3545;border-radius:12px;padding:12px 16px;background:transparent;color:#dc3545;font-size:1.1rem;">
+                        <i class="{{ in_array($book->id, $wishlistBookIds) ? 'fas' : 'far' }} fa-heart"></i>
                     </button>
                 </div>
 
@@ -167,8 +168,8 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#quotes" type="button" role="tab" aria-controls="quotes" aria-selected="false" style="color: black">
-                        <i class="fa-solid fa-quote-right"></i> اقتباسات   
+                    <button class="nav-link" id="quotes-tab" data-bs-toggle="tab" data-bs-target="#quotes" type="button" role="tab" aria-controls="quotes" aria-selected="false" style="color: black">
+                        <i class="fa-solid fa-quote-right"></i> اقتباسات
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -251,26 +252,34 @@
                 </div>
                 <div class="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
                     <table class="table table-bordered">
+                        @if($book->ISBN)
                         <tr>
                             <th>ISBN</th>
                             <td>{{ $book->ISBN }}</td>
                         </tr>
+                        @endif
                         <tr>
-                            <th>تاريخ النشر</th>
-                            <td>{{ $book->created_at }}</td>
+                            <th>تاريخ الإضافة</th>
+                            <td>{{ $book->created_at->format('d / m / Y') }}</td>
                         </tr>
                         <tr>
-                            <th>الوزن</th>
-                            <td>350 جرام</td>
+                            <th>اللغة</th>
+                            <td>{{ $book->Langue }}</td>
                         </tr>
                         <tr>
-                            <th>الأبعاد</th>
-                            <td>14 × 21 سم</td>
+                            <th>عدد الصفحات</th>
+                            <td>{{ $book->Page_Num }}</td>
                         </tr>
+                        @if($book->publishingHouse)
                         <tr>
-                            <th>نوع الغلاف</th>
-                            <td>غلاف ورقي</td>
+                            <th>دار النشر</th>
+                            <td>
+                                <a href="{{ route('publisher.show', $book->publishing_house_id) }}" class="publisher-link">
+                                    {{ $book->publishingHouse->name }}
+                                </a>
+                            </td>
                         </tr>
+                        @endif
                     </table>
                 </div>
                 <!-- quotes -->
@@ -300,16 +309,12 @@
                             @foreach ($book->quotes->sortByDesc('created_at') as $quote)
                             <div class="col-md-6 mb-4">
                                 <div class="quote-card h-100 border rounded p-4 position-relative bg-light">
-                                    <i class="fa-solid fa-quote-right position-absolute text-primary opacity-25" 
+                                    <i class="fa-solid fa-quote-right position-absolute text-primary opacity-25"
                                     style="font-size: 3rem; top: 15px; right: 20px;"></i>
-                                    <br>
-                                    
                                     <div class="quote-content mb-3" style="padding-top: 20px;">
                                         <p class="mb-3 fst-italic" style="font-size: 1.1rem; line-height: 1.6;">
                                             "{{ $quote->text }}"
                                         </p>
-                                        
-                                        
                                     </div>
                                     
                                     <div class="quote-footer d-flex align-items-center justify-content-between">
@@ -511,15 +516,15 @@
                                         <label for="rating" class="form-label">التقييم <span class="text-danger">*</span></label>
                                         <div class="star-rating">
                                             <input type="radio" id="star5" name="rating" value="5" {{ old('rating') == 5 ? 'checked' : '' }}>
-                                            <label for="star5" class="bi bi-star-fill"></label>
+                                            <label for="star5"><i class="fas fa-star"></i></label>
                                             <input type="radio" id="star4" name="rating" value="4" {{ old('rating') == 4 ? 'checked' : '' }}>
-                                            <label for="star4" class="bi bi-star-fill"></label>
+                                            <label for="star4"><i class="fas fa-star"></i></label>
                                             <input type="radio" id="star3" name="rating" value="3" {{ old('rating') == 3 ? 'checked' : '' }}>
-                                            <label for="star3" class="bi bi-star-fill"></label>
+                                            <label for="star3"><i class="fas fa-star"></i></label>
                                             <input type="radio" id="star2" name="rating" value="2" {{ old('rating') == 2 ? 'checked' : '' }}>
-                                            <label for="star2" class="bi bi-star-fill"></label>
+                                            <label for="star2"><i class="fas fa-star"></i></label>
                                             <input type="radio" id="star1" name="rating" value="1" {{ old('rating') == 1 ? 'checked' : '' }}>
-                                            <label for="star1" class="bi bi-star-fill"></label>
+                                            <label for="star1"><i class="fas fa-star"></i></label>
                                         </div>
                                         <div class="rating-feedback mt-2">
                                             <span id="rating-text" class="text-muted">اختر عدد النجوم</span>
@@ -545,8 +550,7 @@
                                             أؤكد أنني قرأت هذا الكتاب
                                         </label>
                                     </div>
-                                    <br>
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary mt-3">
                                         <i class="fas fa-paper-plane me-2"></i>إرسال التقييم
                                     </button>
                                 </form>
@@ -624,85 +628,7 @@
                 }, 2000);
             });
         }
-
-        // Function for carousel books
-        function addCarouselBookToCart(button) {
-            const bookId = button.getAttribute('data-book-id');
-            const bookTitle = button.getAttribute('data-book-title');
-            const bookPrice = button.getAttribute('data-book-price');
-            const bookImage = button.getAttribute('data-book-image');
-            const quantity = 1; // Carousel books default to quantity 1
-            
-            console.log("Adding carousel book:", { bookId, bookTitle, bookPrice, bookImage, quantity });
-            
-            performAddToCart(bookId, bookTitle, bookPrice, bookImage, quantity, button);
-        }
-
-        // Common function that performs the actual add to cart operation
-        function performAddToCart(bookId, bookTitle, bookPrice, bookImage, quantity, button) {
-            fetch(`/add-to-cart/${bookId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                body: JSON.stringify({
-                    title: bookTitle,
-                    price: bookPrice,
-                    image: bookImage,
-                    quantity: quantity
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    // Add success animation
-                    if (button) {
-                        button.classList.add('add-success');
-                        
-                        setTimeout(() => {
-                            button.classList.remove('add-success');
-                            // Show success feedback
-                            const originalContent = button.innerHTML;
-                            button.innerHTML = '<i class="fas fa-check"></i>';
-                            button.style.background = '#28a745';
-                            
-                            setTimeout(() => {
-                                button.innerHTML = originalContent;
-                                button.style.background = '';
-                            }, 1500);
-                        }, 300);
-                    }
-                    
-                    console.log(`تمت إضافة الكتاب: ${bookTitle} (ID: ${bookId}) إلى السلة`);
-                    
-                    // Update cart count if you have this function
-                    if (typeof updateCartCount === 'function') {
-                        updateCartCount(data.cartCount);
-                    }
-                    else{
-                        console.log("updateCartCount function is not defined");
-                    }
-                    
-                    // Show success toast
-                    showCartToast(`تمت إضافة "${bookTitle}" إلى السلة`);
-                    
-                    // Update the cart modal if it's open
-                    const cartModal = document.getElementById('cartDetailsModal');
-                    if(cartModal && cartModal.classList.contains('show')) {
-                        if (typeof showCartModal === 'function') {
-                            showCartModal();
-                        }
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showCartToast('حدث خطأ أثناء الإضافة إلى السلة');
-            });
-        }
     </script>
-    <br> 
     <footer>
         @include('footer')
     </footer>

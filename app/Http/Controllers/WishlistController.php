@@ -190,9 +190,15 @@ class WishlistController extends Controller
     public function index()
     {
         try {
-            $user = Auth::user();
-            $wishlist = $user->wishlist()->with(['primaryAuthor', 'category'])->get();
-            
+            if (Auth::check()) {
+                $wishlist = Auth::user()->wishlist()->with(['primaryAuthor', 'category'])->get();
+            } else {
+                $sessionIds = session()->get('wishlist', []);
+                $wishlist = !empty($sessionIds)
+                    ? Book::whereIn('id', $sessionIds)->with(['primaryAuthor', 'category'])->get()
+                    : collect();
+            }
+
             return view('wishlist.index', compact('wishlist'));
         } catch (\Exception $e) {
             Log::error('Wishlist index error: ' . $e->getMessage());

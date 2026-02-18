@@ -7,7 +7,7 @@
                 @foreach($books as $book)
                 <div class="book-card">
                     <!-- Image wrapper with link - FULL WIDTH -->
-                    <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="book-image-wrapper">
+                    <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
                         <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" loading="lazy">
                     </a>
 

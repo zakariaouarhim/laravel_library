@@ -26,7 +26,7 @@
             <!-- Logo -->
             <a class="navbar-logo" href="{{ route('index.page') }}">
                 <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة">
-                <span class="logo-text">مكتبة الفقراء</span>
+                
             </a>
 
             <!-- Search Bar -->

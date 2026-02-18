@@ -113,6 +113,48 @@ class BookController extends Controller
         ));
     }
 
+    public function showV2($id)
+    {
+        $data = $this->getBookPageData($id);
+        return view('moredetail2', $data);
+    }
+
+    private function getBookPageData($id)
+    {
+        $book = Book::with(['category.parent', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
+        $authors = Author::active()->get();
+        $publishingHouses = PublishingHouse::active()->get();
+        $primaryAuthor = $book->primaryAuthor;
+
+        $authorBooks = collect();
+        if ($primaryAuthor) {
+            $authorBooks = Book::where('author_id', $primaryAuthor->id)->where('id', '!=', $book->id)->take(10)->get();
+        } else {
+            $authorBooks = Book::where('author', $book->author)->where('id', '!=', $book->id)->take(10)->get();
+        }
+
+        $relatedBooks = Book::with('primaryAuthor')->where('category_id', $book->category_id)->where('id', '!=', $book->id)->take(10)->get();
+        if ($relatedBooks->isEmpty() && $book->category && $book->category->parent_id) {
+            $relatedBooks = Book::with('primaryAuthor')->where('category_id', $book->category->parent_id)->where('id', '!=', $book->id)->take(10)->get();
+        }
+        if ($relatedBooks->isEmpty()) $relatedBooks = $authorBooks->take(10);
+        if ($relatedBooks->isEmpty()) {
+            $relatedBooks = Book::with('primaryAuthor')->where('id', '!=', $book->id)->latest()->take(10)->get();
+        }
+
+        $publisherBooks = collect();
+        if ($book->publishing_house_id) {
+            $publisherBooks = Book::with('primaryAuthor')->where('publishing_house_id', $book->publishing_house_id)->where('id', '!=', $book->id)->where('type', 'book')->take(10)->get();
+        }
+
+        $recentlyViewed = session()->get('recently_viewed', []);
+        $recentlyViewed = array_diff($recentlyViewed, [$id]);
+        array_unshift($recentlyViewed, (int) $id);
+        session()->put('recently_viewed', array_slice($recentlyViewed, 0, 10));
+
+        return compact('book', 'relatedBooks', 'authors', 'publishingHouses', 'primaryAuthor', 'authorBooks', 'publisherBooks');
+    }
+
     
     
     public function getProducts()
@@ -1194,7 +1236,7 @@ public function searchBooksAjax(Request $request)
         });
 
         // Get English books with relationships
-        $EnglichBooks = Book::where('Langue', 'English')
+        $englishBooks = Book::where('Langue', 'English')
             ->with([
                 'primaryAuthor',    // Primary author relationship
                 'authors',          // All authors relationship
@@ -1216,7 +1258,7 @@ public function searchBooksAjax(Request $request)
                 })->values();
         }
 
-        return view('index', compact('books', 'categorie', 'EnglichBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed'));
+        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed'));
     }
     // Additional method to handle book creation with author assignment
     public function store(Request $request)

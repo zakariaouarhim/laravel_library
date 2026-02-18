@@ -392,6 +392,11 @@
         padding: 10px 8px;
     }
 
+    /* Show only first 7 categories + the "المزيد" button on mobile */
+    .layout-searchbar .category-btn:nth-child(n+8):not(:last-child) {
+        display: none;
+    }
+
     .layout-searchbar .category-btn {
         min-width: 90px;
         max-width: 160px;
