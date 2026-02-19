@@ -818,7 +818,7 @@ class Usercontroller extends Controller
     public function uploadAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,jpg,png,webp|max:2048|dimensions:max_width=2000,max_height=2000',
+            'avatar' => 'required|image|mimes:jpeg,jpg,png,webp|mimetypes:image/jpeg,image/png,image/webp|max:2048|dimensions:max_width=2000,max_height=2000',
         ], [
             'avatar.required' => 'يرجى اختيار صورة',
             'avatar.image' => 'الملف يجب أن يكون صورة',

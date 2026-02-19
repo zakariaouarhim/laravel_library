@@ -20,6 +20,7 @@ use App\Http\Controllers\OrderManageController;
 use App\Http\Controllers\AccessoryController;
 use App\Http\Controllers\AdminContactController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\CouponController;
 
 use Illuminate\Http\Request;
 
@@ -43,6 +44,13 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
 
     // Dashboard
     Route::get('/Dashbord_Admin/dashboard', [Usercontroller::class, 'dashboard'])->name('Dashbord_Admin.dashboard');
+
+    // Coupons
+    Route::get('/coupons',                        [CouponController::class, 'index'])->name('coupons.index');
+    Route::post('/coupons',                       [CouponController::class, 'store'])->name('coupons.store');
+    Route::put('/coupons/{coupon}',               [CouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/coupons/{coupon}',            [CouponController::class, 'destroy'])->name('coupons.destroy');
+    Route::post('/coupons/{coupon}/toggle',       [CouponController::class, 'toggleActive'])->name('coupons.toggle');
 
     // Client management
     Route::get('/client/{id}', [Usercontroller::class, 'showclient'])->name('client.show');
@@ -152,7 +160,9 @@ Route::post('/checkout/store-cart', function (Request $request) {
 
 Route::get('/cart', [CartController::class, 'showCart'])->name('cart.page');
 Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.page');
-Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
+Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit')->middleware('throttle:10,1');
+Route::post('/checkout/apply-coupon',  [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
+Route::post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
 Route::post('/checkout/trackmyorder', [CheckoutController::class, 'trackmyorder'])->name('trackmyorder');
 
 Route::get('/success/{id}', [CheckoutController::class, 'success'])->name('success');
@@ -245,8 +255,8 @@ Route::get('/login2', function () {
     return view('login2');
 })->name('login2.page');
 
-Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin');
-Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser');
+Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin')->middleware('throttle:5,1');
+Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser')->middleware('throttle:3,1');
 
 // Logout via POST to prevent CSRF-based forced logout
 Route::post('/logout', [Usercontroller::class, 'logout'])->name('logout');
@@ -260,7 +270,7 @@ Route::get('/forgot-password', [Usercontroller::class, 'showForgotPasswordForm']
 
 Route::post('/forgot-password', [Usercontroller::class, 'sendResetLink'])
     ->name('password.email')
-    ->middleware('guest');
+    ->middleware(['guest', 'throttle:3,1']);
 
 Route::get('/reset-password/{token}/{email}', [Usercontroller::class, 'showResetPasswordForm'])
     ->name('password.reset')

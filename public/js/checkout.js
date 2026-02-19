@@ -370,6 +370,119 @@ function enableQuantityInput(itemId) {
     }
 }
 
+// ============================================================
+// Coupon / discount code handler
+// ============================================================
+(function () {
+    function getSubtotal() {
+        let subtotal = 0;
+        document.querySelectorAll('[data-item-id]').forEach(function (item) {
+            const q = parseInt(item.querySelector('.quantity-input').value);
+            const p = parseFloat(item.querySelector('.quantity-input').getAttribute('data-price'));
+            if (!isNaN(q) && !isNaN(p)) subtotal += q * p;
+        });
+        return subtotal;
+    }
+
+    function applyCoupon() {
+        const code  = document.getElementById('couponCode').value.trim();
+        const msgEl = document.getElementById('couponMessage');
+        const btn   = document.getElementById('applyCoupon');
+
+        if (!code) {
+            msgEl.innerHTML = '<span class="text-danger">يرجى إدخال كود الخصم</span>';
+            return;
+        }
+
+        btn.disabled    = true;
+        btn.textContent = '...';
+
+        fetch('/checkout/apply-coupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ code: code, subtotal: getSubtotal() })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                const discountEl = document.getElementById('discount');
+                if (discountEl) {
+                    discountEl.setAttribute('data-coupon-discount', data.discount);
+                }
+                updateTotals();
+                msgEl.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>' + data.message + '</span>';
+                btn.textContent = 'إزالة';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-outline-danger');
+                btn.removeEventListener('click', applyCoupon);
+                btn.addEventListener('click', removeCoupon);
+            } else {
+                msgEl.innerHTML = '<span class="text-danger">' + data.message + '</span>';
+                btn.textContent = 'تطبيق';
+            }
+            btn.disabled = false;
+        })
+        .catch(function () {
+            msgEl.innerHTML = '<span class="text-danger">حدث خطأ، يرجى المحاولة لاحقاً</span>';
+            btn.textContent = 'تطبيق';
+            btn.disabled    = false;
+        });
+    }
+
+    function removeCoupon() {
+        const msgEl = document.getElementById('couponMessage');
+        const btn   = document.getElementById('applyCoupon');
+
+        fetch('/checkout/remove-coupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(function () {
+            const discountEl = document.getElementById('discount');
+            if (discountEl) discountEl.removeAttribute('data-coupon-discount');
+            updateTotals();
+            msgEl.innerHTML = '';
+            document.getElementById('couponCode').value = '';
+            btn.textContent = 'تطبيق';
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-outline-primary');
+            btn.removeEventListener('click', removeCoupon);
+            btn.addEventListener('click', applyCoupon);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('applyCoupon');
+        if (btn) btn.addEventListener('click', applyCoupon);
+    });
+
+    // Patch updateTotals to respect the stored coupon discount
+    const _origUpdateTotals = window.updateTotals;
+    window.updateTotals = function () {
+        if (typeof _origUpdateTotals === 'function') _origUpdateTotals();
+        const discountEl = document.getElementById('discount');
+        if (!discountEl || !discountEl.hasAttribute('data-coupon-discount')) return;
+        const couponDiscount = parseFloat(discountEl.getAttribute('data-coupon-discount')) || 0;
+        discountEl.textContent = '-' + couponDiscount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ر.س';
+
+        // Recalculate total with coupon
+        let subtotal = 0;
+        document.querySelectorAll('[data-item-id]').forEach(function (item) {
+            const q = parseInt(item.querySelector('.quantity-input').value);
+            const p = parseFloat(item.querySelector('.quantity-input').getAttribute('data-price'));
+            if (!isNaN(q) && !isNaN(p)) subtotal += q * p;
+        });
+        const total = subtotal + 25.00 - couponDiscount;
+        document.getElementById('total').textContent = total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ر.س';
+    };
+})();
+
 // Form submission handler to ensure all data is synced
 document.addEventListener('DOMContentLoaded', function() {
     const checkoutForm = document.getElementById('checkoutForm');

@@ -19,7 +19,9 @@
       "Bash(php:*)",
       "Bash(git status:*)",
       "Bash(ls \"c:\\\\laravel\\\\library_fokara\\\\app\\\\View\\\\Composers\"\" 2>nul || echo \"Directory does not exist \")",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(New-Item:*)",
+      "Bash(composer require:*)"
     ]
   }
 }

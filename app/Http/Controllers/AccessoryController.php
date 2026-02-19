@@ -127,7 +127,7 @@ class AccessoryController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
             'Quantity' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
         ]);
 
         $imagePath = null;
@@ -190,7 +190,7 @@ class AccessoryController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
             'Quantity' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
         ]);
 
         if ($request->hasFile('image')) {

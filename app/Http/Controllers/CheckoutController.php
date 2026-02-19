@@ -7,7 +7,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Models\CheckoutDetail;
 use App\Models\Order;
 use App\Models\OrderDetail;
-use App\Models\Cart; 
+use App\Models\Cart;
+use App\Models\Coupon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -93,9 +94,21 @@ class CheckoutController extends Controller
             foreach ($cart as $item) {
                 $subtotal += $item['price'] * $item['quantity'];
             }
-            
+
             $shipping = 25.00;
             $discount = 0.00;
+            $appliedCouponCode = null;
+
+            // Apply coupon from session (re-validate against DB)
+            $sessionCoupon = session('applied_coupon');
+            if ($sessionCoupon) {
+                $coupon = Coupon::where('code', $sessionCoupon['code'])->first();
+                if ($coupon && $coupon->isValidFor($subtotal)) {
+                    $discount = $coupon->discountFor($subtotal);
+                    $appliedCouponCode = $coupon->code;
+                }
+            }
+
             $total = $subtotal + $shipping - $discount;
 
             Log::info('Calculated totals', compact('subtotal', 'shipping', 'discount', 'total'));
@@ -148,6 +161,12 @@ class CheckoutController extends Controller
 
             Log::info('Order details created');
 
+            // Increment coupon usage count
+            if ($appliedCouponCode) {
+                Coupon::where('code', $appliedCouponCode)->increment('used_count');
+                session()->forget('applied_coupon');
+            }
+
             // Send order confirmation email
             try {
                 $order->load('orderDetails.book');
@@ -195,6 +214,58 @@ class CheckoutController extends Controller
             ]);
             return redirect()->back()->with('error', 'حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.');
         }
+    }
+
+    public function applyCoupon(Request $request)
+    {
+        $code    = strtoupper(trim($request->input('code', '')));
+        $subtotal = (float) $request->input('subtotal', 0);
+
+        if (empty($code)) {
+            return response()->json(['success' => false, 'message' => 'يرجى إدخال كود الخصم'], 422);
+        }
+
+        $coupon = Coupon::where('code', $code)->first();
+
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'كود الخصم غير صحيح'], 422);
+        }
+
+        if (!$coupon->is_active) {
+            return response()->json(['success' => false, 'message' => 'هذا الكوبون غير مفعّل'], 422);
+        }
+
+        if ($coupon->expires_at && $coupon->expires_at->isPast()) {
+            return response()->json(['success' => false, 'message' => 'انتهت صلاحية هذا الكوبون'], 422);
+        }
+
+        if ($coupon->max_uses !== null && $coupon->used_count >= $coupon->max_uses) {
+            return response()->json(['success' => false, 'message' => 'تجاوز هذا الكوبون الحد الأقصى للاستخدام'], 422);
+        }
+
+        if ($subtotal < $coupon->min_order_amount) {
+            $min = number_format($coupon->min_order_amount, 2);
+            return response()->json(['success' => false, 'message' => "الحد الأدنى للطلب لاستخدام هذا الكوبون هو {$min} ر.س"], 422);
+        }
+
+        $discount = $coupon->discountFor($subtotal);
+
+        // Store in session so submit() can re-validate
+        session(['applied_coupon' => ['code' => $coupon->code]]);
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'تم تطبيق الكوبون بنجاح!',
+            'discount' => $discount,
+            'type'     => $coupon->type,
+            'value'    => $coupon->value,
+        ]);
+    }
+
+    public function removeCoupon()
+    {
+        session()->forget('applied_coupon');
+        return response()->json(['success' => true]);
     }
 
     public function success($orderId)

@@ -260,7 +260,7 @@ public function addProduct(Request $request)
         'productIsbn' => 'nullable|string|max:50',
         'Productcategorie' => 'required|integer|exists:categories,id',
         'productQuantity' => 'required|integer|min:0',
-        'productImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'productImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
         'auto_enrich' => 'nullable|boolean'
     ]);
 
@@ -1630,7 +1630,7 @@ public function showproduct(Request $request)
                 'ISBN' => 'nullable|string|max:50',
                 'Quantity' => 'required|integer|min:0',
                 'category_id' => 'nullable|integer|exists:categories,id',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048'
             ]);
             
             // Find or create Author

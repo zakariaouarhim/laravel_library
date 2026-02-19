@@ -9,7 +9,6 @@
         "algolia/algoliasearch-client-php": "3.4",
         "algolia/scout-extended": "2.0",
         "doctrine/dbal": "^3.10",
-        "fruitcake/laravel-cors": "^3.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "http-interop/http-factory-guzzle": "^1.2",
         "intervention/image": "^3.11",
