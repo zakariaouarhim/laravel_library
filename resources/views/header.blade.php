@@ -11,7 +11,10 @@
             @if(session('is_logged_in'))
                 <span><i class="fas fa-user"></i> مرحباً {{ session('user_name') }}</span>
                 <a href="{{ route('account.page') }}">حسابي</a>
-                <a href="{{ route('logout') }}" class="top-bar-logout"><i class="fas fa-sign-out-alt"></i> خروج</a>
+                <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="top-bar-logout"><i class="fas fa-sign-out-alt"></i> خروج</button>
+                </form>
             @else
                 <a href="{{ route('login2.page') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a>
             @endif
@@ -102,7 +105,10 @@
                             <a href="{{ route('return-requests.index') }}"><i class="fas fa-undo"></i> طلبات الإسترجاع</a>
                             <a href="{{ route('wishlist.index') }}"><i class="fas fa-heart"></i> قائمة الأمنيات</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{{ route('logout') }}" class="dropdown-logout"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+                            <form method="POST" action="{{ route('logout') }}" style="display:inline;width:100%;">
+                                @csrf
+                                <button type="submit" class="dropdown-logout"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+                            </form>
                         @else
                             <a href="{{ route('login2.page') }}" class="dropdown-login-btn">
                                 <i class="fas fa-sign-in-alt"></i> تسجيل الدخول

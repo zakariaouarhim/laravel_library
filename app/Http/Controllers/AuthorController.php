@@ -19,6 +19,13 @@ class AuthorController extends Controller
      */
     public function publicIndex(Request $request)
     {
+        $request->validate([
+            'q'           => 'nullable|string|max:100',
+            'nationality' => 'nullable|string|max:100',
+            'letter'      => 'nullable|alpha|max:1',
+            'sort'        => 'nullable|in:name,books,newest',
+        ]);
+
         $query = Author::active()->withCount('primaryBooks');
 
         // Search
@@ -115,7 +122,8 @@ class AuthorController extends Controller
      */
     public function search(Request $request)
     {
-        $query = $request->query('q');
+        $request->validate(['q' => 'nullable|string|max:100']);
+        $query = $request->query('q', '');
 
         $authors = Author::where('name', 'like', "%{$query}%")
             ->select('id', 'name', 'nationality')
@@ -138,6 +146,12 @@ class AuthorController extends Controller
      */
     public function getAuthorsApi(Request $request)
     {
+        $request->validate([
+            'search'     => 'nullable|string|max:100',
+            'status'     => 'nullable|in:active,inactive',
+            'api_status' => 'nullable|in:enriched,pending',
+        ]);
+
         $query = Author::withCount('primaryBooks');
 
         // Search
@@ -286,6 +300,20 @@ class AuthorController extends Controller
     public function applyEnrichment(Request $request, $id)
     {
         $author = Author::findOrFail($id);
+
+        $request->validate([
+            'fields'               => 'required|array|max:10',
+            'fields.*'             => 'string|in:biography,birth_date,death_date,nationality,website,photo',
+            'api_data'             => 'required|array',
+            'api_data.biography'   => 'nullable|string|max:10000',
+            'api_data.birth_date'  => 'nullable|date',
+            'api_data.death_date'  => 'nullable|date',
+            'api_data.nationality' => 'nullable|string|max:100',
+            'api_data.website'     => 'nullable|url|max:500',
+            'api_data.photo_url'   => 'nullable|url|max:500',
+            'api_data.api_id'      => 'nullable|string|max:100',
+        ]);
+
         $fields = $request->input('fields', []);
         $apiData = $request->input('api_data', []);
 
@@ -436,9 +464,15 @@ class AuthorController extends Controller
      */
     public function resolveDuplicate(Request $request)
     {
-        $action = $request->input('action'); // 'merge' or 'create'
-        $bookAuthorName = $request->input('name');
-        $existingAuthorId = $request->input('existing_author_id');
+        $validated = $request->validate([
+            'action'             => 'required|in:merge,create',
+            'name'               => 'required|string|max:255',
+            'existing_author_id' => 'required_if:action,merge|nullable|integer|exists:authors,id',
+        ]);
+
+        $action = $validated['action'];
+        $bookAuthorName = $validated['name'];
+        $existingAuthorId = $validated['existing_author_id'] ?? null;
 
         if ($action === 'merge' && $existingAuthorId) {
             $count = Book::where('author', $bookAuthorName)
@@ -475,11 +509,13 @@ class AuthorController extends Controller
      */
     public function checkDuplicates(Request $request)
     {
-        $name = $request->input('name');
-        $excludeId = $request->input('exclude_id');
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'exclude_id' => 'nullable|integer',
+        ]);
 
         $service = new AuthorEnrichmentService();
-        $similar = $service->findSimilarAuthors($name, $excludeId);
+        $similar = $service->findSimilarAuthors($validated['name'], $validated['exclude_id'] ?? null);
 
         return response()->json([
             'success' => true,

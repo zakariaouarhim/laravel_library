@@ -14,6 +14,13 @@ class AccessoryController extends Controller
      */
     public function index(Request $request)
     {
+        $request->validate([
+            'category'  => 'nullable|integer',
+            'price_min' => 'nullable|numeric|min:0',
+            'price_max' => 'nullable|numeric|min:0',
+            'sort'      => 'nullable|in:newest,price_asc,price_desc,title',
+        ]);
+
         $query = Book::accessories();
 
         // Category filter
@@ -68,6 +75,11 @@ class AccessoryController extends Controller
      */
     public function adminIndex(Request $request)
     {
+        $request->validate([
+            'search'   => 'nullable|string|max:100',
+            'category' => 'nullable|integer',
+        ]);
+
         $query = Book::accessories()->with('category');
 
         if ($request->filled('search')) {

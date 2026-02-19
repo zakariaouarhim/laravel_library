@@ -17,11 +17,11 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
 
         $itemData = [
-            'id' => $book->id,
-            'title' => $request->input('title') ?? $book->title,
-            'price' => $request->input('price') ?? $book->price,
-            'image' => $request->input('image') ?? $book->image,
-            'quantity' => $request->input('quantity', 1)
+            'id'       => $book->id,
+            'title'    => $book->title,
+            'price'    => $book->price,
+            'image'    => $book->image,
+            'quantity' => max(1, (int) $request->input('quantity', 1)),
         ];
 
         if(isset($cart[$bookId])) {
@@ -64,7 +64,7 @@ class CartController extends Controller
         \Log::error('Add to cart error: ' . $e->getMessage());
         return response()->json([
             'success' => false,
-            'message' => $e->getMessage()
+            'message' => 'حدث خطأ، يرجى المحاولة لاحقاً',
         ], 500);
     }
 }

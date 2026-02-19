@@ -79,7 +79,7 @@ class Usercontroller extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return redirect()->back()
-                ->with('error', 'Registration failed: ' . $e->getMessage())
+                ->with('error', 'حدث خطأ أثناء التسجيل، يرجى المحاولة لاحقاً.')
                 ->withInput();
         }
     }
@@ -114,8 +114,7 @@ class Usercontroller extends Controller
 
 
                 // Redirect based on role
-                if ($user->role == "admin") {
-                    
+                if (in_array($user->role, ['admin', 'super_admin'])) {
                     return redirect()->route('admin.Dashbord_Admin.dashboard')->with('success', 'Login successful');
                 } else {
                     return redirect()->route('index.page')->with('success', 'Login successful! Welcome back ' . $user->name);
@@ -208,7 +207,7 @@ class Usercontroller extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->with('error', 'حدث خطأ أثناء إرسال الرابط. يرجى المحاولة لاحقاً'.$e);
+            return back()->with('error', 'حدث خطأ أثناء إرسال الرابط. يرجى المحاولة لاحقاً.');
         }
     }
 
@@ -672,6 +671,7 @@ class Usercontroller extends Controller
     {
         try {
             $user = UserModel::findOrFail($id);
+            $request->validate(['method' => 'required|in:auto,manual']);
             $method = $request->input('method');
 
             if ($method === 'auto') {
@@ -709,11 +709,110 @@ class Usercontroller extends Controller
                 'message' => implode(' ', $e->validator->errors()->all())
             ], 422);
         } catch (\Exception $e) {
+            \Log::error('Reset password error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'حدث خطأ، يرجى المحاولة لاحقاً.',
             ], 500);
         }
+    }
+
+    // ======================== SUPER ADMIN — USER MANAGEMENT ========================
+
+    public function usersIndex(Request $request)
+    {
+        $request->validate([
+            'search' => 'nullable|string|max:100',
+            'role'   => 'nullable|in:user,admin',
+        ]);
+
+        $search     = $request->input('search', '');
+        $roleFilter = $request->input('role', '');
+
+        $query = UserModel::whereIn('role', ['user', 'admin']);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name',  'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($roleFilter) {
+            $query->where('role', $roleFilter);
+        }
+
+        $users       = $query->latest()->paginate(15);
+        $totalUsers  = UserModel::where('role', 'user')->count();
+        $totalAdmins = UserModel::where('role', 'admin')->count();
+        $newThisMonth = UserModel::whereIn('role', ['user', 'admin'])
+                            ->where('created_at', '>=', Carbon::now()->startOfMonth())
+                            ->count();
+
+        return view('Dashbord_Admin.users', compact('users', 'totalUsers', 'totalAdmins', 'newThisMonth'));
+    }
+
+    public function promoteUser($id)
+    {
+        $target = UserModel::findOrFail($id);
+
+        if ($target->role !== 'user') {
+            return response()->json(['success' => false, 'message' => 'يمكن ترقية الزبائن فقط'], 422);
+        }
+
+        $target->role = 'admin';
+        $target->save();
+
+        Log::info('Role promotion', ['by' => auth()->id(), 'target' => $id, 'from' => 'user', 'to' => 'admin']);
+
+        return response()->json(['success' => true, 'message' => 'تم ترقية المستخدم إلى مشرف بنجاح']);
+    }
+
+    public function demoteUser($id)
+    {
+        $target = UserModel::findOrFail($id);
+
+        if ($target->id === auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'لا يمكنك تخفيض صلاحياتك الخاصة'], 422);
+        }
+
+        if ($target->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'يمكن تخفيض المشرفين فقط'], 422);
+        }
+
+        $target->role = 'user';
+        $target->save();
+
+        Log::info('Role demotion', ['by' => auth()->id(), 'target' => $id, 'from' => 'admin', 'to' => 'user']);
+
+        return response()->json(['success' => true, 'message' => 'تم تخفيض المشرف إلى زبون بنجاح']);
+    }
+
+    public function destroy($id)
+    {
+        $target      = UserModel::findOrFail($id);
+        $currentUser = auth()->user();
+
+        // Cannot delete yourself
+        if ($target->id === $currentUser->id) {
+            return response()->json(['success' => false, 'message' => 'لا يمكنك حذف حسابك الخاص'], 422);
+        }
+
+        // Super admins are never deletable via this UI
+        if ($target->role === 'super_admin') {
+            return response()->json(['success' => false, 'message' => 'غير مصرح'], 403);
+        }
+
+        // Regular admins cannot delete other admins
+        if ($currentUser->role === 'admin' && $target->role === 'admin') {
+            return response()->json(['success' => false, 'message' => 'غير مصرح بحذف المشرفين'], 403);
+        }
+
+        Log::info('User deleted', ['by' => $currentUser->id, 'target' => $id, 'role' => $target->role]);
+
+        $target->delete();
+
+        return response()->json(['success' => true, 'message' => 'تم حذف المستخدم بنجاح']);
     }
 
     public function uploadAvatar(Request $request)

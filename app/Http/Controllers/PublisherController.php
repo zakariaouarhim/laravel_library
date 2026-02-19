@@ -15,7 +15,8 @@ class PublisherController extends Controller
 {
     public function search(Request $request)
     {
-        $query = $request->query('q');
+        $request->validate(['q' => 'nullable|string|max:100']);
+        $query = $request->query('q', '');
 
         $publishers = PublishingHouse::where('name', 'like', "%{$query}%")
             ->select('id', 'name', 'country')
@@ -27,6 +28,12 @@ class PublisherController extends Controller
 
     public function publicIndex(Request $request)
     {
+        $request->validate([
+            'q'       => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'sort'    => 'nullable|in:name,books,newest',
+        ]);
+
         $query = PublishingHouse::active()->withCount(['books' => function ($q) {
             $q->where('type', 'book');
         }]);

@@ -12,8 +12,7 @@ class UserModel extends Authenticatable
     
     protected $table = 'user';
     
-    // Fixed the fillable fields - removed extra space and corrected 'Email' to 'email'
-    protected $fillable = ['name', 'email', 'password', 'role', 'avatar', 'created_at', 'updated_at'];
+    protected $fillable = ['name', 'email', 'password', 'avatar', 'created_at', 'updated_at'];
     
     // Hide password from JSON output
     protected $hidden = ['password', 'remember_token'];
@@ -23,16 +22,7 @@ class UserModel extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    // Add this for debugging
-    public static function boot()
-    {
-        parent::boot();
-        
-        static::creating(function ($model) {
-            \Log::info('Creating user with attributes:', $model->getAttributes());
-        });
-    }
-     public function orders()
+    public function orders()
     {
         return $this->hasMany(Order::class,'user_id');
     }

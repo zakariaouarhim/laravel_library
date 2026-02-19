@@ -101,6 +101,11 @@ class ReturnRequestController extends Controller
      */
     public function adminIndex(Request $request)
     {
+        $request->validate([
+            'search' => 'nullable|string|max:100',
+            'status' => 'nullable|in:pending,approved,rejected,refunded',
+        ]);
+
         $query = ReturnRequest::with(['order.user', 'order.orderDetails.book', 'order.checkoutDetail']);
 
         if ($request->has('search') && $request->search) {

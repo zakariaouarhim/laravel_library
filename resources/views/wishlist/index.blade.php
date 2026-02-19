@@ -99,7 +99,7 @@
                             @endif
                         </div>
                         <div class="wl-card-actions">
-                            <button class="wl-btn-add-cart" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                            <button class="wl-btn-add-cart" onclick="addToCart({{ $book->id }}, {{ json_encode($book->title) }}, {{ $book->price }}, {{ json_encode($book->image) }})">
                                 <i class="fas fa-shopping-cart"></i> أضف للسلة
                             </button>
                             <button class="wl-btn-remove" onclick="removeFromWishlist({{ $book->id }})">

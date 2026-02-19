@@ -1,20 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const creditCardRadio = document.getElementById("creditCard");
-    const cashOnDeliveryRadio = document.getElementById("cashOnDelivery");
-    const creditCardInfo = document.getElementById("creditCardInfo");
-
-    creditCardRadio.addEventListener("change", function () {
-        if (this.checked) {
-            creditCardInfo.style.display = "block";
-        }
-    });
-
-    cashOnDeliveryRadio.addEventListener("change", function () {
-        if (this.checked) {
-            creditCardInfo.style.display = "none";
-        }
-    });
-
     // Function to sync visible quantity input with hidden input
     function syncQuantityInputs(itemElement) {
         const visibleInput = itemElement.querySelector('.quantity-input');
@@ -173,12 +157,6 @@ function updateItemPriceDisplay(itemElement) {
 $('input[name="payment_method"]').change(function() {
     $('.payment-method-card').removeClass('selected');
     $(this).closest('.payment-method-card').addClass('selected');
-    
-    if ($(this).val() === 'credit_card') {
-        $('#creditCardInfo').slideDown(300);
-    } else {
-        $('#creditCardInfo').slideUp(300);
-    }    
 });
 
 function removeFromCart2(itemId) {

@@ -73,6 +73,17 @@
                     </svg>
                     <span class="nav-text">الإكسسوارات</span>
                 </a>
+                @if(Auth::user()->role === 'super_admin')
+                <a href="{{ route('admin.users.index') }}"
+                   class="sidebar-nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+                   title="إدارة المستخدمين">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    <span class="nav-text">إدارة المستخدمين</span>
+                    <span class="sidebar-badge" style="background:#c0392b;">مشرف عام</span>
+                </a>
+                @endif
                 <a href="{{ route('admin.client.index') }}"
                    class="sidebar-nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}"
                    title="الزبائن">
@@ -193,14 +204,23 @@
             </div>
             <div class="user-details">
                 <p class="user-name">{{ Auth::user()->name ?? 'مسؤول' }}</p>
-                <p class="user-role">مسؤول النظام</p>
+                <p class="user-role">
+                    @if(Auth::user()->role === 'super_admin')
+                        <span style="color:#c0392b;font-weight:700;">مشرف عام</span>
+                    @else
+                        مسؤول النظام
+                    @endif
+                </p>
             </div>
         </div>
-        <a href="{{ route('logout') }}" class="logout-btn" title="تسجيل الخروج">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-            </svg>
-        </a>
+        <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+            @csrf
+            <button type="submit" class="logout-btn" title="تسجيل الخروج" style="background:none;border:none;padding:0;cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+            </button>
+        </form>
     </div>
 </nav>
 <script>

@@ -17,8 +17,7 @@ class CheckoutController extends Controller
 {
     public function submit(Request $request)
     {
-        // Add debugging
-        Log::info('Checkout form submitted', $request->all());
+        Log::info('Checkout form submitted', $request->except(['card_number', 'cvv', 'expiry_date']));
         
         try {
             // Validate the checkout form
@@ -30,10 +29,7 @@ class CheckoutController extends Controller
                 'address' => 'required|string',
                 'city' => 'required|string',
                 'zip_code' => 'required|string|regex:/^[0-9]{5}$/',
-                'payment_method' => 'required|in:cod,credit_card',
-                'card_number' => 'required_if:payment_method,credit_card|nullable|string',
-                'expiry_date' => 'required_if:payment_method,credit_card|nullable|string',
-                'cvv' => 'required_if:payment_method,credit_card|nullable|string|size:3',
+                'payment_method' => 'required|in:cod,bank_transfer',
             ], [
                 'first_name.required' => 'الاسم الأول مطلوب',
                 'last_name.required' => 'الاسم الأخير مطلوب',
@@ -46,10 +42,6 @@ class CheckoutController extends Controller
                 'zip_code.required' => 'الرمز البريدي مطلوب',
                 'zip_code.regex' => 'يرجى إدخال رمز بريدي صحيح (5 أرقام)',
                 'payment_method.required' => 'طريقة الدفع مطلوبة',
-                'card_number.required_if' => 'رقم البطاقة مطلوب عند اختيار الدفع بالبطاقة',
-                'expiry_date.required_if' => 'تاريخ انتهاء البطاقة مطلوب',
-                'cvv.required_if' => 'رمز الأمان مطلوب',
-                'cvv.size' => 'رمز الأمان يجب أن يكون 3 أرقام',
             ]);
 
             Log::info('Validation passed', $validated);
@@ -73,8 +65,20 @@ class CheckoutController extends Controller
                     }
                 }
             } else {
-                // For guests, use session cart
-                $cart = session()->get('cart', []);
+                // For guests, re-fetch prices from DB — never trust session prices
+                $sessionCart = session()->get('cart', []);
+                foreach ($sessionCart as $bookId => $item) {
+                    $book = \App\Models\Book::find($bookId);
+                    if ($book) {
+                        $cart[$bookId] = [
+                            'id'       => $book->id,
+                            'title'    => $book->title,
+                            'price'    => $book->price,
+                            'image'    => $book->image,
+                            'quantity' => max(1, (int)($item['quantity'] ?? 1)),
+                        ];
+                    }
+                }
             }
             
             if (empty($cart)) {
@@ -96,11 +100,6 @@ class CheckoutController extends Controller
 
             Log::info('Calculated totals', compact('subtotal', 'shipping', 'discount', 'total'));
 
-            // Encrypt card details if provided
-            if ($validated['payment_method'] === 'credit_card') {
-                $validated['card_number'] = encrypt($validated['card_number']);
-                $validated['cvv'] = encrypt($validated['cvv']);
-            }
             // Create order record
             $order = Order::create([
                 'user_id' => auth()->check() ? auth()->id() : null,
@@ -125,9 +124,6 @@ class CheckoutController extends Controller
                 'city' => $validated['city'],
                 'zip_code' => $validated['zip_code'],
                 'payment_method' => $validated['payment_method'],
-                'card_number' => $validated['card_number'] ?? null,
-                'expiry_date' => $validated['expiry_date'] ?? null,
-                'cvv' => $validated['cvv'] ?? null,
                 'subtotal' => $subtotal,
                 'shipping' => $shipping,
                 'discount' => $discount,
@@ -184,15 +180,9 @@ class CheckoutController extends Controller
                 session()->forget('cart');
             }
 
-            // Process payment based on method
-            if ($validated['payment_method'] === 'credit_card') {
-                $checkout->update(['status' => 'processing']);
-                $order->update(['status' => 'completed']);
-            }
-
             Log::info('Redirecting to success page', ['order_id' => $order->id]);
 
-            return redirect()->route('success', $order->id)
+            return redirect()->route('success', ['id' => $order->id, 'token' => $order->management_token])
                    ->with('success', 'تم إرسال طلبك بنجاح! سيتم التواصل معك قريباً.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -209,14 +199,29 @@ class CheckoutController extends Controller
 
     public function success($orderId)
     {
+        // Load the order — 404 if not found
         try {
             $order = Order::with('orderDetails.book')->findOrFail($orderId);
-            $manageUrl = url('/order/manage?token=' . $order->management_token);
-            return view('success', compact('order', 'manageUrl'));
         } catch (\Exception $e) {
             Log::error('Success page error', ['order_id' => $orderId, 'error' => $e->getMessage()]);
             return redirect()->route('index.page')->with('error', 'الطلب غير موجود');
         }
+
+        // Access rule: must either own the order OR supply the correct management token.
+        // This covers: authenticated owners, guests with token, and prevents enumeration.
+        $ownsOrder = Auth::check()
+            && $order->user_id !== null
+            && $order->user_id === Auth::id();
+
+        $hasValidToken = request('token') !== null
+            && request('token') === $order->management_token;
+
+        if (!$ownsOrder && !$hasValidToken) {
+            abort(403);
+        }
+
+        $manageUrl = url('/order/manage?token=' . $order->management_token);
+        return view('success', compact('order', 'manageUrl'));
     }
 
     // Other methods remain the same...

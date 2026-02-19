@@ -13,6 +13,7 @@ class OrderManageController extends Controller
      */
     public function show(Request $request)
     {
+        $request->validate(['token' => 'nullable|string|max:100']);
         $token = $request->query('token');
 
         if (!$token) {
@@ -43,6 +44,7 @@ class OrderManageController extends Controller
      */
     public function cancel(Request $request)
     {
+        $request->validate(['token' => 'required|string|max:100']);
         $token = $request->input('token');
 
         $order = Order::where('management_token', $token)

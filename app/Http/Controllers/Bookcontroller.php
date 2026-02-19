@@ -387,11 +387,11 @@ public function addProduct(Request $request)
         if ($request->ajax()) {
             return response()->json([
                 'success' => false,
-                'message' => 'فشل في إضافة المنتج: ' . $e->getMessage()
+                'message' => 'فشل في إضافة المنتج، يرجى المحاولة لاحقاً.',
             ], 500);
         }
-        
-        return redirect()->back()->withErrors(['error' => 'Failed to add product.'.$e->getMessage()])->withInput();
+
+        return redirect()->back()->withErrors(['error' => 'فشل في إضافة المنتج، يرجى المحاولة لاحقاً.'])->withInput();
     }
 }
     // New method to enrich a single book
@@ -899,8 +899,9 @@ public function addProduct(Request $request)
 
     public function searchproductBooks(Request $request)
     {
-        $query = $request->input('query');
-        
+        $request->validate(['query' => 'nullable|string|max:200']);
+        $query = $request->input('query', '');
+
         try {
             // First try exact match
             $books = Book::where('title', 'LIKE', "%{$query}%")
@@ -938,7 +939,17 @@ public function addProduct(Request $request)
     // Method to show search results page
 public function searchResults(Request $request)
 {
-    $query      = $request->input('query');
+    $request->validate([
+        'query'     => 'nullable|string|max:200',
+        'category'  => 'nullable|integer',
+        'sort'      => 'nullable|in:newest,price_asc,price_desc,title',
+        'language'  => 'nullable|string|max:50',
+        'price_min' => 'nullable|numeric|min:0',
+        'price_max' => 'nullable|numeric|min:0',
+        'page'      => 'nullable|integer|min:1',
+    ]);
+
+    $query      = $request->input('query', '');
     $categoryId = $request->input('category');
     $sort       = $request->input('sort');
 
@@ -1154,8 +1165,9 @@ private function popularCategories($limit = 10)
 // AJAX method for autocomplete (keep your existing one)
 public function searchBooksAjax(Request $request)
 {
-    $query = $request->input('query');
-    
+    $request->validate(['query' => 'nullable|string|max:200']);
+    $query = $request->input('query', '');
+
     try {
         // First try exact match
         $books = Book::where('title', 'LIKE', "%{$query}%")
@@ -1263,10 +1275,10 @@ public function searchBooksAjax(Request $request)
     // Additional method to handle book creation with author assignment
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:191',
             'author_id' => 'nullable|exists:authors,id',
-            'author_name' => 'nullable|string|max:191', // For creating new authors
+            'author_name' => 'nullable|string|max:191',
             'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
             'publishing_house_id' => 'nullable|exists:publishing_houses,id',
@@ -1274,10 +1286,9 @@ public function searchBooksAjax(Request $request)
             'Page_Num' => 'required|integer|min:1',
             'Langue' => 'required|string',
             'Quantity' => 'required|integer|min:0',
-            // Add other validation rules as needed
         ]);
-        
-        $bookData = $request->all();
+
+        $bookData = $validated;
         
         // Handle author creation if author_name is provided but author_id is not
         if (!$request->author_id && $request->author_name) {
@@ -1782,7 +1793,7 @@ public function showproduct(Request $request)
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'حدث خطأ أثناء تحديث المنتج: ' . $e->getMessage()
+                    'message' => 'حدث خطأ أثناء تحديث المنتج، يرجى المحاولة لاحقاً.'
                 ], 500);
             }
             
@@ -1791,12 +1802,9 @@ public function showproduct(Request $request)
     }
     public function searchBook(Request $request)
     {
+        $request->validate(['q' => 'required|string|min:3|max:100']);
         $query = $request->query('q');
-        
-        if (strlen($query) < 3) {
-            return response()->json(['error' => 'Query too short'], 400);
-        }
-        
+
         $books = Book::where('ISBN', $query)
             ->orWhere('title', 'like', "%{$query}%")
             ->orWhere('author', 'like', "%{$query}%")

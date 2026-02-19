@@ -224,11 +224,11 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="payment-method-card">
-                                            <input type="radio" name="payment_method" id="creditCard" value="credit_card"
-                                                {{ old('payment_method') == 'credit_card' ? 'checked' : '' }}>
-                                            <label for="creditCard" class="form-check-label">
-                                                <i class="fas fa-credit-card"></i>
-                                                <span>بطاقة ائتمان</span>
+                                            <input type="radio" name="payment_method" id="bankTransfer" value="bank_transfer"
+                                                {{ old('payment_method') == 'bank_transfer' ? 'checked' : '' }}>
+                                            <label for="bankTransfer" class="form-check-label">
+                                                <i class="fas fa-university"></i>
+                                                <span>تحويل بنكي</span>
                                             </label>
                                         </div>
                                     </div>
@@ -236,48 +236,6 @@
                                 @error('payment_method')
                                     <div class="text-danger mt-2">{{ $message }}</div>
                                 @enderror
-
-                                <!-- Credit Card Section -->
-                                <div id="creditCardInfo" class="mt-4" style="{{ old('payment_method') == 'credit_card' ? 'display: block;' : 'display: none;' }}">
-                                    <div class="row">
-                                        <div class="col-12 mb-3">
-                                            <label for="cardNumber" class="form-label">رقم البطاقة</label>
-                                            <div class="input-group">
-                                                <input type="text" id="cardNumber" name="card_number"
-                                                    class="form-control @error('card_number') is-invalid @enderror"
-                                                    placeholder="1234 5678 9012 3456"
-                                                    value="{{ old('card_number') }}"
-                                                    data-inputmask="'mask': '9999 9999 9999 9999'">
-                                                <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
-                                                @error('card_number')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="expiryDate" class="form-label">تاريخ الانتهاء</label>
-                                            <input type="text" id="expiryDate" name="expiry_date"
-                                                class="form-control @error('expiry_date') is-invalid @enderror"
-                                                placeholder="MM/YY"
-                                                value="{{ old('expiry_date') }}"
-                                                data-inputmask="'mask': '99/99'">
-                                            @error('expiry_date')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="cvv" class="form-label">CVV</label>
-                                            <input type="text" id="cvv" name="cvv"
-                                                class="form-control @error('cvv') is-invalid @enderror"
-                                                placeholder="123"
-                                                value="{{ old('cvv') }}"
-                                                data-inputmask="'mask': '999'">
-                                            @error('cvv')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -350,7 +308,6 @@
         };
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6/jquery.inputmask.min.js"></script>
     <script src="{{ asset('js/checkout.js') }}"></script>
     <script src="{{ asset('js/header.js') }}"></script>
 </body>
