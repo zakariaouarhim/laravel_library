@@ -1,0 +1,347 @@
+* {
+    font-family: 'Cairo', sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+}
+
+.main-content {
+    padding: 2rem 1rem;
+}
+
+/* ── Page Header ─────────────────────── */
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 1rem;
+}
+
+.page-header h2 {
+    color: #2c3e50;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.page-header i.header-icon {
+    color: #3498db;
+    font-size: 2rem;
+}
+
+/* ── Stats Cards ─────────────────────── */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-right: 4px solid #3498db;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.green {
+    border-right-color: #27ae60;
+}
+
+.stat-card.orange {
+    border-right-color: #f39c12;
+}
+
+.stat-card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card-title {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.stat-card-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* ── Filter Section ──────────────────── */
+.filter-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.filter-section .form-control,
+.filter-section .form-select {
+    border-radius: 10px;
+    border: 1px solid #e0e6ed;
+    padding: 0.8rem;
+}
+
+.filter-section .form-control:focus,
+.filter-section .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.btn-apply-filters {
+    background: linear-gradient(135deg, #3498db, #2196F3);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    padding: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.btn-apply-filters:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+    color: white;
+}
+
+/* ── Table Section ───────────────────── */
+.table-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.table {
+    margin: 0;
+}
+
+.table thead {
+    background: linear-gradient(135deg, #3498db, #2196F3);
+    color: white;
+}
+
+.table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* ── Tree Rows ───────────────────────── */
+.row-parent {
+    background: #fff;
+    font-weight: 600;
+}
+
+.row-child {
+    background: #fafbfc;
+    font-size: 0.93rem;
+}
+
+.child-indent {
+    padding-right: 2.5rem !important;
+}
+
+.expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: #3498db;
+    margin-left: 0.5rem;
+    transition: 0.15s;
+}
+
+.expand-btn:hover {
+    background: #e8f4fd;
+}
+
+.children-group {
+    display: none;
+}
+
+.children-group.open {
+    display: table-row-group;
+}
+
+/* ── Action Buttons ──────────────────── */
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+}
+
+/* ── Icon Preview ────────────────────── */
+.icon-preview {
+    font-size: 1.3rem;
+    color: #3498db;
+    min-width: 24px;
+    display: inline-block;
+    text-align: center;
+}
+
+.icon-preview-sm {
+    font-size: 1rem;
+    color: #3498db;
+    min-width: 20px;
+    display: inline-block;
+    text-align: center;
+}
+
+.icon-input-preview {
+    min-width: 42px;
+    font-size: 1.2rem;
+    color: #3498db;
+}
+
+/* ── Category Image ──────────────────── */
+.cat-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.current-img-thumb {
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* ── Empty State ─────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #bdc3c7;
+    margin-bottom: 1rem;
+}
+
+/* ── Modal ───────────────────────────── */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #3498db, #2196F3);
+    color: white;
+    border: none;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-header h5 {
+    font-weight: 700;
+}
+
+.modal-header.danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.modal-body {
+    padding: 1.5rem 2rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 1rem 2rem;
+}
+
+/* ── Toast ───────────────────────────── */
+#toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 9999;
+}
+
+.toast-box {
+    padding: 0.75rem 1.2rem;
+    border-radius: 8px;
+    color: #fff;
+    margin-top: 0.5rem;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toast-box.success {
+    background: #27ae60;
+}
+
+.toast-box.danger {
+    background: #e74c3c;
+}
+
+/* ── Responsive ──────────────────────── */
+@media (max-width: 768px) {
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 0.7rem;
+    }
+}

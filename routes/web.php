@@ -21,6 +21,7 @@ use App\Http\Controllers\AccessoryController;
 use App\Http\Controllers\AdminContactController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\AdminCategoryController;
 
 use Illuminate\Http\Request;
 
@@ -137,6 +138,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     // System settings (admin-only)
     Route::get('/settings', [SystemSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SystemSettingsController::class, 'update'])->name('settings.update');
+
+    // Categories management
+    Route::get('/categories',                   [AdminCategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories',                  [AdminCategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}',        [AdminCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}',     [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
 
     // Contact messages
     Route::get('/contact-messages', [AdminContactController::class, 'index'])->name('contact-messages.index');
