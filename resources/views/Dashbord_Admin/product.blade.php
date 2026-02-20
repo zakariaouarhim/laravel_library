@@ -157,7 +157,7 @@
                                         <div class="product-author">{{ $product->author }}</div>
                                     </td>
                                     <td>
-                                        <div class="product-price">{{ number_format($product->price, 2) }} ر.س</div>
+                                        <div class="product-price">{{ number_format($product->price, 2) }} د.م</div>
                                     </td>
                                     <td>{{ $product->Page_Num ?? '-' }}</td>
                                     <td>{{ $product->Langue ?? '-' }}</td>

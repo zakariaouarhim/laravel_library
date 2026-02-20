@@ -168,8 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var subtotalEl = document.getElementById('subtotal');
         var totalEl = document.getElementById('total');
 
-        if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2) + ' ر.س';
-        if (totalEl) totalEl.textContent = total.toFixed(2) + ' ر.س';
+        if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2) + ' د.م';
+        if (totalEl) totalEl.textContent = total.toFixed(2) + ' د.م';
     }
 
     function updateCartCount(count) {

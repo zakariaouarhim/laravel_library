@@ -37,7 +37,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">المبلغ الإجمالي:</span>
-                    <span class="detail-value total">{{ number_format($order->total_price, 2) }} ر.س</span>
+                    <span class="detail-value total">{{ number_format($order->total_price, 2) }} د.م</span>
                 </div>
             </div>
 
@@ -49,7 +49,7 @@
                 <div class="book-row">
                     <span class="book-name">{{ $item->book ? $item->book->title : 'كتاب #'.$item->book_id }}</span>
                     <span class="book-qty">x{{ $item->quantity }}</span>
-                    <span class="book-price">{{ number_format($item->price * $item->quantity, 2) }} ر.س</span>
+                    <span class="book-price">{{ number_format($item->price * $item->quantity, 2) }} د.م</span>
                 </div>
                 @endforeach
             </div>

@@ -44,7 +44,7 @@
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">السعر</label>
-                                <p style="color: #27ae60; font-weight: 700; font-size: 1.3rem; margin: 0.5rem 0 0;">${parseFloat(product.price).toFixed(2)} ر.س</p>
+                                <p style="color: #27ae60; font-weight: 700; font-size: 1.3rem; margin: 0.5rem 0 0;">${parseFloat(product.price).toFixed(2)} د.م</p>
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">عدد الصفحات</label>

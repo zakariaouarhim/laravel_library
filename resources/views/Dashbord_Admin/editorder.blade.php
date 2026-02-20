@@ -314,7 +314,7 @@
                             <div class="col-md-6">
                                 <div class="info-box">
                                     <div class="info-box-title">المبلغ الإجمالي</div>
-                                    <div class="info-box-value">{{ number_format($order->total_price, 2) }} ر.س</div>
+                                    <div class="info-box-value">{{ number_format($order->total_price, 2) }} د.م</div>
                                 </div>
                             </div>
                         </div>
@@ -397,14 +397,14 @@
                                     <div class="book-title">{{ $item->book->title }}</div>
                                     <div class="book-quantity">الكمية: {{ $item->quantity }}</div>
                                 </div>
-                                <div class="book-price">{{ number_format($item->price * $item->quantity, 2) }} ر.س</div>
+                                <div class="book-price">{{ number_format($item->price * $item->quantity, 2) }} د.م</div>
                             </div>
                             @endforeach
                         </div>
 
                         <div class="total-box">
                             <div class="total-label">المجموع الكلي</div>
-                            <div class="total-value">{{ number_format($order->total_price, 2) }} ر.س</div>
+                            <div class="total-value">{{ number_format($order->total_price, 2) }} د.م</div>
                         </div>
                     </div>
                     @endif

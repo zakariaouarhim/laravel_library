@@ -61,7 +61,7 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">المبلغ الإجمالي</span>
-                        <span class="info-value total-price">{{ number_format($order->total_price, 2) }} ر.س</span>
+                        <span class="info-value total-price">{{ number_format($order->total_price, 2) }} د.م</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">حالة الطلب</span>
@@ -124,7 +124,7 @@
                             <div class="book-title">{{ $item->book ? $item->book->title : 'كتاب #'.$item->book_id }}</div>
                             <div class="book-quantity">الكمية: {{ $item->quantity }}</div>
                         </div>
-                        <div class="book-price">{{ number_format($item->price * $item->quantity, 2) }} ر.س</div>
+                        <div class="book-price">{{ number_format($item->price * $item->quantity, 2) }} د.م</div>
                     </div>
                     @endforeach
                 </div>
@@ -231,7 +231,7 @@
                     </div>
                     @endif
                     <div class="return-meta">
-                        <span>المبلغ: {{ number_format($returnReq->refund_amount, 2) }} ر.س</span>
+                        <span>المبلغ: {{ number_format($returnReq->refund_amount, 2) }} د.م</span>
                         <span>التاريخ: {{ $returnReq->created_at->format('d-m-Y H:i') }}</span>
                     </div>
                 </div>

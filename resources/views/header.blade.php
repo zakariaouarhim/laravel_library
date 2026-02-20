@@ -4,8 +4,8 @@
 <div class="top-bar" id="topBar">
     <div class="container d-flex justify-content-between align-items-center">
         <div class="top-bar-right d-flex align-items-center gap-3">
-            <span><i class="fas fa-phone-alt"></i> +213 000 000 000</span>
-            <span><i class="fas fa-envelope"></i> info@maktaba-fukara.com</span>
+            <span dir="ltr"><i class="fas fa-phone-alt "></i> +212 69 121 8840</span>
+            <span dir="ltr"><i class="fas fa-envelope"></i> info@maktaba-fukara.com</span>
         </div>
         <div class="top-bar-left d-flex align-items-center gap-3">
             @if(session('is_logged_in'))

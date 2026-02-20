@@ -29,7 +29,7 @@ function viewReturnRequest(id) {
                         <div class="book-title">${item.book ? escapeHtml(item.book.title) : 'كتاب محذوف'}</div>
                         <div class="book-quantity">الكمية: ${item.quantity}</div>
                     </div>
-                    <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} ر.س</div>
+                    <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} د.م</div>
                 </div>
             `).join('');
         }
@@ -74,7 +74,7 @@ function viewReturnRequest(id) {
                 </div>
                 <div>
                     <div class="detail-label">مبلغ الاسترداد</div>
-                    <div class="detail-value">${parseFloat(data.refund_amount).toFixed(2)} ر.س</div>
+                    <div class="detail-value">${parseFloat(data.refund_amount).toFixed(2)} د.م</div>
                 </div>
             </div>
 

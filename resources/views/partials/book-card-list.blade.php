@@ -5,9 +5,9 @@
         <p><i class="fas fa-user-edit me-1"></i>{{ $book->author }}</p>
         <p class="text-muted">{{ Str::limit($book->description, 100) }}</p>
         <div class="d-flex align-items-center mt-2">
-            <span class="fw-bold text-primary me-3">{{ $book->price }} ر.س</span>
+            <span class="fw-bold text-primary me-3">{{ $book->price }} د.م</span>
             @if($book->original_price ?? 0 > $book->price)
-                <del class="text-muted">{{ $book->original_price }} ر.س</del>
+                <del class="text-muted">{{ $book->original_price }} د.م</del>
             @endif
             <button class="btn btn-sm btn-outline-primary ms-auto" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
                 <i class="fas fa-shopping-cart me-1"></i> أضف للسلة

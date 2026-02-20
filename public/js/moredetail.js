@@ -45,7 +45,7 @@ function addToCartM(bookId) {
             updateCartCount(data.cartCount);
             
             // Show success alert instead of toast
-            showCartAlert(`تمت إضافة "${title}" (${quantity} نسخ) بسعر ${price} ر.س بنجاح`);
+            showCartAlert(`تمت إضافة "${title}" (${quantity} نسخ) بسعر ${price} د.م بنجاح`);
         }
     })
     .catch(error => {

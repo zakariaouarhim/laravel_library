@@ -129,7 +129,7 @@
                             <div class="return-header-info">
                                 <div class="return-meta">
                                     <span><i class="fas fa-calendar-alt me-1"></i>{{ $returnRequest->created_at->format('d/m/Y') }}</span>
-                                    <span><i class="fas fa-money-bill-wave me-1"></i>{{ number_format($returnRequest->refund_amount, 2) }} ر.س</span>
+                                    <span><i class="fas fa-money-bill-wave me-1"></i>{{ number_format($returnRequest->refund_amount, 2) }} د.م</span>
                                     <span><i class="fas fa-credit-card me-1"></i>{{ $returnRequest->payment_method == 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان' }}</span>
                                 </div>
                                 <div class="expand-icon">
@@ -184,8 +184,8 @@
                                                     <span class="book-qty">الكمية: {{ $item->quantity }}</span>
                                                 </div>
                                                 <div class="book-price">
-                                                    <span class="unit-price">{{ number_format($item->price, 2) }} ر.س</span>
-                                                    <span class="line-total">{{ number_format($item->price * $item->quantity, 2) }} ر.س</span>
+                                                    <span class="unit-price">{{ number_format($item->price, 2) }} د.م</span>
+                                                    <span class="line-total">{{ number_format($item->price * $item->quantity, 2) }} د.م</span>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -198,21 +198,21 @@
                                         <h6 class="section-title"><i class="fas fa-receipt me-2"></i>ملخص الطلب</h6>
                                         <div class="summary-line">
                                             <span>المجموع الفرعي</span>
-                                            <span>{{ number_format($returnRequest->order->checkoutDetail->subtotal, 2) }} ر.س</span>
+                                            <span>{{ number_format($returnRequest->order->checkoutDetail->subtotal, 2) }} د.م</span>
                                         </div>
                                         <div class="summary-line">
                                             <span>الشحن</span>
-                                            <span>{{ number_format($returnRequest->order->checkoutDetail->shipping, 2) }} ر.س</span>
+                                            <span>{{ number_format($returnRequest->order->checkoutDetail->shipping, 2) }} د.م</span>
                                         </div>
                                         @if($returnRequest->order->checkoutDetail->discount > 0)
                                             <div class="summary-line discount">
                                                 <span>الخصم</span>
-                                                <span>- {{ number_format($returnRequest->order->checkoutDetail->discount, 2) }} ر.س</span>
+                                                <span>- {{ number_format($returnRequest->order->checkoutDetail->discount, 2) }} د.م</span>
                                             </div>
                                         @endif
                                         <div class="summary-line total">
                                             <span>مبلغ الاسترداد</span>
-                                            <span>{{ number_format($returnRequest->refund_amount, 2) }} ر.س</span>
+                                            <span>{{ number_format($returnRequest->refund_amount, 2) }} د.م</span>
                                         </div>
                                     </div>
                                 @endif
@@ -263,7 +263,7 @@
                                 <option value="">-- اختر الطلب --</option>
                                 @foreach($eligibleOrders as $order)
                                     <option value="{{ $order->id }}">
-                                        طلب #{{ $order->id }} — {{ number_format($order->total_price, 2) }} ر.س
+                                        طلب #{{ $order->id }} — {{ number_format($order->total_price, 2) }} د.م
                                         ({{ $order->created_at->format('d/m/Y') }})
                                     </option>
                                 @endforeach
@@ -336,7 +336,7 @@
                             <img src="${bookImage}" alt="${bookTitle}" class="preview-book-img">
                             <div class="preview-book-info">
                                 <span class="preview-book-title">${bookTitle}</span>
-                                <span class="preview-book-qty">الكمية: ${item.quantity} × ${parseFloat(item.price).toFixed(2)} ر.س</span>
+                                <span class="preview-book-qty">الكمية: ${item.quantity} × ${parseFloat(item.price).toFixed(2)} د.م</span>
                             </div>
                         </div>
                     `;

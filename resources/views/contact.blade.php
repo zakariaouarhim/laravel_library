@@ -119,7 +119,7 @@
                         <i class="fas fa-phone-alt"></i>
                     </div>
                     <h4>الهاتف</h4>
-                    <p dir="ltr">+966 XX XXX XXXX</p>
+                    <p dir="ltr">+212 69 121 8840</p>
                 </div>
 
                 <div class="info-card">
@@ -127,7 +127,7 @@
                         <i class="fas fa-map-marker-alt"></i>
                     </div>
                     <h4>العنوان</h4>
-                    <p>المملكة العربية السعودية</p>
+                    <p>المملكة المغربية</p>
                 </div>
 
                 <div class="info-card">
@@ -135,23 +135,23 @@
                         <i class="fas fa-clock"></i>
                     </div>
                     <h4>ساعات العمل</h4>
-                    <p>السبت - الخميس: 9 صباحاً - 10 مساءً</p>
+                    <p>الثلثاء - الأحد: 10 صباحاً - 8 مساءً</p>
                 </div>
 
                 <!-- Social Links -->
                 <div class="social-section">
                     <h4>تابعنا</h4>
                     <div class="social-links">
-                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <a href="https://www.facebook.com/maktabatalfokara" target="_blank" rel="noopener noreferrer" class="social-link">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <a href="https://www.instagram.com/maktabat_lfokara" target="_blank" rel="noopener noreferrer" class="social-link">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <a href="https://wa.me/212691218840" target="_blank" rel="noopener noreferrer" class="social-link">
                             <i class="fab fa-whatsapp"></i>
                         </a>
-                        <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <a href="https://www.tiktok.com/@maktabatalfokara" target="_blank" rel="noopener noreferrer" class="social-link">
                             <i class="fab fa-tiktok"></i>
                         </a>
                     </div>

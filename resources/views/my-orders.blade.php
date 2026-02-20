@@ -111,7 +111,7 @@
                                 <div class="order-meta">
                                     <span><i class="fas fa-calendar-alt me-1"></i>{{ $order->created_at->format('d/m/Y') }}</span>
                                     <span><i class="fas fa-box me-1"></i>{{ $order->orderDetails->count() }} عنصر</span>
-                                    <span class="order-total"><i class="fas fa-money-bill-wave me-1"></i>{{ number_format($order->total_price, 2) }} ر.س</span>
+                                    <span class="order-total"><i class="fas fa-money-bill-wave me-1"></i>{{ number_format($order->total_price, 2) }} د.م</span>
                                 </div>
                                 <div class="expand-icon">
                                     <i class="fas fa-chevron-down"></i>
@@ -144,8 +144,8 @@
                                                     <span class="book-qty">الكمية: {{ $item->quantity }}</span>
                                                 </div>
                                                 <div class="book-price">
-                                                    <span class="unit-price">{{ number_format($item->price, 2) }} ر.س</span>
-                                                    <span class="line-total">{{ number_format($item->price * $item->quantity, 2) }} ر.س</span>
+                                                    <span class="unit-price">{{ number_format($item->price, 2) }} د.م</span>
+                                                    <span class="line-total">{{ number_format($item->price * $item->quantity, 2) }} د.م</span>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -159,26 +159,26 @@
                                         @if($order->checkoutDetail)
                                             <div class="summary-line">
                                                 <span>المجموع الفرعي</span>
-                                                <span>{{ number_format($order->checkoutDetail->subtotal, 2) }} ر.س</span>
+                                                <span>{{ number_format($order->checkoutDetail->subtotal, 2) }} د.م</span>
                                             </div>
                                             <div class="summary-line">
                                                 <span>الشحن</span>
-                                                <span>{{ number_format($order->checkoutDetail->shipping, 2) }} ر.س</span>
+                                                <span>{{ number_format($order->checkoutDetail->shipping, 2) }} د.م</span>
                                             </div>
                                             @if($order->checkoutDetail->discount > 0)
                                                 <div class="summary-line discount">
                                                     <span>الخصم</span>
-                                                    <span>- {{ number_format($order->checkoutDetail->discount, 2) }} ر.س</span>
+                                                    <span>- {{ number_format($order->checkoutDetail->discount, 2) }} د.م</span>
                                                 </div>
                                             @endif
                                             <div class="summary-line total">
                                                 <span>الإجمالي</span>
-                                                <span>{{ number_format($order->checkoutDetail->total, 2) }} ر.س</span>
+                                                <span>{{ number_format($order->checkoutDetail->total, 2) }} د.م</span>
                                             </div>
                                         @else
                                             <div class="summary-line total">
                                                 <span>الإجمالي</span>
-                                                <span>{{ number_format($order->total_price, 2) }} ر.س</span>
+                                                <span>{{ number_format($order->total_price, 2) }} د.م</span>
                                             </div>
                                         @endif
                                     </div>

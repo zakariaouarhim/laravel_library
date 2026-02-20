@@ -55,7 +55,7 @@
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">المبلغ الإجمالي</span>
-                                <div class="detail-value">{{ number_format($order->total_price, 2) }} ر.س</div>
+                                <div class="detail-value">{{ number_format($order->total_price, 2) }} د.م</div>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">طريقة الدفع</span>
@@ -94,7 +94,7 @@
                                     <div class="item-name">كتاب #{{ $item->book->title }}</div>
                                     <div class="item-quantity">الكمية: {{ $item->quantity }}</div>
                                 </div>
-                                <div class="item-price">{{ number_format($item->price * $item->quantity, 2) }} ر.س</div>
+                                <div class="item-price">{{ number_format($item->price * $item->quantity, 2) }} د.م</div>
                             </div>
                             @endforeach
                         </div>

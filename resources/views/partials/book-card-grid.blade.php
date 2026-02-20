@@ -33,9 +33,9 @@
         @endif
 
         <div class="price-section">
-            <span class="price">{{ $book->price }} <span class="currency">ر.س</span></span>
+            <span class="price">{{ $book->price }} <span class="currency">د.م</span></span>
             @if($book->original_price ?? 0 > $book->price)
-                <span class="original-price">{{ $book->original_price }} <span class="currency">ر.س</span></span>
+                <span class="original-price">{{ $book->original_price }} <span class="currency">د.م</span></span>
             @endif
             <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
                 <i class="fas fa-shopping-cart"></i>

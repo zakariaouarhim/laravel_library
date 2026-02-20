@@ -10,7 +10,7 @@
     <label class="form-label">نوع الخصم *</label>
     <select name="type" class="form-select @error('type') is-invalid @enderror" required>
         <option value="percentage" {{ old('type', $coupon->type ?? '') === 'percentage' ? 'selected' : '' }}>نسبة مئوية (%)</option>
-        <option value="fixed"      {{ old('type', $coupon->type ?? '') === 'fixed'      ? 'selected' : '' }}>مبلغ ثابت (ر.س)</option>
+        <option value="fixed"      {{ old('type', $coupon->type ?? '') === 'fixed'      ? 'selected' : '' }}>مبلغ ثابت (د.م)</option>
     </select>
     @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>
@@ -24,7 +24,7 @@
 </div>
 
 <div class="mb-3">
-    <label class="form-label">الحد الأدنى للطلب (ر.س)</label>
+    <label class="form-label">الحد الأدنى للطلب (د.م)</label>
     <input type="number" name="min_order_amount" class="form-control"
            step="0.01" min="0"
            value="{{ old('min_order_amount', $coupon->min_order_amount ?? 0) }}">

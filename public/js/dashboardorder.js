@@ -28,7 +28,7 @@
                             <div class="book-title">${item.book.title}</div>
                             <div class="book-quantity">الكمية: ${item.quantity}</div>
                         </div>
-                        <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} ر.س</div>
+                        <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} د.م</div>
                     </div>
                 `).join('');
 
@@ -47,7 +47,7 @@
                     <div class="detail-row">
                         <div>
                             <div class="detail-label">المبلغ الإجمالي</div>
-                            <div class="detail-value">${parseFloat(data.total_price).toFixed(2)} ر.س</div>
+                            <div class="detail-value">${parseFloat(data.total_price).toFixed(2)} د.م</div>
                         </div>
                         <div>
                             <div class="detail-label">طريقة الدفع</div>

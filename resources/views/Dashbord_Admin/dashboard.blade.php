@@ -62,7 +62,7 @@
                             <i class="fas fa-coins"></i>
                         </div>
                         <div class="stat-title">إجمالي الإيرادات</div>
-                        <div class="stat-value">{{ number_format($totalRevenue ?? 0, 2) }} ر.س</div>
+                        <div class="stat-value">{{ number_format($totalRevenue ?? 0, 2) }} د.م</div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i>
                             +{{ $revenueIncrease ?? 0 }}% هذا الشهر
@@ -143,7 +143,7 @@
                                 @forelse($recentOrders ?? [] as $order)
                                 <tr>
                                     <td><span class="order-id">#{{ $order->id }}</span></td>
-                                    <td>{{ number_format($order->total_price, 2) }} ر.س</td>
+                                    <td>{{ number_format($order->total_price, 2) }} د.م</td>
                                     <td>
                                         @if($order->payment_method == 'cod')
                                             <span class="badge badge-custom badge-pending">الدفع عند الاستلام</span>

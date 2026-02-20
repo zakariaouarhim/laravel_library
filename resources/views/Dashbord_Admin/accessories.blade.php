@@ -142,7 +142,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="product-price">{{ number_format($accessory->price, 2) }} ر.س</div>
+                                        <div class="product-price">{{ number_format($accessory->price, 2) }} د.م</div>
                                     </td>
                                     <td>
                                         @if($accessory->discount)

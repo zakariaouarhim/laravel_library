@@ -41,7 +41,7 @@ function viewOrder(orderId) {
                         <div class="book-title">${escapeHtml(item.book.title)}</div>
                         <div class="book-quantity">الكمية: ${item.quantity}</div>
                     </div>
-                    <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} ر.س</div>
+                    <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} د.م</div>
                 </div>
             `).join('');
         }
@@ -69,7 +69,7 @@ function viewOrder(orderId) {
             <div class="detail-row">
                 <div>
                     <span class="detail-label">المبلغ الإجمالي</span>
-                    <div class="detail-value"><strong>${parseFloat(data.total_price).toFixed(2)} ر.س</strong></div>
+                    <div class="detail-value"><strong>${parseFloat(data.total_price).toFixed(2)} د.م</strong></div>
                 </div>
                 <div>
                     <span class="detail-label">طريقة الدفع</span>

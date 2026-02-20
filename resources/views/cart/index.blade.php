@@ -68,7 +68,7 @@
                                                     <a href="{{ route('moredetail.page', ['id' => $id]) }}">{{ $item['title'] }}</a>
                                                 </h3>
                                                 <div class="cart-item-price">
-                                                    <span class="unit-price">{{ number_format($item['price'], 2) }} ر.س</span>
+                                                    <span class="unit-price">{{ number_format($item['price'], 2) }} د.م</span>
                                                 </div>
                                             </div>
                                             <div class="cart-item-actions">
@@ -84,7 +84,7 @@
                                                     </button>
                                                 </div>
                                                 <div class="item-total">
-                                                    <span id="itemTotal_{{ $id }}">{{ number_format($item['price'] * $item['quantity'], 2) }}</span> ر.س
+                                                    <span id="itemTotal_{{ $id }}">{{ number_format($item['price'] * $item['quantity'], 2) }}</span> د.م
                                                 </div>
                                                 <button type="button" class="remove-btn" data-id="{{ $id }}" title="حذف المنتج">
                                                     <i class="fas fa-trash-alt"></i>
@@ -114,20 +114,20 @@
                             <div class="summary-card-body">
                                 <div class="summary-row">
                                     <span>المجموع الفرعي</span>
-                                    <span id="subtotal">{{ number_format($subtotal, 2) }} ر.س</span>
+                                    <span id="subtotal">{{ number_format($subtotal, 2) }} د.م</span>
                                 </div>
                                 <div class="summary-row">
                                     <span>رسوم الشحن</span>
-                                    <span id="shipping">{{ number_format($shipping, 2) }} ر.س</span>
+                                    <span id="shipping">{{ number_format($shipping, 2) }} د.م</span>
                                 </div>
                                 <div class="summary-row discount-row">
                                     <span>الخصم</span>
-                                    <span id="discount">-{{ number_format($discount, 2) }} ر.س</span>
+                                    <span id="discount">-{{ number_format($discount, 2) }} د.م</span>
                                 </div>
                                 <div class="summary-divider"></div>
                                 <div class="summary-row total-row">
                                     <span>الإجمالي</span>
-                                    <span id="total">{{ number_format($total, 2) }} ر.س</span>
+                                    <span id="total">{{ number_format($total, 2) }} د.م</span>
                                 </div>
                             </div>
                             <div class="summary-card-footer">

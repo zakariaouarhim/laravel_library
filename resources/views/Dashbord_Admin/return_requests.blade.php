@@ -128,7 +128,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <strong>{{ number_format($returnRequest->refund_amount, 2) }} ر.س</strong>
+                                        <strong>{{ number_format($returnRequest->refund_amount, 2) }} د.م</strong>
                                     </td>
                                     <td>
                                         @php

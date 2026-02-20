@@ -149,7 +149,7 @@ function updateItemPriceDisplay(itemElement) {
     const priceElement = itemElement.querySelector('.fw-bold.text-primary');
     
     if (priceElement) {
-        priceElement.textContent = `${itemTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
+        priceElement.textContent = `${itemTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
     }
 }
 
@@ -275,10 +275,10 @@ function updateTotals() {
     const total = subtotal + shipping - discount;
     
     // Update DOM elements
-    document.getElementById('subtotal').textContent = `${subtotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
-    document.getElementById('shipping').textContent = `${shipping.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
-    document.getElementById('discount').textContent = `-${discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
-    document.getElementById('total').textContent = `${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ر.س`;
+    document.getElementById('subtotal').textContent = `${subtotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
+    document.getElementById('shipping').textContent = `${shipping.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
+    document.getElementById('discount').textContent = `-${discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
+    document.getElementById('total').textContent = `${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
     
     // Disable checkout button if cart is empty
     const completeOrderBtn = document.getElementById('completeOrder');
@@ -469,7 +469,7 @@ function enableQuantityInput(itemId) {
         const discountEl = document.getElementById('discount');
         if (!discountEl || !discountEl.hasAttribute('data-coupon-discount')) return;
         const couponDiscount = parseFloat(discountEl.getAttribute('data-coupon-discount')) || 0;
-        discountEl.textContent = '-' + couponDiscount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ر.س';
+        discountEl.textContent = '-' + couponDiscount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' د.م';
 
         // Recalculate total with coupon
         let subtotal = 0;
@@ -479,7 +479,7 @@ function enableQuantityInput(itemId) {
             if (!isNaN(q) && !isNaN(p)) subtotal += q * p;
         });
         const total = subtotal + 25.00 - couponDiscount;
-        document.getElementById('total').textContent = total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ر.س';
+        document.getElementById('total').textContent = total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' د.م';
     };
 })();
 

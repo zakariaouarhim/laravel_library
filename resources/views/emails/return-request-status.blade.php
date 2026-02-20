@@ -48,7 +48,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">مبلغ الاسترداد:</span>
-                    <span class="detail-value">{{ number_format($returnRequest->refund_amount, 2) }} ر.س</span>
+                    <span class="detail-value">{{ number_format($returnRequest->refund_amount, 2) }} د.م</span>
                 </div>
             </div>
 

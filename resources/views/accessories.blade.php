@@ -110,13 +110,13 @@
                                             <span class="input-group-text">من</span>
                                             <input type="number" class="form-control" name="price_min"
                                                 placeholder="0" value="{{ request('price_min') }}">
-                                            <span class="input-group-text">ر.س</span>
+                                            <span class="input-group-text">د.م</span>
                                         </div>
                                         <div class="input-group mt-2">
                                             <span class="input-group-text">إلى</span>
                                             <input type="number" class="form-control" name="price_max"
                                                 placeholder="1000" value="{{ request('price_max') }}">
-                                            <span class="input-group-text">ر.س</span>
+                                            <span class="input-group-text">د.م</span>
                                         </div>
                                     </div>
                                 </div>

@@ -11,16 +11,16 @@
                         </a>
                         <p class="footer-about">نؤمن بأن المعرفة حق للجميع. نسعى لتوفير أفضل الكتب بأسعار مناسبة لكل القراء.</p>
                         <div class="footer-social">
-                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <a href="https://www.facebook.com/maktabatalfokara" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
-                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                            <a href="https://www.instagram.com/maktabat_lfokara" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                                 <i class="fab fa-instagram"></i>
                             </a>
-                            <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                            <a href="https://wa.me/212691218840" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
-                            <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                            <a href="https://www.tiktok.com/@maktabatalfokara" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
                                 <i class="fab fa-tiktok"></i>
                             </a>
                         </div>
@@ -57,15 +57,15 @@
                             </li>
                             <li>
                                 <i class="fas fa-phone-alt"></i>
-                                <span dir="ltr">+966 XX XXX XXXX</span>
+                                <span dir="ltr">+212 69 121 8840</span>
                             </li>
                             <li>
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>المملكة العربية السعودية</span>
+                                <span>المملكة المغربية</span>
                             </li>
                             <li>
                                 <i class="fas fa-clock"></i>
-                                <span>السبت - الخميس: 9ص - 10م</span>
+                                <span>الثلثاء - الأحد: 10 صباحاً - 8 مساءً</span>
                             </li>
                         </ul>
                     </div>

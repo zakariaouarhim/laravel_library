@@ -39,7 +39,7 @@ function viewAccessory(id) {
                     <h4 style="color: #2c3e50; font-weight: 700; margin-bottom: 1rem;">${item.title}</h4>
                     <div style="margin-bottom: 1rem;">
                         <label style="color: #48CAE4; font-weight: 600; font-size: 0.9rem;">السعر</label>
-                        <p style="color: #27ae60; font-weight: 700; font-size: 1.3rem; margin: 0.5rem 0 0;">${parseFloat(item.price).toFixed(2)} ر.س</p>
+                        <p style="color: #27ae60; font-weight: 700; font-size: 1.3rem; margin: 0.5rem 0 0;">${parseFloat(item.price).toFixed(2)} د.م</p>
                     </div>
                     ${item.discount ? `
                     <div style="margin-bottom: 1rem;">

@@ -116,9 +116,9 @@
 
                     <!-- Price -->
                     <div class="v2-price-block">
-                        <span class="v2-price">{{ $book->price }} <small>ر.س</small></span>
+                        <span class="v2-price">{{ $book->price }} <small>د.م</small></span>
                         @if(($book->original_price ?? 0) > $book->price)
-                        <span class="v2-original-price">{{ $book->original_price }} ر.س</span>
+                        <span class="v2-original-price">{{ $book->original_price }} د.م</span>
                         @endif
                         @if($book->discount ?? 0 > 0)
                         <span class="v2-discount-pill">وفّر {{ $book->discount }}%</span>

@@ -131,12 +131,12 @@
                                         @if($coupon->type === 'percentage')
                                             {{ $coupon->value }}%
                                         @else
-                                            {{ number_format($coupon->value, 2) }} ر.س
+                                            {{ number_format($coupon->value, 2) }} د.م
                                         @endif
                                     </td>
                                     <td>
                                         @if($coupon->min_order_amount > 0)
-                                            {{ number_format($coupon->min_order_amount, 2) }} ر.س
+                                            {{ number_format($coupon->min_order_amount, 2) }} د.م
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
@@ -314,7 +314,7 @@ function openEdit(id, coupon) {
             <label class="form-label">نوع الخصم *</label>
             <select id="edit_type" class="form-select">
                 <option value="percentage" ${coupon.type === 'percentage' ? 'selected' : ''}>نسبة مئوية (%)</option>
-                <option value="fixed"      ${coupon.type === 'fixed'      ? 'selected' : ''}>مبلغ ثابت (ر.س)</option>
+                <option value="fixed"      ${coupon.type === 'fixed'      ? 'selected' : ''}>مبلغ ثابت (د.م)</option>
             </select>
         </div>
         <div class="mb-3">
@@ -322,7 +322,7 @@ function openEdit(id, coupon) {
             <input type="number" id="edit_value" class="form-control" step="0.01" min="0.01" value="${coupon.value}" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">الحد الأدنى للطلب (ر.س)</label>
+            <label class="form-label">الحد الأدنى للطلب (د.م)</label>
             <input type="number" id="edit_min_order" class="form-control" step="0.01" min="0" value="${coupon.min_order_amount || 0}">
         </div>
         <div class="mb-3">

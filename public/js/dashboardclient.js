@@ -91,7 +91,7 @@
                                     <div class="item-name">${escapeHtml(item.book?.title || 'منتج')}</div>
                                     <div class="item-quantity">الكمية: ${item.quantity}</div>
                                 </div>
-                                <div class="item-price">${parseFloat(item.price * item.quantity).toFixed(2)} ر.س</div>
+                                <div class="item-price">${parseFloat(item.price * item.quantity).toFixed(2)} د.م</div>
                             </div>
                         `).join('');
                     }
@@ -106,7 +106,7 @@
                             <div class="order-details-row">
                                 <div class="order-detail-item">
                                     <span class="order-detail-label">المبلغ الإجمالي</span>
-                                    <span class="order-detail-value">${parseFloat(order.total_price).toFixed(2)} ر.س</span>
+                                    <span class="order-detail-value">${parseFloat(order.total_price).toFixed(2)} د.م</span>
                                 </div>
                                 <div class="order-detail-item">
                                     <span class="order-detail-label">طريقة الدفع</span>
@@ -175,7 +175,7 @@
                         <div class="detail-box">
                             <span class="detail-label">إجمالي الإنفاق</span>
                             <div class="detail-value">
-                                ${data.orders ? parseFloat(data.orders.reduce((sum, order) => sum + parseFloat(order.total_price || 0), 0)).toFixed(2) : '0.00'} ر.س
+                                ${data.orders ? parseFloat(data.orders.reduce((sum, order) => sum + parseFloat(order.total_price || 0), 0)).toFixed(2) : '0.00'} د.م
                             </div>
                         </div>
                     </div>

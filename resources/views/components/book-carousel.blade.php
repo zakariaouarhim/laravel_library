@@ -55,9 +55,9 @@
                     </p>
                     
                     <div class="price-section">
-                        <span class="price">{{ $book->price }} <span class="currency">ر.س</span></span>
+                        <span class="price">{{ $book->price }} <span class="currency">د.م</span></span>
                         @if(($book->discount ?? 0) > 0)
-                            <span class="original-price">{{ round($book->price / (1 - $book->discount / 100)) }} <span class="currency">ر.س</span></span>
+                            <span class="original-price">{{ round($book->price / (1 - $book->discount / 100)) }} <span class="currency">د.م</span></span>
                         @endif
                         <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
                             <i class="fas fa-shopping-cart"></i>

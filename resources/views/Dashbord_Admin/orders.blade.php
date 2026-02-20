@@ -117,7 +117,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <strong>{{ number_format($order->total_price, 2) }} ر.س</strong>
+                                        <strong>{{ number_format($order->total_price, 2) }} د.م</strong>
                                     </td>
                                     <td>
                                         @if($order->payment_method == 'cod')

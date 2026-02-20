@@ -234,7 +234,7 @@ function renderAuthorDetails(author, booksByType) {
                     <img src="${bookImg}" alt="">
                     <div>
                         <strong>${escapeHtml(book.title)}</strong>
-                        <br><small class="text-muted">${book.price} ر.س</small>
+                        <br><small class="text-muted">${book.price} د.م</small>
                     </div>
                 </div>
             `;

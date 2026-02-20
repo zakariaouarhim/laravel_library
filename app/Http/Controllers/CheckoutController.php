@@ -245,7 +245,7 @@ class CheckoutController extends Controller
 
         if ($subtotal < $coupon->min_order_amount) {
             $min = number_format($coupon->min_order_amount, 2);
-            return response()->json(['success' => false, 'message' => "الحد الأدنى للطلب لاستخدام هذا الكوبون هو {$min} ر.س"], 422);
+            return response()->json(['success' => false, 'message' => "الحد الأدنى للطلب لاستخدام هذا الكوبون هو {$min} د.م"], 422);
         }
 
         $discount = $coupon->discountFor($subtotal);

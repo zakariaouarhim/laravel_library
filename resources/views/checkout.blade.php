@@ -96,7 +96,7 @@
                                             <div class="flex-grow-1">
                                                 <h3 class="fs-6 mb-1">{{ $item['title'] }}</h3>
                                                 <div class="d-flex align-items-center">
-                                                    <span class="fw-bold text-primary me-3">{{ number_format($item['price'] * $item['quantity'], 2) }} ر.س</span>
+                                                    <span class="fw-bold text-primary me-3">{{ number_format($item['price'] * $item['quantity'], 2) }} د.م</span>
                                                 </div>
                                             </div>
 
@@ -259,20 +259,20 @@
                                 <div class="order-summary">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span>المجموع الفرعي:</span>
-                                        <span id="subtotal">{{ number_format($subtotal, 2) }} ر.س</span>
+                                        <span id="subtotal">{{ number_format($subtotal, 2) }} د.م</span>
                                     </div>
                                     <div class="d-flex justify-content-between mb-2">
                                         <span>رسوم الشحن:</span>
-                                        <span id="shipping">{{ number_format($shipping, 2) }} ر.س</span>
+                                        <span id="shipping">{{ number_format($shipping, 2) }} د.م</span>
                                     </div>
                                     <div class="d-flex justify-content-between mb-2 text-success">
                                         <span>الخصم:</span>
-                                        <span id="discount">-{{ number_format($discount, 2) }} ر.س</span>
+                                        <span id="discount">-{{ number_format($discount, 2) }} د.م</span>
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between fw-bold">
                                         <span>الإجمالي:</span>
-                                        <span id="total">{{ number_format($total, 2) }} ر.س</span>
+                                        <span id="total">{{ number_format($total, 2) }} د.م</span>
                                     </div>
                                 </div>
 
@@ -285,7 +285,7 @@
                                     <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox"
                                         id="termsCheck" name="terms" required {{ old('terms') ? 'checked' : '' }}>
                                     <label class="form-check-label small" for="termsCheck">
-                                        أوافق على <a href="#">الشروط والأحكام</a>
+                                        أوافق على <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">الشروط والأحكام</a>
                                     </label>
                                     @error('terms')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -300,6 +300,83 @@
     </div>
 
     @include('footer')
+
+    <!-- Terms & Conditions Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">
+                        <i class="fas fa-file-contract me-2 text-primary"></i>الشروط والأحكام
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body" style="font-family:'Tajawal',sans-serif;line-height:1.9;color:#333;">
+
+                    <p class="text-muted small">آخر تحديث: {{ date('d/m/Y') }}</p>
+
+                    <p>مرحباً بك في متجر <strong>أسير الكتب</strong>. باستخدامك لهذا الموقع وإتمامك لعملية الشراء، فإنك توافق على الشروط والأحكام التالية. يُرجى قراءتها بعناية قبل تقديم طلبك.</p>
+
+                    <hr>
+
+                    <h6 class="fw-bold mt-4">١. الطلبات والدفع</h6>
+                    <ul>
+                        <li>جميع الأسعار المعروضة بالدرهم المغربي (د.م) وتشمل الضرائب المقررة.</li>
+                        <li>يُعدّ طلبك مؤكداً فور استلامك بريد التأكيد الإلكتروني.</li>
+                        <li>نحتفظ بالحق في إلغاء أي طلب في حال عدم توفر المنتج أو وجود خطأ في السعر، مع إعادة المبلغ كاملاً.</li>
+                        <li>طرق الدفع المتاحة: الدفع عند الاستلام والتحويل البنكي.</li>
+                        <li>في حال اخترت التحويل البنكي، يجب إرسال إثبات التحويل خلال 48 ساعة من تقديم الطلب، وإلا سيُلغى الطلب تلقائياً.</li>
+                    </ul>
+
+                    <h6 class="fw-bold mt-4">٢. الشحن والتوصيل</h6>
+                    <ul>
+                        <li>يُشحن الطلب خلال 1 إلى 3 أيام عمل من تأكيد الدفع.</li>
+                        <li>تتراوح مدة التوصيل بين 3 و7 أيام عمل حسب المنطقة الجغرافية.</li>
+                        <li>رسوم الشحن ثابتة وتُحسب تلقائياً عند إتمام الطلب.</li>
+                        <li>لا نتحمل المسؤولية عن أي تأخير ناجم عن ظروف خارجة عن إرادتنا (كوارث طبيعية، إضرابات، إلخ).</li>
+                    </ul>
+
+                    <h6 class="fw-bold mt-4">٣. الإرجاع والاستبدال</h6>
+                    <ul>
+                        <li>يحق لك طلب الإرجاع خلال <strong>7 أيام</strong> من تاريخ الاستلام، شريطة أن يكون المنتج بحالته الأصلية غير مستخدم.</li>
+                        <li>لا تُقبل إعادة الكتب التي فُتحت أغلفتها المحكمة أو الكتب الرقمية.</li>
+                        <li>في حال وجود عيب مصنعي أو خطأ في الطلب، نتحمل تكاليف الشحن العكسي كاملاً.</li>
+                        <li>يُعاد المبلغ إلى نفس وسيلة الدفع خلال 5 إلى 10 أيام عمل.</li>
+                    </ul>
+
+                    <h6 class="fw-bold mt-4">٤. الخصوصية وحماية البيانات</h6>
+                    <ul>
+                        <li>نلتزم بحماية بياناتك الشخصية ولا نبيعها أو نشاركها مع أطراف ثالثة لأغراض تجارية.</li>
+                        <li>تُستخدم بياناتك حصراً لمعالجة الطلبات وتحسين تجربتك في المتجر.</li>
+                        <li>يحق لك طلب حذف بياناتك في أي وقت عبر التواصل معنا.</li>
+                    </ul>
+
+                    <h6 class="fw-bold mt-4">٥. الملكية الفكرية</h6>
+                    <ul>
+                        <li>جميع محتويات الموقع (نصوص، صور، شعارات) هي ملك حصري لمتجر <strong>أسير الكتب</strong> ومحمية بموجب قوانين حقوق الملكية الفكرية.</li>
+                        <li>يُحظر نسخ أي محتوى أو إعادة استخدامه دون إذن كتابي مسبق.</li>
+                    </ul>
+
+                    <h6 class="fw-bold mt-4">٦. تعديل الشروط</h6>
+                    <p>نحتفظ بالحق في تعديل هذه الشروط في أي وقت. سيتم إشعارك بأي تغييرات جوهرية عبر البريد الإلكتروني المسجل لديك. استمرارك في استخدام الموقع بعد نشر التعديلات يُعدّ قبولاً صريحاً لها.</p>
+
+                    <h6 class="fw-bold mt-4">٧. القانون المطبق</h6>
+                    <p>تخضع هذه الشروط لأحكام القانون المغربي المتعلق بالتجارة الإلكترونية، وتختص المحاكم المغربية بالفصل في أي نزاع ينشأ عنها.</p>
+
+                    <hr>
+                    <p class="text-muted small mb-0">للتواصل معنا بشأن أي استفسار حول هذه الشروط، يُرجى مراسلتنا عبر صفحة <a href="{{ url('/contact') }}">التواصل معنا</a>.</p>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                            onclick="document.getElementById('termsCheck').checked = true;">
+                        <i class="fas fa-check me-1"></i> أوافق على الشروط والأحكام
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script>

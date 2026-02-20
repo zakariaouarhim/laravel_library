@@ -32,9 +32,9 @@ function showCartModal() {
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
                                     <span class="text-muted me-2">${item.quantity} × </span>
-                                    <span class="fw-bold">${item.price} ر.س</span>
+                                    <span class="fw-bold">${item.price} د.م</span>
                                 </div>
-                                <span class="fw-bold">${(item.price * item.quantity).toFixed(2)} ر.س</span>
+                                <span class="fw-bold">${(item.price * item.quantity).toFixed(2)} د.م</span>
                             </div>
                         </div>
                         <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="removeFromCart('${item.id}')">
@@ -49,7 +49,7 @@ function showCartModal() {
                 modalBody.innerHTML += `
                 <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                     <h5 class="mb-0">الإجمالي:</h5>
-                    <h5 class="mb-0 text-primary">${total.toFixed(2)} ر.س</h5>
+                    <h5 class="mb-0 text-primary">${total.toFixed(2)} د.م</h5>
                 </div>`;
             }
             if (data.success) {
@@ -139,7 +139,7 @@ function searchBooksAutocomplete(query, containerId = 'searchResults') {
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">${book.title}</h6>
                                 <small class="text-muted">${book.author}</small>
-                                ${book.price ? `<div class="text-primary fw-bold">${book.price} ر.س</div>` : ''}
+                                ${book.price ? `<div class="text-primary fw-bold">${book.price} د.م</div>` : ''}
                             </div>
                         </a>
                     `;

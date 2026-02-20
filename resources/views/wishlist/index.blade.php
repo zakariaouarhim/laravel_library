@@ -52,7 +52,7 @@
                     </span>
                     <span class="wl-total">
                         <i class="fas fa-tag"></i>
-                        الإجمالي: <strong>{{ number_format($wishlist->sum('price'), 2) }} ر.س</strong>
+                        الإجمالي: <strong>{{ number_format($wishlist->sum('price'), 2) }} د.م</strong>
                     </span>
                 </div>
                 <div class="wl-actions">
@@ -93,9 +93,9 @@
                         </p>
                         @endif
                         <div class="wl-card-price">
-                            {{ $book->price }} <span>ر.س</span>
+                            {{ $book->price }} <span>د.م</span>
                             @if($book->original_price ?? 0 > $book->price)
-                            <span class="wl-original-price">{{ $book->original_price }} ر.س</span>
+                            <span class="wl-original-price">{{ $book->original_price }} د.م</span>
                             @endif
                         </div>
                         <div class="wl-card-actions">
