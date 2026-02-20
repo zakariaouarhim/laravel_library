@@ -21,7 +21,13 @@
       "Bash(ls \"c:\\\\laravel\\\\library_fokara\\\\app\\\\View\\\\Composers\"\" 2>nul || echo \"Directory does not exist \")",
       "Bash(git log:*)",
       "Bash(New-Item:*)",
-      "Bash(composer require:*)"
+      "Bash(composer require:*)",
+      "Bash(# Check HomeController - is it used anywhere? grep -rn \"\"HomeController\"\" c:/laravel/library_fokara/routes/ c:/laravel/library_fokara/app/ # Check scripts.js vs scripts1.js ls -la c:/laravel/library_fokara/public/js/scripts*.js # Check UserModel vs User models cat c:/laravel/library_fokara/app/Models/User.php)",
+      "Bash(# Check scripts1.js content cat c:/laravel/library_fokara/public/js/scripts1.js # Check login2 - is it used anywhere? grep -rn \"\"login2\"\" c:/laravel/library_fokara/resources/views/ c:/laravel/library_fokara/routes/)",
+      "Bash(# Check if HomeController is referenced anywhere grep -rn \"\"HomeController\"\" c:/laravel/library_fokara/ --include=\"\"*.php\"\" --include=\"\"*.blade.php\"\")",
+      "Bash(# Check if scripts1.js is referenced in any view grep -rn \"\"scripts1\"\" c:/laravel/library_fokara/resources/ # Check main.blade.php cat c:/laravel/library_fokara/resources/views/main.blade.php)",
+      "Bash(# Check if main.blade.php is referenced anywhere grep -rn \"\"main\\\\b\"\" c:/laravel/library_fokara/resources/ --include=\"\"*.blade.php\"\")",
+      "Bash(# Check scripts1.js references in views grep -rn \"\"scripts1\\\\.js\"\" c:/laravel/library_fokara/resources/ # Check welcome.blade.php routing grep -rn \"\"welcome\"\" c:/laravel/library_fokara/routes/ # Check main.blade.php references grep -rn \"\"main\\\\.blade\\\\|''main''\"\" c:/laravel/library_fokara/resources/views/ --include=\"\"*.blade.php\"\")"
     ]
   }
 }

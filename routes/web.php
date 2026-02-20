@@ -10,7 +10,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\AuthorController;
-use App\Http\Controllers\Shipment;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\CheckoutController;
@@ -208,7 +207,7 @@ Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideR
 
 // ==================== ACCOUNT / USER ====================
 
-Route::get('/account', [UserController::class, 'account'])->middleware('auth')->name('account.page');
+Route::get('/account', [Usercontroller::class, 'account'])->middleware('auth')->name('account.page');
 Route::post('/account/avatar', [Usercontroller::class, 'uploadAvatar'])->middleware('auth')->name('avatar.upload');
 Route::get('/my-orders', [OrderController::class, 'myOrders'])->middleware('auth')->name('my-orders.index');
 Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->middleware('auth')->name('orders.cancel');

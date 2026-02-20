@@ -434,9 +434,7 @@ class ShipmentController extends Controller
             }
             
             // Save the product
-            \Log::info('Attempting to save product...');
             $saved = $product->save();
-            \Log::info('Product save result: ' . ($saved ? 'SUCCESS' : 'FAILED'));
             
             if (!$saved) {
                 throw new \Exception('Failed to save product to database');

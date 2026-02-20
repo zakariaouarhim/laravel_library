@@ -9,7 +9,6 @@ class ReviewController extends Controller
 {
     public function store(Request $request)
     {
-        //dd($request->all());
         $request->validate([
             'book_id' => 'required|exists:books,id',
             'rating' => 'required|integer|min:1|max:5',
@@ -33,7 +32,6 @@ class ReviewController extends Controller
             'comment' => $request->comment,
             'is_read' => $request->has('is_read') ? 1 : 0,
         ]);
-        //dd($request->all());
         return back()->with('success', 'تم إرسال تقييمك بنجاح.');
     }
 }

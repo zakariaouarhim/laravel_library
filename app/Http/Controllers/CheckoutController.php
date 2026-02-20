@@ -45,8 +45,6 @@ class CheckoutController extends Controller
                 'payment_method.required' => 'طريقة الدفع مطلوبة',
             ]);
 
-            Log::info('Validation passed', $validated);
-
             // Get cart based on authentication status
             $cart = [];
             
@@ -87,8 +85,6 @@ class CheckoutController extends Controller
                 return redirect()->back()->with('error', 'السلة فارغة');
             }
 
-            Log::info('Cart contents', $cart);
-
             // Calculate totals
             $subtotal = 0;
             foreach ($cart as $item) {
@@ -111,8 +107,6 @@ class CheckoutController extends Controller
 
             $total = $subtotal + $shipping - $discount;
 
-            Log::info('Calculated totals', compact('subtotal', 'shipping', 'discount', 'total'));
-
             // Create order record
             $order = Order::create([
                 'user_id' => auth()->check() ? auth()->id() : null,
@@ -125,7 +119,6 @@ class CheckoutController extends Controller
                 'management_token' => Str::random(64),
             ]);
 
-            Log::info('Order record created', ['id' => $order->id]);
             // Create checkout record
             $checkout = CheckoutDetail::create([
                 'order_id' => $order->id,
@@ -145,10 +138,6 @@ class CheckoutController extends Controller
                 'status' => 'pending'
             ]);
 
-            Log::info('Checkout record created', ['id' => $checkout->id]);
-
-            
-
             // Create order details
             foreach ($cart as $id => $item) {
                 OrderDetail::create([
@@ -158,8 +147,6 @@ class CheckoutController extends Controller
                     'price' => $item['price']
                 ]);
             }
-
-            Log::info('Order details created');
 
             // Increment coupon usage count
             if ($appliedCouponCode) {
@@ -198,8 +185,6 @@ class CheckoutController extends Controller
                 // Clear session cart for guests
                 session()->forget('cart');
             }
-
-            Log::info('Redirecting to success page', ['order_id' => $order->id]);
 
             return redirect()->route('success', ['id' => $order->id, 'token' => $order->management_token])
                    ->with('success', 'تم إرسال طلبك بنجاح! سيتم التواصل معك قريباً.');
