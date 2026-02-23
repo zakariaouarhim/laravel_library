@@ -27,21 +27,16 @@
 <body>
     @include('header')
 
-    <!-- Hero Banner -->
-    <div class="category-hero">
-        <div class="container">
-            <div class="hero-content text-center">
-                <h1 class="hero-title"><i class="fas fa-credit-card me-2"></i> إتمام الشراء</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb justify-content-center">
-                        <li class="breadcrumb-item"><a href="{{ url('/') }}"><i class="fas fa-home home-icon"></i> الرئيسية</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('cart.page') }}">سلّة التسوق</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">إتمام الشراء</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+    @include('partials.page-hero', [
+        'title'       => 'إتمام الشراء',
+        'icon'        => 'fas fa-credit-card',
+        'centered'    => true,
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية',   'url' => url('/')],
+            ['label' => 'سلّة التسوق', 'url' => route('cart.page')],
+            ['label' => 'إتمام الشراء'],
+        ],
+    ])
 
     <div class="layout-checkout">
         <!-- Toast -->

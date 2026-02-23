@@ -32,21 +32,14 @@
 <body>
     @include('header')
 
-    <!-- Hero Banner -->
-    <div class="category-hero accessories-hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title"><i class="fas fa-bookmark me-2"></i>إكسسوارات القراءة</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="{{ route('index.page') }}"><i class="fas fa-home home-icon"></i> الرئيسية</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">إكسسوارات القراءة</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
+    @include('partials.page-hero', [
+        'title'       => 'إكسسوارات القراءة',
+        'icon'        => 'fas fa-bookmark',
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => route('index.page')],
+            ['label' => 'إكسسوارات القراءة'],
+        ],
+    ])
     </div>
 
     <div class="container py-5">

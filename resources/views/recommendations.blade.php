@@ -22,26 +22,17 @@
 <body>
     @include('header')
 
-    <!-- Hero Banner -->
-    <div class="rec-hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title"><i class="fas fa-lightbulb me-2"></i>ترشيحات لك</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="{{ route('index.page') }}"><i class="fas fa-home home-icon"></i> الرئيسية</a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <a href="{{ route('account.page') }}">حسابي</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">ترشيحات لك</li>
-                    </ol>
-                </nav>
-                <p class="hero-subtitle">كتب مختارة بناءً على تقييماتك واهتماماتك</p>
-            </div>
-        </div>
-    </div>
+    @include('partials.page-hero', [
+        'title'       => 'ترشيحات لك',
+        'subtitle'    => 'كتب مختارة بناءً على تقييماتك واهتماماتك',
+        'icon'        => 'fas fa-lightbulb',
+        'heroClass'   => 'page-hero--accent',
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => route('index.page')],
+            ['label' => 'حسابي',    'url' => route('account.page')],
+            ['label' => 'ترشيحات لك'],
+        ],
+    ])
 
     <div class="container py-5">
         <div class="row">

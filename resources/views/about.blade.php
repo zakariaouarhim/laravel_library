@@ -28,21 +28,15 @@
 <body>
     @include('header')
 
-    <!-- Hero -->
-    <div class="about-hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">من نحن</h1>
-                <p class="hero-subtitle">نؤمن بأن المعرفة حق للجميع</p>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('index.page') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
-                        <li class="breadcrumb-item active">من نحن</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+    @include('partials.page-hero', [
+        'title'       => 'من نحن',
+        'icon'        => 'fas fa-store',
+        'subtitle'    => 'نؤمن بأن المعرفة حق للجميع',
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => route('index.page')],
+            ['label' => 'من نحن'],
+        ],
+    ])
 
     <!-- Story Section -->
     <section class="about-story">

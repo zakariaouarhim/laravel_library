@@ -28,21 +28,15 @@
 <body>
     @include('header')
 
-    <!-- Hero -->
-    <div class="categories-hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">الأقسام</h1>
-                <p class="hero-subtitle">تصفح {{ $totalCategories }} قسم يضم {{ $totalBooks }} كتاب</p>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('index.page') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
-                        <li class="breadcrumb-item active">الأقسام</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+    @include('partials.page-hero', [
+        'title'       => 'الأقسام',
+        'icon'        => 'fas fa-th-large',
+        'subtitle'    => 'تصفح ' . $totalCategories . ' قسم يضم ' . $totalBooks . ' كتاب',
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => route('index.page')],
+            ['label' => 'الأقسام'],
+        ],
+    ])
 
     <div class="container py-4">
         <!-- Search Bar -->

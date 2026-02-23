@@ -834,3 +834,57 @@
     border-radius: 10px 10px 0 0;
     border: none;
 }
+
+/* ===== Unified Page Hero ===== */
+.page-hero {
+    background: linear-gradient(135deg, #2C4B79 0%, #48CAE4 100%);
+    color: white;
+    padding: 3rem 0;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+.page-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('/images/pattern.webp');
+    opacity: 0.08;
+    pointer-events: none;
+}
+.page-hero .hero-content {
+    position: relative;
+    z-index: 2;
+}
+.page-hero .hero-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+.page-hero .hero-subtitle {
+    font-size: 1rem;
+    color: rgba(255,255,255,.85);
+    margin-bottom: 1rem;
+}
+.page-hero .breadcrumb {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    font-size: .875rem;
+}
+.page-hero .breadcrumb-item a {
+    color: rgba(255,255,255,.75);
+    text-decoration: none;
+    transition: color .2s;
+}
+.page-hero .breadcrumb-item a:hover { color: #fff; }
+.page-hero .breadcrumb-item.active { color: #fff; }
+.page-hero .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,.5); }
+.page-hero--accent {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 50%, #2C4B79 100%);
+}
+@media (max-width: 768px) {
+    .page-hero { padding: 2rem 0 1.5rem; }
+    .page-hero .hero-title { font-size: 1.6rem; }
+}

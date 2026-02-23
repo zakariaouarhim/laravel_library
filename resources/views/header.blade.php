@@ -4,7 +4,8 @@
 <div class="top-bar" id="topBar">
     <div class="container d-flex justify-content-between align-items-center">
         <div class="top-bar-right d-flex align-items-center gap-3">
-            <span dir="ltr"><i class="fas fa-phone-alt "></i> +212 69 121 8840</span>
+            <a href="tel:+212691218840" dir="ltr"><i class="fas fa-phone-alt"></i> +212 69 121 8840</a>
+            <a href="https://wa.me/212691218840" target="_blank" rel="noopener" dir="ltr" style="color:#25D366;"><i class="fab fa-whatsapp"></i> واتساب</a>
             <span dir="ltr"><i class="fas fa-envelope"></i> info@maktaba-fukara.com</span>
         </div>
         <div class="top-bar-left d-flex align-items-center gap-3">

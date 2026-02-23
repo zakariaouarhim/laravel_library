@@ -44,6 +44,11 @@ class PageController extends Controller
         return back()->with('success', 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.');
     }
 
+    public function privacy()
+    {
+        return view('privacy');
+    }
+
     public function sitemap()
     {
         $sitemapData = Cache::remember('sitemap_data', 3600, function () {

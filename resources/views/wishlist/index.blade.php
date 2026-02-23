@@ -23,23 +23,15 @@
 <body>
     @include('header')
 
-    <!-- Hero Banner -->
-    <div class="wl-hero">
-        <div class="container">
-            <div class="wl-hero-content">
-                <div class="wl-hero-icon">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <h1>قائمة الأمنيات</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb justify-content-center mb-0">
-                        <li class="breadcrumb-item"><a href="{{ url('/') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">قائمة الأمنيات</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+    @include('partials.page-hero', [
+        'title'       => 'قائمة الأمنيات',
+        'icon'        => 'fas fa-heart',
+        'centered'    => true,
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => url('/')],
+            ['label' => 'قائمة الأمنيات'],
+        ],
+    ])
 
     <div class="container wl-container">
         @if($wishlist->count() > 0)

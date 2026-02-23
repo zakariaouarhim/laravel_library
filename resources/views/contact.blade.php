@@ -28,20 +28,15 @@
 <body>
     @include('header')
 
-    <!-- Hero -->
-    <div class="contact-hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">اتصل بنا</h1>
-                <p class="hero-subtitle">نسعد بتواصلك معنا ونحن هنا لمساعدتك</p>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('index.page') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
-                        <li class="breadcrumb-item active">اتصل بنا</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
+    @include('partials.page-hero', [
+        'title'       => 'اتصل بنا',
+        'icon'        => 'fas fa-headset',
+        'subtitle'    => 'نسعد بتواصلك معنا ونحن هنا لمساعدتك',
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => route('index.page')],
+            ['label' => 'اتصل بنا'],
+        ],
+    ])
     </div>
 
     <div class="container py-5">

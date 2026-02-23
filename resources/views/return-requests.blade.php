@@ -25,21 +25,15 @@
 <body>
     @include('header')
 
-    <!-- Hero Banner -->
-    <div class="returns-hero">
-        <div class="returns-hero-overlay"></div>
-        <div class="container">
-            <div class="hero-content text-center">
-                <h1 class="hero-title"><i class="fas fa-undo me-2"></i>طلبات الإسترجاع</h1>
-                <nav aria-label="breadcrumb" class="mt-3">
-                    <ol class="breadcrumb justify-content-center">
-                        <li class="breadcrumb-item"><a href="{{ route('index.page') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">طلبات الإسترجاع</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+    @include('partials.page-hero', [
+        'title'       => 'طلبات الإسترجاع',
+        'icon'        => 'fas fa-undo',
+        'centered'    => true,
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => route('index.page')],
+            ['label' => 'طلبات الإسترجاع'],
+        ],
+    ])
 
     <div class="container py-5">
         @if(session('success'))

@@ -28,21 +28,15 @@
 <body>
     @include('header')
 
-    <!-- Hero -->
-    <div class="publishers-hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">دور النشر</h1>
-                <p class="hero-subtitle">تصفح مجموعتنا من دور النشر واكتشف منشوراتهم</p>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('index.page') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
-                        <li class="breadcrumb-item active">دور النشر</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+    @include('partials.page-hero', [
+        'title'       => 'دور النشر',
+        'icon'        => 'fas fa-building',
+        'subtitle'    => 'تصفح مجموعتنا من دور النشر واكتشف منشوراتهم',
+        'breadcrumbs' => [
+            ['label' => 'الرئيسية', 'url' => route('index.page')],
+            ['label' => 'دور النشر'],
+        ],
+    ])
 
     <div class="container py-4">
 

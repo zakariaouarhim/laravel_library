@@ -44,6 +44,7 @@
                         <ul class="footer-links">
                             <li><a href="{{ route('about.page') }}"><i class="fas fa-chevron-left"></i> من نحن</a></li>
                             <li><a href="{{ route('contact.page') }}"><i class="fas fa-chevron-left"></i> اتصل بنا</a></li>
+                            <li><a href="{{ route('privacy.page') }}"><i class="fas fa-chevron-left"></i> سياسة الخصوصية</a></li>
                         </ul>
                     </div>
 
@@ -57,7 +58,7 @@
                             </li>
                             <li>
                                 <i class="fas fa-phone-alt"></i>
-                                <span dir="ltr">+212 69 121 8840</span>
+                                <a href="tel:+212691218840" dir="ltr" style="color:inherit;text-decoration:none;">+212 69 121 8840</a>
                             </li>
                             <li>
                                 <i class="fas fa-map-marker-alt"></i>
@@ -78,7 +79,7 @@
             <div class="container">
                 <div class="footer-bottom-content">
                     <p>&copy; {{ date('Y') }} مكتبة الفقراء. جميع الحقوق محفوظة.</p>
-                    <p class="design-credit">تم التصميم بمحبة ❤️</p>
+                    <p><a href="{{ route('privacy.page') }}" style="color:inherit;opacity:.7;text-decoration:none;font-size:.85rem;">سياسة الخصوصية</a></p>
                 </div>
             </div>
         </div>
