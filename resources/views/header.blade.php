@@ -228,6 +228,10 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
 <script>
+window.isLoggedIn = {{ session('is_logged_in') ? 'true' : 'false' }};
+window.loginUrl   = "{{ route('login2.page') }}";
+</script>
+<script>
 (function() {
     // Account dropdown toggle
     var accountToggle = document.getElementById('accountToggle');

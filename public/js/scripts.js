@@ -1,9 +1,9 @@
 function addToCart(bookId, bookTitle, bookPrice, bookImage) {
     console.log("Parameters:", { bookId, bookTitle, bookPrice, bookImage });
     
-    // Get the button element that was clicked (supports both .add-btn and .action-btn)
-    const button = event.target.closest('.add-btn') || event.target.closest('.action-btn');
-    
+    // Find the clicked button regardless of its CSS class
+    const button = event.target.closest('button');
+
     fetch(`/add-to-cart/${bookId}`, {
         method: 'POST',
         headers: {
@@ -19,32 +19,28 @@ function addToCart(bookId, bookTitle, bookPrice, bookImage) {
     .then(response => response.json())
     .then(data => {
         if(data.success) {
-            // Add success animation
-            button.classList.add('add-success');
-            
-            // Simulate API call
-            setTimeout(() => {
-                button.classList.remove('add-success');
-                // Show success feedback
-                button.innerHTML = '<i class="fas fa-check"></i>';
-                button.style.background = '#28a745';
-                
+            if (button) {
+                const originalHtml = button.innerHTML;
                 setTimeout(() => {
-                    button.innerHTML = '<i class="fas fa-shopping-cart"></i>';
-                    button.style.background = '';
-                }, 1500);
-                
-                console.log(`تمت إضافة الكتاب ${bookId} إلى السلة`);
-            }, 300);
-            
+                    button.innerHTML = '<i class="fas fa-check"></i>';
+                    button.style.background = '#28a745';
+                    setTimeout(() => {
+                        button.innerHTML = originalHtml;
+                        button.style.background = '';
+                    }, 1500);
+                }, 300);
+            }
+
             updateCartCount(data.cartCount);
             showCartAlert(`تمت إضافة "${bookTitle}" إلى السلة`);
-            
+
             // Update the cart modal if it's open
             const cartModal = document.getElementById('cartDetailsModal');
             if(cartModal && cartModal.classList.contains('show')) {
                 showCartModal();
             }
+        } else {
+            showCartAlert(data.message || 'حدث خطأ أثناء الإضافة إلى السلة', 'danger');
         }
     })
     .catch(error => {
@@ -107,6 +103,49 @@ function showCartAlert(message, type = 'success') {
         alert.classList.remove('show');
         setTimeout(() => alert.remove(), 150);
     }, 2000);
+}
+
+// ===== Notify Me When Back In Stock =====
+function notifyStock(bookId, btn) {
+    if (!window.isLoggedIn) {
+        window.location.href = window.loginUrl;
+        return;
+    }
+
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/notify-stock/${bookId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.redirect) {
+            window.location.href = data.redirect;
+            return;
+        }
+        if (data.success) {
+            btn.innerHTML     = '<i class="fas fa-check"></i> تم التسجيل';
+            btn.style.background  = '#28a745';
+            btn.style.borderColor = '#28a745';
+            btn.style.color       = 'white';
+            showCartAlert('سنُعلمك فور توفر هذا الكتاب!', 'success');
+        } else {
+            btn.innerHTML = originalHtml;
+            btn.disabled  = false;
+            showCartAlert(data.message || 'حدث خطأ، يرجى المحاولة لاحقاً', 'warning');
+        }
+    })
+    .catch(() => {
+        btn.innerHTML = originalHtml;
+        btn.disabled  = false;
+        showCartAlert('حدث خطأ، يرجى المحاولة لاحقاً', 'danger');
+    });
 }
 
 // Initialize cart count on page load

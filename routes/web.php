@@ -21,6 +21,7 @@ use App\Http\Controllers\AdminContactController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\StockNotificationController;
 
 use Illuminate\Http\Request;
 
@@ -236,6 +237,7 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact.page')
 Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy.page');
 Route::get('/sitemap', [PageController::class, 'sitemap'])->name('sitemap');
+Route::post('/notify-stock/{bookId}', [StockNotificationController::class, 'store'])->name('stock.notify');
 
 // ==================== QUOTES ====================
 

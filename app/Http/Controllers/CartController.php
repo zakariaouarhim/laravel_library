@@ -14,6 +14,14 @@ class CartController extends Controller
 {
     try {
         $book = Book::findOrFail($bookId);
+
+        if (($book->Quantity ?? 0) <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'عذراً، هذا الكتاب غير متوفر حالياً.',
+            ], 422);
+        }
+
         $cart = session()->get('cart', []);
 
         $itemData = [

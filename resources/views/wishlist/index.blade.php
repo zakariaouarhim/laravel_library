@@ -60,10 +60,13 @@
             <!-- Books Grid -->
             <div class="wl-grid" id="wishlistGrid">
                 @foreach ($wishlist as $book)
-                <div class="wl-card" id="wl-item-{{ $book->id }}">
+                @php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
+                <div class="wl-card {{ $outOfStock ? 'wl-out-of-stock' : '' }}" id="wl-item-{{ $book->id }}">
                     <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="wl-card-image">
                         <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" loading="lazy">
-                        @if($book->discount ?? 0 > 0)
+                        @if($outOfStock)
+                        <span class="wl-badge-oos">نفذ المخزون</span>
+                        @elseif($book->discount ?? 0 > 0)
                         <span class="wl-badge-discount">خصم {{ $book->discount }}%</span>
                         @endif
                     </a>
@@ -91,9 +94,15 @@
                             @endif
                         </div>
                         <div class="wl-card-actions">
-                            <button class="wl-btn-add-cart" onclick="addToCart({{ $book->id }}, {{ json_encode($book->title) }}, {{ $book->price }}, {{ json_encode($book->image) }})">
-                                <i class="fas fa-shopping-cart"></i> أضف للسلة
-                            </button>
+                            @if($outOfStock)
+                                <button class="wl-btn-notify" onclick="notifyStock({{ $book->id }}, this)">
+                                    <i class="fas fa-bell"></i> أبلغني عند التوفر
+                                </button>
+                            @else
+                                <button class="wl-btn-add-cart" onclick="addToCart({{ $book->id }}, {{ json_encode($book->title) }}, {{ $book->price }}, {{ json_encode($book->image) }})">
+                                    <i class="fas fa-shopping-cart"></i> أضف للسلة
+                                </button>
+                            @endif
                             <button class="wl-btn-remove" onclick="removeFromWishlist({{ $book->id }})">
                                 <i class="fas fa-heart-broken"></i>
                             </button>
@@ -613,5 +622,51 @@
     .wl-card-image img {
         min-height: auto;
     }
+}
+
+/* ===== Out-of-stock wishlist card ===== */
+.wl-card.wl-out-of-stock .wl-card-image img {
+    opacity: 0.65;
+    filter: grayscale(25%);
+}
+
+.wl-badge-oos {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #6c757d;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.wl-btn-notify {
+    flex: 1;
+    padding: 8px 12px;
+    background: transparent;
+    color: #f39c12;
+    border: 2px solid #f39c12;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.wl-btn-notify:hover {
+    background: #f39c12;
+    color: #fff;
+}
+
+.wl-btn-notify:disabled {
+    opacity: .6;
+    cursor: not-allowed;
 }
 </style>

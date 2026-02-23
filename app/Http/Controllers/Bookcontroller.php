@@ -13,6 +13,9 @@ use App\Services\BookService;
 use App\Services\APIService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\StockAvailableMail;
+use App\Models\StockNotification;
 
 class BookController extends Controller
 {
@@ -1519,6 +1522,9 @@ public function searchBooksAjax(Request $request)
                 $publishingHouseId = $publishingHouse->id;
             }
 
+            // Capture stock state before update (for notification trigger)
+            $wasOutOfStock = ($product->Quantity == 0);
+
             // Update basic fields
             $product->title = $validated['title'];
             $product->description = $validated['description'];
@@ -1613,6 +1619,22 @@ public function searchBooksAjax(Request $request)
             ]);
 
             \Log::info('=== UPDATE PRODUCT SUCCESS ===');
+
+            // If stock was restored (0 → >0), email all waiting subscribers
+            if ($wasOutOfStock && $product->Quantity > 0) {
+                $notifications = StockNotification::where('book_id', $product->id)
+                    ->whereNull('notified_at')
+                    ->get();
+
+                foreach ($notifications as $notification) {
+                    try {
+                        Mail::to($notification->email)->send(new StockAvailableMail($product));
+                        $notification->update(['notified_at' => now()]);
+                    } catch (\Exception $mailError) {
+                        \Log::error('Stock notification email failed for book ' . $product->id . ': ' . $mailError->getMessage());
+                    }
+                }
+            }
         
             // Return appropriate response based on request type
             if ($request->ajax()) {

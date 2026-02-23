@@ -5,7 +5,8 @@
         <div class="carousel-container">
             <div class="carousel-wrapper" data-carousel-wrapper>
                 @foreach($books as $book)
-                <div class="book-card">
+                @php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
+                <div class="book-card {{ $outOfStock ? 'out-of-stock' : '' }}">
                     <!-- Image wrapper with link - FULL WIDTH -->
                     <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
                         <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" loading="lazy">
@@ -16,18 +17,24 @@
                         <button class="action-btn wishlist-btn" title="إضافة للمفضلة" onclick="toggleWishlist({{ $book->id }}, this)" data-book-id="{{ $book->id }}">
                             <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
                         </button>
+                        @if(!$outOfStock)
                         <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
                             <i class="fas fa-shopping-cart"></i>
                         </button>
+                        @endif
                     </div>
 
                     <!-- Badges positioned over image -->
                     <div class="card-badges">
-                        @if($book->is_new ?? false)
-                            <span class="badge bg-success">جديد</span>
-                        @endif
-                        @if($book->discount ?? 0 > 0)
-                            <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
+                        @if($outOfStock)
+                            <span class="badge out-of-stock-badge">نفذ المخزون</span>
+                        @else
+                            @if($book->is_new ?? false)
+                                <span class="badge bg-success">جديد</span>
+                            @endif
+                            @if($book->discount ?? 0 > 0)
+                                <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
+                            @endif
                         @endif
                     </div>
 
@@ -59,9 +66,15 @@
                         @if(($book->discount ?? 0) > 0)
                             <span class="original-price">{{ round($book->price / (1 - $book->discount / 100)) }} <span class="currency">د.م</span></span>
                         @endif
-                        <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
-                            <i class="fas fa-shopping-cart"></i>
-                        </button>
+                        @if($outOfStock)
+                            <button class="notify-btn" onclick="notifyStock({{ $book->id }}, this)">
+                                <i class="fas fa-bell"></i> أبلغني عند التوفر
+                            </button>
+                        @else
+                            <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        @endif
                     </div>
                 </div>
                 @endforeach
