@@ -483,57 +483,106 @@ class Usercontroller extends Controller
 
     private function getRecommendations($userId, $limit = 5)
     {
-        
-        // Get user's favorite categories based on their highly rated books
-        $favoriteCategories = Book_Review::where('user_id', $userId)
-                                    ->where('rating', '>=', 4)
-                                    ->with('book.category')
-                                    ->get()
-                                    ->pluck('book.category.id')
-                                    ->filter()
-                                    ->unique()
-                                    ->take(3);
-        
-        // Get user's already reviewed books to exclude them
+        // Books to exclude: already reviewed + already in wishlist
         $reviewedBookIds = Book_Review::where('user_id', $userId)
-                                    ->pluck('book_id')
-                                    ->toArray();
-        
-        if ($favoriteCategories->isEmpty()) {
-            // If no reviews yet, show popular books
-            $recommendations = Book::whereNotIn('id', $reviewedBookIds)
-                                ->with(['category', 'primaryAuthor'])
-                                ->withAvg('reviews', 'rating')
-                                ->withCount('reviews')
-                                ->having('reviews_count', '>', 0)
-                                ->orderBy('reviews_avg_rating', 'desc')
-                                ->orderBy('reviews_count', 'desc')
-                                ->take($limit)
-                                ->get();
-        } else {
-            // Recommend books from favorite categories
-           $recommendations = Book::whereIn('category_id', $favoriteCategories)
-                ->whereNotIn('id', $reviewedBookIds)
+            ->pluck('book_id')->toArray();
+
+        $wishlistBookIds = DB::table('wishlists')
+            ->where('user_id', $userId)
+            ->pluck('book_id')->toArray();
+
+        $excludeIds = array_unique(array_merge($reviewedBookIds, $wishlistBookIds));
+
+        // Signal 1: Categories from highly rated reviews
+        $reviewCategories = Book_Review::where('user_id', $userId)
+            ->where('rating', '>=', 4)
+            ->with('book.category')
+            ->get()
+            ->pluck('book.category.id')
+            ->filter()->unique()->values();
+
+        // Signal 2: Categories from wishlist books
+        $wishlistCategories = DB::table('wishlists')
+            ->join('books', 'wishlists.book_id', '=', 'books.id')
+            ->where('wishlists.user_id', $userId)
+            ->whereNotNull('books.category_id')
+            ->pluck('books.category_id')
+            ->unique()->values();
+
+        // Signal 3: Followed authors and publishers
+        $userFollows = Follow::where('user_id', $userId)->get();
+        $followedAuthorIds = $userFollows->where('followable_type', 'author')
+            ->pluck('followable_id')->toArray();
+        $followedPublisherIds = $userFollows->where('followable_type', 'publisher')
+            ->pluck('followable_id')->toArray();
+
+        // Merge all category signals (reviews weighted higher by appearing first)
+        $allCategories = $reviewCategories->merge($wishlistCategories)
+            ->unique()->take(5);
+
+        $recommendations = collect();
+
+        // Priority 1: Books from followed authors/publishers in preferred categories
+        if (!empty($followedAuthorIds) || !empty($followedPublisherIds)) {
+            $followBooks = Book::whereNotIn('id', $excludeIds)
+                ->where('status', 'active')
+                ->where(function ($q) use ($followedAuthorIds, $followedPublisherIds) {
+                    $q->whereIn('author_id', $followedAuthorIds)
+                      ->orWhereIn('publishing_house_id', $followedPublisherIds);
+                })
+                ->with(['category', 'primaryAuthor'])
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->orderByDesc('created_at')
+                ->take($limit)
+                ->get();
+
+            $recommendations = $recommendations->merge($followBooks);
+        }
+
+        // Priority 2: Books from preferred categories (if we need more)
+        if ($recommendations->count() < $limit && $allCategories->isNotEmpty()) {
+            $catBooks = Book::whereIn('category_id', $allCategories)
+                ->whereNotIn('id', $excludeIds)
+                ->whereNotIn('id', $recommendations->pluck('id')->toArray())
+                ->where('status', 'active')
                 ->with(['category', 'primaryAuthor'])
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
                 ->orderByDesc('reviews_avg_rating')
                 ->orderByDesc('reviews_count')
-                ->take($limit)
+                ->take($limit - $recommendations->count())
                 ->get();
 
-            // If still no books (e.g., because they have no reviews), fallback
-            if ($recommendations->isEmpty()) {
-                $recommendations = Book::whereIn('category_id', $favoriteCategories)
-                    ->whereNotIn('id', $reviewedBookIds)
-                    ->with(['category', 'primaryAuthor'])
-                    ->take($limit)
-                    ->get();
-            }
-
+            $recommendations = $recommendations->merge($catBooks);
         }
-        
 
+        // Priority 3: Fallback to popular books
+        if ($recommendations->count() < $limit) {
+            $popularBooks = Book::whereNotIn('id', $excludeIds)
+                ->whereNotIn('id', $recommendations->pluck('id')->toArray())
+                ->where('status', 'active')
+                ->with(['category', 'primaryAuthor'])
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->having('reviews_count', '>', 0)
+                ->orderByDesc('reviews_avg_rating')
+                ->orderByDesc('reviews_count')
+                ->take($limit - $recommendations->count())
+                ->get();
+
+            $recommendations = $recommendations->merge($popularBooks);
+        }
+
+        // Final fallback: latest books
+        if ($recommendations->isEmpty()) {
+            $recommendations = Book::whereNotIn('id', $excludeIds)
+                ->where('status', 'active')
+                ->with(['category', 'primaryAuthor'])
+                ->latest()
+                ->take($limit)
+                ->get();
+        }
 
         // Format data for the view
         return $recommendations->map(function($book) {
@@ -541,13 +590,11 @@ class Usercontroller extends Controller
                 'id' => $book->id,
                 'title' => $book->title,
                 'author' => $book->primaryAuthor->name ?? 'مؤلف غير محدد',
-                'image' => $book->image ? asset( $book->image) : asset('images/default-book.jpg'),
+                'image' => $book->image ? asset($book->image) : asset('images/default-book.jpg'),
                 'rating' => round($book->reviews_avg_rating ?? 0),
                 'category' => $book->category->name ?? ''
             ];
         });
-        
-
     }
     ////////////////////////////admin dashboard 
     public function dashboard(){

@@ -78,8 +78,8 @@
         <!-- Publishers Grid -->
         <div class="publishers-grid" id="publishersGrid">
             @foreach($publishers as $publisher)
-                <a href="{{ route('publisher.show', $publisher->id) }}" class="publisher-card">
-                    <div class="publisher-card-logo">
+                <div class="publisher-card">
+                    <a href="{{ route('publisher.show', $publisher->id) }}" class="publisher-card-logo">
                         @if($publisher->logo)
                             <img src="{{ asset('storage/' . $publisher->logo) }}" alt="{{ $publisher->name }}">
                         @else
@@ -87,9 +87,11 @@
                                 <i class="fas fa-building"></i>
                             </div>
                         @endif
-                    </div>
+                    </a>
                     <div class="publisher-card-info">
-                        <h3 class="publisher-card-name">{{ $publisher->name }}</h3>
+                        <a href="{{ route('publisher.show', $publisher->id) }}" class="publisher-card-name-link">
+                            <h3 class="publisher-card-name">{{ $publisher->name }}</h3>
+                        </a>
                         @if($publisher->country)
                             <span class="publisher-card-country">
                                 <i class="fas fa-map-marker-alt"></i> {{ $publisher->country }}
@@ -99,7 +101,15 @@
                             <i class="fas fa-book"></i> {{ $publisher->books_count }} كتاب
                         </span>
                     </div>
-                </a>
+                    @auth
+                        @php $isFollowing = \App\Models\Follow::isFollowing(Auth::id(), 'publisher', $publisher->id); @endphp
+                        <button class="follow-btn-card {{ $isFollowing ? 'following' : '' }}"
+                                onclick="toggleFollow('publisher', {{ $publisher->id }}, this)"
+                                title="{{ $isFollowing ? 'إلغاء المتابعة' : 'متابعة' }}">
+                            <i class="fas {{ $isFollowing ? 'fa-check' : 'fa-plus' }}"></i>
+                        </button>
+                    @endauth
+                </div>
             @endforeach
         </div>
 
@@ -177,6 +187,7 @@
 
         function renderPublishers(publishers) {
             let html = '';
+            const isAuth = document.querySelector('meta[name="csrf-token"]') !== null;
             publishers.forEach(pub => {
                 const logoHtml = pub.logo
                     ? `<img src="${storageUrl}/${pub.logo}" alt="${pub.name}">`
@@ -188,20 +199,55 @@
 
                 const booksCount = pub.books_count || 0;
 
+                const followBtnHtml = isAuth
+                    ? `<button class="follow-btn-card" onclick="toggleFollow('publisher', ${pub.id}, this)" title="متابعة">
+                           <i class="fas fa-plus"></i>
+                       </button>`
+                    : '';
+
                 html += `
-                    <a href="${publisherShowUrl}/${pub.id}" class="publisher-card">
-                        <div class="publisher-card-logo">${logoHtml}</div>
+                    <div class="publisher-card">
+                        <a href="${publisherShowUrl}/${pub.id}" class="publisher-card-logo">${logoHtml}</a>
                         <div class="publisher-card-info">
-                            <h3 class="publisher-card-name">${pub.name}</h3>
+                            <a href="${publisherShowUrl}/${pub.id}" class="publisher-card-name-link">
+                                <h3 class="publisher-card-name">${pub.name}</h3>
+                            </a>
                             ${countryHtml}
                             <span class="publisher-card-books">
                                 <i class="fas fa-book"></i> ${booksCount} كتاب
                             </span>
                         </div>
-                    </a>
+                        ${followBtnHtml}
+                    </div>
                 `;
             });
             publishersGrid.innerHTML = html;
+        }
+
+        function toggleFollow(type, id, btn) {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            btn.disabled = true;
+            fetch('/follow/' + type + '/' + id, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                btn.disabled = false;
+                if (data.redirect) { window.location.href = data.redirect; return; }
+                if (data.success) {
+                    if (data.following) {
+                        btn.classList.add('following');
+                        btn.querySelector('i').className = 'fas fa-check';
+                        btn.title = 'إلغاء المتابعة';
+                    } else {
+                        btn.classList.remove('following');
+                        btn.querySelector('i').className = 'fas fa-plus';
+                        btn.title = 'متابعة';
+                    }
+                }
+            })
+            .catch(function() { btn.disabled = false; });
         }
     </script>
 </body>

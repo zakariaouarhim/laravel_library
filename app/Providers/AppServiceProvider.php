@@ -6,7 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use App\Models\Category;
+use App\Models\Book;
 use App\View\Composers\AdminSidebarComposer;
+use App\Observers\BookObserver;
 use Illuminate\Support\Facades\Cache;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
        Schema::defaultStringLength(191);
+
+        Book::observe(BookObserver::class);
 
         View::composer('header', function ($view) {
            $navCategories = Cache::remember('header_nav_categories', 3600, function () {

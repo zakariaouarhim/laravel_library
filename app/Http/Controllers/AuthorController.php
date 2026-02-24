@@ -61,6 +61,7 @@ class AuthorController extends Controller
         }
 
         $authors = $query->paginate(24);
+        
 
         // Get unique nationalities for filter
         $nationalities = Author::active()

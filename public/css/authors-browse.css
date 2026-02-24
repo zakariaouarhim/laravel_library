@@ -252,7 +252,6 @@ body {
     display: flex;
     align-items: center;
     gap: 18px;
-    text-decoration: none;
     color: inherit;
     border: 2px solid transparent;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
@@ -263,8 +262,57 @@ body {
     border-color: #48CAE4;
     transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(72, 202, 228, 0.15);
-    color: inherit;
+}
+
+/* Avatar as link */
+a.author-card-avatar {
     text-decoration: none;
+    flex-shrink: 0;
+}
+
+/* Name Link */
+.author-card-name-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.author-card-name-link:hover .author-card-name {
+    color: #48CAE4;
+}
+
+/* Follow Button on Card */
+.follow-btn-card {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #2C4B79;
+    background: transparent;
+    color: #2C4B79;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.follow-btn-card:hover {
+    background: #2C4B79;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.follow-btn-card.following {
+    background: #48CAE4;
+    border-color: #48CAE4;
+    color: #fff;
+}
+
+.follow-btn-card.following:hover {
+    background: transparent;
+    color: #2C4B79;
+    border-color: #2C4B79;
 }
 
 /* Avatar */
@@ -410,5 +458,11 @@ body {
 
     .authors-grid {
         grid-template-columns: 1fr;
+    }
+
+    .follow-btn-card {
+        width: 32px;
+        height: 32px;
+        font-size: 0.7rem;
     }
 }

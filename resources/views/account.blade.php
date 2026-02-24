@@ -446,14 +446,10 @@
                     <h6 class="mb-3">
                         <i class="bi bi-lightbulb me-2"></i>
                         ترشيحات لك
-                        @if ( count($reviews) > 0 )
-                            @if(isset($recommendations) && count($recommendations) > 0)
+                        @if(isset($recommendations) && count($recommendations) > 0)
                             <small class="text-muted">({{ count($recommendations) }} كتاب)</small>
-                            @endif
                         @endif
-                        
                     </h6>
-                    @if ( count($reviews) > 0 )
                     @if(isset($recommendations) && count($recommendations) > 0)
                         @foreach($recommendations as $rec)
                         <div class="recommendation-item d-flex mb-3 p-2 rounded">
@@ -517,12 +513,11 @@
                                 عرض المزيد من الترشيحات
                             </a>
                         </div>
-                    @endif   
                     @else
                         <div class="empty-state text-center py-4">
                             <i class="bi bi-lightbulb" style="font-size: 2rem; color: #6c757d;"></i>
                             <h6 class="mt-2">لا توجد ترشيحات بعد</h6>
-                            <p class="text-muted">اقرأ المزيد من الكتب للحصول على ترشيحات شخصية</p>
+                            <p class="text-muted">تابع مؤلفيك المفضلين أو أضف كتباً لقائمة الأمنيات للحصول على ترشيحات</p>
                             <a href="{{ route('index.page') }}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-book me-1"></i>
                                 تصفح الكتب

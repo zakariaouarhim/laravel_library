@@ -36,6 +36,12 @@
     @include('Index-searchbar')
 
     <div class="layout-indexpage">
+        @if($fromFollows->count() > 0)
+        <div id="from-follows">
+            <x-book-carousel :books="$fromFollows" title="جديد من متابعاتك" />
+        </div>
+        @endif
+
         <div id="all-books">
             <x-book-carousel :books="$books" title="جميع الكتب" />
         </div>

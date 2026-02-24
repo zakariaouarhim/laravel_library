@@ -59,7 +59,18 @@
                     @endif
                 </div>
                 <div class="hero-info">
-                    <h1>{{ $author->name }}</h1>
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <h1 class="mb-0">{{ $author->name }}</h1>
+                        @auth
+                        @php $isFollowing = \App\Models\Follow::isFollowing(Auth::id(), 'author', $author->id); @endphp
+                        <button class="follow-btn {{ $isFollowing ? 'following' : '' }}"
+                                id="followAuthorBtn"
+                                onclick="toggleFollow('author', {{ $author->id }}, this)">
+                            <i class="fas {{ $isFollowing ? 'fa-user-check' : 'fa-user-plus' }}"></i>
+                            <span>{{ $isFollowing ? 'متابَع' : 'متابعة' }}</span>
+                        </button>
+                        @endauth
+                    </div>
                     <div class="hero-meta">
                         @if($author->nationality)
                             <span><i class="fas fa-globe-africa"></i> {{ $author->nationality }}</span>
@@ -77,15 +88,6 @@
                         @endif
                         <span><i class="fas fa-book"></i> {{ $totalBooks }} كتاب</span>
                     </div>
-                    @auth
-                    @php $isFollowing = \App\Models\Follow::isFollowing(Auth::id(), 'author', $author->id); @endphp
-                    <button class="follow-btn mt-3 {{ $isFollowing ? 'following' : '' }}"
-                            id="followAuthorBtn"
-                            onclick="toggleFollow('author', {{ $author->id }}, this)">
-                        <i class="fas {{ $isFollowing ? 'fa-user-check' : 'fa-user-plus' }}"></i>
-                        <span>{{ $isFollowing ? 'متابَع' : 'متابعة' }}</span>
-                    </button>
-                    @endauth
                 </div>
             </div>
         </div>

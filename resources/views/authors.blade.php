@@ -78,8 +78,8 @@
         <!-- Authors Grid -->
         <div class="authors-grid" id="authorsGrid">
             @foreach($authors as $author)
-                <a href="{{ route('author.show', $author->id) }}" class="author-card">
-                    <div class="author-card-avatar">
+                <div class="author-card">
+                    <a href="{{ route('author.show', $author->id) }}" class="author-card-avatar">
                         @if($author->profile_image)
                             <img src="{{ asset('storage/' . $author->profile_image) }}" alt="{{ $author->name }}">
                         @else
@@ -87,9 +87,11 @@
                                 <span>{{ mb_substr($author->name, 0, 1) }}</span>
                             </div>
                         @endif
-                    </div>
+                    </a>
                     <div class="author-card-info">
-                        <h3 class="author-card-name">{{ $author->name }}</h3>
+                        <a href="{{ route('author.show', $author->id) }}" class="author-card-name-link">
+                            <h3 class="author-card-name">{{ $author->name }}</h3>
+                        </a>
                         @if($author->nationality)
                             <span class="author-card-nationality">
                                 <i class="fas fa-globe-africa"></i> {{ $author->nationality }}
@@ -99,7 +101,15 @@
                             <i class="fas fa-book"></i> {{ $author->primary_books_count }} كتاب
                         </span>
                     </div>
-                </a>
+                    @auth
+                        @php $isFollowing = \App\Models\Follow::isFollowing(Auth::id(), 'author', $author->id); @endphp
+                        <button class="follow-btn-card {{ $isFollowing ? 'following' : '' }}"
+                                onclick="toggleFollow('author', {{ $author->id }}, this)"
+                                title="{{ $isFollowing ? 'إلغاء المتابعة' : 'متابعة' }}">
+                            <i class="fas {{ $isFollowing ? 'fa-check' : 'fa-plus' }}"></i>
+                        </button>
+                    @endauth
+                </div>
             @endforeach
         </div>
 
@@ -181,6 +191,7 @@
 
         function renderAuthors(authors) {
             let html = '';
+            const isAuth = document.querySelector('meta[name="csrf-token"]') !== null;
             authors.forEach(author => {
                 const firstLetter = author.name ? author.name.charAt(0) : '?';
                 const avatarHtml = author.profile_image
@@ -193,20 +204,55 @@
 
                 const booksCount = author.primary_books_count || 0;
 
+                const followBtnHtml = isAuth
+                    ? `<button class="follow-btn-card" onclick="toggleFollow('author', ${author.id}, this)" title="متابعة">
+                           <i class="fas fa-plus"></i>
+                       </button>`
+                    : '';
+
                 html += `
-                    <a href="${authorShowUrl}/${author.id}" class="author-card">
-                        <div class="author-card-avatar">${avatarHtml}</div>
+                    <div class="author-card">
+                        <a href="${authorShowUrl}/${author.id}" class="author-card-avatar">${avatarHtml}</a>
                         <div class="author-card-info">
-                            <h3 class="author-card-name">${author.name}</h3>
+                            <a href="${authorShowUrl}/${author.id}" class="author-card-name-link">
+                                <h3 class="author-card-name">${author.name}</h3>
+                            </a>
                             ${nationalityHtml}
                             <span class="author-card-books">
                                 <i class="fas fa-book"></i> ${booksCount} كتاب
                             </span>
                         </div>
-                    </a>
+                        ${followBtnHtml}
+                    </div>
                 `;
             });
             authorsGrid.innerHTML = html;
+        }
+
+        function toggleFollow(type, id, btn) {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            btn.disabled = true;
+            fetch('/follow/' + type + '/' + id, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                btn.disabled = false;
+                if (data.redirect) { window.location.href = data.redirect; return; }
+                if (data.success) {
+                    if (data.following) {
+                        btn.classList.add('following');
+                        btn.querySelector('i').className = 'fas fa-check';
+                        btn.title = 'إلغاء المتابعة';
+                    } else {
+                        btn.classList.remove('following');
+                        btn.querySelector('i').className = 'fas fa-plus';
+                        btn.title = 'متابعة';
+                    }
+                }
+            })
+            .catch(function() { btn.disabled = false; });
         }
     </script>
 </body>

@@ -18,6 +18,7 @@ use App\Mail\StockAvailableMail;
 use App\Models\StockNotification;
 use App\Models\Follow;
 use App\Models\UserNotification;
+use Illuminate\Support\Facades\Auth;
 
 class BookController extends Controller
 {
@@ -1285,7 +1286,30 @@ public function searchBooksAjax(Request $request)
                 })->values();
         }
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed'));
+        // Get new books from followed authors/publishers (personalized)
+        $fromFollows = collect();
+        if (Auth::check()) {
+            $userFollows = Follow::where('user_id', Auth::id())->get();
+            $followedAuthorIds = $userFollows->where('followable_type', 'author')
+                ->pluck('followable_id')->toArray();
+            $followedPublisherIds = $userFollows->where('followable_type', 'publisher')
+                ->pluck('followable_id')->toArray();
+
+            if (!empty($followedAuthorIds) || !empty($followedPublisherIds)) {
+                $fromFollows = Book::where('status', 'active')
+                    ->where('type', 'book')
+                    ->where(function ($q) use ($followedAuthorIds, $followedPublisherIds) {
+                        $q->whereIn('author_id', $followedAuthorIds)
+                          ->orWhereIn('publishing_house_id', $followedPublisherIds);
+                    })
+                    ->with(['primaryAuthor', 'authors', 'publishingHouse'])
+                    ->orderByDesc('created_at')
+                    ->limit(15)
+                    ->get();
+            }
+        }
+
+        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows'));
     }
     // Additional method to handle book creation with author assignment
     public function store(Request $request)
