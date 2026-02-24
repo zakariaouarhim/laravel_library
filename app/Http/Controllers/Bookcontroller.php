@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\StockAvailableMail;
 use App\Models\StockNotification;
+use App\Models\Follow;
+use App\Models\UserNotification;
 
 class BookController extends Controller
 {
@@ -355,6 +357,16 @@ public function addProduct(Request $request)
         $product->authors()->syncWithoutDetaching([
             $author->id => ['author_type' => 'primary']
         ]);
+
+        // Notify followers of the author and publisher
+        $notifyUserIds = collect();
+        $notifyUserIds = $notifyUserIds->merge(Follow::followersOf('author', $author->id));
+        if ($publishingHouseId) {
+            $notifyUserIds = $notifyUserIds->merge(Follow::followersOf('publisher', $publishingHouseId));
+        }
+        foreach ($notifyUserIds->unique() as $userId) {
+            UserNotification::newBook($userId, $product);
+        }
 
         // 5. Enrichment Logic (Only runs if save was successful)
         $message = 'Product added successfully!';
@@ -1323,6 +1335,25 @@ public function searchBooksAjax(Request $request)
             ]);
         }
         
+        // Notify followers of the author and publisher
+        $notifyUserIds = collect();
+
+        if (isset($author)) {
+            $notifyUserIds = $notifyUserIds->merge(
+                Follow::followersOf('author', $author->id)
+            );
+        }
+
+        if ($request->publishing_house_id) {
+            $notifyUserIds = $notifyUserIds->merge(
+                Follow::followersOf('publisher', $request->publishing_house_id)
+            );
+        }
+
+        foreach ($notifyUserIds->unique() as $userId) {
+            UserNotification::newBook($userId, $book);
+        }
+
         return redirect()->route('books.index')->with('success', 'Book created successfully!');
     }
 
@@ -1620,18 +1651,30 @@ public function searchBooksAjax(Request $request)
 
             \Log::info('=== UPDATE PRODUCT SUCCESS ===');
 
-            // If stock was restored (0 → >0), email all waiting subscribers
+            // If stock was restored (0 → >0), email and notify all waiting subscribers
             if ($wasOutOfStock && $product->Quantity > 0) {
                 $notifications = StockNotification::where('book_id', $product->id)
                     ->whereNull('notified_at')
                     ->get();
 
                 foreach ($notifications as $notification) {
+                    // Send email
                     try {
                         Mail::to($notification->email)->send(new StockAvailableMail($product));
                         $notification->update(['notified_at' => now()]);
                     } catch (\Exception $mailError) {
                         \Log::error('Stock notification email failed for book ' . $product->id . ': ' . $mailError->getMessage());
+                    }
+
+                    // Create in-app notification for logged-in users
+                    if ($notification->user_id) {
+                        UserNotification::create([
+                            'user_id' => $notification->user_id,
+                            'type'    => 'stock_available',
+                            'title'   => 'الكتاب متوفر الآن',
+                            'body'    => '«' . $product->title . '» أصبح متوفراً. أضفه للسلة قبل نفاد الكمية!',
+                            'url'     => route('moredetail2.page', $product->id),
+                        ]);
                     }
                 }
             }

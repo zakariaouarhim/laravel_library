@@ -22,6 +22,8 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\StockNotificationController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\FollowController;
 
 use Illuminate\Http\Request;
 
@@ -229,6 +231,16 @@ Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('autho
 
 Route::get('/publishers', [PublisherController::class, 'publicIndex'])->name('publishers.index');
 Route::get('/publisher/{id}', [PublisherController::class, 'publicShow'])->name('publisher.show');
+
+// ==================== NOTIFICATIONS & FOLLOWS ====================
+
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::get('/notifications/recent',       [NotificationController::class, 'recent'])->name('notifications.recent');
+    Route::post('/notifications/{id}/read',   [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all',    [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('/follow/{type}/{id}',        [FollowController::class, 'toggle'])->name('follow.toggle');
+});
 
 // ==================== PAGES ====================
 

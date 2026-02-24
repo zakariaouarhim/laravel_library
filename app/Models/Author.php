@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Follow;
 
 class Author extends Model
 {
@@ -67,5 +68,11 @@ class Author extends Model
     public function getIsAliveAttribute()
     {
         return is_null($this->death_date);
+    }
+
+    // Users following this author
+    public function followers()
+    {
+        return Follow::where('followable_type', 'author')->where('followable_id', $this->id)->pluck('user_id');
     }
 }

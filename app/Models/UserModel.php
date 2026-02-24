@@ -99,4 +99,19 @@ class UserModel extends Authenticatable
     {
         return $this->hasOne(ReadingGoal::class, 'user_id')->where('year', now()->year);
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(UserNotification::class, 'user_id')->latest();
+    }
+
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->whereNull('read_at')->count();
+    }
+
+    public function follows()
+    {
+        return $this->hasMany(Follow::class, 'user_id');
+    }
 }

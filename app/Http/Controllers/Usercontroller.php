@@ -14,6 +14,7 @@ use App\Models\ReadingGoal;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Follow;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -343,9 +344,18 @@ class Usercontroller extends Controller
         ->wishlist()
         ->latest('pivot_created_at') // use pivot table timestamps
         ->get(); // only the last one  
-        $OrderNumber=Order::where('user_id', $userId)
-        ->count();
-        return view('account', 
+        $OrderNumber = Order::where('user_id', $userId)->count();
+
+        // Load who the user follows (authors + publishers)
+        $userFollows = Follow::where('user_id', $userId)->get();
+        $followedAuthors    = Author::whereIn('id',
+            $userFollows->where('followable_type', 'author')->pluck('followable_id')
+        )->get();
+        $followedPublishers = PublishingHouse::whereIn('id',
+            $userFollows->where('followable_type', 'publisher')->pluck('followable_id')
+        )->get();
+
+        return view('account',
         compact('reviews',
         'recommendations',
         'wishlistBookIds',
@@ -358,7 +368,9 @@ class Usercontroller extends Controller
         'lastQuote',
         'WishlistBook',
         'target',
-        'OrderNumber'
+        'OrderNumber',
+        'followedAuthors',
+        'followedPublishers'
         ));
     } 
     public function updateReadingGoal(Request $request)

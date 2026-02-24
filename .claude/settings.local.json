@@ -27,7 +27,9 @@
       "Bash(# Check if HomeController is referenced anywhere grep -rn \"\"HomeController\"\" c:/laravel/library_fokara/ --include=\"\"*.php\"\" --include=\"\"*.blade.php\"\")",
       "Bash(# Check if scripts1.js is referenced in any view grep -rn \"\"scripts1\"\" c:/laravel/library_fokara/resources/ # Check main.blade.php cat c:/laravel/library_fokara/resources/views/main.blade.php)",
       "Bash(# Check if main.blade.php is referenced anywhere grep -rn \"\"main\\\\b\"\" c:/laravel/library_fokara/resources/ --include=\"\"*.blade.php\"\")",
-      "Bash(# Check scripts1.js references in views grep -rn \"\"scripts1\\\\.js\"\" c:/laravel/library_fokara/resources/ # Check welcome.blade.php routing grep -rn \"\"welcome\"\" c:/laravel/library_fokara/routes/ # Check main.blade.php references grep -rn \"\"main\\\\.blade\\\\|''main''\"\" c:/laravel/library_fokara/resources/views/ --include=\"\"*.blade.php\"\")"
+      "Bash(# Check scripts1.js references in views grep -rn \"\"scripts1\\\\.js\"\" c:/laravel/library_fokara/resources/ # Check welcome.blade.php routing grep -rn \"\"welcome\"\" c:/laravel/library_fokara/routes/ # Check main.blade.php references grep -rn \"\"main\\\\.blade\\\\|''main''\"\" c:/laravel/library_fokara/resources/views/ --include=\"\"*.blade.php\"\")",
+      "Bash(tail:*)",
+      "Bash(\"c:\\\\laravel\\\\library_fokara\\\\public\\\\css\\\\headerstyle.css\":*)"
     ]
   }
 }

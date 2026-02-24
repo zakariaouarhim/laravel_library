@@ -517,27 +517,102 @@
                     @endif
                 </div>
 
-                    <!-- Followers -->
-                    <div class="profile-card">
+                    <!-- Who I Follow -->
+                    <div class="profile-card" id="followingCard">
                         <h6 class="mb-3">
-                            <i class="bi bi-people me-2"></i>
-                            المتابعون
+                            <i class="fa-solid fa-user-plus"></i>
+                            متابعاتي
+                            <small class="text-muted fw-normal">
+                                ({{ $followedAuthors->count() + $followedPublishers->count() }})
+                            </small>
                         </h6>
-                        @if(isset($followersData) && count($followersData) > 0)
-                            <div class="row">
-                                @foreach($followersData as $follower)
-                                <div class="col-4 text-center mb-3">
-                                    <img src="{{ $follower['avatar'] }}" alt="{{ $follower['name'] }}" class="rounded-circle mb-2" style="width: 50px; height: 50px; object-fit: cover;">
-                                    <div class="small fw-bold">{{ $follower['name'] }}</div>
+
+                        @if($followedAuthors->isEmpty() && $followedPublishers->isEmpty())
+                            <div class="empty-state">
+                                <i class="bi bi-bookmark-star" style="font-size:2rem;"></i>
+                                <h6 class="mt-2">لا تتابع أحداً بعد</h6>
+                                <p>تابع مؤلفيك المفضلين ودور النشر لتصلك إشعارات عند إضافة كتب جديدة</p>
+                                <div class="d-flex gap-2 justify-content-center flex-wrap mt-2">
+                                    <a href="{{ route('authors.index') }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-pen-fancy me-1"></i> تصفح المؤلفين
+                                    </a>
+                                    <a href="{{ route('publishers.index') }}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-building me-1"></i> دور النشر
+                                    </a>
                                 </div>
-                                @endforeach
                             </div>
                         @else
-                            <div class="empty-state">
-                                <i class="bi bi-people"></i>
-                                <h6>لا يوجد متابعون بعد</h6>
-                                <p>شارك مراجعاتك واقتباساتك لجذب المتابعين</p>
-                            </div>
+                            {{-- Authors --}}
+                            @if($followedAuthors->isNotEmpty())
+                                <p class="text-muted small mb-2 fw-semibold">
+                                    <i class="bi bi-pen-fancy me-1"></i> المؤلفون
+                                </p>
+                                @foreach($followedAuthors as $author)
+                                <div class="d-flex align-items-center mb-2 p-2 rounded follow-item" data-id="{{ $author->id }}" data-type="author" style="background:#f8faff;">
+                                    @if($author->profile_image)
+                                        <img src="{{ asset('storage/' . $author->profile_image) }}"
+                                             alt="{{ $author->name }}"
+                                             class="rounded-circle me-2"
+                                             style="width:38px;height:38px;object-fit:cover;flex-shrink:0;">
+                                    @else
+                                        <div class="rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                             style="width:38px;height:38px;background:linear-gradient(135deg,#2C4B79,#48CAE4);color:#fff;font-weight:700;font-size:.9rem;flex-shrink:0;">
+                                            {{ mb_substr($author->name, 0, 1) }}
+                                        </div>
+                                    @endif
+                                    <div class="flex-grow-1" style="min-width:0;">
+                                        <a href="{{ route('author.show', $author->id) }}"
+                                           class="fw-semibold text-decoration-none text-dark small d-block text-truncate">
+                                            {{ $author->name }}
+                                        </a>
+                                        @if($author->nationality)
+                                            <div class="text-muted" style="font-size:.72rem;">{{ $author->nationality }}</div>
+                                        @endif
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger ms-2"
+                                            onclick="unfollowItem('author', {{ $author->id }}, this)"
+                                            title="إلغاء المتابعة">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                                @endforeach
+                            @endif
+
+                            {{-- Publishers --}}
+                            @if($followedPublishers->isNotEmpty())
+                                <p class="text-muted small mb-2 fw-semibold {{ $followedAuthors->isNotEmpty() ? 'mt-3' : '' }}">
+                                    <i class="bi bi-building me-1"></i> دور النشر
+                                </p>
+                                @foreach($followedPublishers as $publisher)
+                                <div class="d-flex align-items-center mb-2 p-2 rounded follow-item" data-id="{{ $publisher->id }}" data-type="publisher" style="background:#f8faff;">
+                                    @if($publisher->logo)
+                                        <img src="{{ asset('storage/' . $publisher->logo) }}"
+                                             alt="{{ $publisher->name }}"
+                                             class="rounded me-2"
+                                             style="width:38px;height:38px;object-fit:contain;flex-shrink:0;">
+                                    @else
+                                        <div class="rounded me-2 d-flex align-items-center justify-content-center"
+                                             style="width:38px;height:38px;background:linear-gradient(135deg,#2C4B79,#48CAE4);color:#fff;flex-shrink:0;">
+                                            <i class="bi bi-building" style="font-size:.9rem;"></i>
+                                        </div>
+                                    @endif
+                                    <div class="flex-grow-1" style="min-width:0;">
+                                        <a href="{{ route('publisher.show', $publisher->id) }}"
+                                           class="fw-semibold text-decoration-none text-dark small d-block text-truncate">
+                                            {{ $publisher->name }}
+                                        </a>
+                                        @if($publisher->country)
+                                            <div class="text-muted" style="font-size:.72rem;">{{ $publisher->country }}</div>
+                                        @endif
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger ms-2"
+                                            onclick="unfollowItem('publisher', {{ $publisher->id }}, this)"
+                                            title="إلغاء المتابعة">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                                @endforeach
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -558,6 +633,37 @@
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+
+        function unfollowItem(type, id, btn) {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            btn.disabled = true;
+            fetch('/follow/' + type + '/' + id, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && !data.following) {
+                    // Remove the row from the DOM
+                    var row = btn.closest('.follow-item');
+                    row.remove();
+
+                    // Update the counter
+                    var card = document.getElementById('followingCard');
+                    var counter = card.querySelector('.text-muted.fw-normal');
+                    var remaining = card.querySelectorAll('.follow-item').length;
+                    counter.textContent = '(' + remaining + ')';
+
+                    // Show empty state if nothing left
+                    if (remaining === 0) {
+                        location.reload();
+                    }
+                } else {
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => { btn.disabled = false; });
+        }
     </script>
 </body>
 </html>

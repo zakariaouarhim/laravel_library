@@ -66,6 +66,15 @@
                         @endif
                         <span><i class="fas fa-book"></i> {{ $publisher->books_count }} كتاب</span>
                     </div>
+                    @auth
+                    @php $isFollowing = \App\Models\Follow::isFollowing(Auth::id(), 'publisher', $publisher->id); @endphp
+                    <button class="follow-btn mt-3 {{ $isFollowing ? 'following' : '' }}"
+                            id="followPublisherBtn"
+                            onclick="toggleFollow('publisher', {{ $publisher->id }}, this)">
+                        <i class="fas {{ $isFollowing ? 'fa-building' : 'fa-plus' }}"></i>
+                        <span>{{ $isFollowing ? 'متابَع' : 'متابعة' }}</span>
+                    </button>
+                    @endauth
                 </div>
             </div>
         </div>
@@ -184,5 +193,36 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/cart.js') }}"></script>
     <script src="{{ asset('js/wishlist.js') }}"></script>
+    <script src="{{ asset('js/scripts.js') }}"></script>
+    <script>
+    function toggleFollow(type, id, btn) {
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        btn.disabled = true;
+        fetch('/follow/' + type + '/' + id, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            if (data.redirect) { window.location.href = data.redirect; return; }
+            if (data.success) {
+                var icon = btn.querySelector('i');
+                var label = btn.querySelector('span');
+                if (data.following) {
+                    btn.classList.add('following');
+                    icon.className = 'fas fa-building';
+                    label.textContent = 'متابَع';
+                } else {
+                    btn.classList.remove('following');
+                    icon.className = 'fas fa-plus';
+                    label.textContent = 'متابعة';
+                }
+                if (typeof showCartAlert === 'function') showCartAlert(data.message, 'success');
+            }
+        })
+        .catch(() => { btn.disabled = false; });
+    }
+    </script>
 </body>
 </html>
