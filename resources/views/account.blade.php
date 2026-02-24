@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حسابي -  </title>
+    <title>حسابي - {{ config('app.name', 'مكتبة فكرة') }}</title>
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
@@ -37,12 +37,11 @@
         <div class="profile-header">
             <div class="container">
                 <div class="text-center">
-                    @auth
                     <div class="avatar-wrapper" onclick="document.getElementById('avatarInput').click()">
-                        <img src="{{ session('user_avatar') ? asset('storage/' . session('user_avatar')) : asset('images/author/user_avatar1.jpg') }}"
+                        <img src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('images/author/user_avatar1.jpg') }}"
                              alt="الصورة الشخصية" class="profile-avatar" id="avatarPreview">
                         <div class="avatar-overlay">
-                            <i class="fas fa-camera"></i>
+                            <i class="bi bi-camera"></i>
                             <span>تغيير الصورة</span>
                         </div>
                     </div>
@@ -50,22 +49,14 @@
                         @csrf
                         <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="document.getElementById('avatarForm').submit();">
                     </form>
-                    @else
-                    <img src="{{ asset('images/author/user_avatar1.jpg') }}"
-                         alt="الصورة الشخصية" class="profile-avatar">
-                    @endauth
                     @if($errors->has('avatar'))
                         <div class="text-warning mt-2" style="font-size:0.85rem;">{{ $errors->first('avatar') }}</div>
                     @endif
-                    <h2>{{ session('user_name', 'المستخدم') }}</h2>
-                    <p class="mb-0">{{ session('user_email', 'user@example.com') }}</p>
+                    <h2>{{ Auth::user()->name }}</h2>
+                    <p class="mb-0">{{ Auth::user()->email }}</p>
                     <p class="mb-0">
                         <i class="bi bi-calendar-event me-2"></i>
-                        @auth
-                            انضم في {{ Auth::user()->created_at->locale('ar')->translatedFormat('F Y') }}
-                        @else
-                            انضم في {{ session('user_updated_at', 'يناير 2024') }}
-                        @endauth
+                        انضم في {{ Auth::user()->created_at->locale('ar')->translatedFormat('F Y') }}
                     </p>
                 </div>
             </div>
@@ -74,29 +65,35 @@
         <div class="container">
             <div class="row">
                 <!-- Statistics Cards -->
-                <div class="col-md-3 mb-4">
+                <div class="col-md-3 col-6 mb-4">
                     <div class="stats-card">
+                        <div class="stats-icon"><i class="bi bi-book-fill"></i></div>
                         <div class="stats-number">{{ $booksRead ?? 0 }}</div>
                         <div class="stats-label">كتاب مقروء</div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4">
+                <div class="col-md-3 col-6 mb-4">
                     <div class="stats-card">
-                        <div class="stats-number">{{ $reviews->count() ?? 0 }}</div>
+                        <div class="stats-icon"><i class="bi bi-star-fill"></i></div>
+                        <div class="stats-number">{{ $reviewCount }}</div>
                         <div class="stats-label">مراجعة</div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4">
+                <div class="col-md-3 col-6 mb-4">
                     <div class="stats-card">
-                        <div class="stats-number">{{ $quotes->count() ?? 0 }}</div>
+                        <div class="stats-icon"><i class="bi bi-quote"></i></div>
+                        <div class="stats-number">{{ $quoteCount }}</div>
                         <div class="stats-label">اقتباس</div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4">
-                    <div class="stats-card">
-                        <div class="stats-number">{{ $OrderNumber ?? 0 }}</div>
-                        <div class="stats-label">طلبيات</div>
-                    </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <a href="{{ route('my-orders.index') }}" class="text-decoration-none">
+                        <div class="stats-card">
+                            <div class="stats-icon"><i class="bi bi-bag-fill"></i></div>
+                            <div class="stats-number">{{ $OrderNumber ?? 0 }}</div>
+                            <div class="stats-label">طلبيات</div>
+                        </div>
+                    </a>
                 </div>
             </div>
 
@@ -155,7 +152,6 @@
                                             <div class="text-muted small">{{ $lastReview->updated_at->diffForHumans() }}</div>
                                         </div>
                                     </div>
-                                    <br>
                                 @endif
 
                                 {{-- Last Wishlist --}}
@@ -178,8 +174,7 @@
                                 @endif
                                 {{-- Last quote --}}
                                 @if($lastQuote)
-                                <br>
-                                    <h6 class="mb-3">
+                                    <h6 class="mb-3 mt-3">
                                         <i class="bi bi-quote me-2"></i>
                                         اخر اقتباس :
                                     </h6>
@@ -212,33 +207,43 @@
                                     أحدث المراجعات
                                 </h5>
                                 
-                                @if(isset($reviews) && count($reviews) > 0)
-                                   @foreach($reviews as $review)
-                                <div class="activity-item">
-                                    <div class="activity-icon">
-                                        <i class="bi bi-star-fill"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex align-items-center mb-2">
-                                            @if($review->book && $review->book->image)
-                                                <img src="{{ asset($review->book->image) }}" 
-                                                    alt="{{ $review->book->title }}" 
-                                                    class="book-thumb me-3">
-                                            @endif
-                                            <div>
-                                                <div class="fw-bold">{{ $review->book->title ?? 'عنوان غير متوفر' }}</div>
-                                                <div class="text-warning mb-1">
-                                                    @for($i = 1; $i <= 5; $i++)
-                                                        <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
-                                                    @endfor
+                                @if($reviewCount > 0)
+                                    <div id="reviewsList">
+                                    @foreach($reviews as $index => $review)
+                                        <div class="activity-item review-item" @if($index >= 5) style="display:none;" @endif>
+                                            <div class="activity-icon">
+                                                <i class="bi bi-star-fill"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    @if($review->book && $review->book->image)
+                                                        <img src="{{ asset($review->book->image) }}"
+                                                            alt="{{ $review->book->title }}"
+                                                            class="book-thumb me-3">
+                                                    @endif
+                                                    <div>
+                                                        <div class="fw-bold">{{ $review->book->title ?? 'عنوان غير متوفر' }}</div>
+                                                        <div class="text-warning mb-1">
+                                                            @for($i = 1; $i <= 5; $i++)
+                                                                <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
+                                                            @endfor
+                                                        </div>
+                                                    </div>
                                                 </div>
+                                                <div class="text-muted">{{ $review->comment }}</div>
+                                                <div class="text-muted small">{{ $review->updated_at->diffForHumans() }}</div>
                                             </div>
                                         </div>
-                                        <div class="text-muted">{{ $review->comment }}</div>
-                                        <div class="text-muted small">{{ $review->updated_at->diffForHumans() }}</div>
+                                    @endforeach
                                     </div>
-                                </div>
-                                @endforeach
+                                    @if($reviewCount > 5)
+                                        <div class="text-center mt-3">
+                                            <button class="btn btn-outline-primary btn-sm" id="showMoreReviews" onclick="showMore('reviewsList', 'review-item', this)">
+                                                <i class="bi bi-chevron-down me-1"></i>
+                                                عرض المزيد ({{ $reviewCount - 5 }})
+                                            </button>
+                                        </div>
+                                    @endif
                                 @else
                                     <div class="empty-state">
                                         <i class="bi bi-star"></i>
@@ -257,19 +262,29 @@
                                     الاقتباسات المفضلة
                                 </h5>
                                 
-                                @if(isset($quotes) && count($quotes) > 0)
-                                    @foreach($quotes as $quote)
-                                    <div class="activity-item">
-                                        <div class="activity-icon feed-icon" >
-                                            <i class="bi bi-quote"></i>
+                                @if($quoteCount > 0)
+                                    <div id="quotesList">
+                                    @foreach($quotes as $index => $quote)
+                                        <div class="activity-item quote-item" @if($index >= 5) style="display:none;" @endif>
+                                            <div class="activity-icon feed-icon">
+                                                <i class="bi bi-quote"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold">{{ $quote->book->title }}</div>
+                                                <div class="fst-italic mb-2">"{{ $quote['text'] }}"</div>
+                                                <div class="text-muted small">{{ $quote['date'] }}</div>
+                                            </div>
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-bold">{{ $quote->book->title}}</div>
-                                            <div class="fst-italic mb-2">"{{ $quote['text'] }}"</div>
-                                            <div class="text-muted small">{{ $quote['date'] }}</div>
-                                        </div>
-                                    </div>
                                     @endforeach
+                                    </div>
+                                    @if($quoteCount > 5)
+                                        <div class="text-center mt-3">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="showMore('quotesList', 'quote-item', this)">
+                                                <i class="bi bi-chevron-down me-1"></i>
+                                                عرض المزيد ({{ $quoteCount - 5 }})
+                                            </button>
+                                        </div>
+                                    @endif
                                 @else
                                     <div class="empty-state">
                                         <i class="bi bi-quote"></i>
@@ -309,7 +324,7 @@
 
                                                         <div class="d-flex justify-content-between align-items-center mt-2">
                                                             <span class="badge bg-{{ $book['status_color'] ?? 'secondary' }}">{{ $book['status'] ?? 'غير محدد' }}</span>
-                                                            <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
+                                                            <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -441,17 +456,16 @@
                     @if ( count($reviews) > 0 )
                     @if(isset($recommendations) && count($recommendations) > 0)
                         @foreach($recommendations as $rec)
-                        <div class="recommendation-item d-flex mb-3 p-2 rounded" style="background: #f8f9fa;">
+                        <div class="recommendation-item d-flex mb-3 p-2 rounded">
                             
-                            <img src="{{ $rec['image'] }}" 
-                                alt="{{ $rec['title'] }}" 
-                                class="rounded me-3" 
-                                style="width: 60px; height: 80px; object-fit: cover; cursor: pointer;"
-                                onclick="'#'">
+                            <img src="{{ $rec['image'] }}"
+                                alt="{{ $rec['title'] }}"
+                                class="rounded me-3 rec-thumb"
+                                onclick="window.location.href='{{ route('moredetail.page', ['id' => $rec['id']]) }}'">
                             
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">
-                                    <a href="#" 
+                                    <a href="{{ route('moredetail.page', ['id' => $rec['id']]) }}"
                                     class="text-decoration-none text-dark">
                                         {{ $rec['title'] }}
                                     </a>
@@ -520,7 +534,7 @@
                     <!-- Who I Follow -->
                     <div class="profile-card" id="followingCard">
                         <h6 class="mb-3">
-                            <i class="fa-solid fa-user-plus"></i>
+                            <i class="bi bi-person-plus"></i>
                             متابعاتي
                             <small class="text-muted fw-normal">
                                 ({{ $followedAuthors->count() + $followedPublishers->count() }})
@@ -529,7 +543,7 @@
 
                         @if($followedAuthors->isEmpty() && $followedPublishers->isEmpty())
                             <div class="empty-state">
-                                <i class="bi bi-bookmark-star" style="font-size:2rem;"></i>
+                                <i class="bi bi-bookmark-star"></i>
                                 <h6 class="mt-2">لا تتابع أحداً بعد</h6>
                                 <p>تابع مؤلفيك المفضلين ودور النشر لتصلك إشعارات عند إضافة كتب جديدة</p>
                                 <div class="d-flex gap-2 justify-content-center flex-wrap mt-2">
@@ -548,25 +562,23 @@
                                     <i class="bi bi-pen-fancy me-1"></i> المؤلفون
                                 </p>
                                 @foreach($followedAuthors as $author)
-                                <div class="d-flex align-items-center mb-2 p-2 rounded follow-item" data-id="{{ $author->id }}" data-type="author" style="background:#f8faff;">
+                                <div class="d-flex align-items-center mb-2 p-2 rounded follow-item" data-id="{{ $author->id }}" data-type="author">
                                     @if($author->profile_image)
                                         <img src="{{ asset('storage/' . $author->profile_image) }}"
                                              alt="{{ $author->name }}"
-                                             class="rounded-circle me-2"
-                                             style="width:38px;height:38px;object-fit:cover;flex-shrink:0;">
+                                             class="rounded-circle me-2 follow-avatar">
                                     @else
-                                        <div class="rounded-circle me-2 d-flex align-items-center justify-content-center"
-                                             style="width:38px;height:38px;background:linear-gradient(135deg,#2C4B79,#48CAE4);color:#fff;font-weight:700;font-size:.9rem;flex-shrink:0;">
+                                        <div class="rounded-circle me-2 d-flex align-items-center justify-content-center follow-avatar-placeholder">
                                             {{ mb_substr($author->name, 0, 1) }}
                                         </div>
                                     @endif
-                                    <div class="flex-grow-1" style="min-width:0;">
+                                    <div class="flex-grow-1 follow-name">
                                         <a href="{{ route('author.show', $author->id) }}"
                                            class="fw-semibold text-decoration-none text-dark small d-block text-truncate">
                                             {{ $author->name }}
                                         </a>
                                         @if($author->nationality)
-                                            <div class="text-muted" style="font-size:.72rem;">{{ $author->nationality }}</div>
+                                            <div class="text-muted follow-meta">{{ $author->nationality }}</div>
                                         @endif
                                     </div>
                                     <button class="btn btn-sm btn-outline-danger ms-2"
@@ -584,25 +596,23 @@
                                     <i class="bi bi-building me-1"></i> دور النشر
                                 </p>
                                 @foreach($followedPublishers as $publisher)
-                                <div class="d-flex align-items-center mb-2 p-2 rounded follow-item" data-id="{{ $publisher->id }}" data-type="publisher" style="background:#f8faff;">
+                                <div class="d-flex align-items-center mb-2 p-2 rounded follow-item" data-id="{{ $publisher->id }}" data-type="publisher">
                                     @if($publisher->logo)
                                         <img src="{{ asset('storage/' . $publisher->logo) }}"
                                              alt="{{ $publisher->name }}"
-                                             class="rounded me-2"
-                                             style="width:38px;height:38px;object-fit:contain;flex-shrink:0;">
+                                             class="rounded me-2 follow-avatar" style="object-fit:contain;">
                                     @else
-                                        <div class="rounded me-2 d-flex align-items-center justify-content-center"
-                                             style="width:38px;height:38px;background:linear-gradient(135deg,#2C4B79,#48CAE4);color:#fff;flex-shrink:0;">
-                                            <i class="bi bi-building" style="font-size:.9rem;"></i>
+                                        <div class="rounded me-2 d-flex align-items-center justify-content-center follow-avatar-placeholder">
+                                            <i class="bi bi-building"></i>
                                         </div>
                                     @endif
-                                    <div class="flex-grow-1" style="min-width:0;">
+                                    <div class="flex-grow-1 follow-name">
                                         <a href="{{ route('publisher.show', $publisher->id) }}"
                                            class="fw-semibold text-decoration-none text-dark small d-block text-truncate">
                                             {{ $publisher->name }}
                                         </a>
                                         @if($publisher->country)
-                                            <div class="text-muted" style="font-size:.72rem;">{{ $publisher->country }}</div>
+                                            <div class="text-muted follow-meta">{{ $publisher->country }}</div>
                                         @endif
                                     </div>
                                     <button class="btn btn-sm btn-outline-danger ms-2"
@@ -637,32 +647,53 @@
         function unfollowItem(type, id, btn) {
             var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
             fetch('/follow/' + type + '/' + id, {
                 method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
             })
             .then(r => r.json())
             .then(data => {
                 if (data.success && !data.following) {
-                    // Remove the row from the DOM
+                    // Fade out and remove the row
                     var row = btn.closest('.follow-item');
-                    row.remove();
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '0';
 
-                    // Update the counter
-                    var card = document.getElementById('followingCard');
-                    var counter = card.querySelector('.text-muted.fw-normal');
-                    var remaining = card.querySelectorAll('.follow-item').length;
-                    counter.textContent = '(' + remaining + ')';
+                    setTimeout(function() {
+                        row.remove();
 
-                    // Show empty state if nothing left
-                    if (remaining === 0) {
-                        location.reload();
-                    }
+                        // Update the counter
+                        var card = document.getElementById('followingCard');
+                        var counter = card.querySelector('.text-muted.fw-normal');
+                        var remaining = card.querySelectorAll('.follow-item').length;
+                        counter.textContent = '(' + remaining + ')';
+
+                        // Show empty state if nothing left
+                        if (remaining === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+
+                    showToast('تم إلغاء المتابعة', 'success');
                 } else {
+                    btn.innerHTML = '<i class="bi bi-x-lg"></i>';
                     btn.disabled = false;
                 }
             })
-            .catch(() => { btn.disabled = false; });
+            .catch(function() {
+                btn.innerHTML = '<i class="bi bi-x-lg"></i>';
+                btn.disabled = false;
+                showToast('حدث خطأ، يرجى المحاولة لاحقاً', 'error');
+            });
+        }
+
+        function showMore(listId, itemClass, btn) {
+            var items = document.getElementById(listId).querySelectorAll('.' + itemClass);
+            items.forEach(function(item) {
+                item.style.display = '';
+            });
+            btn.remove();
         }
     </script>
 </body>

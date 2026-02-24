@@ -92,14 +92,26 @@
                     <h1 class="v2-title">{{ $book->title }}</h1>
 
                     <!-- Author -->
-                    <p class="v2-author">
-                        <i class="fas fa-pen-fancy"></i>
+                    <div class="v2-author d-flex align-items-center gap-2">
+                        <p class="mb-0">
+                            <i class="fas fa-pen-fancy" style="color: var(--site-secondary)"></i>
+                            @if($book->primaryAuthor)
+                                <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
+                            @else
+                                {{ $book->author }}
+                            @endif
+                        </p>
                         @if($book->primaryAuthor)
-                            <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
-                        @else
-                            {{ $book->author }}
+                            @auth
+                                @php $isFollowingAuthor = \App\Models\Follow::isFollowing(Auth::id(), 'author', $book->primaryAuthor->id); @endphp
+                                <button class="v2-follow-btn {{ $isFollowingAuthor ? 'following' : '' }}"
+                                        onclick="toggleFollow('author', {{ $book->primaryAuthor->id }}, this)">
+                                    <i class="fas {{ $isFollowingAuthor ? 'fa-user-check' : 'fa-user-plus' }}"></i>
+                                    <span>{{ $isFollowingAuthor ? 'متابَع' : 'متابعة' }}</span>
+                                </button>
+                            @endauth
                         @endif
-                    </p>
+                    </div>
 
                     <!-- Rating summary -->
                     @if($book->reviews_count > 0)
@@ -396,7 +408,19 @@
                                 @endif
                             </div>
                             <div class="v2-author-info">
-                                <h4>{{ $book->author }}</h4>
+                                <h4>
+                                    {{ $book->author }}
+                                    @if($book->primaryAuthor)
+                                        @auth
+                                            @php $isFollowingAuthor = \App\Models\Follow::isFollowing(Auth::id(), 'author', $book->primaryAuthor->id); @endphp
+                                            <button class="v2-follow-btn {{ $isFollowingAuthor ? 'following' : '' }}"
+                                                    onclick="toggleFollow('author', {{ $book->primaryAuthor->id }}, this)">
+                                                <i class="fas {{ $isFollowingAuthor ? 'fa-user-check' : 'fa-user-plus' }}"></i>
+                                                <span>{{ $isFollowingAuthor ? 'متابَع' : 'متابعة' }}</span>
+                                            </button>
+                                        @endauth
+                                    @endif
+                                </h4>
                                 <span class="v2-author-role"><i class="fas fa-pen-fancy"></i> مؤلف</span>
                             </div>
                         </div>
@@ -459,6 +483,32 @@
                 btn.innerHTML = '<i class="fas fa-check"></i>';
                 setTimeout(() => btn.innerHTML = '<i class="fas fa-link"></i>', 2000);
             });
+        }
+
+        function toggleFollow(type, id, btn) {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            btn.disabled = true;
+            fetch('/follow/' + type + '/' + id, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                // Sync ALL follow buttons on the page (top + author bio tab)
+                document.querySelectorAll('.v2-follow-btn').forEach(function(b) {
+                    b.disabled = false;
+                    if (data.following) {
+                        b.classList.add('following');
+                        b.querySelector('i').className = 'fas fa-user-check';
+                        b.querySelector('span').textContent = 'متابَع';
+                    } else {
+                        b.classList.remove('following');
+                        b.querySelector('i').className = 'fas fa-user-plus';
+                        b.querySelector('span').textContent = 'متابعة';
+                    }
+                });
+            })
+            .catch(function() { btn.disabled = false; });
         }
     </script>
 </body>

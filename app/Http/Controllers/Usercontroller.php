@@ -355,6 +355,9 @@ class Usercontroller extends Controller
             $userFollows->where('followable_type', 'publisher')->pluck('followable_id')
         )->get();
 
+        $reviewCount = $reviews->count();
+        $quoteCount  = $quotes->count();
+
         return view('account',
         compact('reviews',
         'recommendations',
@@ -370,7 +373,9 @@ class Usercontroller extends Controller
         'target',
         'OrderNumber',
         'followedAuthors',
-        'followedPublishers'
+        'followedPublishers',
+        'reviewCount',
+        'quoteCount'
         ));
     } 
     public function updateReadingGoal(Request $request)
