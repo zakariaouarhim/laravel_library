@@ -43,6 +43,7 @@
                         class="search-input"
                         placeholder="ابحث عن كتاب، مؤلف، ناشر..."
                         oninput="searchBooksAutocomplete(this.value, 'searchResultsHeader')"
+                        onfocus="if(this.value.length < 2) showRecentSearches('searchResultsHeader')"
                         autocomplete="off"
                         required>
                     <button type="submit" class="search-btn">
@@ -222,8 +223,8 @@
     </div>
 
     <!-- Mobile Search -->
-    <form action="{{ route('search.results') }}" method="GET" class="mobile-search">
-        <input type="search" name="query" placeholder="ابحث عن كتاب..." required>
+    <form action="{{ route('search.results') }}" method="GET" class="mobile-search position-relative">
+        <input type="search" name="query" placeholder="ابحث عن كتاب، مؤلف، ناشر..." autocomplete="off" required>
         <button type="submit"><i class="fas fa-search"></i></button>
     </form>
 

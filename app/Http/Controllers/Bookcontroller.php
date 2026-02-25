@@ -923,6 +923,7 @@ public function addProduct(Request $request)
             $books = Book::where('title', 'LIKE', "%{$query}%")
                         ->orWhere('author', 'LIKE', "%{$query}%")
                         ->orWhere('ISBN', 'LIKE', "%{$query}%")
+                        ->orWhere('Publishing_House', 'LIKE', "%{$query}%")
                         ->get();
             
             // If no results, try n-gram approach with DB query
@@ -936,7 +937,8 @@ public function addProduct(Request $request)
                     $ngramQuery = Book::where(function ($q) use ($tokens) {
                         foreach ($tokens as $token) {
                             $q->orWhere('title', 'LIKE', "%{$token}%")
-                              ->orWhere('author', 'LIKE', "%{$token}%");
+                              ->orWhere('author', 'LIKE', "%{$token}%")
+                              ->orWhere('Publishing_House', 'LIKE', "%{$token}%");
                         }
                     })->take(10)->get();
                     $books = $ngramQuery;
@@ -1061,6 +1063,7 @@ private function searchBooks2(?string $query)
     $books = Book::where('title', 'LIKE', "%{$query}%")
         ->orWhere('author', 'LIKE', "%{$query}%")
         ->orWhere('ISBN', 'LIKE', "%{$query}%")
+        ->orWhere('Publishing_House', 'LIKE', "%{$query}%")
         ->get();
 
     if ($books->isNotEmpty()) {
@@ -1084,7 +1087,8 @@ private function smartFallbackSearch(string $query)
     return Book::where(function ($q) use ($tokens) {
         foreach ($tokens as $token) {
             $q->orWhere('title', 'LIKE', "%{$token}%")
-              ->orWhere('author', 'LIKE', "%{$token}%");
+              ->orWhere('author', 'LIKE', "%{$token}%")
+              ->orWhere('Publishing_House', 'LIKE', "%{$token}%");
         }
     })->take(20)->get();
 }

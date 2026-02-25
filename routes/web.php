@@ -265,7 +265,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/', [BookController::class, 'index']);
 Route::get('/index', [BookController::class, 'index'])->name('index.page');
 Route::get('/books', [BookController::class, 'index']);
-Route::get('/search-books', [BookController::class, 'searchBooks'])->name('search.books');
+Route::get('/search-books', [BookController::class, 'searchproductBooks'])->name('search.books');
 Route::get('/search-results', [BookController::class, 'searchResults'])->name('search.results');
 
 // ==================== AUTH ROUTES ====================

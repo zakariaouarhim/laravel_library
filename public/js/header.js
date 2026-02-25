@@ -105,90 +105,185 @@ function removeFromCart(itemId) {
 
 
 /*///////////////search//////////////////////////*/
-// Autocomplete search function
-// Unified search function that works for both index page and header
-function searchBooksAutocomplete(query, containerId = 'searchResults') {
-    const resultsContainer = document.getElementById(containerId);
-    
-    if (!resultsContainer) {
-        console.error(`Container with ID "${containerId}" not found`);
-        return;
-    }
-    
-    if (query.length < 2) {
+
+// Debounce timers per container
+var _searchTimers = {};
+
+// Recent searches (stored in localStorage)
+function getRecentSearches() {
+    try {
+        return JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    } catch(e) { return []; }
+}
+
+function saveRecentSearch(query) {
+    if (!query || query.length < 2) return;
+    var recents = getRecentSearches().filter(function(s) { return s !== query; });
+    recents.unshift(query);
+    if (recents.length > 5) recents = recents.slice(0, 5);
+    localStorage.setItem('recentSearches', JSON.stringify(recents));
+}
+
+// Highlight matching text
+function highlightMatch(text, query) {
+    if (!text || !query) return text || '';
+    var escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp('(' + escaped + ')', 'gi'), '<mark>$1</mark>');
+}
+
+// Show recent searches on focus (when input is empty or short)
+function showRecentSearches(containerId) {
+    var resultsContainer = document.getElementById(containerId);
+    if (!resultsContainer) return;
+
+    var recents = getRecentSearches();
+    if (recents.length === 0) {
         resultsContainer.style.display = 'none';
         return;
     }
-    
-    fetch(`/search-books?query=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.books.length > 0) {
-                let html = '<div class="list-group">';
-                
-                data.books.forEach(book => {
-                    const imageUrl = book.image 
-                        ? `${book.image}` 
-                        : '/default-book.png';
-                    
-                    html += `
-                        <a href="/moredetail/${book.id}" class="list-group-item list-group-item-action d-flex align-items-center p-3">
-                            <img src="/${imageUrl}" 
-                                 alt="${book.title}" 
-                                 style="width: 50px; height: 70px; object-fit: cover; margin-left: 15px; border-radius: 4px;">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">${book.title}</h6>
-                                <small class="text-muted">${book.author}</small>
-                                ${book.price ? `<div class="text-primary fw-bold">${book.price} د.م</div>` : ''}
-                            </div>
-                        </a>
-                    `;
-                });
-                
-                html += `
-                    <div class="list-group-item text-center bg-light">
-                        <small class="text-muted">اضغط Enter أو زر البحث لعرض جميع النتائج</small>
-                    </div>
-                </div>`;
-                
-                resultsContainer.innerHTML = html;
-                resultsContainer.style.display = 'block';
-            } else {
-                resultsContainer.innerHTML = `
-                    <div class="p-3 text-center text-muted">
-                        <i class="fas fa-search"></i> لم يتم العثور على نتائج
-                    </div>
-                `;
-                resultsContainer.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            resultsContainer.style.display = 'none';
-        });
+
+    var html = '<div class="search-section">';
+    html += '<div class="search-section-header"><i class="fas fa-history"></i> عمليات البحث الأخيرة</div>';
+    recents.forEach(function(term) {
+        html += '<a href="/search-results?query=' + encodeURIComponent(term) + '" class="search-recent-item">';
+        html += '<i class="fas fa-history"></i> <span>' + term + '</span>';
+        html += '</a>';
+    });
+    html += '</div>';
+
+    resultsContainer.innerHTML = html;
+    resultsContainer.style.display = 'block';
 }
 
+// Main autocomplete function with debouncing, loading state, and highlighting
+function searchBooksAutocomplete(query, containerId) {
+    if (!containerId) containerId = 'searchResults';
+    var resultsContainer = document.getElementById(containerId);
 
+    if (!resultsContainer) return;
+
+    // Clear previous timer (debounce 300ms)
+    if (_searchTimers[containerId]) {
+        clearTimeout(_searchTimers[containerId]);
+    }
+
+    if (query.length < 2) {
+        if (query.length === 0) {
+            showRecentSearches(containerId);
+        } else {
+            resultsContainer.style.display = 'none';
+        }
+        return;
+    }
+
+    // Show loading spinner
+    resultsContainer.innerHTML = '<div class="search-loading"><div class="search-spinner"></div> جاري البحث...</div>';
+    resultsContainer.style.display = 'block';
+
+    _searchTimers[containerId] = setTimeout(function() {
+        fetch('/search-books?query=' + encodeURIComponent(query))
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success && data.books.length > 0) {
+                    var html = '<div class="search-results-list">';
+
+                    data.books.forEach(function(book) {
+                        var imageUrl = book.image ? book.image : '/default-book.png';
+                        var title = highlightMatch(book.title, query);
+                        var author = highlightMatch(book.author || '', query);
+                        var publisher = book.Publishing_House ? highlightMatch(book.Publishing_House, query) : '';
+
+                        html += '<a href="/moredetail/' + book.id + '" class="search-result-item">';
+                        html += '<img src="/' + imageUrl + '" alt="' + (book.title || '') + '">';
+                        html += '<div class="search-result-info">';
+                        html += '<div class="search-result-title">' + title + '</div>';
+                        if (author) {
+                            html += '<div class="search-result-author"><i class="fas fa-user-edit"></i> ' + author + '</div>';
+                        }
+                        if (publisher) {
+                            html += '<div class="search-result-publisher"><i class="fas fa-building"></i> ' + publisher + '</div>';
+                        }
+                        if (book.price) {
+                            html += '<div class="search-result-price">' + book.price + ' د.م</div>';
+                        }
+                        html += '</div></a>';
+                    });
+
+                    html += '<a href="/search-results?query=' + encodeURIComponent(query) + '" class="search-view-all">';
+                    html += '<i class="fas fa-search"></i> عرض جميع النتائج';
+                    html += '</a></div>';
+
+                    resultsContainer.innerHTML = html;
+                    resultsContainer.style.display = 'block';
+                } else {
+                    resultsContainer.innerHTML = '<div class="search-no-results">' +
+                        '<i class="fas fa-search"></i> لم يتم العثور على نتائج لـ "' + query + '"' +
+                        '</div>';
+                    resultsContainer.style.display = 'block';
+                }
+            })
+            .catch(function() {
+                resultsContainer.style.display = 'none';
+            });
+    }, 300);
+}
+
+// Handle focus on search inputs — show recent searches
+document.addEventListener('DOMContentLoaded', function() {
+    // Header search
+    var headerInput = document.getElementById('searchInputHeader');
+    if (headerInput) {
+        headerInput.addEventListener('focus', function() {
+            if (this.value.length < 2) showRecentSearches('searchResultsHeader');
+        });
+    }
+
+    // Index page search
+    var indexInput = document.getElementById('searchInput');
+    if (indexInput) {
+        indexInput.addEventListener('focus', function() {
+            if (this.value.length < 2) showRecentSearches('searchResults');
+        });
+    }
+
+    // Mobile search — add autocomplete support
+    var mobileSearchInputs = document.querySelectorAll('.mobile-search input[name="query"]');
+    mobileSearchInputs.forEach(function(input) {
+        // Create results container if it doesn't exist
+        if (!input.parentElement.querySelector('.search-results-mobile')) {
+            var mobileResults = document.createElement('div');
+            mobileResults.id = 'searchResultsMobile';
+            mobileResults.className = 'search-results-header search-results-mobile';
+            input.parentElement.appendChild(mobileResults);
+        }
+
+        input.addEventListener('input', function() {
+            searchBooksAutocomplete(this.value, 'searchResultsMobile');
+        });
+        input.addEventListener('focus', function() {
+            if (this.value.length < 2) showRecentSearches('searchResultsMobile');
+        });
+    });
+
+    // Save search term when form is submitted
+    document.querySelectorAll('form[action*="search-results"]').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            var input = form.querySelector('input[name="query"]');
+            if (input) saveRecentSearch(input.value.trim());
+        });
+    });
+});
 
 // Hide autocomplete when clicking outside
 document.addEventListener('click', function(event) {
-    // Index page search
-    const searchInput = document.getElementById('searchInput');
-    const resultsContainer = document.getElementById('searchResults');
-
-    if (searchInput && resultsContainer &&
-        !searchInput.contains(event.target) &&
-        !resultsContainer.contains(event.target)) {
-        resultsContainer.style.display = 'none';
-    }
-
-    // Header search
-    const headerSearchInput = document.getElementById('searchInputHeader');
-    const headerResults = document.getElementById('searchResultsHeader');
-
-    if (headerSearchInput && headerResults &&
-        !headerSearchInput.contains(event.target) &&
-        !headerResults.contains(event.target)) {
-        headerResults.style.display = 'none';
-    }
+    var containers = ['searchResults', 'searchResultsHeader', 'searchResultsMobile'];
+    containers.forEach(function(id) {
+        var container = document.getElementById(id);
+        if (!container) return;
+        var input = container.previousElementSibling ||
+                    container.parentElement.querySelector('input[name="query"]');
+        if (input && !input.contains(event.target) && !container.contains(event.target)) {
+            container.style.display = 'none';
+        }
+    });
 });

@@ -15,6 +15,7 @@
                     id="searchInput"
                     placeholder="ابحث عن كتاب بالعنوان، المؤلف، أو النوع..."
                     oninput="searchBooksAutocomplete(this.value)"
+                    onfocus="if(this.value.length < 2) showRecentSearches('searchResults')"
                     autocomplete="off"
                     required>
                 <button type="submit">

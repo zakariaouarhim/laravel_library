@@ -221,6 +221,23 @@
     border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
 }
 
+/* New search result components */
+.search-results .search-loading,
+.search-results .search-no-results,
+.search-results .search-result-item,
+.search-results .search-view-all,
+.search-results .search-section-header,
+.search-results .search-recent-item {
+    /* Inherits from headerstyle.css — shared components */
+}
+
+.search-results .search-result-item mark {
+    background: rgba(72, 202, 228, 0.25);
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+}
+
 /* ============================================
    Category Buttons
    KEY FIX: removed negative margin, sits naturally
