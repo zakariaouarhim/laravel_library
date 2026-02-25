@@ -321,6 +321,22 @@
     filter: grayscale(10%);
 }
 
+/* Followed badge (personalized) */
+.badge.badge-followed {
+    background:  #48CAE4;
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(44, 75, 121, 0.2);
+}
+
+.badge.badge-followed i {
+    font-size: 9px;
+    margin-left: 2px;
+}
+
 /* Out-of-stock badge */
 .badge.out-of-stock-badge {
     background: #6c757d;
@@ -359,6 +375,37 @@
     .book-card .book-image-wrapper {
         height: 280px;
     }
+
+    .book-card:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+
+    /* Smaller badges */
+    .card-badges {
+        margin-top: -14px;
+        margin-bottom: 6px;
+        gap: 4px;
+        height: 24px;
+    }
+
+    .card-badges .badge {
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 10px;
+    }
+
+    /* Smaller quick action buttons */
+    .quick-actions {
+        top: 6px;
+        right: 6px;
+        gap: 4px;
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -367,18 +414,76 @@
     }
 
     .book-card h6 {
-        font-size: 14px;
-        height: 40px;
+        font-size: 13px;
+        height: 36px;
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+
+    .book-card .book-author {
+        font-size: 12px;
+        margin-bottom: 10px;
     }
 
     .book-card .price {
-        font-size: 16px;
+        font-size: 15px;
+    }
+
+    .book-card .original-price {
+        font-size: 12px;
+    }
+
+    .book-card .price-section {
+        padding: 8px 12px 14px;
     }
 
     .book-card>h6,
     .book-card>.book-author,
     .book-card>.price-section {
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .book-card .add-btn {
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
+
+    .book-card .notify-btn {
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Badges even smaller */
+    .card-badges {
+        margin-top: -12px;
+        margin-bottom: 4px;
+        height: 22px;
+    }
+
+    .card-badges .badge {
+        font-size: 9px;
+        padding: 2px 7px;
+        border-width: 1.5px;
+    }
+
+    .badge.out-of-stock-badge {
+        font-size: 9px;
+        padding: 2px 7px;
+        border-width: 1.5px;
+    }
+
+    /* Quick actions always visible on touch */
+    .quick-actions {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
     }
 }

@@ -45,14 +45,27 @@ class AppServiceProvider extends ServiceProvider
 
        View::composer(['components.book-carousel', 'partials.book-card-grid', 'moredetail', 'moredetail2'], function ($view) {
            static $wishlistBookIds = null;
+           static $followedAuthorIds = null;
+           static $followedPublisherIds = null;
+
            if ($wishlistBookIds === null) {
                if (auth()->check()) {
                    $wishlistBookIds = auth()->user()->wishlist()->pluck('book_id')->toArray();
+
+                   $userFollows = \App\Models\Follow::where('user_id', auth()->id())->get();
+                   $followedAuthorIds = $userFollows->where('followable_type', 'author')
+                       ->pluck('followable_id')->toArray();
+                   $followedPublisherIds = $userFollows->where('followable_type', 'publisher')
+                       ->pluck('followable_id')->toArray();
                } else {
                    $wishlistBookIds = session()->get('wishlist', []);
+                   $followedAuthorIds = [];
+                   $followedPublisherIds = [];
                }
            }
            $view->with('wishlistBookIds', $wishlistBookIds);
+           $view->with('followedAuthorIds', $followedAuthorIds);
+           $view->with('followedPublisherIds', $followedPublisherIds);
        });
     }
 }

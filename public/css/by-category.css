@@ -593,8 +593,8 @@ body {
     }
 
     .books-container.grid-view {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+        gap: 12px;
     }
 }
 
@@ -604,7 +604,7 @@ body {
     }
 
     .books-container.grid-view {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
 
@@ -613,6 +613,12 @@ body {
         right: 5%;
         left: 5%;
         top: 10px;
+    }
+}
+
+@media (max-width: 400px) {
+    .books-container.grid-view {
+        gap: 8px;
     }
 }
 

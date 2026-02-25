@@ -27,6 +27,9 @@
                     <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
                 @endif
             @endif
+            @if(($book->author_id && in_array($book->author_id, $followedAuthorIds ?? [])) || ($book->publishing_house_id && in_array($book->publishing_house_id, $followedPublisherIds ?? [])))
+                <span class="badge badge-followed"><i class="fas fa-user-check"></i> متابَع</span>
+            @endif
         </div>
 
         <h6><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h6>

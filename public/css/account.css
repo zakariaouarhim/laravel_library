@@ -388,6 +388,11 @@ body {
     .stats-number {
         font-size: 1.6rem;
     }
+
+    /* Sidebar stacks below main content */
+    .col-md-4 .profile-card {
+        margin-bottom: 1.5rem;
+    }
 }
 
 /* ============================
@@ -409,9 +414,43 @@ body {
         height: 90px;
     }
 
+    .profile-header h2 {
+        font-size: 1.3rem;
+        margin-top: 0.5rem;
+    }
+
+    .profile-header p {
+        font-size: 0.85rem;
+    }
+
     .profile-card {
         padding: 1.25rem;
         border-radius: 12px;
+    }
+
+    /* Nav pills — horizontal scroll */
+    .nav-pills {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 0.4rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-pills::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-pills .nav-item {
+        flex-shrink: 0;
+    }
+
+    .nav-pills .nav-link {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
     }
 
     .activity-icon {
@@ -429,17 +468,83 @@ body {
         gap: 0.75rem;
     }
 
-    .nav-pills .nav-link {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.85rem;
-    }
-
     .stats-number {
         font-size: 1.4rem;
     }
 
     .stats-icon {
         font-size: 1.2rem;
+    }
+
+    .stats-card {
+        padding: 1rem;
+    }
+
+    /* Book cards — stack vertically */
+    .book-card {
+        border-radius: 12px;
+    }
+
+    .book-card .book-thumb {
+        width: 45px;
+        height: 65px;
+    }
+
+    .book-card .p-2 {
+        padding: 0.5rem !important;
+    }
+
+    .book-card .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    /* Recommendation items */
+    .recommendation-item {
+        padding: 0.5rem !important;
+    }
+
+    .recommendation-item h6 {
+        font-size: 0.85rem;
+    }
+
+    .recommendation-item .text-muted.small {
+        font-size: 0.75rem;
+    }
+
+    .recommendation-item .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .recommendation-item .text-warning.small i {
+        font-size: 0.7rem;
+    }
+
+    /* Follow items */
+    .follow-item {
+        padding: 0.4rem !important;
+    }
+
+    .follow-avatar,
+    .follow-avatar-placeholder {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .follow-item .btn-sm {
+        padding: 0.15rem 0.35rem;
+        font-size: 0.7rem;
+    }
+
+    .follow-meta {
+        font-size: 0.65rem;
+    }
+
+    /* Reading goal */
+    .display-6 {
+        font-size: 1.6rem;
     }
 }
 
@@ -462,15 +567,112 @@ body {
     }
 
     .profile-header h2 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+    }
+
+    .profile-header p {
+        font-size: 0.8rem;
+    }
+
+    .profile-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
     }
 
     .empty-state {
         padding: 2rem 1rem;
     }
 
+    .empty-state i {
+        font-size: 2rem;
+    }
+
+    .empty-state h6 {
+        font-size: 0.9rem;
+    }
+
+    .empty-state p {
+        font-size: 0.8rem;
+    }
+
+    /* Stats cards tighter */
+    .stats-card {
+        padding: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .stats-number {
+        font-size: 1.2rem;
+    }
+
+    .stats-label {
+        font-size: 0.75rem;
+    }
+
+    .stats-icon {
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    /* Rec thumb smaller */
     .rec-thumb {
         width: 50px;
         height: 65px;
+    }
+
+    /* Recommendation — stack actions below stars */
+    .recommendation-item .d-flex.align-items-center.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.4rem;
+    }
+
+    /* Nav pills smaller */
+    .nav-pills .nav-link {
+        padding: 0.4rem 0.65rem;
+        font-size: 0.8rem;
+    }
+
+    .nav-pills .nav-link i {
+        margin-left: 0.3rem !important;
+        font-size: 0.75rem;
+    }
+
+    /* Activity items */
+    .activity-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+
+    .activity-item .fw-bold {
+        font-size: 0.85rem;
+    }
+
+    .activity-item .text-muted {
+        font-size: 0.75rem;
+    }
+
+    /* Book cards full width */
+    .book-card {
+        border-radius: 10px;
+    }
+
+    .book-card h6 {
+        font-size: 0.85rem;
+    }
+
+    /* Display-6 in reading goal */
+    .display-6 {
+        font-size: 1.4rem;
+    }
+
+    /* Modal adjustments */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
     }
 }
