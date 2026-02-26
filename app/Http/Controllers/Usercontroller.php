@@ -916,4 +916,14 @@ class Usercontroller extends Controller
 
         return redirect()->route('account.page')->with('success', 'تم تحديث الصورة الشخصية بنجاح');
     }
+
+    public function showLogin2()
+    {
+        return view('login2');
+    }
+
+    public function logoutRedirect()
+    {
+        return redirect()->route('index.page');
+    }
 }

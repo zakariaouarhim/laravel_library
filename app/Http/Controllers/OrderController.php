@@ -30,12 +30,16 @@ class OrderController extends Controller
         
         $orders = $query->latest()->paginate(15);
         
-        // Count orders by status
-        $pendingCount = Order::where('status', 'pending')->count();
-        $processingCount = Order::where('status', 'processing')->count();
-        $deliveredCount = Order::where('status', 'delivered')->count();
-        $cancelledCount = Order::where('status', 'cancelled')->count();
-        
+        // Count orders by status (single query instead of 4)
+        $statusCounts = Order::selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $pendingCount = $statusCounts->get('pending', 0);
+        $processingCount = $statusCounts->get('processing', 0);
+        $deliveredCount = $statusCounts->get('delivered', 0);
+        $cancelledCount = $statusCounts->get('cancelled', 0);
+
         return view('Dashbord_Admin.orders', compact(
             'orders',
             'pendingCount',
@@ -135,14 +139,20 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(10)->appends($request->query());
 
-        // Count orders by status for this user
+        // Count orders by status for this user (single query instead of 6)
+        $counts = Order::where('user_id', $userId)
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $allCount = $counts->sum();
         $statusCounts = [
-            'all'        => Order::where('user_id', $userId)->count(),
-            'pending'    => Order::where('user_id', $userId)->where('status', 'pending')->count(),
-            'processing' => Order::where('user_id', $userId)->where('status', 'processing')->count(),
-            'shipped'    => Order::where('user_id', $userId)->where('status', 'shipped')->count(),
-            'delivered'  => Order::where('user_id', $userId)->where('status', 'delivered')->count(),
-            'cancelled'  => Order::where('user_id', $userId)->where('status', 'cancelled')->count(),
+            'all'        => $allCount,
+            'pending'    => $counts->get('pending', 0),
+            'processing' => $counts->get('processing', 0),
+            'shipped'    => $counts->get('shipped', 0),
+            'delivered'  => $counts->get('delivered', 0),
+            'cancelled'  => $counts->get('cancelled', 0),
         ];
 
         return view('my-orders', compact('orders', 'status', 'statusCounts'));

@@ -350,4 +350,9 @@ public function updateQuantity(Request $request)
     }
 }
 
+    public function storeForCheckout(Request $request)
+    {
+        session()->put('checkout_cart', json_decode($request->cart_data, true));
+        return redirect()->route('checkout.page');
+    }
 }

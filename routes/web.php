@@ -25,7 +25,7 @@ use App\Http\Controllers\StockNotificationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FollowController;
 
-use Illuminate\Http\Request;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -162,10 +162,7 @@ Route::post('/remove-from-cart', [CartController::class, 'removeFromCart'])->nam
 Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart']);
 Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.update-quantity');
 
-Route::post('/checkout/store-cart', function (Request $request) {
-    session()->put('checkout_cart', json_decode($request->cart_data, true));
-    return redirect()->route('checkout.page');
-})->name('checkout.store-cart');
+Route::post('/checkout/store-cart', [CartController::class, 'storeForCheckout'])->name('checkout.store-cart');
 
 Route::get('/cart', [CartController::class, 'showCart'])->name('cart.page');
 Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.page');
@@ -275,9 +272,7 @@ Route::get('/search-results', [BookController::class, 'searchResults'])->name('s
 
 Auth::routes();
 
-Route::get('/login2', function () {
-    return view('login2');
-})->name('login2.page');
+Route::get('/login2', [Usercontroller::class, 'showLogin2'])->name('login2.page');
 
 Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin')->middleware('throttle:5,1');
 Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser')->middleware('throttle:3,1');
@@ -285,7 +280,7 @@ Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser')->mi
 // Logout via POST to prevent CSRF-based forced logout
 Route::post('/logout', [Usercontroller::class, 'logout'])->name('logout');
 // GET /logout: redirect to home (no logout — prevents CSRF forced-logout attacks)
-Route::get('/logout', fn() => redirect()->route('index.page'));
+Route::get('/logout', [Usercontroller::class, 'logoutRedirect']);
 
 // Password reset
 Route::get('/forgot-password', [Usercontroller::class, 'showForgotPasswordForm'])

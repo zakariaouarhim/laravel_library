@@ -36,12 +36,12 @@ class BookController extends Controller
         // Get the book with its category, category's parent, and author relationship
         $book = Book::with(['category.parent', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
         
-        // Get all authors
-        $authors = Author::active()->get();
-        
-        // Get all active publishing houses
-        $publishingHouses = PublishingHouse::active()->get();
-        
+        // Get all authors (cached 1 hour)
+        $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
+
+        // Get all active publishing houses (cached 1 hour)
+        $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
+
         // Get the primary author of this book (if using relationship)
         $primaryAuthor = $book->primaryAuthor;
         
@@ -134,8 +134,8 @@ class BookController extends Controller
     private function getBookPageData($id)
     {
         $book = Book::with(['category.parent', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
-        $authors = Author::active()->get();
-        $publishingHouses = PublishingHouse::active()->get();
+        $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
+        $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
         $primaryAuthor = $book->primaryAuthor;
 
         $authorBooks = collect();
@@ -978,7 +978,7 @@ public function searchResults(Request $request)
     $sort       = $request->input('sort');
 
     $categories = Category::whereNull('parent_id')->with('children')->get();
-    $publishingHouses = PublishingHouse::active()->get();
+    $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
 
     // 🔍 1. Search
     $books = $this->searchBooks2($query);
@@ -1232,13 +1232,13 @@ public function searchBooksAjax(Request $request)
 
     public function index()
     {
-        // Get all authors
-        $authors = Author::active()->get();
-        
-        // Get all active publishing houses
-        $publishingHouses = PublishingHouse::active()->get();
-        
-        // Get books with their relationships loaded - prioritize primaryAuthor
+        // Get all authors (cached 1 hour)
+        $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
+
+        // Get all active publishing houses (cached 1 hour)
+        $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
+
+        // Get latest books with their relationships loaded (limited for performance)
         $books = Book::with([
             'primaryAuthor',        // Load primary author via author_id
             'authors',              // Load all authors via many-to-many as backup
@@ -1246,6 +1246,8 @@ public function searchBooksAjax(Request $request)
             'category'              // Load category
         ])->withCount('reviews')
           ->withAvg('reviews as reviews_avg_rating', 'rating')
+          ->latest()
+          ->limit(20)
           ->get();
         $popularBooks = Cache::remember('popular_books', 1800, function () {
             return Book::select(
@@ -1277,17 +1279,26 @@ public function searchBooksAjax(Request $request)
                 ->get();
         });
 
-        // Get English books with relationships
-        $englishBooks = Book::where('Langue', 'English')
-            ->with([
-                'primaryAuthor',    // Primary author relationship
-                'authors',          // All authors relationship
-                'publishingHouse'   // Publishing house relationship
-            ])
-            ->withCount('reviews')
-            ->withAvg('reviews as reviews_avg_rating', 'rating')
-            ->get();
-        $accessories = Book::accessories()->with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->limit(10)->get();
+        // Get English books with relationships (cached 30 min)
+        $englishBooks = Cache::remember('english_books', 1800, function () {
+            return Book::where('Langue', 'English')
+                ->with(['primaryAuthor', 'authors', 'publishingHouse'])
+                ->withCount('reviews')
+                ->withAvg('reviews as reviews_avg_rating', 'rating')
+                ->latest()
+                ->limit(10)
+                ->get();
+        });
+
+        // Get accessories (cached 30 min)
+        $accessories = Cache::remember('accessories_home', 1800, function () {
+            return Book::accessories()
+                ->with('primaryAuthor')
+                ->withCount('reviews')
+                ->withAvg('reviews as reviews_avg_rating', 'rating')
+                ->limit(10)
+                ->get();
+        });
 
         // Get recently viewed books from session
         $recentlyViewedIds = session()->get('recently_viewed', []);
@@ -1460,8 +1471,8 @@ public function searchBooksAjax(Request $request)
         
 
         // Additional data for the filters
-        $authors = Author::active()->get();
-        $publishingHouses = PublishingHouse::active()->get();
+        $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
+        $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
         $categories = Category::all();
 
         switch ($request->input('sort')) {
