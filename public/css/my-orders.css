@@ -558,6 +558,127 @@ body {
     border-color: transparent;
 }
 
+/* =================== Inline Order Timeline =================== */
+.order-timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 10px 10px;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.order-timeline::before {
+    content: '';
+    position: absolute;
+    top: 36px;
+    right: 50px;
+    left: 50px;
+    height: 3px;
+    background-color: var(--border-color);
+    z-index: 0;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+}
+
+.timeline-step-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    border: 3px solid var(--border-color);
+    background-color: white;
+    color: var(--text-muted);
+}
+
+.timeline-step.completed .timeline-step-dot {
+    background: linear-gradient(135deg, var(--success-color), #20c997);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.timeline-step.active .timeline-step-dot {
+    background-color: white;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(44, 75, 121, 0.15);
+    animation: pulse-dot 2s infinite;
+}
+
+.timeline-step.failed .timeline-step-dot {
+    background-color: #f8d7da;
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.timeline-step.pending .timeline-step-dot {
+    background-color: var(--light-gray);
+    border-color: var(--border-color);
+    color: #ccc;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(44, 75, 121, 0.15); }
+    50% { box-shadow: 0 0 0 8px rgba(44, 75, 121, 0.08); }
+}
+
+.timeline-step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+
+.timeline-step.completed .timeline-step-label {
+    color: var(--success-color);
+}
+
+.timeline-step.active .timeline-step-label {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.timeline-step-date {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.timeline-cancelled-notice {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.estimated-delivery-badge {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
 /* =================== Responsive =================== */
 @media (max-width: 768px) {
     .orders-hero {
@@ -622,5 +743,30 @@ body {
     .status-tabs .nav-link {
         padding: 8px 14px;
         font-size: 13px;
+    }
+
+    .order-timeline {
+        gap: 4px;
+        padding: 16px 4px 8px;
+    }
+
+    .order-timeline::before {
+        right: 30px;
+        left: 30px;
+        top: 32px;
+    }
+
+    .timeline-step-dot {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .timeline-step-label {
+        font-size: 10px;
+    }
+
+    .timeline-step-date {
+        font-size: 9px;
     }
 }

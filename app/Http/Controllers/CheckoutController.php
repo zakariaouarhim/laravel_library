@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Models\OrderStatusHistory;
 
 class CheckoutController extends Controller
 {
@@ -117,6 +118,12 @@ class CheckoutController extends Controller
                 'payment_method' => $validated['payment_method'],
                 'tracking_number' => 'TR-' . Str::upper(Str::random(10)),
                 'management_token' => Str::random(64),
+            ]);
+
+            // Log initial status in history
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'status' => 'pending',
             ]);
 
             // Create checkout record
@@ -324,7 +331,7 @@ class CheckoutController extends Controller
          
 
         $order = Order::where('tracking_number', $input)
-            ->with(['checkoutDetail', 'orderDetails.book'])
+            ->with(['checkoutDetail', 'orderDetails.book', 'statusHistory'])
             ->first();
 
         if ($order) {

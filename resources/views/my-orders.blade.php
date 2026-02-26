@@ -116,6 +116,78 @@
                         <!-- Order Details (Collapsed) -->
                         <div class="collapse" id="orderDetails{{ $order->id }}">
                             <div class="order-card-body">
+                                <!-- Inline Status Timeline -->
+                                @php
+                                    $history = $order->statusHistory ?? collect();
+                                    $historyByStatus = $history->keyBy('status');
+                                    $steps = [
+                                        'pending'    => ['icon' => 'fas fa-clipboard-check', 'label' => 'تأكيد الطلب'],
+                                        'processing' => ['icon' => 'fas fa-cog',             'label' => 'قيد المعالجة'],
+                                        'shipped'    => ['icon' => 'fas fa-truck',            'label' => 'تم الشحن'],
+                                        'delivered'  => ['icon' => 'fas fa-check-circle',     'label' => 'تم التسليم'],
+                                    ];
+                                    $statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+                                    $currentIndex = array_search($order->status, $statusOrder);
+                                    $isCancelled = in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']);
+                                @endphp
+                                <div class="order-timeline">
+                                    @foreach($steps as $stepKey => $step)
+                                        @php
+                                            $stepIndex = array_search($stepKey, $statusOrder);
+                                            $historyEntry = $historyByStatus->get($stepKey);
+                                            if ($isCancelled) {
+                                                $stepClass = $historyEntry ? 'completed' : 'failed';
+                                            } elseif ($currentIndex !== false && $stepIndex <= $currentIndex) {
+                                                $stepClass = 'completed';
+                                            } elseif ($currentIndex !== false && $stepIndex === $currentIndex + 1) {
+                                                $stepClass = 'active';
+                                            } else {
+                                                $stepClass = 'pending';
+                                            }
+                                        @endphp
+                                        <div class="timeline-step {{ $stepClass }}">
+                                            <div class="timeline-step-dot">
+                                                <i class="{{ $step['icon'] }}"></i>
+                                            </div>
+                                            <div class="timeline-step-label">{{ $step['label'] }}</div>
+                                            <div class="timeline-step-date">
+                                                @if($historyEntry)
+                                                    {{ \Carbon\Carbon::parse($historyEntry->created_at)->format('d/m H:i') }}
+                                                @elseif($stepClass === 'completed' && $stepKey === 'pending')
+                                                    {{ $order->created_at->format('d/m H:i') }}
+                                                @elseif($stepClass === 'active')
+                                                    الآن
+                                                @else
+                                                    &mdash;
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                @if($isCancelled)
+                                    @php
+                                        $cancelLabels = [
+                                            'cancelled' => 'تم إلغاء الطلب',
+                                            'Failed' => 'فشل الطلب',
+                                            'Refunded' => 'تم استرجاع المبلغ',
+                                            'returned' => 'تم إرجاع الطلب',
+                                        ];
+                                    @endphp
+                                    <div class="timeline-cancelled-notice">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        {{ $cancelLabels[$order->status] ?? $order->status }}
+                                        <span class="text-muted ms-2">{{ $order->updated_at->format('d/m/Y') }}</span>
+                                    </div>
+                                @endif
+
+                                @if($order->estimated_delivery_date && $order->status === 'shipped')
+                                    <div class="estimated-delivery-badge">
+                                        <i class="fas fa-calendar-check me-1"></i>
+                                        التسليم المتوقع: {{ \Carbon\Carbon::parse($order->estimated_delivery_date)->format('d/m/Y') }}
+                                    </div>
+                                @endif
+
                                 <!-- Books List -->
                                 @if($order->orderDetails->count() > 0)
                                     <div class="order-books">

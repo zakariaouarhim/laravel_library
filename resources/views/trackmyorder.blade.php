@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    
-    
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
      @include('header') 
@@ -51,128 +51,144 @@
                         </div>
                     </div>
 
+                    @php
+                        $history = $order->statusHistory ?? collect();
+                        $historyByStatus = $history->keyBy('status');
+                        $isCancelled = in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']);
+                        $statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+                        $currentIndex = array_search($order->status, $statusOrder);
+                    @endphp
+
                     <div class="timeline-section">
                         <div class="timeline-container">
                             <!-- الطلب المؤكد -->
-                            <div class="timeline-item @if(!in_array($order->status, ['cancelled', 'Failed'])) completed @else failed @endif">
+                            @php
+                                $pendingHistory = $historyByStatus->get('pending');
+                            @endphp
+                            <div class="timeline-item @if(!$isCancelled) completed @else failed @endif">
                                 <div class="timeline-dot-icon">
-                                    @if(!in_array($order->status, ['cancelled', 'Failed']))
-                                        <i class="fas fa-check"></i>
-                                    @else
-                                        <i class="fas fa-box"></i>
-                                    @endif
+                                    @if(!$isCancelled) <i class="fas fa-check"></i> @else <i class="fas fa-box"></i> @endif
                                 </div>
                                 <div class="timeline-content">
                                     <div class="timeline-status">تم تأكيد الطلب</div>
-                                    <div class="timeline-date">{{ $order->created_at->format('d-m-Y H:i') }}</div>
+                                    <div class="timeline-date">
+                                        {{ $pendingHistory ? \Carbon\Carbon::parse($pendingHistory->created_at)->format('d-m-Y H:i') : $order->created_at->format('d-m-Y H:i') }}
+                                    </div>
                                     <div class="timeline-description">تم استلام طلبك بنجاح وتأكيد جميع التفاصيل</div>
                                 </div>
                             </div>
 
                             <!-- تحت المعالجة -->
-                            <div class="timeline-item @if(in_array($order->status, ['processing', 'shipped', 'delivered'])) completed @elseif($order->status == 'processing') active @elseif(in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned'])) failed @else pending @endif">
+                            @php
+                                $processingHistory = $historyByStatus->get('processing');
+                                $processingClass = 'pending';
+                                if ($isCancelled) $processingClass = $processingHistory ? 'completed' : 'failed';
+                                elseif ($currentIndex !== false && $currentIndex >= 1) $processingClass = 'completed';
+                                elseif ($order->status === 'processing') $processingClass = 'active';
+                            @endphp
+                            <div class="timeline-item {{ $processingClass }}">
                                 <div class="timeline-dot-icon">
-                                    @if(in_array($order->status, ['processing', 'shipped', 'delivered']))
-                                        <i class="fas fa-check"></i>
-                                    @elseif(in_array($order->status, ['cancelled', 'Failed']))
-                                        <i class="fas fa-times"></i>
-                                    @else
-                                        <i class="fas fa-cog"></i>
-                                    @endif
+                                    @if($processingClass === 'completed') <i class="fas fa-check"></i>
+                                    @elseif($processingClass === 'failed') <i class="fas fa-times"></i>
+                                    @else <i class="fas fa-cog"></i> @endif
                                 </div>
                                 <div class="timeline-content">
                                     <div class="timeline-status">تحت المعالجة</div>
-                                    @if($order->status == 'processing')
+                                    @if($processingHistory)
+                                        <div class="timeline-date">{{ \Carbon\Carbon::parse($processingHistory->created_at)->format('d-m-Y H:i') }}</div>
+                                        <div class="timeline-description">تم تجهيز طلبك بنجاح</div>
+                                    @elseif($order->status === 'processing')
                                         <div class="timeline-date">حالياً</div>
                                         <div class="timeline-description">جاري تجهيز طلبك وتحضيره للشحن</div>
-                                    @elseif(!in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']))
-                                        <div class="timeline-date">تم</div>
-                                        <div class="timeline-description">تم تجهيز طلبك بنجاح</div>
-                                    @else
+                                    @elseif($processingClass === 'failed')
                                         <div class="timeline-date">لم يكتمل</div>
                                         <div class="timeline-description">لم يتم تجهيز الطلب</div>
+                                    @else
+                                        <div class="timeline-date">قريباً</div>
+                                        <div class="timeline-description">سيتم تجهيز طلبك قريباً</div>
                                     @endif
                                 </div>
                             </div>
 
                             <!-- الشحن -->
-                            <div class="timeline-item @if(in_array($order->status, ['shipped', 'delivered'])) completed @elseif($order->status == 'shipped') active @elseif(in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned'])) failed @else pending @endif">
+                            @php
+                                $shippedHistory = $historyByStatus->get('shipped');
+                                $shippedClass = 'pending';
+                                if ($isCancelled) $shippedClass = $shippedHistory ? 'completed' : 'failed';
+                                elseif ($currentIndex !== false && $currentIndex >= 2) $shippedClass = 'completed';
+                                elseif ($order->status === 'shipped') $shippedClass = 'active';
+                            @endphp
+                            <div class="timeline-item {{ $shippedClass }}">
                                 <div class="timeline-dot-icon">
-                                    @if(in_array($order->status, ['shipped', 'delivered']))
-                                        <i class="fas fa-check"></i>
-                                    @elseif(in_array($order->status, ['cancelled', 'Failed']))
-                                        <i class="fas fa-times"></i>
-                                    @else
-                                        <i class="fas fa-truck"></i>
-                                    @endif
+                                    @if($shippedClass === 'completed') <i class="fas fa-check"></i>
+                                    @elseif($shippedClass === 'failed') <i class="fas fa-times"></i>
+                                    @else <i class="fas fa-truck"></i> @endif
                                 </div>
                                 <div class="timeline-content">
                                     <div class="timeline-status">تم الشحن</div>
-                                    @if(in_array($order->status, ['shipped', 'delivered']))
-                                        <div class="timeline-date">تم الشحن</div>
+                                    @if($shippedHistory)
+                                        <div class="timeline-date">{{ \Carbon\Carbon::parse($shippedHistory->created_at)->format('d-m-Y H:i') }}</div>
                                         <div class="timeline-description">
                                             @if($order->tracking_number)
                                                 رقم التتبع: <strong>{{ $order->tracking_number }}</strong>
                                             @else
                                                 طلبك في الطريق إليك
                                             @endif
+                                            @if($order->estimated_delivery_date && in_array($order->status, ['shipped']))
+                                                <br>التسليم المتوقع: <strong>{{ \Carbon\Carbon::parse($order->estimated_delivery_date)->format('d/m/Y') }}</strong>
+                                            @endif
                                         </div>
-                                    @elseif(!in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']))
-                                        <div class="timeline-date">قريباً</div>
-                                        <div class="timeline-description">سيتم شحن طلبك قريباً</div>
-                                    @else
+                                        @if($shippedHistory->note)
+                                            <div class="timeline-description" style="margin-top: 4px; color: #3498db;">
+                                                <i class="fas fa-info-circle me-1"></i>{{ $shippedHistory->note }}
+                                            </div>
+                                        @endif
+                                    @elseif($shippedClass === 'failed')
                                         <div class="timeline-date">لم يتم</div>
                                         <div class="timeline-description">لم يتم شحن الطلب</div>
+                                    @else
+                                        <div class="timeline-date">قريباً</div>
+                                        <div class="timeline-description">سيتم شحن طلبك قريباً</div>
                                     @endif
                                 </div>
                             </div>
 
                             <!-- التسليم -->
-                            <div class="timeline-item @if($order->status == 'delivered') completed @elseif(in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned'])) failed @else pending @endif">
+                            @php
+                                $deliveredHistory = $historyByStatus->get('delivered');
+                                $deliveredClass = 'pending';
+                                if ($order->status === 'delivered') $deliveredClass = 'completed';
+                                elseif ($isCancelled) $deliveredClass = 'failed';
+                            @endphp
+                            <div class="timeline-item {{ $deliveredClass }}">
                                 <div class="timeline-dot-icon">
-                                    @if($order->status == 'delivered')
-                                        <i class="fas fa-check"></i>
-                                    @elseif(in_array($order->status, ['cancelled', 'Failed']))
-                                        <i class="fas fa-times"></i>
-                                    @else
-                                        <i class="fas fa-home"></i>
-                                    @endif
+                                    @if($deliveredClass === 'completed') <i class="fas fa-check"></i>
+                                    @elseif($deliveredClass === 'failed') <i class="fas fa-times"></i>
+                                    @else <i class="fas fa-home"></i> @endif
                                 </div>
                                 <div class="timeline-content">
                                     <div class="timeline-status">
-                                        @if($order->status == 'delivered')
-                                            تم التسليم
-                                        @elseif($order->status == 'returned')
-                                            تم الإرجاع
-                                        @elseif($order->status == 'Refunded')
-                                            تم استرجاع المبلغ
-                                        @elseif($order->status == 'cancelled')
-                                            تم إلغاء الطلب
-                                        @elseif($order->status == 'Failed')
-                                            فشل الطلب
-                                        @else
-                                            في انتظار التسليم
-                                        @endif
+                                        @if($order->status == 'delivered') تم التسليم
+                                        @elseif($order->status == 'returned') تم الإرجاع
+                                        @elseif($order->status == 'Refunded') تم استرجاع المبلغ
+                                        @elseif($order->status == 'cancelled') تم إلغاء الطلب
+                                        @elseif($order->status == 'Failed') فشل الطلب
+                                        @else في انتظار التسليم @endif
                                     </div>
-                                    @if($order->status == 'delivered')
-                                        <div class="timeline-date">تم التسليم</div>
+                                    @if($deliveredHistory)
+                                        <div class="timeline-date">{{ \Carbon\Carbon::parse($deliveredHistory->created_at)->format('d-m-Y H:i') }}</div>
                                         <div class="timeline-description">شكراً لك! تم استلام طلبك بنجاح</div>
-                                    @elseif(!in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']))
-                                        <div class="timeline-date">قريباً</div>
-                                        <div class="timeline-description">سيصل طلبك إليك قريباً</div>
-                                    @else
+                                    @elseif($isCancelled)
                                         <div class="timeline-date">{{ $order->updated_at->format('d-m-Y') }}</div>
                                         <div class="timeline-description">
-                                            @if($order->status == 'returned')
-                                                تم إرجاع الطلب بنجاح
-                                            @elseif($order->status == 'Refunded')
-                                                تم استرجاع المبلغ إلى حسابك
-                                            @elseif($order->status == 'cancelled')
-                                                تم إلغاء الطلب من قبلك
-                                            @else
-                                                حدث خطأ في معالجة الطلب
-                                            @endif
+                                            @if($order->status == 'returned') تم إرجاع الطلب بنجاح
+                                            @elseif($order->status == 'Refunded') تم استرجاع المبلغ إلى حسابك
+                                            @elseif($order->status == 'cancelled') تم إلغاء الطلب من قبلك
+                                            @else حدث خطأ في معالجة الطلب @endif
                                         </div>
+                                    @else
+                                        <div class="timeline-date">قريباً</div>
+                                        <div class="timeline-description">سيصل طلبك إليك قريباً</div>
                                     @endif
                                 </div>
                             </div>

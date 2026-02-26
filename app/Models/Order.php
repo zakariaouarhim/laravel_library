@@ -16,7 +16,10 @@ class Order extends Model
         'customer_name',    // For guest orders
         'customer_email',   // For guest orders
         'customer_phone',   // For guest orders
+        'estimated_delivery_date',
     ];
+
+    protected $dates = ['estimated_delivery_date'];
 
     public function orderDetails()
     {
@@ -30,6 +33,11 @@ class Order extends Model
     public function returnRequests()
     {
         return $this->hasMany(ReturnRequest::class);
+    }
+
+    public function statusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class)->orderBy('created_at', 'asc');
     }
 
     // Relationship with User (nullable for guest orders)

@@ -31,7 +31,8 @@
       "Bash(tail:*)",
       "Bash(\"c:\\\\laravel\\\\library_fokara\\\\public\\\\css\\\\headerstyle.css\":*)",
       "Bash(wc -l /c/laravel/library_fokara/public/css/*.css)",
-      "Bash(wc -l /c/laravel/library_fokara/public/js/*.js)"
+      "Bash(wc -l /c/laravel/library_fokara/public/js/*.js)",
+      "Bash(xargs -I {} sh -c 'echo \"\"=== {} ===\"\" && head -30 {}')"
     ]
   }
 }

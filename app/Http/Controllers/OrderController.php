@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CheckoutDetail;
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
  
 
 
@@ -78,8 +81,57 @@ class OrderController extends Controller
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled,Failed,Refunded,returned'
         ]);
 
-        $order = Order::findOrFail($id);
-        $order->update(['status' => $request->status]);
+        $order = Order::with('checkoutDetail')->findOrFail($id);
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+
+        $updateData = ['status' => $newStatus];
+
+        // Set estimated delivery date when shipped (+3 business days)
+        if ($newStatus === 'shipped') {
+            $updateData['estimated_delivery_date'] = Carbon::now()->addWeekdays(3)->toDateString();
+        } elseif ($newStatus === 'delivered') {
+            $updateData['estimated_delivery_date'] = null;
+        }
+
+        $order->update($updateData);
+
+        // Log status change in history
+        OrderStatusHistory::create([
+            'order_id' => $order->id,
+            'status' => $newStatus,
+            'note' => $request->input('note'),
+        ]);
+
+        // Send status update email to customer
+        $customerEmail = $order->checkoutDetail->email ?? ($order->user ? $order->user->email : null);
+        if ($customerEmail) {
+            $statusLabels = [
+                'pending' => 'قيد الانتظار', 'processing' => 'قيد المعالجة',
+                'shipped' => 'مشحون', 'delivered' => 'تم التسليم',
+                'cancelled' => 'ملغي', 'Failed' => 'فشل',
+                'Refunded' => 'مسترجع', 'returned' => 'مرتجع',
+            ];
+            $manageUrl = $order->management_token
+                ? route('order.manage', ['token' => $order->management_token])
+                : null;
+
+            try {
+                Mail::send('emails.order-status-update', [
+                    'order' => $order,
+                    'oldStatus' => $statusLabels[$oldStatus] ?? $oldStatus,
+                    'newStatus' => $statusLabels[$newStatus] ?? $newStatus,
+                    'note' => $request->input('note'),
+                    'manageUrl' => $manageUrl,
+                    'customerName' => $order->checkoutDetail->first_name ?? ($order->user ? $order->user->name : 'العميل'),
+                ], function ($message) use ($customerEmail, $order) {
+                    $message->to($customerEmail)
+                            ->subject("تحديث حالة الطلب #{$order->id} - أسير الكتب");
+                });
+            } catch (\Exception $e) {
+                \Log::error('Failed to send order status email: ' . $e->getMessage());
+            }
+        }
 
         // If AJAX request, return JSON
         if ($request->expectsJson()) {
@@ -131,7 +183,7 @@ class OrderController extends Controller
         $status = $request->input('status');
 
         $query = Order::where('user_id', $userId)
-            ->with(['orderDetails.book', 'checkoutDetail']);
+            ->with(['orderDetails.book', 'checkoutDetail', 'statusHistory']);
 
         if ($status && $status !== 'all') {
             $query->where('status', $status);
