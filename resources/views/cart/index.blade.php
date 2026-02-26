@@ -55,6 +55,7 @@
                                             <div class="cart-item-image">
                                                 <a href="{{ route('moredetail.page', ['id' => $id]) }}">
                                                     <img src="{{ asset($item['image']) }}" alt="{{ $item['title'] }}"
+                                                        width="100" height="150" loading="lazy"
                                                         onerror="this.src='{{ asset('images/book-placeholder.png') }}'">
                                                 </a>
                                             </div>

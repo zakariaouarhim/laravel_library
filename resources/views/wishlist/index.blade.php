@@ -63,7 +63,8 @@
                 @php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
                 <div class="wl-card {{ $outOfStock ? 'wl-out-of-stock' : '' }}" id="wl-item-{{ $book->id }}">
                     <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="wl-card-image">
-                        <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" loading="lazy">
+                        <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" width="120" height="170" loading="lazy"
+                             onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
                         @if($outOfStock)
                         <span class="wl-badge-oos">نفذ المخزون</span>
                         @elseif($book->discount ?? 0 > 0)

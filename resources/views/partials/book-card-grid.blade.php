@@ -13,7 +13,8 @@
         </div>
 
         <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
-            <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" loading="lazy">
+            <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" width="200" height="280" loading="lazy"
+                 onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
         </a>
 
         <div class="card-badges">

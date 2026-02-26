@@ -137,7 +137,7 @@
                                     <td>
                                         <div class="product-image-cell">
                                             @if($product->image)
-                                                <img src="{{ asset('/' . $product->image) }}" alt="{{ $product->title }}" class="product-image">
+                                                <img src="{{ asset('/' . $product->image) }}" alt="{{ $product->title }}" class="product-image" width="60" height="80" loading="lazy">
                                             @else
                                                 <div style="width: 60px; height: 80px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-book" style="color: #bdc3c7;"></i>

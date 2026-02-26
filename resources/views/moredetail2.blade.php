@@ -60,7 +60,7 @@
                         @if($book->is_new ?? false)
                         <span class="v2-badge-new">جديد</span>
                         @endif
-                        <img src="{{ asset($book->image) }}" alt="{{ $book->title }}">
+                        <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" width="400" height="560">
                     </div>
 
                     <!-- Share buttons under image -->

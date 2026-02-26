@@ -9,7 +9,8 @@
                 <div class="book-card {{ $outOfStock ? 'out-of-stock' : '' }}">
                     <!-- Image wrapper with link - FULL WIDTH -->
                     <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
-                        <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" loading="lazy">
+                        <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" width="200" height="280" loading="lazy"
+                             onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
                     </a>
 
                     <!-- Quick Actions on top of image -->

@@ -69,6 +69,23 @@ class Book extends Model
         return asset($this->image);
     }
 
+    public function getThumbnailAttribute()
+    {
+        if ($this->image) {
+            // Check exact match first
+            $thumbPath = str_replace('images/books/', 'images/books/thumbs/', $this->image);
+            if (file_exists(public_path($thumbPath))) {
+                return $thumbPath;
+            }
+            // Check .webp variant (thumbnails are always saved as webp)
+            $webpThumb = preg_replace('/\.\w+$/', '.webp', $thumbPath);
+            if ($webpThumb !== $thumbPath && file_exists(public_path($webpThumb))) {
+                return $webpThumb;
+            }
+        }
+        return $this->image ?? 'images/book-placeholder.png';
+    }
+
     // Define relationships
     public function category()
     {

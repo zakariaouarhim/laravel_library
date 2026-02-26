@@ -196,9 +196,10 @@
                                             <div class="book-row">
                                                 <div class="book-thumb">
                                                     @if($item->book)
-                                                        <img src="{{ asset($item->book->image ?? 'images/book-placeholder.png') }}" alt="{{ $item->book->title ?? '' }}">
+                                                        <img src="{{ asset($item->book->thumbnail) }}" alt="{{ $item->book->title ?? '' }}" width="60" height="85" loading="lazy"
+                                                             onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
                                                     @else
-                                                        <img src="{{ asset('images/book-placeholder.png') }}" alt="">
+                                                        <img src="{{ asset('images/book-placeholder.png') }}" alt="" width="60" height="85" loading="lazy">
                                                     @endif
                                                 </div>
                                                 <div class="book-info">

@@ -39,7 +39,7 @@
                 <div class="text-center">
                     <div class="avatar-wrapper" onclick="document.getElementById('avatarInput').click()">
                         <img src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('images/author/user_avatar1.jpg') }}"
-                             alt="الصورة الشخصية" class="profile-avatar" id="avatarPreview">
+                             alt="الصورة الشخصية" class="profile-avatar" id="avatarPreview" width="100" height="100">
                         <div class="avatar-overlay">
                             <i class="bi bi-camera"></i>
                             <span>تغيير الصورة</span>
@@ -142,9 +142,9 @@
                                     </h6>
                                     <div class="activity-item">
                                         @if($lastReview->book && $lastReview->book->image)
-                                            <img src="{{ asset($lastReview->book->image) }}" 
-                                                alt="{{ $lastReview->book->title }}" 
-                                                class="book-thumb me-3">
+                                            <img src="{{ asset($lastReview->book->image) }}"
+                                                alt="{{ $lastReview->book->title }}"
+                                                class="book-thumb me-3" width="50" height="70" loading="lazy">
                                         @endif
                                         <div class="flex-grow-1">
                                             <div class="fw-bold">{{ $lastReview->book->title ?? 'عنوان غير متوفر' }}</div>
@@ -162,9 +162,9 @@
                                     </h6>
                                     <div class="activity-item">
                                         @if($lastWishlistBook->image)
-                                            <img src="{{ asset($lastWishlistBook->image) }}" 
-                                                alt="{{ $lastWishlistBook->title }}" 
-                                                class="book-thumb me-3">
+                                            <img src="{{ asset($lastWishlistBook->image) }}"
+                                                alt="{{ $lastWishlistBook->title }}"
+                                                class="book-thumb me-3" width="50" height="70" loading="lazy">
                                         @endif
                                         <div class="flex-grow-1">
                                             <div class="fw-bold">{{ $lastWishlistBook->title }}</div>
@@ -219,7 +219,7 @@
                                                     @if($review->book && $review->book->image)
                                                         <img src="{{ asset($review->book->image) }}"
                                                             alt="{{ $review->book->title }}"
-                                                            class="book-thumb me-3">
+                                                            class="book-thumb me-3" width="50" height="70" loading="lazy">
                                                     @endif
                                                     <div>
                                                         <div class="fw-bold">{{ $review->book->title ?? 'عنوان غير متوفر' }}</div>
@@ -308,9 +308,9 @@
                                         @foreach($WishlistBook as $book)
                                             <div class="col-md-6 mb-4">
                                                 <div class="book-card d-flex align-items-start">
-                                                    <img src="{{ asset($book['image']) }}" 
-                                                        alt="{{ $book['title'] ?? 'صورة كتاب' }}" 
-                                                        loading="lazy" 
+                                                    <img src="{{ asset($book['image'] ?? 'images/book-placeholder.png') }}"
+                                                        alt="{{ $book['title'] ?? 'صورة كتاب' }}"
+                                                        loading="lazy" width="50" height="70"
                                                         class="book-thumb me-3">
                                                     <div class="p-2 flex-fill">
                                                         <h6 class="fw-bold mb-1">{{ $book['title'] }}</h6>
@@ -456,7 +456,7 @@
                             
                             <img src="{{ $rec['image'] }}"
                                 alt="{{ $rec['title'] }}"
-                                class="rounded me-3 rec-thumb"
+                                class="rounded me-3 rec-thumb" width="60" height="85" loading="lazy"
                                 onclick="window.location.href='{{ route('moredetail.page', ['id' => $rec['id']]) }}'">
                             
                             <div class="flex-grow-1">
@@ -561,7 +561,7 @@
                                     @if($author->profile_image)
                                         <img src="{{ asset('storage/' . $author->profile_image) }}"
                                              alt="{{ $author->name }}"
-                                             class="rounded-circle me-2 follow-avatar">
+                                             class="rounded-circle me-2 follow-avatar" width="36" height="36" loading="lazy">
                                     @else
                                         <div class="rounded-circle me-2 d-flex align-items-center justify-content-center follow-avatar-placeholder">
                                             {{ mb_substr($author->name, 0, 1) }}
@@ -595,7 +595,7 @@
                                     @if($publisher->logo)
                                         <img src="{{ asset('storage/' . $publisher->logo) }}"
                                              alt="{{ $publisher->name }}"
-                                             class="rounded me-2 follow-avatar" style="object-fit:contain;">
+                                             class="rounded me-2 follow-avatar" style="object-fit:contain;" width="36" height="36" loading="lazy">
                                     @else
                                         <div class="rounded me-2 d-flex align-items-center justify-content-center follow-avatar-placeholder">
                                             <i class="bi bi-building"></i>

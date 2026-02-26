@@ -290,16 +290,19 @@ public function addProduct(Request $request)
             $file = $request->file('productImage');
             $imageName = time() . '_' . uniqid() . '.webp';
             $destinationPath = public_path('images/books');
+            $thumbPath = public_path('images/books/thumbs');
 
             // 1. Read the image
             $image = Image::read($file);
 
-            // 2. Resize it (Scale down to 400px width, height follows aspect ratio)
+            // 2. Resize to 400px width and save main image
             $image->scale(width: 400);
-
-            // 3. Encode as WebP and Save
-            // The bridge allows you to chain the save directly after encoding
             $image->toWebp(80)->save($destinationPath . '/' . $imageName);
+
+            // 3. Generate 150px thumbnail for cards/lists
+            $thumb = Image::read($destinationPath . '/' . $imageName);
+            $thumb->scale(width: 150);
+            $thumb->toWebp(75)->save($thumbPath . '/' . $imageName);
 
     $imagePath = 'images/books/' . $imageName;
 }

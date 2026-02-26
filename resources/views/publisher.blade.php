@@ -48,7 +48,7 @@
             <div class="hero-profile">
                 <div class="hero-logo">
                     @if($publisher->logo)
-                        <img src="{{ asset('storage/' . $publisher->logo) }}" alt="{{ $publisher->name }}">
+                        <img src="{{ asset('storage/' . $publisher->logo) }}" alt="{{ $publisher->name }}" width="120" height="120" loading="lazy">
                     @else
                         <div class="logo-placeholder">
                             <i class="fas fa-building"></i>
