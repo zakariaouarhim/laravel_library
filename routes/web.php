@@ -189,6 +189,9 @@ Route::get('/moredetail-v2/{id}', [BookController::class, 'showV2'])->name('more
 // ==================== REVIEWS ====================
 
 Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store')->middleware('auth');
+Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update')->middleware('auth');
+Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy')->middleware('auth');
+Route::post('/reviews/{review}/helpful', [ReviewController::class, 'toggleHelpful'])->name('reviews.helpful')->middleware('auth');
 
 // ==================== WISHLIST ====================
 

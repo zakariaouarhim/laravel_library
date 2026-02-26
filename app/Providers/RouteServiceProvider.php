@@ -37,6 +37,8 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
 
+        Route::model('review', \App\Models\Book_Review::class);
+
         $this->routes(function () {
             Route::prefix('api')
                 ->middleware('api')

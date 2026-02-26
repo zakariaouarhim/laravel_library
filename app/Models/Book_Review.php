@@ -12,11 +12,12 @@ class Book_Review extends Model
     protected $table = 'reviews';
     
     protected $fillable = [
-        'user_id',  // Fixed: removed space
+        'user_id',
         'book_id',
         'rating',
         'comment',
         'is_read',
+        'likes_count',
     ];
 
     // Cast created_at and updated_at to Carbon instances
@@ -33,5 +34,16 @@ class Book_Review extends Model
     public function book()
     {
         return $this->belongsTo(Book::class, 'book_id', 'id');
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(ReviewLike::class, 'review_id');
+    }
+
+    public function isLikedBy($user): bool
+    {
+        if (!$user) return false;
+        return $this->likes()->where('user_id', $user->id)->exists();
     }
 }

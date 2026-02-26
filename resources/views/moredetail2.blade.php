@@ -243,24 +243,29 @@
 
                     <!-- Reviews -->
                     <div class="v2-tab-pane" id="v2-reviews">
-                        @if($book->reviews->count() > 0)
-                        <div class="v2-rating-summary">
+                        @php
+                            $reviewsList = $book->reviews->sortByDesc('created_at');
+                            $avgRating = $book->reviews->avg('rating') ?? 0;
+                            $totalReviews = $book->reviews->count();
+                        @endphp
+
+                        <div class="v2-rating-summary" id="ratingSummary" style="{{ $totalReviews == 0 ? 'display:none' : '' }}">
                             <div class="v2-rating-big">
-                                <span class="v2-rating-num">{{ number_format($book->average_rating, 1) }}</span>
-                                <div class="v2-stars-big">
+                                <span class="v2-rating-num" id="avgRatingNum">{{ number_format($avgRating, 1) }}</span>
+                                <div class="v2-stars-big" id="avgRatingStars">
                                     @for($i = 1; $i <= 5; $i++)
-                                        <i class="{{ $i <= round($book->average_rating) ? 'fas' : 'far' }} fa-star"></i>
+                                        <i class="{{ $i <= round($avgRating) ? 'fas' : 'far' }} fa-star"></i>
                                     @endfor
                                 </div>
-                                <small>{{ $book->reviews_count }} تقييم</small>
+                                <small><span id="totalReviewsCount">{{ $totalReviews }}</span> تقييم</small>
                             </div>
-                            <div class="v2-rating-bars">
+                            <div class="v2-rating-bars" id="ratingBars">
                                 @for($star = 5; $star >= 1; $star--)
                                     @php
                                         $count = $book->reviews->where('rating', $star)->count();
-                                        $pct = $book->reviews_count > 0 ? ($count / $book->reviews_count) * 100 : 0;
+                                        $pct = $totalReviews > 0 ? ($count / $totalReviews) * 100 : 0;
                                     @endphp
-                                    <div class="v2-bar-row">
+                                    <div class="v2-bar-row" data-star="{{ $star }}">
                                         <span>{{ $star }} <i class="fas fa-star"></i></span>
                                         <div class="v2-bar-track"><div class="v2-bar-fill" style="width:{{ $pct }}%"></div></div>
                                         <span class="v2-bar-count">{{ $count }}</span>
@@ -268,18 +273,16 @@
                                 @endfor
                             </div>
                         </div>
-                        @endif
 
-                        @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show mt-3"><i class="fas fa-check-circle me-2"></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-                        @endif
+                        <!-- Toast notification -->
+                        <div class="v2-review-toast" id="reviewToast"></div>
 
-                        <div class="v2-reviews-list">
-                            @forelse($book->reviews->sortByDesc('created_at') as $review)
-                            <div class="v2-review-card">
+                        <div class="v2-reviews-list" id="reviewsList">
+                            @forelse($reviewsList as $review)
+                            <div class="v2-review-card" data-review-id="{{ $review->id }}" data-rating="{{ $review->rating }}">
                                 <div class="v2-review-header">
                                     <div class="v2-avatar">{{ mb_substr($review->user->name ?? 'م', 0, 1, 'UTF-8') }}</div>
-                                    <div>
+                                    <div class="flex-grow-1">
                                         <strong>{{ $review->user->name ?? 'مستخدم' }}</strong>
                                         <div class="v2-review-stars">
                                             @for($i = 1; $i <= 5; $i++)
@@ -288,11 +291,55 @@
                                         </div>
                                         <small>{{ $review->created_at->diffForHumans() }}</small>
                                     </div>
+                                    @auth
+                                    @if(auth()->id() === $review->user_id)
+                                    <div class="v2-review-actions">
+                                        <button class="v2-review-action-btn" onclick="editReview({{ $review->id }})" title="تعديل"><i class="fas fa-edit"></i></button>
+                                        <button class="v2-review-action-btn v2-review-delete-btn" onclick="deleteReview({{ $review->id }})" title="حذف"><i class="fas fa-trash-alt"></i></button>
+                                    </div>
+                                    @endif
+                                    @endauth
                                 </div>
                                 <p class="v2-review-text">{{ $review->comment }}</p>
+
+                                <!-- Edit form (hidden by default) -->
+                                @auth
+                                @if(auth()->id() === $review->user_id)
+                                <div class="v2-edit-form" id="editForm-{{ $review->id }}" style="display:none">
+                                    <div class="mb-2">
+                                        <div class="star-rating star-rating-edit" id="editStars-{{ $review->id }}">
+                                            @for($s = 5; $s >= 1; $s--)
+                                                <input type="radio" id="es{{ $s }}-{{ $review->id }}" name="edit_rating_{{ $review->id }}" value="{{ $s }}" {{ $review->rating == $s ? 'checked' : '' }}>
+                                                <label for="es{{ $s }}-{{ $review->id }}"><i class="fas fa-star"></i></label>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    <textarea class="form-control mb-2" id="editComment-{{ $review->id }}" rows="3">{{ $review->comment }}</textarea>
+                                    <div class="d-flex gap-2">
+                                        <button class="v2-btn-submit v2-btn-sm" onclick="submitEdit({{ $review->id }})"><i class="fas fa-check me-1"></i>حفظ</button>
+                                        <button class="v2-btn-cancel v2-btn-sm" onclick="cancelEdit({{ $review->id }})">إلغاء</button>
+                                    </div>
+                                </div>
+                                @endif
+                                @endauth
+
+                                <!-- Helpful button -->
+                                <div class="v2-review-footer">
+                                    @auth
+                                    <button class="v2-helpful-btn {{ $review->isLikedBy(auth()->user()) ? 'liked' : '' }}" onclick="toggleHelpful({{ $review->id }}, this)">
+                                        <i class="fas fa-thumbs-up"></i>
+                                        <span>مفيد</span>
+                                        <span class="helpful-count">({{ $review->likes_count }})</span>
+                                    </button>
+                                    @else
+                                    <span class="v2-helpful-info">
+                                        <i class="fas fa-thumbs-up"></i> مفيد ({{ $review->likes_count }})
+                                    </span>
+                                    @endauth
+                                </div>
                             </div>
                             @empty
-                            <div class="v2-empty-state">
+                            <div class="v2-empty-state" id="emptyReviewState">
                                 <i class="fas fa-star"></i>
                                 <p>لا توجد تقييمات بعد — كن أول من يقيّم هذا الكتاب</p>
                             </div>
@@ -301,43 +348,39 @@
 
                         @auth
                             @php $userReview = $book->reviews->where('user_id', auth()->id())->first(); @endphp
-                            @if(!$userReview)
-                            <div class="v2-form-card">
+                            <div class="v2-form-card" id="reviewFormCard" style="{{ $userReview ? 'display:none' : '' }}">
                                 <h5><i class="fas fa-star me-2"></i>أضف تقييمك</h5>
-                                <form action="{{ route('reviews.store') }}" method="POST">
+                                <form id="reviewForm">
                                     @csrf
                                     <input type="hidden" name="book_id" value="{{ $book->id }}">
                                     <div class="mb-3">
                                         <label class="form-label">التقييم <span class="text-danger">*</span></label>
                                         <div class="star-rating">
-                                            <input type="radio" id="s5" name="rating" value="5" {{ old('rating') == 5 ? 'checked' : '' }}>
+                                            <input type="radio" id="s5" name="rating" value="5">
                                             <label for="s5"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="s4" name="rating" value="4" {{ old('rating') == 4 ? 'checked' : '' }}>
+                                            <input type="radio" id="s4" name="rating" value="4">
                                             <label for="s4"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="s3" name="rating" value="3" {{ old('rating') == 3 ? 'checked' : '' }}>
+                                            <input type="radio" id="s3" name="rating" value="3">
                                             <label for="s3"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="s2" name="rating" value="2" {{ old('rating') == 2 ? 'checked' : '' }}>
+                                            <input type="radio" id="s2" name="rating" value="2">
                                             <label for="s2"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="s1" name="rating" value="1" {{ old('rating') == 1 ? 'checked' : '' }}>
+                                            <input type="radio" id="s1" name="rating" value="1">
                                             <label for="s1"><i class="fas fa-star"></i></label>
                                         </div>
                                         <div class="rating-feedback mt-2"><span id="rating-text" class="text-muted">اختر عدد النجوم</span></div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">تعليقك <span class="text-danger">*</span></label>
-                                        <textarea name="comment" class="form-control" rows="4" placeholder="اكتب تقييمك للكتاب..." required>{{ old('comment') }}</textarea>
+                                        <textarea name="comment" class="form-control" rows="4" placeholder="اكتب تقييمك للكتاب..." required></textarea>
                                     </div>
                                     <div class="form-check form-switch mb-3">
                                         <input type="hidden" name="is_read" value="0">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="is_read" name="is_read" value="1">
-                                        <label class="form-check-label" for="is_read"><i class="fas fa-book-open me-1"></i> أؤكد أنني قرأت هذا الكتاب</label>
+                                        
+                                        
                                     </div>
                                     <button type="submit" class="v2-btn-submit"><i class="fas fa-paper-plane me-2"></i>إرسال التقييم</button>
                                 </form>
                             </div>
-                            @else
-                            <div class="alert alert-info mt-3"><i class="fas fa-info-circle me-2"></i>لقد قمت بتقييم هذا الكتاب بـ {{ $userReview->rating }} نجوم.</div>
-                            @endif
                         @else
                         <div class="v2-login-prompt"><i class="fas fa-user-lock"></i><span>يرجى <a href="{{ route('login2.page') }}">تسجيل الدخول</a> لإضافة تقييمك</span></div>
                         @endauth
@@ -494,7 +537,6 @@
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                // Sync ALL follow buttons on the page (top + author bio tab)
                 document.querySelectorAll('.v2-follow-btn').forEach(function(b) {
                     b.disabled = false;
                     if (data.following) {
@@ -507,6 +549,218 @@
                         b.querySelector('span').textContent = 'متابعة';
                     }
                 });
+            })
+            .catch(function() { btn.disabled = false; });
+        }
+
+        // ==================== REVIEWS ====================
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        function showReviewToast(message, type) {
+            var toast = document.getElementById('reviewToast');
+            toast.textContent = message;
+            toast.className = 'v2-review-toast show ' + (type || 'success');
+            setTimeout(function() { toast.className = 'v2-review-toast'; }, 3000);
+        }
+
+        function generateStarsHtml(rating) {
+            var html = '';
+            for (var i = 1; i <= 5; i++) {
+                html += '<i class="' + (i <= Math.round(rating) ? 'fas' : 'far') + ' fa-star"></i>';
+            }
+            return html;
+        }
+
+        function updateRatingSummary(summary) {
+            var summaryEl = document.getElementById('ratingSummary');
+            summaryEl.style.display = '';
+            document.getElementById('avgRatingNum').textContent = parseFloat(summary.avg_rating).toFixed(1);
+            document.getElementById('avgRatingStars').innerHTML = generateStarsHtml(summary.avg_rating);
+            document.getElementById('totalReviewsCount').textContent = summary.reviews_count;
+        }
+
+        // AJAX review submission
+        var reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                var submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الإرسال...';
+
+                fetch('{{ route("reviews.store") }}', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        // Remove empty state
+                        var emptyState = document.getElementById('emptyReviewState');
+                        if (emptyState) emptyState.remove();
+
+                        // Prepend new review card
+                        var review = data.review;
+                        var cardHtml = '<div class="v2-review-card" data-review-id="' + review.id + '" data-rating="' + review.rating + '" style="animation:fadeInUp 0.3s ease">';
+                        cardHtml += '<div class="v2-review-header">';
+                        cardHtml += '<div class="v2-avatar">' + review.user_initial + '</div>';
+                        cardHtml += '<div class="flex-grow-1"><strong>' + review.user_name + '</strong>';
+                        cardHtml += '<div class="v2-review-stars">' + generateStarsHtml(review.rating) + '</div>';
+                        cardHtml += '<small>' + review.created_at + '</small></div>';
+                        cardHtml += '<div class="v2-review-actions">';
+                        cardHtml += '<button class="v2-review-action-btn" onclick="editReview(' + review.id + ')" title="تعديل"><i class="fas fa-edit"></i></button>';
+                        cardHtml += '<button class="v2-review-action-btn v2-review-delete-btn" onclick="deleteReview(' + review.id + ')" title="حذف"><i class="fas fa-trash-alt"></i></button>';
+                        cardHtml += '</div></div>';
+                        cardHtml += '<p class="v2-review-text">' + review.comment + '</p>';
+                        cardHtml += '<div class="v2-edit-form" id="editForm-' + review.id + '" style="display:none">';
+                        cardHtml += '<div class="mb-2"><div class="star-rating star-rating-edit" id="editStars-' + review.id + '">';
+                        for (var s = 5; s >= 1; s--) {
+                            cardHtml += '<input type="radio" id="es' + s + '-' + review.id + '" name="edit_rating_' + review.id + '" value="' + s + '"' + (review.rating == s ? ' checked' : '') + '>';
+                            cardHtml += '<label for="es' + s + '-' + review.id + '"><i class="fas fa-star"></i></label>';
+                        }
+                        cardHtml += '</div></div>';
+                        cardHtml += '<textarea class="form-control mb-2" id="editComment-' + review.id + '" rows="3">' + review.comment + '</textarea>';
+                        cardHtml += '<div class="d-flex gap-2">';
+                        cardHtml += '<button class="v2-btn-submit v2-btn-sm" onclick="submitEdit(' + review.id + ')"><i class="fas fa-check me-1"></i>حفظ</button>';
+                        cardHtml += '<button class="v2-btn-cancel v2-btn-sm" onclick="cancelEdit(' + review.id + ')">إلغاء</button>';
+                        cardHtml += '</div></div>';
+                        cardHtml += '<div class="v2-review-footer"><button class="v2-helpful-btn" onclick="toggleHelpful(' + review.id + ', this)">';
+                        cardHtml += '<i class="fas fa-thumbs-up"></i> <span>مفيد</span> <span class="helpful-count">(0)</span></button></div>';
+                        cardHtml += '</div>';
+
+                        document.getElementById('reviewsList').insertAdjacentHTML('afterbegin', cardHtml);
+
+                        // Update summary
+                        updateRatingSummary(data.summary);
+
+                        // Hide form
+                        document.getElementById('reviewFormCard').style.display = 'none';
+                        showReviewToast(data.message, 'success');
+                    } else {
+                        showReviewToast(data.message || 'حدث خطأ', 'error');
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>إرسال التقييم';
+                })
+                .catch(function() {
+                    showReviewToast('حدث خطأ في الاتصال', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>إرسال التقييم';
+                });
+            });
+        }
+
+        // Edit review
+        function editReview(id) {
+            var card = document.querySelector('[data-review-id="' + id + '"]');
+            card.querySelector('.v2-review-text').style.display = 'none';
+            card.querySelector('.v2-review-footer').style.display = 'none';
+            document.getElementById('editForm-' + id).style.display = 'block';
+        }
+
+        function cancelEdit(id) {
+            var card = document.querySelector('[data-review-id="' + id + '"]');
+            card.querySelector('.v2-review-text').style.display = '';
+            card.querySelector('.v2-review-footer').style.display = '';
+            document.getElementById('editForm-' + id).style.display = 'none';
+        }
+
+        function submitEdit(id) {
+            var rating = document.querySelector('input[name="edit_rating_' + id + '"]:checked');
+            var comment = document.getElementById('editComment-' + id).value.trim();
+
+            if (!rating || !comment) {
+                showReviewToast('يرجى ملء جميع الحقول', 'error');
+                return;
+            }
+
+            fetch('/reviews/' + id, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ rating: rating.value, comment: comment })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var card = document.querySelector('[data-review-id="' + id + '"]');
+                    card.dataset.rating = data.review.rating;
+                    card.querySelector('.v2-review-text').textContent = data.review.comment;
+                    card.querySelector('.v2-review-stars').innerHTML = generateStarsHtml(data.review.rating);
+                    cancelEdit(id);
+                    updateRatingSummary(data.summary);
+                    showReviewToast(data.message, 'success');
+                } else {
+                    showReviewToast(data.message || 'حدث خطأ', 'error');
+                }
+            })
+            .catch(function() { showReviewToast('حدث خطأ في الاتصال', 'error'); });
+        }
+
+        // Delete review
+        function deleteReview(id) {
+            if (!confirm('هل أنت متأكد من حذف تقييمك؟')) return;
+
+            fetch('/reviews/' + id, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var card = document.querySelector('[data-review-id="' + id + '"]');
+                    card.style.animation = 'fadeOutUp 0.3s ease';
+                    setTimeout(function() {
+                        card.remove();
+                        // Show empty state if no reviews left
+                        if (document.querySelectorAll('.v2-review-card').length === 0) {
+                            document.getElementById('reviewsList').innerHTML = '<div class="v2-empty-state" id="emptyReviewState"><i class="fas fa-star"></i><p>لا توجد تقييمات بعد — كن أول من يقيّم هذا الكتاب</p></div>';
+                            document.getElementById('ratingSummary').style.display = 'none';
+                        } else {
+                            updateRatingSummary(data.summary);
+                        }
+                    }, 300);
+                    // Show form again
+                    var formCard = document.getElementById('reviewFormCard');
+                    if (formCard) formCard.style.display = '';
+                    showReviewToast(data.message, 'success');
+                }
+            })
+            .catch(function() { showReviewToast('حدث خطأ في الاتصال', 'error'); });
+        }
+
+        // Toggle helpful
+        function toggleHelpful(id, btn) {
+            if (!window.isLoggedIn) {
+                window.location.href = window.loginUrl;
+                return;
+            }
+            btn.disabled = true;
+            fetch('/reviews/' + id + '/helpful', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    btn.classList.toggle('liked', data.liked);
+                    btn.querySelector('.helpful-count').textContent = '(' + data.likes_count + ')';
+                }
+                btn.disabled = false;
             })
             .catch(function() { btn.disabled = false; });
         }

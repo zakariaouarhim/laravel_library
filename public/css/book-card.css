@@ -160,6 +160,42 @@
     color: #48CAE4;
 }
 
+/* Star Rating on Cards */
+.book-card-rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    padding: 2px 20px 0;
+}
+
+.book-card-rating i {
+    color: #ffc107;
+    font-size: 11px;
+}
+
+.book-card-rating .rating-count {
+    font-size: 11px;
+    color: #6c757d;
+    margin-right: 4px;
+    font-weight: 500;
+}
+
+/* List view rating */
+.book-item.list-style .book-card-rating {
+    justify-content: flex-start;
+    padding: 0;
+    margin-bottom: 4px;
+}
+
+.book-item.list-style .book-card-rating i {
+    font-size: 12px;
+}
+
+.book-item.list-style .book-card-rating .rating-count {
+    font-size: 12px;
+}
+
 /* Price Section */
 .book-card .price-section {
     display: flex;
@@ -435,6 +471,18 @@
 
     .book-card .price-section {
         padding: 8px 12px 14px;
+    }
+
+    .book-card-rating {
+        padding: 2px 12px 0;
+    }
+
+    .book-card-rating i {
+        font-size: 10px;
+    }
+
+    .book-card-rating .rating-count {
+        font-size: 10px;
     }
 
     .book-card>h6,

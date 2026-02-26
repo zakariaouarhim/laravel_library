@@ -50,46 +50,51 @@ class BookController extends Controller
         if ($primaryAuthor) {
             $authorBooks = Book::where('author_id', $primaryAuthor->id)
                 ->where('id', '!=', $book->id)
+                ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
                 ->get();
         } else {
             // If no author relationship, try to find books by author name
             $authorBooks = Book::where('author', $book->author)
                 ->where('id', '!=', $book->id)
+                ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
                 ->get();
         }
-        
+
         // Get related books from the same category with author relationship
         $relatedBooks = Book::with('primaryAuthor')
             ->where('category_id', $book->category_id)
             ->where('id', '!=', $book->id)
+            ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
             ->take(10)
             ->get();
-        
+
         // If no related books found in same category, try to get books from parent category
         if ($relatedBooks->isEmpty() && $book->category && $book->category->parent_id) {
             $relatedBooks = Book::with('primaryAuthor')
                 ->where('category_id', $book->category->parent_id)
                 ->where('id', '!=', $book->id)
+                ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
                 ->get();
         }
-        
+
         // If still no related books, get random books from same author
         if ($relatedBooks->isEmpty()) {
             $relatedBooks = $authorBooks->take(10);
         }
-        
+
         // If still empty, get latest books (last resort)
         if ($relatedBooks->isEmpty()) {
             $relatedBooks = Book::with('primaryAuthor')
                 ->where('id', '!=', $book->id)
+                ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->latest()
                 ->take(10)
                 ->get();
         }
-        
+
         // Get other books from the same publisher
         $publisherBooks = collect();
         if ($book->publishing_house_id) {
@@ -97,6 +102,7 @@ class BookController extends Controller
                 ->where('publishing_house_id', $book->publishing_house_id)
                 ->where('id', '!=', $book->id)
                 ->where('type', 'book')
+                ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
                 ->get();
         }
@@ -134,23 +140,23 @@ class BookController extends Controller
 
         $authorBooks = collect();
         if ($primaryAuthor) {
-            $authorBooks = Book::where('author_id', $primaryAuthor->id)->where('id', '!=', $book->id)->take(10)->get();
+            $authorBooks = Book::where('author_id', $primaryAuthor->id)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
         } else {
-            $authorBooks = Book::where('author', $book->author)->where('id', '!=', $book->id)->take(10)->get();
+            $authorBooks = Book::where('author', $book->author)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
         }
 
-        $relatedBooks = Book::with('primaryAuthor')->where('category_id', $book->category_id)->where('id', '!=', $book->id)->take(10)->get();
+        $relatedBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('category_id', $book->category_id)->where('id', '!=', $book->id)->take(10)->get();
         if ($relatedBooks->isEmpty() && $book->category && $book->category->parent_id) {
-            $relatedBooks = Book::with('primaryAuthor')->where('category_id', $book->category->parent_id)->where('id', '!=', $book->id)->take(10)->get();
+            $relatedBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('category_id', $book->category->parent_id)->where('id', '!=', $book->id)->take(10)->get();
         }
         if ($relatedBooks->isEmpty()) $relatedBooks = $authorBooks->take(10);
         if ($relatedBooks->isEmpty()) {
-            $relatedBooks = Book::with('primaryAuthor')->where('id', '!=', $book->id)->latest()->take(10)->get();
+            $relatedBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('id', '!=', $book->id)->latest()->take(10)->get();
         }
 
         $publisherBooks = collect();
         if ($book->publishing_house_id) {
-            $publisherBooks = Book::with('primaryAuthor')->where('publishing_house_id', $book->publishing_house_id)->where('id', '!=', $book->id)->where('type', 'book')->take(10)->get();
+            $publisherBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('publishing_house_id', $book->publishing_house_id)->where('id', '!=', $book->id)->where('type', 'book')->take(10)->get();
         }
 
         $recentlyViewed = session()->get('recently_viewed', []);
@@ -1238,7 +1244,9 @@ public function searchBooksAjax(Request $request)
             'authors',              // Load all authors via many-to-many as backup
             'publishingHouse',      // Load publishing house
             'category'              // Load category
-        ])->get();
+        ])->withCount('reviews')
+          ->withAvg('reviews as reviews_avg_rating', 'rating')
+          ->get();
         $popularBooks = Cache::remember('popular_books', 1800, function () {
             return Book::select(
                 'books.*',
@@ -1248,6 +1256,8 @@ public function searchBooksAjax(Request $request)
             ->groupBy('books.id')
             ->orderByDesc('orders_count')
             ->with(['primaryAuthor', 'authors'])
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
             ->limit(10)
             ->get();
         });
@@ -1274,8 +1284,10 @@ public function searchBooksAjax(Request $request)
                 'authors',          // All authors relationship
                 'publishingHouse'   // Publishing house relationship
             ])
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
             ->get();
-        $accessories = Book::accessories()->with('primaryAuthor')->limit(10)->get();
+        $accessories = Book::accessories()->with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->limit(10)->get();
 
         // Get recently viewed books from session
         $recentlyViewedIds = session()->get('recently_viewed', []);
@@ -1284,6 +1296,8 @@ public function searchBooksAjax(Request $request)
             $recentlyViewed = Book::with('primaryAuthor')
                 ->whereIn('id', $recentlyViewedIds)
                 ->where('type', 'book')
+                ->withCount('reviews')
+                ->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->get()
                 ->sortBy(function ($book) use ($recentlyViewedIds) {
                     return array_search($book->id, $recentlyViewedIds);
@@ -1307,6 +1321,8 @@ public function searchBooksAjax(Request $request)
                           ->orWhereIn('publishing_house_id', $followedPublisherIds);
                     })
                     ->with(['primaryAuthor', 'authors', 'publishingHouse'])
+                    ->withCount('reviews')
+                    ->withAvg('reviews as reviews_avg_rating', 'rating')
                     ->orderByDesc('created_at')
                     ->limit(15)
                     ->get();

@@ -4,6 +4,21 @@
     <div>
         <h5><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h5>
         <p><i class="fas fa-user-edit me-1"></i>{{ $book->author }}</p>
+        @if(($book->reviews_count ?? 0) > 0)
+        <div class="book-card-rating">
+            @php $avgRating = round($book->reviews_avg_rating ?? 0, 1); @endphp
+            @for($i = 1; $i <= 5; $i++)
+                @if($i <= floor($avgRating))
+                    <i class="fas fa-star"></i>
+                @elseif($i - $avgRating < 1 && $i - $avgRating > 0)
+                    <i class="fas fa-star-half-alt"></i>
+                @else
+                    <i class="far fa-star"></i>
+                @endif
+            @endfor
+            <span class="rating-count">({{ $book->reviews_count }})</span>
+        </div>
+        @endif
         <p class="text-muted">{{ Str::limit($book->description, 100) }}</p>
         <div class="d-flex align-items-center mt-2">
             <span class="fw-bold text-primary me-3">{{ $book->price }} د.م</span>
