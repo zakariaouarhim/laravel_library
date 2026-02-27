@@ -926,6 +926,7 @@ public function addProduct(Request $request)
     {
         $request->validate(['query' => 'nullable|string|max:200']);
         $query = $request->input('query', '');
+        $query = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
         try {
             // First try exact match
@@ -1069,6 +1070,8 @@ private function searchBooks2(?string $query)
         return collect();
     }
 
+    $query = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
+
     $books = Book::where('title', 'LIKE', "%{$query}%")
         ->orWhere('author', 'LIKE', "%{$query}%")
         ->orWhere('ISBN', 'LIKE', "%{$query}%")
@@ -1196,6 +1199,7 @@ public function searchBooksAjax(Request $request)
 {
     $request->validate(['query' => 'nullable|string|max:200']);
     $query = $request->input('query', '');
+    $query = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
     try {
         // First try exact match
@@ -1649,33 +1653,32 @@ public function searchBooksAjax(Request $request)
                         }
                     }
                     
-                    // Generate unique filename
-                    $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    // Generate unique filename (always save as WebP)
+                    $imageName = time() . '_' . uniqid() . '.webp';
                     $destinationPath = public_path('images/books');
-                    
-                    // Create directory if it doesn't exist
+                    $thumbPath = public_path('images/books/thumbs');
+
+                    // Create directories if they don't exist
                     if (!file_exists($destinationPath)) {
-                        if (!mkdir($destinationPath, 0755, true)) {
-                            throw new \Exception('Failed to create upload directory');
-                        }
-                        \Log::info('Created directory: ' . $destinationPath);
+                        mkdir($destinationPath, 0755, true);
                     }
-                    
-                    // Move the file
-                    if ($file->move($destinationPath, $imageName)) {
-                        $imagePath = 'images/books/' . $imageName;
-                        $product->image = $imagePath;
-                        
-                        // Verify file exists
-                        if (file_exists(public_path($imagePath))) {
-                            \Log::info('Image successfully stored: ' . $imagePath);
-                            \Log::info('Full path: ' . public_path($imagePath));
-                        } else {
-                            throw new \Exception('Image file not found after move operation');
-                        }
-                    } else {
-                        throw new \Exception('Failed to move uploaded file');
+                    if (!file_exists($thumbPath)) {
+                        mkdir($thumbPath, 0755, true);
                     }
+
+                    // Re-encode via Intervention Image (strips EXIF/malicious payloads)
+                    $image = Image::read($file->getRealPath());
+                    $image->scale(width: 400);
+                    $image->toWebp(80)->save($destinationPath . '/' . $imageName);
+
+                    // Generate thumbnail
+                    $thumb = Image::read($file->getRealPath());
+                    $thumb->scale(width: 150);
+                    $thumb->toWebp(75)->save($thumbPath . '/' . $imageName);
+
+                    $imagePath = 'images/books/' . $imageName;
+                    $product->image = $imagePath;
+                    \Log::info('Image re-encoded and stored: ' . $imagePath);
                     
                 } catch (\Exception $imageError) {
                     \Log::error('Image upload error: ' . $imageError->getMessage());
@@ -1795,10 +1798,11 @@ public function searchBooksAjax(Request $request)
     {
         $request->validate(['q' => 'required|string|min:3|max:100']);
         $query = $request->query('q');
+        $safeQuery = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
         $books = Book::where('ISBN', $query)
-            ->orWhere('title', 'like', "%{$query}%")
-            ->orWhere('author', 'like', "%{$query}%")
+            ->orWhere('title', 'like', "%{$safeQuery}%")
+            ->orWhere('author', 'like', "%{$safeQuery}%")
             ->select('id', 'ISBN', 'title', 'author', 'price', 'Quantity', 'cost_price')
             ->limit(10)
             ->get();

@@ -71,6 +71,7 @@
 
             <form id="checkoutForm" action="{{ route('checkout.submit') }}" method="POST">
                 @csrf
+                <input type="hidden" name="checkout_token" value="{{ $checkoutToken }}">
                 <div class="row g-4">
                     <div class="col-lg-8">
                         <!-- Shopping Cart Section -->

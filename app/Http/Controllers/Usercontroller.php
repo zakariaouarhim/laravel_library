@@ -35,7 +35,9 @@ class Usercontroller extends Controller
             $validateData = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:user,email',
-                'password' => 'required|min:8|confirmed',
+                'password' => 'required|min:8|confirmed|regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/',
+            ], [
+                'password.regex' => 'كلمة المرور يجب أن تحتوي على أحرف وأرقام على الأقل',
             ]);
             
             \Log::info('Data passed validation');
@@ -165,18 +167,24 @@ class Usercontroller extends Controller
     {
         try {
             $request->validate([
-                'email' => 'required|email|exists:user,email'
+                'email' => 'required|email'
             ], [
                 'email.required' => 'البريد الإلكتروني مطلوب',
                 'email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
-                'email.exists' => 'هذا البريد الإلكتروني غير مسجل في النظام'
             ]);
 
+            // Always return success to prevent user enumeration
+            $genericMessage = 'إذا كان هذا البريد مسجلاً، سيتم إرسال رابط إعادة تعيين كلمة المرور';
+
             $user = UserModel::where('email', $request->email)->first();
-            
+
+            if (!$user) {
+                return back()->with('success', $genericMessage);
+            }
+
             // Generate a unique token
             $token = Str::random(60);
-            
+
             // Store the token in database with expiry (1 hour)
             DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $request->email],
@@ -187,7 +195,6 @@ class Usercontroller extends Controller
             );
 
             // Send email with reset link
-            // Option 1: Using Mail facade (requires email config)
             Mail::send('emails.password-reset', [
                 'resetLink' => route('password.reset', ['token' => $token, 'email' => $request->email]),
                 'userName' => $user->name
@@ -197,7 +204,7 @@ class Usercontroller extends Controller
 
             Log::info('Password reset link sent to: ' . $request->email);
 
-            return back()->with('success', 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
+            return back()->with('success', $genericMessage);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()
@@ -244,14 +251,15 @@ class Usercontroller extends Controller
             $request->validate([
                 'email' => 'required|email|exists:user,email',
                 'token' => 'required|string',
-                'password' => 'required|string|min:8|confirmed'
+                'password' => 'required|string|min:8|confirmed|regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
             ], [
                 'email.required' => 'البريد الإلكتروني مطلوب',
                 'email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
                 'email.exists' => 'هذا البريد الإلكتروني غير موجود',
                 'password.required' => 'كلمة المرور مطلوبة',
                 'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
-                'password.confirmed' => 'كلمات المرور غير متطابقة'
+                'password.confirmed' => 'كلمات المرور غير متطابقة',
+                'password.regex' => 'كلمة المرور يجب أن تحتوي على أحرف وأرقام على الأقل',
             ]);
 
             // Verify token

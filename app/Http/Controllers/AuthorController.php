@@ -30,7 +30,7 @@ class AuthorController extends Controller
 
         // Search
         if ($request->filled('q')) {
-            $search = $request->input('q');
+            $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $request->input('q'));
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('nationality', 'like', "%{$search}%");

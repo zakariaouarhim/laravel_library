@@ -196,7 +196,11 @@ public function showCheckout() {
     $discount = 0.00;
     $total = $subtotal + $shipping - $discount;
      
-    return view('checkout', compact('cart', 'subtotal', 'shipping', 'discount', 'total'));
+    // Generate one-time checkout token to prevent double-submit
+    $checkoutToken = \Illuminate\Support\Str::random(40);
+    session(['checkout_token' => $checkoutToken]);
+
+    return view('checkout', compact('cart', 'subtotal', 'shipping', 'discount', 'total', 'checkoutToken'));
 }
 
 public function removeFromCart(Request $request)

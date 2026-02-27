@@ -169,7 +169,7 @@ Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout
 Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit')->middleware('throttle:10,1');
 Route::post('/checkout/apply-coupon',  [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
 Route::post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.remove-coupon');
-Route::post('/checkout/trackmyorder', [CheckoutController::class, 'trackmyorder'])->name('trackmyorder');
+Route::post('/checkout/trackmyorder', [CheckoutController::class, 'trackmyorder'])->name('trackmyorder')->middleware('throttle:10,1');
 
 Route::get('/success/{id}', [CheckoutController::class, 'success'])->name('success');
 
@@ -185,10 +185,10 @@ Route::get('/moredetail-v2/{id}', [BookController::class, 'showV2'])->name('more
 
 // ==================== REVIEWS ====================
 
-Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store')->middleware('auth');
+Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store')->middleware(['auth', 'throttle:10,1']);
 Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update')->middleware('auth');
 Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy')->middleware('auth');
-Route::post('/reviews/{review}/helpful', [ReviewController::class, 'toggleHelpful'])->name('reviews.helpful')->middleware('auth');
+Route::post('/reviews/{review}/helpful', [ReviewController::class, 'toggleHelpful'])->name('reviews.helpful')->middleware(['auth', 'throttle:30,1']);
 
 // ==================== WISHLIST ====================
 
@@ -246,10 +246,10 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/about', [PageController::class, 'about'])->name('about.page');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact.page');
-Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store');
+Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store')->middleware('throttle:5,1');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy.page');
 Route::get('/sitemap', [PageController::class, 'sitemap'])->name('sitemap');
-Route::post('/notify-stock/{bookId}', [StockNotificationController::class, 'store'])->name('stock.notify');
+Route::post('/notify-stock/{bookId}', [StockNotificationController::class, 'store'])->name('stock.notify')->middleware('throttle:5,1');
 
 // ==================== QUOTES ====================
 

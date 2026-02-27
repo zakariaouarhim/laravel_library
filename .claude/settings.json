@@ -3,6 +3,9 @@
     "allow": [
       "Bash(/dev/null -exec grep -l \"tracking_number\\\\|shipping_address\\\\|billing_address\" {} ;)",
       "Bash(xargs ls -lt)"
+    ],
+    "additionalDirectories": [
+      "c:\\laravel\\library_fokara"
     ]
   }
 }

@@ -21,7 +21,7 @@ class OrderController extends Controller
         
         // Search by order ID or tracking number
         if ($request->has('search') && $request->search) {
-            $search = $request->search;
+            $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $request->search);
             $query->where('id', 'like', '%' . $search . '%')
                   ->orWhere('tracking_number', 'like', '%' . $search . '%');
         }

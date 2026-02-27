@@ -20,7 +20,13 @@ class CheckoutController extends Controller
     public function submit(Request $request)
     {
         Log::info('Checkout form submitted', $request->except(['card_number', 'cvv', 'expiry_date']));
-        
+
+        // Double-submit protection: verify and consume one-time token
+        $sessionToken = session()->pull('checkout_token');
+        if (!$sessionToken || $request->input('checkout_token') !== $sessionToken) {
+            return redirect()->route('cart.page')->with('error', 'تم تقديم الطلب بالفعل أو انتهت صلاحية الجلسة. يرجى المحاولة مرة أخرى.');
+        }
+
         try {
             // Validate the checkout form
             $validated = $request->validate([
