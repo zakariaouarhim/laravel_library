@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> أسير الكتب</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>تتبع الطلب - مكتبة الفقراء</title>
     
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">

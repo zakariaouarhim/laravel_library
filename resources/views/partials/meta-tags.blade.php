@@ -1,4 +1,5 @@
 {{-- SEO Meta Tags --}}
+<link rel="canonical" href="{{ $metaUrl ?? url()->current() }}">
 <meta name="description" content="{{ $metaDescription ?? 'مكتبة الفقراء - متجر إلكتروني لبيع الكتب بأسعار مناسبة. اكتشف تشكيلة واسعة من الكتب العربية والمترجمة.' }}">
 
 {{-- Open Graph --}}

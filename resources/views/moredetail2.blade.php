@@ -7,10 +7,11 @@
     @include('partials.meta-tags', [
         'metaTitle' => $book->title . ' - مكتبة الفقراء',
         'metaDescription' => Str::limit($book->description ?? $book->title . ' - اشترِ الآن من مكتبة الفقراء بأفضل سعر', 160),
-        'metaImage' => $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/logo.svg'),
+        'metaImage' => $book->image ? asset($book->image) : asset('images/logo.svg'),
         'metaType' => 'product',
         'metaUrl' => route('moredetail2.page', $book->id),
     ])
+    @include('partials.jsonld-book')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" integrity="sha384-gXt9imSW0VcJVHezoNQsP+TNrjYXoGcrqBZJpry9zJt8PCQjobwmhMGaDHTASo9N" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">

@@ -18,7 +18,7 @@
         <div class="content">
             <p>مرحباً <span class="name">{{ $customerName }}</span>,</p>
 
-            <p>شكراً لك على طلبك من <strong>أسير الكتب</strong>. تم استلام طلبك وهو الآن قيد المعالجة.</p>
+            <p>شكراً لك على طلبك من <strong>مكتبة الفقراء</strong>. تم استلام طلبك وهو الآن قيد المعالجة.</p>
 
             <!-- Order Details -->
             <div class="order-details">
@@ -76,12 +76,12 @@
             <p>إذا كان لديك أي استفسار، لا تتردد في التواصل معنا.</p>
 
             <p>شكراً لك،<br>
-            <strong>فريق أسير الكتب</strong></p>
+            <strong>فريق مكتبة الفقراء</strong></p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>&copy; {{ date('Y') }} أسير الكتب. جميع الحقوق محفوظة.</p>
+            <p>&copy; {{ date('Y') }} مكتبة الفقراء. جميع الحقوق محفوظة.</p>
         </div>
     </div>
 </body>

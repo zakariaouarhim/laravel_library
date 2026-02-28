@@ -7,10 +7,11 @@
     @include('partials.meta-tags', [
         'metaTitle' => $book->title . ' - مكتبة الفقراء',
         'metaDescription' => Str::limit($book->description ?? $book->title . ' - اشترِ الآن من مكتبة الفقراء بأفضل سعر', 160),
-        'metaImage' => $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/logo.svg'),
+        'metaImage' => $book->image ? asset($book->image) : asset('images/logo.svg'),
         'metaType' => 'product',
         'metaUrl' => route('moredetail.page', $book->id),
     ])
+    @include('partials.jsonld-book')
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/moredetailstyle.css') }}">

@@ -254,6 +254,7 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact.page')
 Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store')->middleware('throttle:5,1');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy.page');
 Route::get('/sitemap', [PageController::class, 'sitemap'])->name('sitemap');
+Route::get('/sitemap.xml', [PageController::class, 'sitemap']);
 Route::post('/notify-stock/{bookId}', [StockNotificationController::class, 'store'])->name('stock.notify')->middleware('throttle:5,1');
 
 // ==================== QUOTES ====================

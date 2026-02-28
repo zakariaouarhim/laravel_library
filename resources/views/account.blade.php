@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حسابي - {{ config('app.name', 'مكتبة فكرة') }}</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>حسابي - مكتبة الفقراء</title>
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
