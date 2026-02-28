@@ -244,9 +244,10 @@
                     <!-- Reviews -->
                     <div class="v2-tab-pane" id="v2-reviews">
                         @php
-                            $reviewsList = $book->reviews->sortByDesc('created_at');
-                            $avgRating = $book->reviews->avg('rating') ?? 0;
-                            $totalReviews = $book->reviews->count();
+                            $approvedReviews = $book->reviews->where('status', 'approved');
+                            $reviewsList = $approvedReviews->sortByDesc('created_at');
+                            $avgRating = $approvedReviews->avg('rating') ?? 0;
+                            $totalReviews = $approvedReviews->count();
                         @endphp
 
                         <div class="v2-rating-summary" id="ratingSummary" style="{{ $totalReviews == 0 ? 'display:none' : '' }}">
@@ -262,7 +263,7 @@
                             <div class="v2-rating-bars" id="ratingBars">
                                 @for($star = 5; $star >= 1; $star--)
                                     @php
-                                        $count = $book->reviews->where('rating', $star)->count();
+                                        $count = $approvedReviews->where('rating', $star)->count();
                                         $pct = $totalReviews > 0 ? ($count / $totalReviews) * 100 : 0;
                                     @endphp
                                     <div class="v2-bar-row" data-star="{{ $star }}">

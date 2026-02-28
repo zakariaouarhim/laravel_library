@@ -35,34 +35,35 @@ class ReviewController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
             'is_read' => $request->has('is_read') ? 1 : 0,
+            'status' => 'pending',
         ]);
 
         if ($request->ajax()) {
             $review->load('user');
-            $book = Book::find($request->book_id);
-            $avgRating = Book_Review::where('book_id', $request->book_id)->avg('rating');
-            $reviewsCount = Book_Review::where('book_id', $request->book_id)->count();
+            $avgRating = Book_Review::where('book_id', $request->book_id)->where('status', 'approved')->avg('rating');
+            $reviewsCount = Book_Review::where('book_id', $request->book_id)->where('status', 'approved')->count();
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم إرسال تقييمك بنجاح.',
+                'message' => 'تم إرسال تقييمك بنجاح وسيظهر بعد المراجعة.',
                 'review' => [
                     'id' => $review->id,
                     'rating' => $review->rating,
                     'comment' => $review->comment,
                     'is_read' => $review->is_read,
+                    'status' => $review->status,
                     'created_at' => $review->created_at->diffForHumans(),
                     'user_name' => $review->user->name ?? 'مستخدم',
                     'user_initial' => mb_substr($review->user->name ?? 'م', 0, 1),
                 ],
                 'summary' => [
-                    'avg_rating' => round($avgRating, 1),
+                    'avg_rating' => round($avgRating ?? 0, 1),
                     'reviews_count' => $reviewsCount,
                 ],
             ]);
         }
 
-        return back()->with('success', 'تم إرسال تقييمك بنجاح.');
+        return back()->with('success', 'تم إرسال تقييمك بنجاح وسيظهر بعد المراجعة.');
     }
 
     public function update(Request $request, Book_Review $review)
@@ -85,8 +86,8 @@ class ReviewController extends Controller
         ]);
 
         if ($request->ajax()) {
-            $avgRating = Book_Review::where('book_id', $review->book_id)->avg('rating');
-            $reviewsCount = Book_Review::where('book_id', $review->book_id)->count();
+            $avgRating = Book_Review::where('book_id', $review->book_id)->where('status', 'approved')->avg('rating');
+            $reviewsCount = Book_Review::where('book_id', $review->book_id)->where('status', 'approved')->count();
 
             return response()->json([
                 'success' => true,
@@ -97,7 +98,7 @@ class ReviewController extends Controller
                     'comment' => $review->comment,
                 ],
                 'summary' => [
-                    'avg_rating' => round($avgRating, 1),
+                    'avg_rating' => round($avgRating ?? 0, 1),
                     'reviews_count' => $reviewsCount,
                 ],
             ]);
@@ -119,8 +120,8 @@ class ReviewController extends Controller
         $review->delete();
 
         if ($request->ajax()) {
-            $avgRating = Book_Review::where('book_id', $bookId)->avg('rating') ?? 0;
-            $reviewsCount = Book_Review::where('book_id', $bookId)->count();
+            $avgRating = Book_Review::where('book_id', $bookId)->where('status', 'approved')->avg('rating') ?? 0;
+            $reviewsCount = Book_Review::where('book_id', $bookId)->where('status', 'approved')->count();
 
             return response()->json([
                 'success' => true,
@@ -165,5 +166,59 @@ class ReviewController extends Controller
         }
 
         return back();
+    }
+
+    // ==================== ADMIN METHODS ====================
+
+    public function adminIndex(Request $request)
+    {
+        $query = Book_Review::with(['user', 'book']);
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search by book title or user name
+        if ($request->filled('search')) {
+            $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $request->search);
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('book', fn($b) => $b->where('title', 'like', "%{$search}%"));
+            });
+        }
+
+        $reviews = $query->latest()->paginate(20)->appends($request->query());
+
+        $statusCounts = Book_Review::selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return view('Dashbord_Admin.reviews', compact('reviews', 'statusCounts'));
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate(['status' => 'required|in:approved,pending,rejected']);
+
+        $review = Book_Review::findOrFail($id);
+        $review->update(['status' => $request->status]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث حالة التقييم بنجاح',
+            'status' => $review->status,
+        ]);
+    }
+
+    public function adminDestroy($id)
+    {
+        $review = Book_Review::findOrFail($id);
+        $review->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حذف التقييم بنجاح',
+        ]);
     }
 }

@@ -152,6 +152,11 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/contact-messages/{id}', [AdminContactController::class, 'show'])->name('contact-messages.show');
     Route::patch('/contact-messages/{id}/toggle-read', [AdminContactController::class, 'toggleRead'])->name('contact-messages.toggle-read');
     Route::delete('/contact-messages/{id}', [AdminContactController::class, 'destroy'])->name('contact-messages.destroy');
+
+    // Reviews moderation
+    Route::get('/reviews', [ReviewController::class, 'adminIndex'])->name('reviews.index');
+    Route::patch('/reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.update-status');
+    Route::delete('/reviews/{id}', [ReviewController::class, 'adminDestroy'])->name('reviews.destroy');
 });
 
 // ==================== CART & CHECKOUT ====================
