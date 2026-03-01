@@ -1,84 +1,62 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحديث حالة الطلب</title>
-    <link rel="stylesheet" href="{{ asset('css/emails/order-status-update.css') }}">
-</head>
-<body>
-    <div class="email-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-icon">&#128230;</div>
-            <h1>تحديث حالة طلبك</h1>
-        </div>
+@extends('emails.layouts.base')
 
-        <!-- Content -->
-        <div class="content">
-            <p>مرحباً <span class="name">{{ $customerName }}</span>,</p>
+@section('title', 'تحديث حالة الطلب')
+@section('header-icon', '&#128230;')
+@section('header-title', 'تحديث حالة طلبك')
 
-            <p>نود إعلامك بأن حالة طلبك <strong>#{{ $order->id }}</strong> قد تم تحديثها.</p>
+@section('content')
+    <p>مرحباً <span class="name">{{ $customerName }}</span>,</p>
 
-            <!-- Status Change -->
-            <div class="status-change">
-                <h2>تغيير الحالة</h2>
-                <div class="status-arrow">
-                    <span class="status-new">{{ $newStatus }}</span>
-                    <span class="arrow-icon">&larr;</span>
-                    <span class="status-old">{{ $oldStatus }}</span>
-                </div>
-            </div>
+    <p>نود إعلامك بأن حالة طلبك <strong>#{{ $order->id }}</strong> قد تم تحديثها.</p>
 
-            <!-- Order Info -->
-            <div class="order-info">
-                <div class="info-row">
-                    <span class="info-label">رقم الطلب:</span>
-                    <span class="info-value">#{{ $order->id }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">رقم التتبع:</span>
-                    <span class="info-value">{{ $order->tracking_number }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">المبلغ الإجمالي:</span>
-                    <span class="info-value">{{ number_format($order->total_price, 2) }} د.م</span>
-                </div>
-            </div>
-
-            <!-- Admin Note -->
-            @if($note)
-            <div class="note-section">
-                <h3>ملاحظة:</h3>
-                <p>{{ $note }}</p>
-            </div>
-            @endif
-
-            <!-- Estimated Delivery -->
-            @if($order->estimated_delivery_date)
-            <div class="delivery-estimate">
-                <div class="label">التسليم المتوقع</div>
-                <div class="date">{{ \Carbon\Carbon::parse($order->estimated_delivery_date)->format('d/m/Y') }}</div>
-            </div>
-            @endif
-
-            <!-- Manage Button -->
-            @if($manageUrl)
-            <div class="manage-button">
-                <a href="{{ $manageUrl }}">تتبع وإدارة الطلب</a>
-            </div>
-            @endif
-
-            <p>إذا كان لديك أي استفسار، لا تتردد في التواصل معنا.</p>
-
-            <p>شكراً لك،<br>
-            <strong>فريق مكتبة الفقراء</strong></p>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>&copy; {{ date('Y') }} مكتبة الفقراء. جميع الحقوق محفوظة.</p>
+    <!-- Status Change -->
+    <div class="detail-box" style="text-align: center;">
+        <h2>تغيير الحالة</h2>
+        <div class="status-arrow">
+            <span class="status-new">{{ $newStatus }}</span>
+            <span style="font-size: 20px; color: #999;">&larr;</span>
+            <span class="status-old">{{ $oldStatus }}</span>
         </div>
     </div>
-</body>
-</html>
+
+    <!-- Order Info -->
+    <div class="detail-box">
+        <div class="detail-row">
+            <span class="detail-label">رقم الطلب:</span>
+            <span class="detail-value">#{{ $order->id }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">رقم التتبع:</span>
+            <span class="detail-value">{{ $order->tracking_number }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">المبلغ الإجمالي:</span>
+            <span class="detail-value">{{ number_format($order->total_price, 2) }} د.م</span>
+        </div>
+    </div>
+
+    <!-- Admin Note -->
+    @if($note)
+    <div class="note-section">
+        <h3>ملاحظة:</h3>
+        <p>{{ $note }}</p>
+    </div>
+    @endif
+
+    <!-- Estimated Delivery -->
+    @if($order->estimated_delivery_date)
+    <div class="delivery-estimate">
+        <div class="label">التسليم المتوقع</div>
+        <div class="date">{{ \Carbon\Carbon::parse($order->estimated_delivery_date)->format('d/m/Y') }}</div>
+    </div>
+    @endif
+
+    <!-- Manage Button -->
+    @if($manageUrl)
+    <div class="btn-center">
+        <a href="{{ $manageUrl }}" class="btn">تتبع وإدارة الطلب</a>
+    </div>
+    @endif
+
+    <p>إذا كان لديك أي استفسار، لا تتردد في التواصل معنا.</p>
+@endsection

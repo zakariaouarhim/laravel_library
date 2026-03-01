@@ -8,7 +8,9 @@ use App\Models\Author;
 use App\Models\Category;
 use App\Models\PublishingHouse;
 use App\Models\ContactMessage;
+use App\Mail\ContactAutoReply;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 
 class PageController extends Controller
 {
@@ -40,6 +42,13 @@ class PageController extends Controller
         ]);
 
         ContactMessage::create($validated);
+
+        // Send auto-reply confirmation email
+        try {
+            Mail::to($validated['email'])->send(new ContactAutoReply($validated['name'], $validated['subject']));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send contact auto-reply:', ['error' => $e->getMessage()]);
+        }
 
         return back()->with('success', 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.');
     }

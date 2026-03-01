@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
+use App\Mail\PasswordResetMail;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -66,6 +68,13 @@ class Usercontroller extends Controller
                     'is_logged_in' => true
                 ]);
                 
+                // Send welcome email
+                try {
+                    Mail::to($user->email)->send(new WelcomeMail($user));
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send welcome email:', ['error' => $e->getMessage()]);
+                }
+
                 return redirect()->route('index.page')->with('success', 'Account created successfully! Welcome ' . $user->name);
             } else {
                 throw new \Exception('Failed to create user');
@@ -195,12 +204,8 @@ class Usercontroller extends Controller
             );
 
             // Send email with reset link
-            Mail::send('emails.password-reset', [
-                'resetLink' => route('password.reset', ['token' => $token, 'email' => $request->email]),
-                'userName' => $user->name
-            ], function($message) use ($user) {
-                $message->to($user->email)->subject('رابط إعادة تعيين كلمة المرور');
-            });
+            $resetLink = route('password.reset', ['token' => $token, 'email' => $request->email]);
+            Mail::to($user->email)->send(new PasswordResetMail($resetLink, $user->name));
 
             Log::info('Password reset link sent to: ' . $request->email);
 

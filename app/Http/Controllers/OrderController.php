@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderStatusUpdateMail;
 use Carbon\Carbon;
  
 
@@ -117,17 +118,15 @@ class OrderController extends Controller
                 : null;
 
             try {
-                Mail::send('emails.order-status-update', [
-                    'order' => $order,
-                    'oldStatus' => $statusLabels[$oldStatus] ?? $oldStatus,
-                    'newStatus' => $statusLabels[$newStatus] ?? $newStatus,
-                    'note' => $request->input('note'),
-                    'manageUrl' => $manageUrl,
-                    'customerName' => $order->checkoutDetail->first_name ?? ($order->user ? $order->user->name : 'العميل'),
-                ], function ($message) use ($customerEmail, $order) {
-                    $message->to($customerEmail)
-                            ->subject("تحديث حالة الطلب #{$order->id} - أسير الكتب");
-                });
+                $customerName = $order->checkoutDetail->first_name ?? ($order->user ? $order->user->name : 'العميل');
+                Mail::to($customerEmail)->send(new OrderStatusUpdateMail(
+                    $order,
+                    $customerName,
+                    $statusLabels[$oldStatus] ?? $oldStatus,
+                    $statusLabels[$newStatus] ?? $newStatus,
+                    $request->input('note'),
+                    $manageUrl
+                ));
             } catch (\Exception $e) {
                 \Log::error('Failed to send order status email: ' . $e->getMessage());
             }

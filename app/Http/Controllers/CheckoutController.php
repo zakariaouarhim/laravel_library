@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Mail\OrderConfirmationMail;
 use App\Models\OrderStatusHistory;
 
 class CheckoutController extends Controller
@@ -173,13 +174,7 @@ class CheckoutController extends Controller
                 $customerName = $validated['first_name'] . ' ' . $validated['last_name'];
                 $manageUrl = url('/order/manage?token=' . $order->management_token);
 
-                Mail::send('emails.order-confirmation', [
-                    'order' => $order,
-                    'customerName' => $customerName,
-                    'manageUrl' => $manageUrl,
-                ], function ($message) use ($validated) {
-                    $message->to($validated['email'])->subject('تأكيد الطلب - أسير الكتب');
-                });
+                Mail::to($validated['email'])->send(new OrderConfirmationMail($order, $customerName, $manageUrl));
 
                 Log::info('Order confirmation email sent', ['email' => $validated['email']]);
             } catch (\Exception $e) {

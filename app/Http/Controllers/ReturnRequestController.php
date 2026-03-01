@@ -8,6 +8,7 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Mail\ReturnRequestStatusMail;
 
 class ReturnRequestController extends Controller
 {
@@ -210,14 +211,12 @@ class ReturnRequestController extends Controller
                         ? url('/order/manage?token=' . $order->management_token)
                         : null;
 
-                    Mail::send('emails.return-request-status', [
-                        'returnRequest' => $returnRequest,
-                        'customerName'  => $customerName ?: 'عميلنا العزيز',
-                        'statusText'    => $statusMap[$newStatus] ?? $newStatus,
-                        'manageUrl'     => $manageUrl,
-                    ], function ($message) use ($customerEmail) {
-                        $message->to($customerEmail)->subject('تحديث طلب الإسترجاع - أسير الكتب');
-                    });
+                    Mail::to($customerEmail)->send(new ReturnRequestStatusMail(
+                        $returnRequest,
+                        $customerName ?: 'عميلنا العزيز',
+                        $statusMap[$newStatus] ?? $newStatus,
+                        $manageUrl
+                    ));
 
                     Log::info('Return request status email sent', ['email' => $customerEmail, 'status' => $newStatus]);
                 }
