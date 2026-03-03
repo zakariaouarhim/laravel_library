@@ -365,11 +365,7 @@
                                 <div class="info-box">
                                     <div class="info-box-title">طريقة الدفع</div>
                                     <div class="info-box-value">
-                                        @if($order->payment_method === 'cod')
-                                            الدفع عند الاستلام
-                                        @else
-                                            بطاقة ائتمان
-                                        @endif
+                                        {{ $order->payment_label }}
                                     </div>
                                 </div>
                             </div>

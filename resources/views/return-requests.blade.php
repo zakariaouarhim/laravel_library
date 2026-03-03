@@ -125,7 +125,7 @@
                                 <div class="return-meta">
                                     <span><i class="fas fa-calendar-alt me-1"></i>{{ $returnRequest->created_at->format('d/m/Y') }}</span>
                                     <span><i class="fas fa-money-bill-wave me-1"></i>{{ number_format($returnRequest->refund_amount, 2) }} د.م</span>
-                                    <span><i class="fas fa-credit-card me-1"></i>{{ $returnRequest->payment_method == 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان' }}</span>
+                                    <span><i class="fas fa-credit-card me-1"></i>{{ \App\Models\Order::PAYMENT_LABELS[$returnRequest->payment_method] ?? $returnRequest->payment_method }}</span>
                                 </div>
                                 <div class="expand-icon">
                                     <i class="fas fa-chevron-down"></i>

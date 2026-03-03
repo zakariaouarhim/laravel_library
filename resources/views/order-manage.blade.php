@@ -58,7 +58,7 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">طريقة الدفع</span>
-                        <span class="info-value">{{ $order->payment_method == 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان' }}</span>
+                        <span class="info-value">{{ $order->payment_label }}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">المبلغ الإجمالي</span>

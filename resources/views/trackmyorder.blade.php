@@ -209,11 +209,7 @@
                             <div class="detail-box">
                                 <span class="detail-label">طريقة الدفع</span>
                                 <div class="detail-value">
-                                    @if($order->payment_method == 'cod')
-                                        الدفع عند الاستلام
-                                    @else
-                                        بطاقة ائتمان
-                                    @endif
+                                    {{ $order->payment_label }}
                                 </div>
                             </div>
                             <div class="detail-box">

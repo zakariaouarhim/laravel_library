@@ -268,7 +268,7 @@
                                             </div>
                                             <div class="shipping-detail">
                                                 <span class="label">الدفع</span>
-                                                <span>{{ $order->checkoutDetail->payment_method == 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان' }}</span>
+                                                <span>{{ \App\Models\Order::PAYMENT_LABELS[$order->checkoutDetail->payment_method] ?? $order->checkoutDetail->payment_method }}</span>
                                             </div>
                                         @elseif($order->shipping_address)
                                             <div class="shipping-detail">
@@ -277,7 +277,7 @@
                                             </div>
                                             <div class="shipping-detail">
                                                 <span class="label">الدفع</span>
-                                                <span>{{ $order->payment_method == 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان' }}</span>
+                                                <span>{{ $order->payment_label }}</span>
                                             </div>
                                         @endif
                                     </div>

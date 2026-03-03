@@ -84,4 +84,18 @@ class Order extends Model
     {
         return self::STATUS_LABELS[$this->status] ?? $this->status;
     }
+
+    /**
+     * Payment method labels (Arabic) — single source of truth
+     */
+    public const PAYMENT_LABELS = [
+        'cod'           => 'الدفع عند الاستلام',
+        'credit_card'   => 'بطاقة ائتمان',
+        'bank_transfer' => 'تحويل بنكي',
+    ];
+
+    public function getPaymentLabelAttribute(): string
+    {
+        return self::PAYMENT_LABELS[$this->payment_method] ?? $this->payment_method;
+    }
 }

@@ -51,7 +51,7 @@
                         </div>
                         <div>
                             <div class="detail-label">طريقة الدفع</div>
-                            <div class="detail-value">${data.payment_method === 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان'}</div>
+                            <div class="detail-value">${data.payment_method === 'cod' ? 'الدفع عند الاستلام' : 'تحويل بنكي '}</div>
                         </div>
                     </div>
 

@@ -201,18 +201,25 @@ class CheckoutController extends Controller
                 session()->forget('applied_coupon');
             }
 
-            // Send order confirmation email
-            try {
-                $order->load('orderDetails.book');
-                $customerName = $validated['first_name'] . ' ' . $validated['last_name'];
-                $manageUrl = url('/order/manage?token=' . $order->management_token);
-
-                Mail::to($validated['email'])->send(new OrderConfirmationMail($order, $customerName, $manageUrl));
-
-                Log::info('Order confirmation email sent', ['email' => $validated['email']]);
-            } catch (\Exception $e) {
-                Log::error('Failed to send order confirmation email', ['error' => $e->getMessage()]);
-            }
+            // Send order confirmation email AFTER the HTTP response (non-blocking)
+            $emailData = [
+                'email' => $validated['email'],
+                'name'  => $validated['first_name'] . ' ' . $validated['last_name'],
+                'token' => $order->management_token,
+                'orderId' => $order->id,
+            ];
+            app()->terminating(function () use ($emailData) {
+                try {
+                    $order = Order::with('orderDetails.book')->find($emailData['orderId']);
+                    if ($order) {
+                        $manageUrl = url('/order/manage?token=' . $emailData['token']);
+                        Mail::to($emailData['email'])->send(new OrderConfirmationMail($order, $emailData['name'], $manageUrl));
+                        Log::info('Order confirmation email sent', ['email' => $emailData['email']]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to send order confirmation email', ['error' => $e->getMessage()]);
+                }
+            });
 
             // Clear the cart after successful order
             if (Auth::check()) {

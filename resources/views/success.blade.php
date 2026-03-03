@@ -60,7 +60,7 @@
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">طريقة الدفع</span>
-                                <div class="detail-value">{{ $order->payment_method == 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان' }}</div>
+                                <div class="detail-value">{{ $order->payment_label }}</div>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">رقم التتبع</span>

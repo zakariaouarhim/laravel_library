@@ -74,7 +74,7 @@ function viewOrder(orderId) {
                 <div>
                     <span class="detail-label">طريقة الدفع</span>
                     <div class="detail-value">
-                        ${data.payment_method === 'cod' ? '<span class="badge bg-warning text-dark">الدفع عند الاستلام</span>' : '<span class="badge bg-info">بطاقة ائتمان</span>'}
+                        ${data.payment_method === 'cod' ? '<span class="badge bg-warning text-dark">الدفع عند الاستلام</span>' : '<span class="badge bg-info">تحويل بنكي </span>'}
                     </div>
                 </div>
             </div>

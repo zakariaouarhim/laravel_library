@@ -22,7 +22,7 @@
         </div>
         <div class="detail-row">
             <span class="detail-label">طريقة الدفع:</span>
-            <span class="detail-value">{{ $order->payment_method == 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان' }}</span>
+            <span class="detail-value">{{ $order->payment_label }}</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">المبلغ الإجمالي:</span>

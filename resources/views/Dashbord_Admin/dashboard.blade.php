@@ -145,11 +145,9 @@
                                     <td><span class="order-id">#{{ $order->id }}</span></td>
                                     <td>{{ number_format($order->total_price, 2) }} د.م</td>
                                     <td>
-                                        @if($order->payment_method == 'cod')
-                                            <span class="badge badge-custom badge-pending">الدفع عند الاستلام</span>
-                                        @else
-                                            <span class="badge badge-custom badge-processing">بطاقة ائتمان</span>
-                                        @endif
+                                        <span class="badge badge-custom {{ $order->payment_method === 'bank_transfer' ? 'badge-processing' : ($order->payment_method === 'cod' ? 'badge-pending' : 'badge-processing') }}">
+                                            {{ $order->payment_label }}
+                                        </span>
                                     </td>
                                     <td>
                                         @php

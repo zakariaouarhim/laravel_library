@@ -22,7 +22,7 @@ class CreateCheckoutDetailsTable extends Migration
             $table->text('address');
             $table->string('city');
             $table->string('zip_code');
-            $table->enum('payment_method', ['cod', 'credit_card'])->default('cod');
+            $table->enum('payment_method', ['cod', 'credit_card', 'bank_transfer'])->default('cod');
             $table->string('card_number')->nullable();
             $table->string('expiry_date')->nullable();
             $table->string('cvv')->nullable();

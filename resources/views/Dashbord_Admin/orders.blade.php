@@ -120,11 +120,9 @@
                                         <strong>{{ number_format($order->total_price, 2) }} د.م</strong>
                                     </td>
                                     <td>
-                                        @if($order->payment_method == 'cod')
-                                            <span class="badge bg-warning">الدفع عند الاستلام</span>
-                                        @else
-                                            <span class="badge bg-info">بطاقة ائتمان</span>
-                                        @endif
+                                        <span class="badge {{ $order->payment_method === 'cod' ? 'bg-warning' : 'bg-info' }}">
+                                            {{ $order->payment_label }}
+                                        </span>
                                     </td>
                                     <td>
                                         @php
