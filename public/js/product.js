@@ -173,7 +173,6 @@ async function saveProduct() {
     }
   } catch (error) {
   console.error('Error updating product:', error);
-  console.log('Response:', await response.json()); // Log the response
   alert('حدث خطأ أثناء تحديث المنتج.');
 }
 }

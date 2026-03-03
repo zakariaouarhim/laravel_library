@@ -123,6 +123,11 @@
                                 <i class="bi bi-book me-2"></i>كتبي
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="shelves-tab" data-bs-toggle="pill" data-bs-target="#shelves" type="button" role="tab">
+                                <i class="bi bi-bookshelf me-2"></i>رف القراءة
+                            </button>
+                        </li>
                     </ul>
 
                     <!-- Tab Content -->
@@ -303,7 +308,7 @@
                                     <i class="bi bi-book me-2"></i>
                                     كتبي
                                 </h5>
-                                
+
                                 @if(isset($WishlistBook) && $WishlistBook->isNotEmpty())
                                     <div class="row">
                                         @foreach($WishlistBook as $book)
@@ -344,6 +349,78 @@
                                     </div>
                                 @endif
 
+                            </div>
+                        </div>
+
+                        <!-- Reading Shelves Tab -->
+                        <div class="tab-pane fade" id="shelves" role="tabpanel">
+                            <div class="profile-card">
+                                <h5 class="mb-3">
+                                    <i class="bi bi-bookshelf me-2"></i>
+                                    رف القراءة
+                                </h5>
+
+                                @php
+                                    $shelfBooks = \App\Models\ReadingShelf::where('user_id', auth()->id())
+                                        ->with('book.primaryAuthor')
+                                        ->get()
+                                        ->groupBy('status');
+                                    $shelfSections = [
+                                        'reading'      => ['label' => 'أقرأ حالياً', 'icon' => 'bi-glasses', 'color' => 'primary'],
+                                        'want_to_read' => ['label' => 'أريد قراءته', 'icon' => 'bi-bookmark', 'color' => 'warning'],
+                                        'read'         => ['label' => 'قرأته', 'icon' => 'bi-check-circle', 'color' => 'success'],
+                                    ];
+                                @endphp
+
+                                @php $hasAnyShelf = false; @endphp
+                                @foreach($shelfSections as $status => $section)
+                                    @php $items = $shelfBooks->get($status, collect()); @endphp
+                                    @if($items->isNotEmpty())
+                                        @php $hasAnyShelf = true; @endphp
+                                        <h6 class="mt-4 mb-3">
+                                            <i class="bi {{ $section['icon'] }} me-2 text-{{ $section['color'] }}"></i>
+                                            {{ $section['label'] }}
+                                            <span class="badge bg-{{ $section['color'] }} ms-1">{{ $items->count() }}</span>
+                                        </h6>
+                                        <div class="row">
+                                            @foreach($items as $entry)
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="book-card d-flex align-items-start">
+                                                        <img src="{{ asset($entry->book->image ?? 'images/book-placeholder.png') }}"
+                                                             alt="{{ $entry->book->title }}"
+                                                             loading="lazy" width="50" height="70"
+                                                             class="book-thumb me-3">
+                                                        <div class="p-2 flex-fill">
+                                                            <h6 class="fw-bold mb-1">{{ Str::limit($entry->book->title, 40) }}</h6>
+                                                            <p class="text-muted small mb-1">{{ $entry->book->author ?? 'مؤلف غير معروف' }}</p>
+                                                            @if($entry->started_at)
+                                                                <small class="text-muted"><i class="bi bi-calendar3"></i> بدأت: {{ $entry->started_at->format('d/m/Y') }}</small>
+                                                            @endif
+                                                            @if($entry->finished_at)
+                                                                <small class="text-success d-block"><i class="bi bi-check2"></i> أنهيت: {{ $entry->finished_at->format('d/m/Y') }}</small>
+                                                            @endif
+                                                            <div class="mt-2">
+                                                                <a href="{{ route('moredetail2.page', $entry->book->id) }}" class="btn btn-sm btn-outline-primary">عرض</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                @endforeach
+
+                                @if(!$hasAnyShelf)
+                                    <div class="empty-state">
+                                        <i class="bi bi-bookshelf" style="font-size: 2rem;"></i>
+                                        <h6 class="mt-2">رف القراءة فارغ</h6>
+                                        <p class="text-muted">أضف كتباً من صفحة تفاصيل الكتاب لتتبع قراءتك</p>
+                                        <a href="{{ route('index.page') }}" class="btn btn-primary">
+                                            <i class="bi bi-plus-circle me-2"></i>
+                                            تصفح الكتب
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -458,11 +535,11 @@
                             <img src="{{ $rec['image'] }}"
                                 alt="{{ $rec['title'] }}"
                                 class="rounded me-3 rec-thumb" width="60" height="85" loading="lazy"
-                                onclick="window.location.href='{{ route('moredetail.page', ['id' => $rec['id']]) }}'">
+                                onclick="window.location.href='{{ route('moredetail2.page', ['id' => $rec['id']]) }}'">
                             
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">
-                                    <a href="{{ route('moredetail.page', ['id' => $rec['id']]) }}"
+                                    <a href="{{ route('moredetail2.page', ['id' => $rec['id']]) }}"
                                     class="text-decoration-none text-dark">
                                         {{ $rec['title'] }}
                                     </a>

@@ -58,6 +58,11 @@ class PageController extends Controller
         return view('privacy');
     }
 
+    public function terms()
+    {
+        return view('terms');
+    }
+
     public function sitemap()
     {
         $sitemapData = Cache::remember('sitemap_data', 3600, function () {

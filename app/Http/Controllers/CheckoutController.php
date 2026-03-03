@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Cart;
 use App\Models\Coupon;
+use App\Models\Book;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -93,6 +95,20 @@ class CheckoutController extends Controller
                 return redirect()->back()->with('error', 'السلة فارغة');
             }
 
+            // Validate stock availability before proceeding
+            $outOfStock = [];
+            foreach ($cart as $id => $item) {
+                $book = Book::find($id);
+                if (!$book) {
+                    $outOfStock[] = $item['title'] . ' (لم يعد متوفراً)';
+                } elseif ($book->Quantity < $item['quantity']) {
+                    $outOfStock[] = $item['title'] . ' (المتوفر: ' . $book->Quantity . ')';
+                }
+            }
+            if (!empty($outOfStock)) {
+                return redirect()->back()->with('error', 'بعض المنتجات غير متوفرة بالكمية المطلوبة: ' . implode('، ', $outOfStock));
+            }
+
             // Calculate totals
             $subtotal = 0;
             foreach ($cart as $item) {
@@ -115,56 +131,73 @@ class CheckoutController extends Controller
 
             $total = $subtotal + $shipping - $discount;
 
-            // Create order record
-            $order = Order::create([
-                'user_id' => auth()->check() ? auth()->id() : null,
-                'status' => 'pending',
-                'total_price' => $total,
-                'shipping_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
-                'billing_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
-                'payment_method' => $validated['payment_method'],
-                'tracking_number' => 'TR-' . Str::upper(Str::random(10)),
-                'management_token' => Str::random(64),
-            ]);
-
-            // Log initial status in history
-            OrderStatusHistory::create([
-                'order_id' => $order->id,
-                'status' => 'pending',
-            ]);
-
-            // Create checkout record
-            $checkout = CheckoutDetail::create([
-                'order_id' => $order->id,
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-                'address' => $validated['address'],
-                'city' => $validated['city'],
-                'zip_code' => $validated['zip_code'],
-                'payment_method' => $validated['payment_method'],
-                'subtotal' => $subtotal,
-                'shipping' => $shipping,
-                'discount' => $discount,
-                'total' => $total,
-                'cart_items' => json_encode($cart), // Make sure this is JSON encoded
-                'status' => 'pending'
-            ]);
-
-            // Create order details
-            foreach ($cart as $id => $item) {
-                OrderDetail::create([
-                    'order_id' => $order->id,
-                    'book_id' => $id,
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price']
+            // Wrap all DB operations in a transaction to prevent partial order creation
+            $order = DB::transaction(function () use ($cart, $validated, $total, $subtotal, $shipping, $discount, $appliedCouponCode) {
+                // Create order record
+                $order = Order::create([
+                    'user_id' => auth()->check() ? auth()->id() : null,
+                    'status' => 'pending',
+                    'total_price' => $total,
+                    'shipping_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
+                    'billing_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
+                    'payment_method' => $validated['payment_method'],
+                    'tracking_number' => 'TR-' . Str::upper(Str::random(10)),
+                    'management_token' => Str::random(64),
                 ]);
-            }
 
-            // Increment coupon usage count
+                // Log initial status in history
+                OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'status' => 'pending',
+                ]);
+
+                // Create checkout record
+                CheckoutDetail::create([
+                    'order_id' => $order->id,
+                    'first_name' => $validated['first_name'],
+                    'last_name' => $validated['last_name'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'],
+                    'address' => $validated['address'],
+                    'city' => $validated['city'],
+                    'zip_code' => $validated['zip_code'],
+                    'payment_method' => $validated['payment_method'],
+                    'subtotal' => $subtotal,
+                    'shipping' => $shipping,
+                    'discount' => $discount,
+                    'total' => $total,
+                    'cart_items' => json_encode($cart),
+                    'status' => 'pending'
+                ]);
+
+                // Create order details and decrement stock atomically
+                foreach ($cart as $id => $item) {
+                    OrderDetail::create([
+                        'order_id' => $order->id,
+                        'book_id' => $id,
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price']
+                    ]);
+
+                    // Decrement stock — use DB-level update to prevent overselling
+                    $updated = Book::where('id', $id)
+                        ->where('Quantity', '>=', $item['quantity'])
+                        ->decrement('Quantity', $item['quantity']);
+
+                    if (!$updated) {
+                        throw new \Exception('الكتاب "' . $item['title'] . '" لم يعد متوفراً بالكمية المطلوبة');
+                    }
+                }
+
+                // Increment coupon usage count
+                if ($appliedCouponCode) {
+                    Coupon::where('code', $appliedCouponCode)->increment('used_count');
+                }
+
+                return $order;
+            });
+
             if ($appliedCouponCode) {
-                Coupon::where('code', $appliedCouponCode)->increment('used_count');
                 session()->forget('applied_coupon');
             }
 

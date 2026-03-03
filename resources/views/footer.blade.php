@@ -45,6 +45,7 @@
                             <li><a href="{{ route('about.page') }}"><i class="fas fa-chevron-left"></i> من نحن</a></li>
                             <li><a href="{{ route('contact.page') }}"><i class="fas fa-chevron-left"></i> اتصل بنا</a></li>
                             <li><a href="{{ route('privacy.page') }}"><i class="fas fa-chevron-left"></i> سياسة الخصوصية</a></li>
+                            <li><a href="{{ route('terms.page') }}"><i class="fas fa-chevron-left"></i> الشروط والأحكام</a></li>
                         </ul>
                     </div>
 
@@ -79,7 +80,11 @@
             <div class="container">
                 <div class="footer-bottom-content">
                     <p>&copy; {{ date('Y') }} مكتبة الفقراء. جميع الحقوق محفوظة.</p>
-                    <p><a href="{{ route('privacy.page') }}" style="color:inherit;opacity:.7;text-decoration:none;font-size:.85rem;">سياسة الخصوصية</a></p>
+                    <p>
+                        <a href="{{ route('privacy.page') }}" style="color:inherit;opacity:.7;text-decoration:none;font-size:.85rem;">سياسة الخصوصية</a>
+                        <span style="opacity:.4;margin:0 8px;">|</span>
+                        <a href="{{ route('terms.page') }}" style="color:inherit;opacity:.7;text-decoration:none;font-size:.85rem;">الشروط والأحكام</a>
+                    </p>
                 </div>
             </div>
         </div>

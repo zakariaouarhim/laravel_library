@@ -52,7 +52,6 @@ function loadProducts(page = 1) {
 
     $.get('/products/api', params) // Use direct URL path
         .done(function(response) {
-            console.log('Success:', response);
             if (response.success) {
                 renderProductsTable(response.data.data);
                 renderPagination(response.data);
@@ -68,7 +67,6 @@ function loadProducts(page = 1) {
             }
         })
         .fail(function(xhr, status, error) {
-            console.log('Error details:', xhr.responseText);
             showAlert('خطأ في الاتصال بالخادم', 'danger');
         });
 }
@@ -82,7 +80,7 @@ function loadStats() {
             }
         })
         .fail(function(xhr, status, error) {
-            console.log('Failed to load stats:', error);
+            // Stats loading failed silently
         });
 }
 
@@ -289,7 +287,6 @@ function viewProduct(id) {
             }
         })
         .fail(function(xhr, status, error) {
-            console.log('Error details:', xhr.responseText);
             showAlert('خطأ في تحميل تفاصيل المنتج', 'danger');
         });
 }
@@ -298,8 +295,6 @@ function viewProduct(id) {
 function editProduct(id) {
     $.get(`/products/api/${id}`)
         .done(function(response) {
-            console.log('Edit Product Response:', response); // Debug line
-            
             if (response.success) {
                 const product = response.data;
                 $('#editProductId').val(product.id);
@@ -319,7 +314,6 @@ function editProduct(id) {
             }
         })
         .fail(function(xhr, status, error) {
-            console.log('Error details:', xhr.responseText);
             showAlert('خطأ في تحميل بيانات المنتج', 'danger');
         });
 }
@@ -367,7 +361,6 @@ function updateProduct() {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         success: function(response) {
-            console.log('Success Response:', response);
             hideLoadingModal();
             
             // Check if response has success property
@@ -386,26 +379,16 @@ function updateProduct() {
         error: function(xhr, status, error) {
             hideLoadingModal();
             
-            console.log('=== AJAX ERROR DEBUG ===');
-            console.log('Status:', xhr.status);
-            console.log('Status Text:', xhr.statusText);
-            console.log('Ready State:', xhr.readyState);
-            console.log('Response Text:', xhr.responseText);
-            console.log('Error:', error);
-            console.log('Settings:', this);
-            
             let errorMessage = 'حدث خطأ في التحديث';
             
             try {
                 // Try to parse JSON response
                 const jsonResponse = JSON.parse(xhr.responseText);
-                console.log('Parsed JSON Response:', jsonResponse);
-                
                 if (jsonResponse.message) {
                     errorMessage = jsonResponse.message;
                 }
             } catch (e) {
-                console.log('Could not parse JSON response:', e);
+                // Response is not JSON
             }
             
             if (xhr.status === 404) {
@@ -413,7 +396,6 @@ function updateProduct() {
             } else if (xhr.status === 422) {
                 errorMessage = 'بيانات غير صحيحة';
                 if (xhr.responseJSON?.errors) {
-                    console.log('Validation Errors:', xhr.responseJSON.errors);
                     const errors = Object.values(xhr.responseJSON.errors).flat();
                     errorMessage += ': ' + errors.join(', ');
                 }
@@ -430,7 +412,6 @@ function updateProduct() {
             }
             
             showAlert(errorMessage, 'danger');
-            console.log('======================');
         }
     });
 }
@@ -826,7 +807,6 @@ $('#editProductForm input, #editProductForm textarea, #editProductForm select').
     clearTimeout(autoSaveTimeout);
     autoSaveTimeout = setTimeout(function() {
         // Could implement auto-save draft functionality here
-        console.log('Auto-save triggered');
     }, 2000);
 });
 
@@ -933,9 +913,9 @@ $(document).ajaxError(function(event, xhr, settings) {
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
         .then(function(registration) {
-            console.log('SW registered successfully');
+            // SW registered
         })
         .catch(function(registrationError) {
-            console.log('SW registration failed');
+            // SW registration failed
         });
 }

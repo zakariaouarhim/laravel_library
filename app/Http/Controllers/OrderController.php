@@ -76,6 +76,20 @@ class OrderController extends Controller
     /**
      * Update order status
      */
+    /**
+     * Valid status transitions to prevent invalid state jumps
+     */
+    private static array $allowedTransitions = [
+        'pending'    => ['processing', 'cancelled', 'Failed'],
+        'processing' => ['shipped', 'cancelled', 'Failed'],
+        'shipped'    => ['delivered', 'returned'],
+        'delivered'  => ['returned', 'Refunded'],
+        'cancelled'  => [],
+        'Failed'     => ['pending'],
+        'Refunded'   => [],
+        'returned'   => ['Refunded'],
+    ];
+
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -85,6 +99,16 @@ class OrderController extends Controller
         $order = Order::with('checkoutDetail')->findOrFail($id);
         $oldStatus = $order->status;
         $newStatus = $request->status;
+
+        // Enforce valid status transitions
+        $allowed = self::$allowedTransitions[$oldStatus] ?? [];
+        if ($oldStatus !== $newStatus && !in_array($newStatus, $allowed)) {
+            $message = "لا يمكن تغيير الحالة من \"{$oldStatus}\" إلى \"{$newStatus}\"";
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            return redirect()->back()->with('error', $message);
+        }
 
         $updateData = ['status' => $newStatus];
 
@@ -107,12 +131,7 @@ class OrderController extends Controller
         // Send status update email to customer
         $customerEmail = $order->checkoutDetail->email ?? ($order->user ? $order->user->email : null);
         if ($customerEmail) {
-            $statusLabels = [
-                'pending' => 'قيد الانتظار', 'processing' => 'قيد المعالجة',
-                'shipped' => 'مشحون', 'delivered' => 'تم التسليم',
-                'cancelled' => 'ملغي', 'Failed' => 'فشل',
-                'Refunded' => 'مسترجع', 'returned' => 'مرتجع',
-            ];
+            $statusLabels = Order::STATUS_LABELS;
             $manageUrl = $order->management_token
                 ? route('order.manage', ['token' => $order->management_token])
                 : null;

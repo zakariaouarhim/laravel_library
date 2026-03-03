@@ -54,7 +54,7 @@
                                     @foreach($cart as $id => $item)
                                         <div class="cart-item" id="cartItem{{ $id }}" data-item-id="{{ $id }}" data-price="{{ $item['price'] }}">
                                             <div class="cart-item-image">
-                                                <a href="{{ route('moredetail.page', ['id' => $id]) }}">
+                                                <a href="{{ route('moredetail2.page', ['id' => $id]) }}">
                                                     <img src="{{ asset($item['image']) }}" alt="{{ $item['title'] }}"
                                                         width="100" height="150" loading="lazy"
                                                         onerror="this.src='{{ asset('images/book-placeholder.png') }}'">
@@ -62,7 +62,7 @@
                                             </div>
                                             <div class="cart-item-details">
                                                 <h3 class="cart-item-title">
-                                                    <a href="{{ route('moredetail.page', ['id' => $id]) }}">{{ $item['title'] }}</a>
+                                                    <a href="{{ route('moredetail2.page', ['id' => $id]) }}">{{ $item['title'] }}</a>
                                                 </h3>
                                                 <div class="cart-item-price">
                                                     <span class="unit-price">{{ number_format($item['price'], 2) }} د.م</span>

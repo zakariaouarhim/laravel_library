@@ -40,7 +40,7 @@
     {{-- Books --}}
     @foreach($books as $book)
     <url>
-        <loc>{{ route('moredetail.page', $book->id) }}</loc>
+        <loc>{{ route('moredetail2.page', $book->id) }}</loc>
         @if($book->updated_at)
         <lastmod>{{ $book->updated_at->toW3cString() }}</lastmod>
         @endif
@@ -52,7 +52,7 @@
     {{-- Accessories --}}
     @foreach($accessories as $accessory)
     <url>
-        <loc>{{ route('moredetail.page', $accessory->id) }}</loc>
+        <loc>{{ route('moredetail2.page', $accessory->id) }}</loc>
         @if($accessory->updated_at)
         <lastmod>{{ $accessory->updated_at->toW3cString() }}</lastmod>
         @endif

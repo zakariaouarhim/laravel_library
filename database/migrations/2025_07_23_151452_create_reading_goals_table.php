@@ -20,7 +20,7 @@ class CreateReadingGoalsTable extends Migration
             $table->year('year')->default(date('Y')); // for tracking year-based goals
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('usermodel')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
         });
 
     }

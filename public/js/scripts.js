@@ -1,6 +1,4 @@
 function addToCart(bookId, bookTitle, bookPrice, bookImage) {
-    console.log("Parameters:", { bookId, bookTitle, bookPrice, bookImage });
-    
     // Find the clicked button regardless of its CSS class
     const button = event.target.closest('button');
 

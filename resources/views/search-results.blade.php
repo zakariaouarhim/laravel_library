@@ -137,61 +137,15 @@
                     </div>
                 </div>
 
-                <!-- Filter Card -->
-                <div class="sidebar-card">
-                    <div class="sidebar-card-header">
-                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>تصفية النتائج</h5>
-                    </div>
-                    <div class="sidebar-card-body">
-                        <form method="GET" action="{{ route('search.results') }}">
-                            <input type="hidden" name="query" value="{{ $query }}">
-                            @if(request('category'))
-                                <input type="hidden" name="category" value="{{ request('category') }}">
-                            @endif
-                            @if(request('sort'))
-                                <input type="hidden" name="sort" value="{{ request('sort') }}">
-                            @endif
-
-                            <!-- Language Filter -->
-                            <div class="filter-section">
-                                <h6 class="filter-title">اللغة</h6>
-                                <select class="form-select custom-select" name="language">
-                                    <option value="">جميع اللغات</option>
-                                    @foreach(App\Models\Book::LANGUAGES as $lang)
-                                        <option value="{{ $lang }}" {{ request('language') == $lang ? 'selected' : '' }}>
-                                            {{ App\Models\Book::LANGUAGE_LABELS[$lang] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Price Range Filter -->
-                            <div class="filter-section">
-                                <h6 class="filter-title">نطاق السعر</h6>
-                                <div class="price-range">
-                                    <div class="range-inputs mt-3">
-                                        <div class="input-group">
-                                            <span class="input-group-text">من</span>
-                                            <input type="number" class="form-control" name="price_min"
-                                                placeholder="0" value="{{ request('price_min') }}">
-                                            <span class="input-group-text">د.م</span>
-                                        </div>
-                                        <div class="input-group mt-2">
-                                            <span class="input-group-text">إلى</span>
-                                            <input type="number" class="form-control" name="price_max"
-                                                placeholder="1000" value="{{ request('price_max') }}">
-                                            <span class="input-group-text">د.م</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-filter w-100">
-                                <i class="fas fa-filter me-2"></i>تطبيق الفلتر
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                @include('partials.book-filters', [
+                    'filterAction' => route('search.results'),
+                    'publishingHouses' => $publishingHouses ?? null,
+                    'hiddenFields' => [
+                        'query' => $query,
+                        'category' => request('category'),
+                        'sort' => request('sort'),
+                    ],
+                ])
             </div>
 
             <!-- Main Content -->

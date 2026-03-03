@@ -264,24 +264,6 @@ private function syncItemToDatabase($bookId, $item)
         );
     }
 }
-public function getCartHtml()
-{
-    $cart = session()->get('cart', []);
-    return view('partials.cart-items', compact('cart'))->render();
-}
-
-public function removeItem(Request $request, $id)
-{
-    $cart = session('cart', []);
-    unset($cart[$id]); // Remove the item by ID
-    session(['cart' => $cart]); // Update the session
-
-    return response()->json([
-        'success' => true,
-        'cartCount' => count($cart),
-        'message' => 'تم حذف المنتج من السلة بنجاح'
-    ]);
-}
 public function updateQuantity(Request $request)
 {
     try {
@@ -292,6 +274,15 @@ public function updateQuantity(Request $request)
 
         $itemId = $validated['id'];
         $newQuantity = $validated['quantity'];
+
+        // Check stock availability
+        $book = Book::find($itemId);
+        if ($book && $book->Quantity < $newQuantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'الكمية المطلوبة غير متوفرة. المتوفر: ' . $book->Quantity
+            ], 422);
+        }
 
         if (Auth::check()) {
             // For authenticated users, update database

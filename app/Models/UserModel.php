@@ -66,11 +66,11 @@ class UserModel extends Authenticatable
     }
 
     /**
-     * Get user's public quotes only
+     * Get user's approved quotes only
      */
     public function publicQuotes()
     {
-        return $this->hasMany(Quote::class, 'user_id', 'id')->where('is_public', true);
+        return $this->hasMany(Quote::class, 'user_id', 'id')->where('is_approved', true);
     }
 
     /**

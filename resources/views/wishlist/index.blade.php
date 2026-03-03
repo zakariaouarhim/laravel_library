@@ -63,7 +63,7 @@
                 @foreach ($wishlist as $book)
                 @php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
                 <div class="wl-card {{ $outOfStock ? 'wl-out-of-stock' : '' }}" id="wl-item-{{ $book->id }}">
-                    <a href="{{ route('moredetail.page', ['id' => $book->id]) }}" class="wl-card-image">
+                    <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="wl-card-image">
                         <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" width="120" height="170" loading="lazy"
                              onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
                         @if($outOfStock)
@@ -74,7 +74,7 @@
                     </a>
                     <div class="wl-card-body">
                         <h6 class="wl-card-title">
-                            <a href="{{ route('moredetail.page', ['id' => $book->id]) }}">{{ $book->title }}</a>
+                            <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a>
                         </h6>
                         @if ($book->primaryAuthor)
                         <p class="wl-card-author">

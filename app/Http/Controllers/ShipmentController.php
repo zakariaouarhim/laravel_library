@@ -393,19 +393,9 @@ class ShipmentController extends Controller
     public function updateProduct(Request $request, $id)
     {
         try {
-            \Log::info('=== UPDATE PRODUCT START ===');
-            \Log::info('Product ID: ' . $id);
-            \Log::info('Request Method: ' . $request->method());
-            \Log::info('Request Data: ', $request->all());
-            
-            // Find the product
             $product = Book::findOrFail($id);
-            \Log::info('Product found: ' . $product->title);
-    
-            // Update fields one by one with logging
+
             $product->title = $request->input('title');
-            \Log::info('Title updated to: ' . $product->title);
-            
             $product->description = $request->input('description');
             $product->price = $request->input('price');
             $product->author = $request->input('author');
@@ -414,56 +404,37 @@ class ShipmentController extends Controller
             $product->Publishing_House = $request->input('Publishing_House');
             $product->ISBN = $request->input('ISBN');
             $product->Quantity = $request->input('Quantity');
-            
-            // Handle category_id if it exists
+
             if ($request->has('category_id')) {
                 $product->category_id = $request->input('category_id');
             }
-            
-            // Handle image upload if exists
+
             if ($request->hasFile('image')) {
-                \Log::info('Image file detected');
                 try {
                     $imagePath = $request->file('image')->store('products', 'public');
                     $product->image = $imagePath;
-                    \Log::info('Image saved to: ' . $imagePath);
                 } catch (\Exception $imageError) {
                     \Log::error('Image upload error: ' . $imageError->getMessage());
-                    // Continue without failing the entire update
                 }
             }
-            
-            // Save the product
-            $saved = $product->save();
-            
-            if (!$saved) {
-                throw new \Exception('Failed to save product to database');
-            }
-            
-            \Log::info('=== UPDATE PRODUCT SUCCESS ===');
-            
-            // Return success response
+
+            $product->save();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Product updated successfully!',
                 'product_id' => $product->id
             ], 200);
-            
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            \Log::error('Product not found: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Product not found.'
             ], 404);
-            
+
         } catch (\Exception $e) {
-            \Log::error('=== UPDATE PRODUCT ERROR ===');
-            \Log::error('Error Message: ' . $e->getMessage());
-            \Log::error('Error File: ' . $e->getFile());
-            \Log::error('Error Line: ' . $e->getLine());
-            \Log::error('Stack Trace: ' . $e->getTraceAsString());
-            \Log::error('=========================');
-            
+            \Log::error('Update product error: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while updating the product: ' . $e->getMessage()

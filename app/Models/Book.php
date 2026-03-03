@@ -278,7 +278,7 @@ class Book extends Model
     }
     public function wishlistedBy()
     {
-        return $this->belongsToMany(User::class, 'wishlists')->withTimestamps();
+        return $this->belongsToMany(UserModel::class, 'wishlists')->withTimestamps();
     }
     /**
      * Get all quotes for this book

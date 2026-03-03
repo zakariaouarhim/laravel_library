@@ -140,7 +140,7 @@ class QuoteController extends Controller
      */
     public function getBookQuotes(Book $book)
     {
-        $quotes = $book->publicQuotes()
+        $quotes = $book->quotes()
                       ->orderBy('created_at', 'desc')
                       ->paginate(10);
 

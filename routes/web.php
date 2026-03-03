@@ -2,7 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Usercontroller;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminClientController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShipmentController;
@@ -24,6 +30,7 @@ use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\StockNotificationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\ReadingShelfController;
 
 
 
@@ -36,9 +43,9 @@ use App\Http\Controllers\FollowController;
 // ==================== SUPER ADMIN ROUTES (auth + isSuperAdmin required) ====================
 
 Route::middleware(['auth', 'isSuperAdmin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users',                  [Usercontroller::class, 'usersIndex'])->name('users.index');
-    Route::post('/users/{id}/promote',    [Usercontroller::class, 'promoteUser'])->name('users.promote');
-    Route::post('/users/{id}/demote',     [Usercontroller::class, 'demoteUser'])->name('users.demote');
+    Route::get('/users',                  [AdminUserController::class, 'usersIndex'])->name('users.index');
+    Route::post('/users/{id}/promote',    [AdminUserController::class, 'promoteUser'])->name('users.promote');
+    Route::post('/users/{id}/demote',     [AdminUserController::class, 'demoteUser'])->name('users.demote');
 });
 
 // ==================== ADMIN ROUTES (auth + isAdmin required) ====================
@@ -46,7 +53,7 @@ Route::middleware(['auth', 'isSuperAdmin'])->prefix('admin')->name('admin.')->gr
 Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(function () {
 
     // Dashboard
-    Route::get('/Dashbord_Admin/dashboard', [Usercontroller::class, 'dashboard'])->name('Dashbord_Admin.dashboard');
+    Route::get('/Dashbord_Admin/dashboard', [AdminDashboardController::class, 'dashboard'])->name('Dashbord_Admin.dashboard');
 
     // Coupons
     Route::get('/coupons',                        [CouponController::class, 'index'])->name('coupons.index');
@@ -56,10 +63,10 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/coupons/{coupon}/toggle',       [CouponController::class, 'toggleActive'])->name('coupons.toggle');
 
     // Client management
-    Route::get('/client/{id}', [Usercontroller::class, 'showclient'])->name('client.show');
-    Route::put('/client/{id}', [Usercontroller::class, 'update'])->name('client.update');
-    Route::post('/client/{id}/reset-password', [Usercontroller::class, 'resetPassword'])->name('client.reset-password');
-    Route::resource('client', Usercontroller::class);
+    Route::get('/client/{id}', [AdminClientController::class, 'showclient'])->name('client.show');
+    Route::put('/client/{id}', [AdminClientController::class, 'update'])->name('client.update');
+    Route::post('/client/{id}/reset-password', [AdminClientController::class, 'resetPasswordAdmin'])->name('client.reset-password');
+    Route::resource('client', AdminClientController::class);
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -185,7 +192,6 @@ Route::post('/order/manage/return', [OrderManageController::class, 'returnReques
 
 // ==================== BOOK PAGES ====================
 
-Route::get('/moredetail/{id}', [BookController::class, 'show'])->name('moredetail.page');
 Route::get('/moredetail-v2/{id}', [BookController::class, 'showV2'])->name('moredetail2.page');
 
 // ==================== REVIEWS ====================
@@ -215,14 +221,21 @@ Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideR
 
 // ==================== ACCOUNT / USER ====================
 
-Route::get('/account', [Usercontroller::class, 'account'])->middleware('auth')->name('account.page');
-Route::post('/account/avatar', [Usercontroller::class, 'uploadAvatar'])->middleware('auth')->name('avatar.upload');
+Route::get('/account', [ProfileController::class, 'account'])->middleware('auth')->name('account.page');
+Route::post('/account/avatar', [ProfileController::class, 'uploadAvatar'])->middleware('auth')->name('avatar.upload');
 Route::get('/my-orders', [OrderController::class, 'myOrders'])->middleware('auth')->name('my-orders.index');
 Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->middleware('auth')->name('orders.cancel');
 Route::get('/return-requests', [ReturnRequestController::class, 'index'])->middleware('auth')->name('return-requests.index');
 Route::post('/return-requests', [ReturnRequestController::class, 'store'])->middleware('auth')->name('return-requests.store');
-Route::get('/recommendations', [Usercontroller::class, 'recommendations'])->middleware('auth')->name('recommendations.index');
-Route::post('reading-goal', [Usercontroller::class, 'updateReadingGoal'])->middleware('auth')->name('ReadingGoal');
+Route::get('/recommendations', [RecommendationController::class, 'recommendations'])->middleware('auth')->name('recommendations.index');
+Route::post('reading-goal', [ProfileController::class, 'updateReadingGoal'])->middleware('auth')->name('ReadingGoal');
+
+// ==================== READING SHELVES ====================
+Route::middleware('auth')->group(function () {
+    Route::post('/shelf/{bookId}', [ReadingShelfController::class, 'store'])->name('shelf.store');
+    Route::delete('/shelf/{bookId}', [ReadingShelfController::class, 'remove'])->name('shelf.remove');
+    Route::get('/shelf', [ReadingShelfController::class, 'index'])->name('shelf.index');
+});
 
 // ==================== CATEGORIES / BROWSE ====================
 
@@ -253,6 +266,7 @@ Route::get('/about', [PageController::class, 'about'])->name('about.page');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact.page');
 Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store')->middleware('throttle:5,1');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy.page');
+Route::get('/terms', [PageController::class, 'terms'])->name('terms.page');
 Route::get('/sitemap', [PageController::class, 'sitemap'])->name('sitemap');
 Route::get('/sitemap.xml', [PageController::class, 'sitemap']);
 Route::post('/notify-stock/{bookId}', [StockNotificationController::class, 'store'])->name('stock.notify')->middleware('throttle:5,1');
@@ -278,29 +292,29 @@ Route::get('/search-results', [BookController::class, 'searchResults'])->name('s
 
 Auth::routes();
 
-Route::get('/login2', [Usercontroller::class, 'showLogin2'])->name('login2.page');
+Route::get('/login2', [AuthController::class, 'showLogin2'])->name('login2.page');
 
-Route::post('/userlogin', [Usercontroller::class, 'userlogin'])->name('userlogin')->middleware('throttle:5,1');
-Route::post('/adduser', [Usercontroller::class, 'adduser'])->name('adduser')->middleware('throttle:3,1');
+Route::post('/userlogin', [AuthController::class, 'userlogin'])->name('userlogin')->middleware('throttle:5,1');
+Route::post('/adduser', [AuthController::class, 'adduser'])->name('adduser')->middleware('throttle:3,1');
 
 // Logout via POST to prevent CSRF-based forced logout
-Route::post('/logout', [Usercontroller::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // GET /logout: redirect to home (no logout — prevents CSRF forced-logout attacks)
-Route::get('/logout', [Usercontroller::class, 'logoutRedirect']);
+Route::get('/logout', [AuthController::class, 'logoutRedirect']);
 
 // Password reset
-Route::get('/forgot-password', [Usercontroller::class, 'showForgotPasswordForm'])
+Route::get('/forgot-password', [PasswordResetController::class, 'showForgotPasswordForm'])
     ->name('password.request')
     ->middleware('guest');
 
-Route::post('/forgot-password', [Usercontroller::class, 'sendResetLink'])
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
     ->name('password.email')
     ->middleware(['guest', 'throttle:3,1']);
 
-Route::get('/reset-password/{token}/{email}', [Usercontroller::class, 'showResetPasswordForm'])
+Route::get('/reset-password/{token}/{email}', [PasswordResetController::class, 'showResetPasswordForm'])
     ->name('password.reset')
     ->middleware('guest');
 
-Route::post('/reset-password', [Usercontroller::class, 'resetPassword'])
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
     ->name('password.update')
     ->middleware('guest');

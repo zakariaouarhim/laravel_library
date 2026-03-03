@@ -4,7 +4,13 @@
       "Bash(/dev/null -exec grep -l \"tracking_number\\\\|shipping_address\\\\|billing_address\" {} ;)",
       "Bash(xargs ls -lt)",
       "Bash(head -10 grep -n \"noindex\\\\|robots\\\\|canonical\" /c/laravel/library_fokara/resources/views/success.blade.php)",
-      "Bash(head -10 grep -n \"noindex\\\\|robots\\\\|canonical\" /c/laravel/library_fokara/resources/views/cart/index.blade.php)"
+      "Bash(head -10 grep -n \"noindex\\\\|robots\\\\|canonical\" /c/laravel/library_fokara/resources/views/cart/index.blade.php)",
+      "Bash(ls /c/laravel/library_fokara/app/Http/Controllers/*.php)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(ls /c/laravel/library_fokara/database/migrations/*stock*)",
+      "Bash(xargs wc -l)",
+      "Bash(ls -lh c:/laravel/library_fokara/public/js/categories*)",
+      "Read(//tmp/claude/c--laravel-library-fokara/tasks/**)"
     ],
     "additionalDirectories": [
       "c:\\laravel\\library_fokara"

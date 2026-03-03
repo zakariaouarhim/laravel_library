@@ -29,12 +29,22 @@ class ReturnRequestController extends Controller
 
         $returnRequests = $query->latest()->paginate(10)->appends($request->query());
 
+        // Single query for all status counts instead of 5 separate queries
+        $counts = ReturnRequest::where('user_id', $userId)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+                SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) as refunded
+            ")->first();
+
         $statusCounts = [
-            'all'      => ReturnRequest::where('user_id', $userId)->count(),
-            'pending'  => ReturnRequest::where('user_id', $userId)->where('status', 'pending')->count(),
-            'approved' => ReturnRequest::where('user_id', $userId)->where('status', 'approved')->count(),
-            'rejected' => ReturnRequest::where('user_id', $userId)->where('status', 'rejected')->count(),
-            'refunded' => ReturnRequest::where('user_id', $userId)->where('status', 'refunded')->count(),
+            'all'      => $counts->total,
+            'pending'  => $counts->pending,
+            'approved' => $counts->approved,
+            'rejected' => $counts->rejected,
+            'refunded' => $counts->refunded,
         ];
 
         // Delivered orders eligible for return (no pending/approved return request)
@@ -123,10 +133,18 @@ class ReturnRequestController extends Controller
 
         $returnRequests = $query->latest()->paginate(15);
 
-        $pendingCount  = ReturnRequest::where('status', 'pending')->count();
-        $approvedCount = ReturnRequest::where('status', 'approved')->count();
-        $rejectedCount = ReturnRequest::where('status', 'rejected')->count();
-        $refundedCount = ReturnRequest::where('status', 'refunded')->count();
+        // Single query for all status counts instead of 4 separate queries
+        $adminCounts = ReturnRequest::selectRaw("
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+            SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+            SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) as refunded
+        ")->first();
+
+        $pendingCount  = $adminCounts->pending;
+        $approvedCount = $adminCounts->approved;
+        $rejectedCount = $adminCounts->rejected;
+        $refundedCount = $adminCounts->refunded;
 
         $pendingReturns = $pendingCount;
 

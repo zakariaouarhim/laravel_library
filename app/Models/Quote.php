@@ -45,7 +45,7 @@ class Quote extends Model
      */
     public function likes(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'quote_likes')
+        return $this->belongsToMany(UserModel::class, 'quote_likes', 'quote_id', 'user_id')
                     ->withTimestamps();
     }
 
@@ -80,11 +80,6 @@ class Quote extends Model
             return true; // liked
         }
     }
-
-    /**
-     * Scope for public quotes only
-     */
-    
 
     /**
      * Scope for approved quotes only

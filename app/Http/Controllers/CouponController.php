@@ -13,6 +13,7 @@ class CouponController extends Controller
         $query = Coupon::query();
 
         if ($search = $request->input('search')) {
+            $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
             $query->where('code', 'like', '%' . $search . '%');
         }
 

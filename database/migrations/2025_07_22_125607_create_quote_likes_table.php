@@ -16,7 +16,7 @@ class CreateQuoteLikesTable extends Migration
         Schema::create('quote_likes', function (Blueprint $table) {
              $table->id();
             $table->foreignId('quote_id')->constrained('quotes')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('user')->onDelete('cascade');
             $table->timestamps();
             
             // Prevent duplicate likes from same user

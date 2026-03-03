@@ -9,7 +9,7 @@
         '@context' => 'https://schema.org',
         '@type' => ['Book', 'Product'],
         'name' => $book->title,
-        'url' => route('moredetail.page', $book->id),
+        'url' => route('moredetail2.page', $book->id),
         'image' => $book->image ? asset($book->image) : asset('images/logo.svg'),
         'description' => $book->description ?? null,
         'offers' => [
@@ -19,7 +19,7 @@
             'availability' => ($book->Quantity ?? 0) > 0
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
-            'url' => route('moredetail.page', $book->id),
+            'url' => route('moredetail2.page', $book->id),
         ],
     ];
 

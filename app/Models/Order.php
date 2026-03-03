@@ -65,4 +65,23 @@ class Order extends Model
     {
         return is_null($this->user_id);
     }
+
+    /**
+     * Status labels (Arabic) — single source of truth
+     */
+    public const STATUS_LABELS = [
+        'pending'    => 'قيد الانتظار',
+        'processing' => 'قيد المعالجة',
+        'shipped'    => 'مشحون',
+        'delivered'  => 'تم التسليم',
+        'cancelled'  => 'ملغي',
+        'Failed'     => 'فشل',
+        'Refunded'   => 'مسترجع',
+        'returned'   => 'مرتجع',
+    ];
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
+    }
 }

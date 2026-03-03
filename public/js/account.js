@@ -15,9 +15,6 @@ function addToWishlist(bookId) {
         credentials: 'same-origin'
     })
     .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -25,8 +22,6 @@ function addToWishlist(bookId) {
         return response.json();
     })
     .then(data => {
-        console.log('Response data:', data);
-        
         if (data.success) {
             // Show success message
             showToast('تم إضافة الكتاب للمفضلة', 'success');
@@ -65,8 +60,6 @@ function hideRecommendation(bookId) {
         credentials: 'same-origin'
     })
     .then(response => {
-        console.log('Hide recommendation response:', response.status);
-        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -152,16 +145,6 @@ function showToast(message, type) {
     }, 5000);
 }
 
-// Debug function to check if CSRF token exists
-function checkCSRFToken() {
-    const token = document.querySelector('meta[name="csrf-token"]');
-    console.log('CSRF Token exists:', !!token);
-    if (token) {
-        console.log('CSRF Token value:', token.getAttribute('content'));
-    }
-    return !!token;
-}
-
 document.querySelectorAll('.toggle-wishlist-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         const bookId = this.getAttribute('data-book-id');
@@ -209,12 +192,4 @@ document.querySelectorAll('.toggle-wishlist-btn').forEach(btn => {
               });
         }
     });
-});
-// Call this when page loads to verify setup
-document.addEventListener('DOMContentLoaded', function() {
-    checkCSRFToken();
-    
-    // Test if user is authenticated
-    console.log('Current URL:', window.location.href);
-    console.log('User authenticated check - looking for auth indicators...');
 });

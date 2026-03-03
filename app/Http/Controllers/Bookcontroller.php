@@ -159,12 +159,40 @@ class BookController extends Controller
             $publisherBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('publishing_house_id', $book->publishing_house_id)->where('id', '!=', $book->id)->where('type', 'book')->take(10)->get();
         }
 
+        // "Customers also bought" — books co-purchased with this one
+        $alsoBoughtBooks = collect();
+        $orderIds = DB::table('order_details')->where('book_id', $id)->pluck('order_id');
+        if ($orderIds->isNotEmpty()) {
+            $alsoBoughtBooks = Book::with('primaryAuthor')
+                ->withCount('reviews')
+                ->withAvg('reviews as reviews_avg_rating', 'rating')
+                ->whereIn('id', function ($q) use ($orderIds, $id) {
+                    $q->select('book_id')
+                      ->from('order_details')
+                      ->whereIn('order_id', $orderIds)
+                      ->where('book_id', '!=', $id)
+                      ->groupBy('book_id')
+                      ->orderByRaw('COUNT(*) DESC')
+                      ->limit(10);
+                })
+                ->get();
+        }
+
+        // Current user's shelf status for this book
+        $shelfStatus = null;
+        if (auth()->check()) {
+            $shelf = \App\Models\ReadingShelf::where('user_id', auth()->id())
+                ->where('book_id', $id)
+                ->first();
+            $shelfStatus = $shelf?->status;
+        }
+
         $recentlyViewed = session()->get('recently_viewed', []);
         $recentlyViewed = array_diff($recentlyViewed, [$id]);
         array_unshift($recentlyViewed, (int) $id);
         session()->put('recently_viewed', array_slice($recentlyViewed, 0, 10));
 
-        return compact('book', 'relatedBooks', 'authors', 'publishingHouses', 'primaryAuthor', 'authorBooks', 'publisherBooks');
+        return compact('book', 'relatedBooks', 'authors', 'publishingHouses', 'primaryAuthor', 'authorBooks', 'publisherBooks', 'alsoBoughtBooks', 'shelfStatus');
     }
 
     
@@ -968,13 +996,15 @@ public function addProduct(Request $request)
 public function searchResults(Request $request)
 {
     $request->validate([
-        'query'     => 'nullable|string|max:200',
-        'category'  => 'nullable|integer',
-        'sort'      => 'nullable|in:newest,price_asc,price_desc,title',
-        'language'  => 'nullable|string|max:50',
-        'price_min' => 'nullable|numeric|min:0',
-        'price_max' => 'nullable|numeric|min:0',
-        'page'      => 'nullable|integer|min:1',
+        'query'        => 'nullable|string|max:200',
+        'category'     => 'nullable|integer',
+        'sort'         => 'nullable|in:newest,price_asc,price_desc,title',
+        'language'     => 'nullable|string|max:50',
+        'price_min'    => 'nullable|numeric|min:0',
+        'price_max'    => 'nullable|numeric|min:0',
+        'publishers'   => 'nullable|array',
+        'publishers.*' => 'integer',
+        'page'         => 'nullable|integer|min:1',
     ]);
 
     $query      = $request->input('query', '');
@@ -990,6 +1020,10 @@ public function searchResults(Request $request)
     // 🎛 2. Apply filters
     if ($categoryId) {
         $books = $books->where('category_id', (int) $categoryId);
+    }
+    if ($request->has('publishers')) {
+        $publisherIds = collect($request->input('publishers'))->map(fn($v) => (int) $v);
+        $books = $books->whereIn('publishing_house_id', $publisherIds);
     }
     if ($request->filled('language')) {
         $books = $books->where('Langue', $request->input('language'));

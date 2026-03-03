@@ -66,8 +66,6 @@ function showCartModal() {
 
 // Function to submit checkout form
 function submitCheckoutForm() {
-    const cartData = document.getElementById('cartDataInput');
-    console.log("Cart data being sent:", cartData);
     document.getElementById('checkoutForm').submit();
 }
 

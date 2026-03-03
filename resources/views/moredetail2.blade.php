@@ -21,6 +21,18 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+    .v2-btn-shelf{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:2px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:.9rem;transition:all .2s;font-family:'Tajawal',sans-serif;}
+    .v2-btn-shelf:hover{border-color:#6c63ff;color:#6c63ff;}
+    .v2-btn-shelf.v2-shelved{border-color:#6c63ff;color:#6c63ff;background:#f0eeff;}
+    .v2-shelf-menu{display:none;position:absolute;top:100%;right:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);padding:6px;min-width:180px;z-index:100;margin-top:4px;}
+    .v2-shelf-menu.show{display:block;}
+    .v2-shelf-option{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:none;cursor:pointer;border-radius:6px;font-size:.85rem;font-family:'Tajawal',sans-serif;transition:background .15s;}
+    .v2-shelf-option:hover{background:#f5f5f5;}
+    .v2-shelf-option.active{color:#6c63ff;font-weight:600;background:#f0eeff;}
+    .v2-shelf-remove{color:#dc3545;}
+    .v2-shelf-remove:hover{background:#fff0f0;}
+    </style>
     @auth
         <meta name="auth-user" content="true">
     @endauth
@@ -159,6 +171,33 @@
                                 onclick="toggleWishlist({{ $book->id }}, this)">
                             <i class="{{ in_array($book->id, $wishlistBookIds) ? 'fas' : 'far' }} fa-heart"></i>
                         </button>
+
+                        <!-- Reading Shelf Dropdown -->
+                        @auth
+                        <div class="v2-shelf-dropdown" style="position:relative;display:inline-block;">
+                            <button class="v2-btn-shelf {{ $shelfStatus ? 'v2-shelved' : '' }}" id="shelfToggle" type="button"
+                                    title="{{ $shelfStatus ? \App\Models\ReadingShelf::STATUS_LABELS[$shelfStatus] : 'أضف لرف القراءة' }}">
+                                <i class="fas fa-book-reader"></i>
+                                <span class="shelf-label">{{ $shelfStatus ? \App\Models\ReadingShelf::STATUS_LABELS[$shelfStatus] : 'رف القراءة' }}</span>
+                            </button>
+                            <div class="v2-shelf-menu" id="shelfMenu">
+                                @foreach(\App\Models\ReadingShelf::STATUS_LABELS as $key => $label)
+                                <button type="button" class="v2-shelf-option {{ $shelfStatus === $key ? 'active' : '' }}"
+                                        onclick="setShelfStatus('{{ $key }}', {{ $book->id }}, this)">
+                                    <i class="fas {{ $key === 'want_to_read' ? 'fa-bookmark' : ($key === 'reading' ? 'fa-glasses' : 'fa-check-circle') }}"></i>
+                                    {{ $label }}
+                                </button>
+                                @endforeach
+                                @if($shelfStatus)
+                                <div style="border-top:1px solid #eee;margin:4px 0;"></div>
+                                <button type="button" class="v2-shelf-option v2-shelf-remove"
+                                        onclick="removeFromShelf({{ $book->id }})">
+                                    <i class="fas fa-times"></i> إزالة من الرف
+                                </button>
+                                @endif
+                            </div>
+                        </div>
+                        @endauth
                     </div>
 
                     <!-- Delivery -->
@@ -218,6 +257,9 @@
                     <button class="v2-tab-btn" data-target="v2-reviews"><i class="fas fa-star"></i> التقييمات @if($book->reviews_count > 0)<span class="v2-tab-badge">{{ $book->reviews_count }}</span>@endif</button>
                     <button class="v2-tab-btn" data-target="v2-quotes"><i class="fas fa-quote-right"></i> اقتباسات @if(isset($book->quotes) && $book->quotes->count() > 0)<span class="v2-tab-badge">{{ $book->quotes->count() }}</span>@endif</button>
                     <button class="v2-tab-btn" data-target="v2-author"><i class="fas fa-user-edit"></i> عن الكاتب</button>
+                    @if($book->ISBN)
+                    <button class="v2-tab-btn" data-target="v2-preview"><i class="fas fa-book-open"></i> معاينة</button>
+                    @endif
                 </div>
 
                 <div class="v2-tab-content">
@@ -490,6 +532,18 @@
                         @endif
                     </div>
 
+                    @if($book->ISBN)
+                    <!-- Google Books Preview -->
+                    <div class="v2-tab-pane" id="v2-preview">
+                        <div id="googlePreviewContainer" style="min-height:400px;">
+                            <div class="text-center py-5" id="previewLoading">
+                                <div class="spinner-border text-primary" role="status"></div>
+                                <p class="mt-3">جاري تحميل المعاينة...</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                 </div>
             </div>
         </div>
@@ -498,6 +552,9 @@
         <x-book-carousel :books="$relatedBooks" title="كتب ذات صلة" />
         @if($publisherBooks->count() > 0)
             <x-book-carousel :books="$publisherBooks" title="المزيد من {{ $book->publishingHouse->name ?? 'دار النشر' }}" />
+        @endif
+        @if($alsoBoughtBooks->isNotEmpty())
+            <x-book-carousel :books="$alsoBoughtBooks" title="عملاء آخرون اشتروا أيضاً" />
         @endif
     </div>
 
@@ -510,6 +567,74 @@
     <script src="{{ asset('js/carousel.js') }}"></script>
     <script src="{{ asset('js/card.js') }}"></script>
     <script src="{{ asset('js/scripts.js') }}"></script>
+
+    @auth
+    <script>
+    (function() {
+        var shelfToggle = document.getElementById('shelfToggle');
+        var shelfMenu = document.getElementById('shelfMenu');
+        if (!shelfToggle || !shelfMenu) return;
+
+        shelfToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            shelfMenu.classList.toggle('show');
+        });
+        document.addEventListener('click', function(e) {
+            if (!shelfMenu.contains(e.target)) shelfMenu.classList.remove('show');
+        });
+    })();
+
+    function setShelfStatus(status, bookId, btn) {
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch('/shelf/' + bookId, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                document.getElementById('shelfMenu').classList.remove('show');
+                document.getElementById('shelfToggle').classList.add('v2-shelved');
+                document.querySelector('.shelf-label').textContent = data.label;
+                document.querySelectorAll('.v2-shelf-option').forEach(function(el) { el.classList.remove('active'); });
+                btn.classList.add('active');
+                // Add remove button if not present
+                if (!document.querySelector('.v2-shelf-remove')) {
+                    var sep = document.createElement('div');
+                    sep.style.cssText = 'border-top:1px solid #eee;margin:4px 0;';
+                    var removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'v2-shelf-option v2-shelf-remove';
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i> إزالة من الرف';
+                    removeBtn.onclick = function() { removeFromShelf(bookId); };
+                    document.getElementById('shelfMenu').appendChild(sep);
+                    document.getElementById('shelfMenu').appendChild(removeBtn);
+                }
+            }
+        });
+    }
+
+    function removeFromShelf(bookId) {
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch('/shelf/' + bookId, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                document.getElementById('shelfMenu').classList.remove('show');
+                document.getElementById('shelfToggle').classList.remove('v2-shelved');
+                document.querySelector('.shelf-label').textContent = 'رف القراءة';
+                document.querySelectorAll('.v2-shelf-option').forEach(function(el) { el.classList.remove('active'); });
+                var removeBtn = document.querySelector('.v2-shelf-remove');
+                if (removeBtn) { removeBtn.previousElementSibling.remove(); removeBtn.remove(); }
+            }
+        });
+    }
+    </script>
+    @endauth
 
     <script>
         // Tab switching
@@ -767,5 +892,39 @@
             .catch(function() { btn.disabled = false; });
         }
     </script>
+
+    @if($book->ISBN)
+    <script src="https://www.google.com/books/jsapi.js"></script>
+    <script>
+    (function() {
+        var previewLoaded = false;
+        var isbn = "{{ $book->ISBN }}";
+
+        document.querySelectorAll('.v2-tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                if (this.dataset.target === 'v2-preview' && !previewLoaded) {
+                    previewLoaded = true;
+                    loadGooglePreview();
+                }
+            });
+        });
+
+        function loadGooglePreview() {
+            google.books.load();
+            google.books.setOnLoadCallback(function() {
+                var viewer = new google.books.DefaultViewer(document.getElementById('googlePreviewContainer'));
+                viewer.load('ISBN:' + isbn, function() {
+                    document.getElementById('googlePreviewContainer').innerHTML =
+                        '<div class="text-center py-5">' +
+                        '<i class="fas fa-book" style="font-size:3rem;color:#ccc;"></i>' +
+                        '<p class="mt-3 text-muted">لا توجد معاينة متاحة لهذا الكتاب</p>' +
+                        '<a href="https://books.google.com/books?q=isbn:' + isbn + '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm mt-2">' +
+                        '<i class="fas fa-external-link-alt me-1"></i> البحث في Google Books</a></div>';
+                });
+            });
+        }
+    })();
+    </script>
+    @endif
 </body>
 </html>
