@@ -14,7 +14,8 @@ class CreateQuoteLikesTable extends Migration
     public function up()
     {
         Schema::create('quote_likes', function (Blueprint $table) {
-             $table->id();
+            $table->engine = 'InnoDB';
+            $table->id();
             $table->foreignId('quote_id')->constrained('quotes')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('user')->onDelete('cascade');
             $table->timestamps();
