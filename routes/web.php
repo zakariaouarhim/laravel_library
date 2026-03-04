@@ -31,6 +31,7 @@ use App\Http\Controllers\StockNotificationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ReadingShelfController;
+use App\Http\Controllers\AdminReportsController;
 
 
 
@@ -84,14 +85,15 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
     Route::post('/Dashbord_Admin/Product/add', [BookController::class, 'addProduct'])->name('product.add');
     Route::get('/products', [BookController::class, 'showproduct'])->name('products.index');
-    Route::get('/products/{id}', [BookController::class, 'viewProduct']);
-    Route::put('/products/{id}', [BookController::class, 'updateProduct']);
 
-    // Product API (admin-only AJAX)
+    // Product API (admin-only AJAX) — must be before /products/{id} wildcard
     Route::get('/products/api', [BookController::class, 'getProductsApi'])->name('products.api');
     Route::get('/products/api/stats', [BookController::class, 'getProductsApiStats'])->name('products.api.stats');
     Route::get('/products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
     Route::put('/products/api/{id}', [BookController::class, 'updateProduct'])->name('products.api.update');
+
+    Route::get('/products/{id}', [BookController::class, 'viewProduct']);
+    Route::put('/products/{id}', [BookController::class, 'updateProduct']);
 
     // Search helpers
     Route::get('/search-book', [BookController::class, 'searchBook']);
@@ -147,6 +149,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     // System settings (admin-only)
     Route::get('/settings', [SystemSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SystemSettingsController::class, 'update'])->name('settings.update');
+
+    // Reports
+    Route::get('/reports', [AdminReportsController::class, 'index'])->name('reports.index');
 
     // Categories management
     Route::get('/categories',                   [AdminCategoryController::class, 'index'])->name('categories.index');

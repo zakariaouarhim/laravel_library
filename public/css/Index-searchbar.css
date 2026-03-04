@@ -47,7 +47,8 @@
    pushes search to center-top and categories to bottom
    ============================================ */
 .layout-searchbar .hero-search-section {
-    background: linear-gradient(135deg, #2C4B79 0%, #1a3a5c 50%, #48CAE4 100%);
+    background: linear-gradient(135deg, #2C4B79 0%, #00b4d8 50%, #48CAE4 100%);
+    /*background: #48CAE4;*/
     position: relative;
     min-height: 420px;
     /* reduced from 100vh so it's not full screen */
@@ -166,7 +167,7 @@
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    background: #48CAE4 /*linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)*/;
     border: none;
     padding: 12px 25px;
     border-radius: var(--border-radius-lg);
@@ -225,7 +226,7 @@
 .search-results .search-loading,
 .search-results .search-no-results,
 .search-results .search-result-item,
-.search-results .search-view-all,
+.search-results .search-view-all,s
 .search-results .search-section-header,
 .search-results .search-recent-item {
     /* Inherits from headerstyle.css — shared components */

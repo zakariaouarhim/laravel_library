@@ -64,7 +64,7 @@
 .book-item.list-style:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary-color, #2C4B79);
+    border-color: var(--primary-color, #48CAE4);
 }
 
 /* Book Image Styling - Specific to list style */
@@ -147,8 +147,8 @@
 
 /* Add to Cart Button - Specific to list style */
 .book-item.list-style .btn-outline-primary {
-    border: 2px solid var(--primary-color, #2C4B79);
-    color: var(--primary-color, #2C4B79);
+    border: 2px solid  #48CAE4;
+    color:  #48CAE4;
     background: transparent;
     font-weight: 600;
     padding: 8px 16px;
@@ -159,7 +159,7 @@
 }
 
 .book-item.list-style .btn-outline-primary:hover {
-    background: var(--primary-color, #2C4B79);
+    background:  #48CAE4;
     color: #ffffff;
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(44, 75, 121, 0.3);
@@ -263,7 +263,7 @@
         font-size: 0.8rem;
         margin-bottom: 8px;
         display: -webkit-box;
-        -webkit-line-clamp: 2;
+        
         -webkit-box-orient: vertical;
         overflow: hidden;
     }

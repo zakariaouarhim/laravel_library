@@ -115,7 +115,11 @@ class CheckoutController extends Controller
                 $subtotal += $item['price'] * $item['quantity'];
             }
 
-            $shipping = 25.00;
+            $shipping = (float) \App\Models\SystemSetting::getSetting('shipping_cost', 25.00);
+            $freeThreshold = (float) \App\Models\SystemSetting::getSetting('free_shipping_threshold', 0);
+            if ($freeThreshold > 0 && $subtotal >= $freeThreshold) {
+                $shipping = 0;
+            }
             $discount = 0.00;
             $appliedCouponCode = null;
 

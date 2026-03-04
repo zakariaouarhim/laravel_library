@@ -224,24 +224,39 @@
 .book-card .add-btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: linear-gradient(135deg, #2C4B79 0%, #00b4d8 50%, #48CAE4 100%);
     border: none;
     border-radius: 12px;
     color: white;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     margin-top: 10px;
     font-size: clamp(0.85rem, 2vw, 1rem);
+    position: relative;
+    overflow: hidden;
+}
+
+.book-card .add-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 -100%;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.book-card .add-btn:hover::before {
+    left: 100%;
 }
 
 .book-card .add-btn:hover {
-    background: linear-gradient(135deg, #1a2f4e, #3ba0c4);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #48CAE4 0%, #00b4d8 50%, #2C4B79 100%);
+    transform: translateY(-3px) scale(1.05);
     box-shadow: 0 8px 25px rgba(44, 75, 121, 0.35);
 }
 

@@ -156,7 +156,11 @@ public function showCart() {
         $subtotal += $item['price'] * $item['quantity'];
     }
 
-    $shipping = 25.00;
+    $shipping = (float) \App\Models\SystemSetting::getSetting('shipping_cost', 25.00);
+    $freeThreshold = (float) \App\Models\SystemSetting::getSetting('free_shipping_threshold', 0);
+    if ($freeThreshold > 0 && $subtotal >= $freeThreshold) {
+        $shipping = 0;
+    }
     $discount = 0.00;
     $total = $subtotal + $shipping - $discount;
 
@@ -192,10 +196,14 @@ public function showCheckout() {
         $subtotal += $item['price'] * $item['quantity'];
     }
     
-    $shipping = 25.00;
+    $shipping = (float) \App\Models\SystemSetting::getSetting('shipping_cost', 25.00);
+    $freeThreshold = (float) \App\Models\SystemSetting::getSetting('free_shipping_threshold', 0);
+    if ($freeThreshold > 0 && $subtotal >= $freeThreshold) {
+        $shipping = 0;
+    }
     $discount = 0.00;
     $total = $subtotal + $shipping - $discount;
-     
+
     // Generate one-time checkout token to prevent double-submit
     $checkoutToken = \Illuminate\Support\Str::random(40);
     session(['checkout_token' => $checkoutToken]);

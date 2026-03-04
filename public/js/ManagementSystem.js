@@ -50,7 +50,7 @@ function loadProducts(page = 1) {
         status: currentStatus
     };
 
-    $.get('/products/api', params) // Use direct URL path
+    $.get('/admin/products/api', params) // Use direct URL path
         .done(function(response) {
             if (response.success) {
                 renderProductsTable(response.data.data);
@@ -73,7 +73,7 @@ function loadProducts(page = 1) {
 
 // Load statistics for stats cards
 function loadStats() {
-    $.get('/products/api/stats')
+    $.get('/admin/products/api/stats')
         .done(function(response) {
             if (response.success) {
                 updateStatsCards(response.stats);
@@ -251,7 +251,7 @@ function showAlert(message, type = 'info', duration = 5000) {
 
 // View product details
 function viewProduct(id) {
-    $.get(`/products/api/${id}`)
+    $.get(`/admin/products/api/${id}`)
         .done(function(response) {
             // Check if response is the product directly or wrapped in success/data
             const product = response.success ? response.data : response;
@@ -293,7 +293,7 @@ function viewProduct(id) {
 
 // Edit product
 function editProduct(id) {
-    $.get(`/products/api/${id}`)
+    $.get(`/admin/products/api/${id}`)
         .done(function(response) {
             if (response.success) {
                 const product = response.data;
@@ -351,7 +351,7 @@ function updateProduct() {
     // showLoadingModal();
 
     $.ajax({
-        url: `/products/${productId}`,
+        url: `/admin/products/${productId}`,
         type: 'POST',
         data: formData,
         processData: false,
@@ -460,7 +460,7 @@ function enrichProduct(id) {
     $('#enrichPreviewBookId').val(id);
 
     // Fetch preview data
-    $.get(`/books/${id}/preview-enrich`)
+    $.get(`/admin/books/${id}/preview-enrich`)
         .done(function(response) {
             $('#enrichPreviewLoading').hide();
 
@@ -604,7 +604,7 @@ function confirmEnrichment() {
 
     // Send selected fields to the server
     $.ajax({
-        url: `/books/${bookId}/enrich-selected`,
+        url: `/admin/books/${bookId}/enrich-selected`,
         method: 'POST',
         data: {
             selected_fields: selectedFields
@@ -648,7 +648,7 @@ function rejectEnrichment() {
 
 // Optional: Add a function to check if a book is currently being processed
 function checkEnrichmentStatus(id) {
-    return $.get(`/books/${id}/status`)
+    return $.get(`/admin/books/${id}/status`)
         .then(function(response) {
             return response.api_data_status;
         })

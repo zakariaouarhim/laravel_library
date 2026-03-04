@@ -164,64 +164,23 @@
                     </svg>
                     <span class="nav-text">إدارة المكتبة</span>
                 </a>
-                <a href="#" class="sidebar-nav-item" title="التقارير">
+                <a href="{{ route('admin.reports.index') }}"
+                   class="sidebar-nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}"
+                   title="التقارير">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
                     <span class="nav-text">التقارير</span>
                 </a>
-                <a href="#" class="sidebar-nav-item" title="التكاملات">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    </svg>
-                    <span class="nav-text">التكاملات</span>
-                </a>
-                <a href="#" class="sidebar-nav-item" title="الإعدادات">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="1"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m2.12 2.12l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m2.12-2.12l4.24-4.24"/>
-                    </svg>
+                <a href="{{ route('admin.settings.index') }}"
+                   class="sidebar-nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
+                   title="الإعدادات">
+                    <i class="fas fa-cog"></i>
                     <span class="nav-text">الإعدادات</span>
                 </a>
             </nav>
         </div>
 
-        <!-- Saved Reports Section -->
-        <div class="sidebar-group sidebar-group-saved">
-            <div class="sidebar-group-header">
-                <div class="sidebar-group-label">التقارير المحفوظة</div>
-                <button class="add-report-btn" title="إضافة تقرير جديد">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                </button>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="sidebar-nav-item" title="الشهر الحالي">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M8 2v4m8-4v4M3 10.5h18M5 21h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2z"/>
-                    </svg>
-                    <span class="nav-text">الشهر الحالي</span>
-                </a>
-                <a href="#" class="sidebar-nav-item" title="الربع الأخير">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M8 2v4m8-4v4M3 10.5h18M5 21h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2z"/>
-                    </svg>
-                    <span class="nav-text">الربع الأخير</span>
-                </a>
-                <a href="#" class="sidebar-nav-item" title="التفاعل الاجتماعي">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="18" cy="5" r="3"/><path d="M21 17v2a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-2"/><path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4"/>
-                    </svg>
-                    <span class="nav-text">التفاعل الاجتماعي</span>
-                </a>
-                <a href="#" class="sidebar-nav-item" title="مبيعات نهاية العام">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 3v18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-5l-2-3h-7a2 2 0 0 0-2 2z"/><polyline points="15 13 21 13 18 21 15 13"/>
-                    </svg>
-                    <span class="nav-text">مبيعات نهاية العام</span>
-                </a>
-            </nav>
-        </div>
     </div>
 
     <!-- Sidebar Footer -->
@@ -290,11 +249,4 @@
         });
     });
 
-    /**
-     * Add Report Button
-     */
-    document.querySelector('.add-report-btn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        alert('سيتم إضافة ميزة إنشاء تقارير مخصصة قريباً');
-    });
 </script>
