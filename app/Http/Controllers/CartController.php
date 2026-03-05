@@ -200,7 +200,15 @@ public function showCheckout() {
     $checkoutToken = \Illuminate\Support\Str::random(40);
     session(['checkout_token' => $checkoutToken]);
 
-    return view('checkout', compact('cart', 'subtotal', 'shipping', 'discount', 'total', 'freeThreshold', 'checkoutToken'));
+    // Auto-fill phone from last order's checkout details
+    $lastPhone = null;
+    if (\Illuminate\Support\Facades\Auth::check()) {
+        $lastPhone = \App\Models\CheckoutDetail::whereHas('order', function ($q) {
+            $q->where('user_id', \Illuminate\Support\Facades\Auth::id());
+        })->latest('id')->value('phone');
+    }
+
+    return view('checkout', compact('cart', 'subtotal', 'shipping', 'discount', 'total', 'freeThreshold', 'checkoutToken', 'lastPhone'));
 }
 
 public function removeFromCart(Request $request)

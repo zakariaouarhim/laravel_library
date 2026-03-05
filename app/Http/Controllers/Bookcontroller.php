@@ -163,19 +163,22 @@ class BookController extends Controller
         $alsoBoughtBooks = collect();
         $orderIds = DB::table('order_details')->where('book_id', $id)->pluck('order_id');
         if ($orderIds->isNotEmpty()) {
-            $alsoBoughtBooks = Book::with('primaryAuthor')
-                ->withCount('reviews')
-                ->withAvg('reviews as reviews_avg_rating', 'rating')
-                ->whereIn('id', function ($q) use ($orderIds, $id) {
-                    $q->select('book_id')
-                      ->from('order_details')
-                      ->whereIn('order_id', $orderIds)
-                      ->where('book_id', '!=', $id)
-                      ->groupBy('book_id')
-                      ->orderByRaw('COUNT(*) DESC')
-                      ->limit(10);
-                })
-                ->get();
+            // Fetch IDs first to avoid MySQL 5.x "LIMIT in IN-subquery" error
+            $alsoBoughtIds = DB::table('order_details')
+                ->whereIn('order_id', $orderIds)
+                ->where('book_id', '!=', $id)
+                ->groupBy('book_id')
+                ->orderByRaw('COUNT(*) DESC')
+                ->limit(10)
+                ->pluck('book_id');
+
+            if ($alsoBoughtIds->isNotEmpty()) {
+                $alsoBoughtBooks = Book::with('primaryAuthor')
+                    ->withCount('reviews')
+                    ->withAvg('reviews as reviews_avg_rating', 'rating')
+                    ->whereIn('id', $alsoBoughtIds)
+                    ->get();
+            }
         }
 
         // Current user's shelf status for this book

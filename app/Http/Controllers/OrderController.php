@@ -80,20 +80,20 @@ class OrderController extends Controller
      * Valid status transitions to prevent invalid state jumps
      */
     private static array $allowedTransitions = [
-        'pending'    => ['processing', 'cancelled', 'Failed'],
-        'processing' => ['shipped', 'cancelled', 'Failed'],
+        'pending'    => ['processing', 'cancelled', 'failed'],
+        'processing' => ['shipped', 'cancelled', 'failed'],
         'shipped'    => ['delivered', 'returned'],
-        'delivered'  => ['returned', 'Refunded'],
+        'delivered'  => ['returned', 'refunded'],
         'cancelled'  => [],
-        'Failed'     => ['pending'],
-        'Refunded'   => [],
-        'returned'   => ['Refunded'],
+        'failed'     => ['pending'],
+        'refunded'   => [],
+        'returned'   => ['refunded'],
     ];
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,Failed,Refunded,returned'
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,failed,refunded,returned'
         ]);
 
         $order = Order::with('checkoutDetail')->findOrFail($id);
@@ -170,7 +170,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'nullable|exists:users,id',
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,Failed,Refunded,returned',
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,failed,refunded,returned',
             'total_price' => 'required|numeric',
             'payment_method' => 'required|in:cod,credit_card',
             'shipping_address' => 'required|string',

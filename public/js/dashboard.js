@@ -27,8 +27,8 @@ function viewOrder(orderId) {
             'shipped': 'مشحون',
             'delivered': 'تم التسليم',
             'cancelled': 'ملغى',
-            'Failed': 'فشل',
-            'Refunded': 'مسترجع',
+            'failed': 'فشل',
+            'refunded': 'مسترجع',
             'returned': 'مرتجع'
         };
 
@@ -122,8 +122,8 @@ function viewOrder(orderId) {
                     <option value="shipped">مشحون</option>
                     <option value="delivered">تم التسليم</option>
                     <option value="cancelled">ملغى</option>
-                    <option value="Failed">فشل</option>
-                    <option value="Refunded">مسترجع</option>
+                    <option value="failed">فشل</option>
+                    <option value="refunded">مسترجع</option>
                     <option value="returned">مرتجع</option>
                 </select>
                 <button class="btn-update-status" onclick="updateOrderStatus(${data.id})">

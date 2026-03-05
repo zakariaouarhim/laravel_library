@@ -382,10 +382,10 @@ class CheckoutController extends Controller
                 case 'cancelled':
                      $progress=0;
                     break;
-                case 'Failed':
+                case 'failed':
                      $progress=0;
                     break;
-                case 'Refunded':
+                case 'refunded':
                      $progress=0;
                     break;
                 case 'returned':

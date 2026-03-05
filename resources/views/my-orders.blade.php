@@ -93,8 +93,8 @@
                                             'shipped'    => ['class' => 'status-shipped',    'text' => 'مشحون'],
                                             'delivered'  => ['class' => 'status-delivered',  'text' => 'تم التسليم'],
                                             'cancelled'  => ['class' => 'status-cancelled',  'text' => 'ملغي'],
-                                            'Failed'     => ['class' => 'status-failed',     'text' => 'فشل'],
-                                            'Refunded'   => ['class' => 'status-refunded',   'text' => 'مسترجع'],
+                                            'failed'     => ['class' => 'status-failed',     'text' => 'فشل'],
+                                            'refunded'   => ['class' => 'status-refunded',   'text' => 'مسترجع'],
                                             'returned'   => ['class' => 'status-returned',   'text' => 'مرتجع'],
                                         ];
                                         $s = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];
@@ -129,7 +129,7 @@
                                     ];
                                     $statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
                                     $currentIndex = array_search($order->status, $statusOrder);
-                                    $isCancelled = in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']);
+                                    $isCancelled = in_array($order->status, ['cancelled', 'failed', 'refunded', 'returned']);
                                 @endphp
                                 <div class="order-timeline">
                                     @foreach($steps as $stepKey => $step)
@@ -170,8 +170,8 @@
                                     @php
                                         $cancelLabels = [
                                             'cancelled' => 'تم إلغاء الطلب',
-                                            'Failed' => 'فشل الطلب',
-                                            'Refunded' => 'تم استرجاع المبلغ',
+                                            'failed' => 'فشل الطلب',
+                                            'refunded' => 'تم استرجاع المبلغ',
                                             'returned' => 'تم إرجاع الطلب',
                                         ];
                                     @endphp

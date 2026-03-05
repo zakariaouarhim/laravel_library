@@ -55,7 +55,7 @@
                     @php
                         $history = $order->statusHistory ?? collect();
                         $historyByStatus = $history->keyBy('status');
-                        $isCancelled = in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']);
+                        $isCancelled = in_array($order->status, ['cancelled', 'failed', 'refunded', 'returned']);
                         $statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
                         $currentIndex = array_search($order->status, $statusOrder);
                     @endphp
@@ -171,9 +171,9 @@
                                     <div class="timeline-status">
                                         @if($order->status == 'delivered') تم التسليم
                                         @elseif($order->status == 'returned') تم الإرجاع
-                                        @elseif($order->status == 'Refunded') تم استرجاع المبلغ
+                                        @elseif($order->status == 'refunded') تم استرجاع المبلغ
                                         @elseif($order->status == 'cancelled') تم إلغاء الطلب
-                                        @elseif($order->status == 'Failed') فشل الطلب
+                                        @elseif($order->status == 'failed') فشل الطلب
                                         @else في انتظار التسليم @endif
                                     </div>
                                     @if($deliveredHistory)
@@ -183,7 +183,7 @@
                                         <div class="timeline-date">{{ $order->updated_at->format('d-m-Y') }}</div>
                                         <div class="timeline-description">
                                             @if($order->status == 'returned') تم إرجاع الطلب بنجاح
-                                            @elseif($order->status == 'Refunded') تم استرجاع المبلغ إلى حسابك
+                                            @elseif($order->status == 'refunded') تم استرجاع المبلغ إلى حسابك
                                             @elseif($order->status == 'cancelled') تم إلغاء الطلب من قبلك
                                             @else حدث خطأ في معالجة الطلب @endif
                                         </div>
@@ -249,10 +249,10 @@
                                         @case('cancelled')
                                             ملغى
                                             @break
-                                        @case('Failed')
+                                        @case('failed')
                                             فشل
                                             @break
-                                        @case('Refunded')
+                                        @case('refunded')
                                             مسترجع
                                             @break
                                         @case('returned')

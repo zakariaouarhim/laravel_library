@@ -150,7 +150,7 @@
                                     <div class="col-md-6">
                                         <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
                                         <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                                            pattern="[0-9]{10}" value="{{ old('phone') }}" placeholder="0600000000" required>
+                                            pattern="[0-9]{10}" value="{{ old('phone', $lastPhone ?? '') }}" placeholder="0600000000" required>
                                         @error('phone')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -329,6 +329,10 @@
     <script>
         window.routes = {
             updateCartQuantity: "{{ route('cart.update-quantity') }}"
+        };
+        window.shippingConfig = {
+            cost: {{ $shipping }},
+            freeThreshold: {{ $freeThreshold }}
         };
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

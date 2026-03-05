@@ -53,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
                'facebook_url'  => SystemSetting::getSetting('facebook_url', ''),
                'instagram_url' => SystemSetting::getSetting('instagram_url', ''),
                'whatsapp_number' => SystemSetting::getSetting('whatsapp_number', ''),
+               'tiktok_url'    => SystemSetting::getSetting('tiktok_url', ''),
            ]);
        });
 

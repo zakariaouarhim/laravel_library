@@ -152,6 +152,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
 
     // Reports
     Route::get('/reports', [AdminReportsController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [AdminReportsController::class, 'export'])->name('reports.export');
 
     // Categories management
     Route::get('/categories',                   [AdminCategoryController::class, 'index'])->name('categories.index');

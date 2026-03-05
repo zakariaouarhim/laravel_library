@@ -147,6 +147,9 @@
                 <button type="submit" class="btn-filter">
                     <i class="fas fa-filter me-1"></i>تصفية
                 </button>
+                <a href="{{ route('admin.reports.export', request()->only('date_from','date_to')) }}" class="btn-filter" style="background: linear-gradient(135deg, #27ae60, #219a52); text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <i class="fas fa-file-csv"></i>تصدير CSV
+                </a>
             </form>
 
             {{-- Summary Cards --}}
@@ -193,6 +196,75 @@
                         <canvas id="statusChart"></canvas>
                     </div>
                 </div>
+            </div>
+
+            {{-- Daily Trends + Revenue by City Charts --}}
+            <div class="charts-section">
+                <div class="chart-card" style="flex: 2;">
+                    <h4 class="chart-title">
+                        <i class="fas fa-chart-area"></i>
+                        الاتجاهات اليومية
+                    </h4>
+                    <div class="chart-container">
+                        <canvas id="dailyTrendsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card" style="flex: 1;">
+                    <h4 class="chart-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        الإيرادات حسب المدينة
+                    </h4>
+                    <div class="chart-container">
+                        <canvas id="cityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Revenue by City Table --}}
+            <div class="report-table-card">
+                <h4><i class="fas fa-city"></i>الإيرادات حسب المدينة (أفضل 10)</h4>
+                @if($revenueByCity->isEmpty())
+                    <div class="empty-state">
+                        <i class="fas fa-inbox d-block"></i>
+                        <p>لا توجد بيانات في هذه الفترة</p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>المدينة</th>
+                                    <th>عدد الطلبات</th>
+                                    <th>الإيرادات</th>
+                                    <th>النسبة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $totalCityRevenue = $revenueByCity->sum('revenue'); @endphp
+                                @foreach($revenueByCity as $i => $city)
+                                <tr>
+                                    <td>
+                                        <span class="rank-badge {{ $i === 0 ? 'gold' : ($i === 1 ? 'silver' : ($i === 2 ? 'bronze' : '')) }}">
+                                            {{ $i + 1 }}
+                                        </span>
+                                    </td>
+                                    <td><strong>{{ $city->city }}</strong></td>
+                                    <td>{{ $city->order_count }}</td>
+                                    <td>{{ number_format($city->revenue, 2) }} د.م</td>
+                                    <td>
+                                        @if($totalCityRevenue > 0)
+                                            {{ number_format(($city->revenue / $totalCityRevenue) * 100, 1) }}%
+                                        @else
+                                            0%
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
 
             {{-- Tables Row --}}
@@ -398,8 +470,8 @@
         'shipped':    { label: 'مشحون', color: '#8e44ad' },
         'delivered':  { label: 'تم التسليم', color: '#27ae60' },
         'cancelled':  { label: 'ملغي', color: '#e74c3c' },
-        'Failed':     { label: 'فشل', color: '#c0392b' },
-        'Refunded':   { label: 'مسترجع', color: '#7f8c8d' },
+        'failed':     { label: 'فشل', color: '#c0392b' },
+        'refunded':   { label: 'مسترجع', color: '#7f8c8d' },
         'returned':   { label: 'مرتجع', color: '#d35400' }
     };
 
@@ -436,6 +508,100 @@
             }
         }
     });
+
+    // Daily Trends Line Chart
+    const dailyTrends = @json($dailyTrends);
+    if (dailyTrends.length > 0) {
+        new Chart(document.getElementById('dailyTrendsChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: dailyTrends.map(d => d.date),
+                datasets: [
+                    {
+                        label: 'الإيرادات (د.م)',
+                        data: dailyTrends.map(d => d.revenue),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'عدد الطلبات',
+                        data: dailyTrends.map(d => d.orders),
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        fill: false,
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { font: chartFont, color: '#2c3e50', padding: 16 } }
+                },
+                scales: {
+                    y: {
+                        type: 'linear', position: 'left', beginAtZero: true,
+                        ticks: { font: chartFont, color: '#3498db' },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y1: {
+                        type: 'linear', position: 'right', beginAtZero: true,
+                        ticks: { font: chartFont, color: '#27ae60', stepSize: 1 },
+                        grid: { drawOnChartArea: false }
+                    },
+                    x: {
+                        ticks: { font: chartFont, color: '#7f8c8d', maxRotation: 45 },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Revenue by City Horizontal Bar Chart
+    const cityData = @json($revenueByCity);
+    if (cityData.length > 0) {
+        new Chart(document.getElementById('cityChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: cityData.map(c => c.city),
+                datasets: [{
+                    label: 'الإيرادات (د.م)',
+                    data: cityData.map(c => c.revenue),
+                    backgroundColor: [
+                        '#3498db', '#e74c3c', '#27ae60', '#f39c12', '#8e44ad',
+                        '#1abc9c', '#d35400', '#2c3e50', '#16a085', '#c0392b'
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { font: chartFont, color: '#7f8c8d' },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y: {
+                        ticks: { font: chartFont, color: '#2c3e50' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
 </script>
 </body>
 </html>

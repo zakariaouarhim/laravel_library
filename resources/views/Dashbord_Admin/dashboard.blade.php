@@ -201,8 +201,8 @@
                                                 'shipped' => ['class' => 'status-shipped', 'text' => 'مشحون'],
                                                 'delivered' => ['class' => 'status-delivered', 'text' => 'تم التسليم'],
                                                 'cancelled' => ['class' => 'status-cancelled', 'text' => 'ملغى'],
-                                                'Failed' => ['class' => 'status-failed', 'text' => 'فشل'],
-                                                'Refunded' => ['class' => 'status-refunded', 'text' => 'مسترجع'],
+                                                'failed' => ['class' => 'status-failed', 'text' => 'فشل'],
+                                                'refunded' => ['class' => 'status-refunded', 'text' => 'مسترجع'],
                                                 'returned' => ['class' => 'status-returned', 'text' => 'مرتجع'],
                                             ];
                                             $status = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];

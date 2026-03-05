@@ -67,10 +67,69 @@ class AdminReportsController extends Controller
             ->orderBy('month')
             ->get();
 
+        // Revenue by city (via checkout_details)
+        $revenueByCity = DB::table('orders')
+            ->join('checkout_details', 'orders.id', '=', 'checkout_details.order_id')
+            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->whereNotNull('checkout_details.city')
+            ->where('checkout_details.city', '!=', '')
+            ->select('checkout_details.city', DB::raw('COUNT(*) as order_count'), DB::raw('SUM(orders.total_price) as revenue'))
+            ->groupBy('checkout_details.city')
+            ->orderByDesc('revenue')
+            ->limit(10)
+            ->get();
+
+        // Daily trends
+        $dailyTrends = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as orders'), DB::raw('SUM(total_price) as revenue'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
         return view('Dashbord_Admin.reports', compact(
             'from', 'to', 'summary', 'totalBooksSold',
             'topBooks', 'topCustomers', 'ordersByStatus',
-            'revenueByPayment', 'monthlySales'
+            'revenueByPayment', 'monthlySales',
+            'revenueByCity', 'dailyTrends'
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $from = $request->input('date_from', Carbon::now()->startOfMonth()->toDateString());
+        $to   = $request->input('date_to', Carbon::now()->toDateString());
+
+        $startDate = Carbon::parse($from)->startOfDay();
+        $endDate   = Carbon::parse($to)->endOfDay();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="orders-report-' . $from . '-to-' . $to . '.csv"',
+        ];
+
+        return response()->stream(function () use ($startDate, $endDate) {
+            $handle = fopen('php://output', 'w');
+            // UTF-8 BOM for Excel Arabic support
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($handle, ['رقم الطلب', 'التاريخ', 'العميل', 'المدينة', 'الحالة', 'طريقة الدفع', 'المبلغ']);
+
+            Order::with('checkoutDetail')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                ->chunk(200, function ($orders) use ($handle) {
+                    foreach ($orders as $order) {
+                        fputcsv($handle, [
+                            $order->id,
+                            $order->created_at->format('Y-m-d'),
+                            $order->checkoutDetail->full_name ?? '',
+                            $order->checkoutDetail->city ?? '',
+                            Order::STATUS_LABELS[$order->status] ?? $order->status,
+                            Order::PAYMENT_LABELS[$order->payment_method] ?? $order->payment_method,
+                            $order->total_price,
+                        ]);
+                    }
+                });
+            fclose($handle);
+        }, 200, $headers);
     }
 }

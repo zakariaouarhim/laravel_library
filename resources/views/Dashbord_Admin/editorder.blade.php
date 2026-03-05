@@ -328,8 +328,8 @@
                                 <option value="shipped" @if($order->status == 'shipped') selected @endif>مشحون</option>
                                 <option value="delivered" @if($order->status == 'delivered') selected @endif>تم التسليم</option>
                                 <option value="cancelled" @if($order->status == 'cancelled') selected @endif>ملغى</option>
-                                <option value="Failed" @if($order->status == 'Failed') selected @endif>فشل</option>
-                                <option value="Refunded" @if($order->status == 'Refunded') selected @endif>مسترجع</option>
+                                <option value="failed" @if($order->status == 'failed') selected @endif>فشل</option>
+                                <option value="refunded" @if($order->status == 'refunded') selected @endif>مسترجع</option>
                                 <option value="returned" @if($order->status == 'returned') selected @endif>مرتجع</option>
                             </select>
                         </div>

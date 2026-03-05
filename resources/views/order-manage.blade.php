@@ -74,8 +74,8 @@
                                     'shipped' => ['class' => 'status-shipped', 'text' => 'تم الشحن'],
                                     'delivered' => ['class' => 'status-delivered', 'text' => 'تم التوصيل'],
                                     'cancelled' => ['class' => 'status-cancelled', 'text' => 'ملغي'],
-                                    'Failed' => ['class' => 'status-failed', 'text' => 'فشل'],
-                                    'Refunded' => ['class' => 'status-refunded', 'text' => 'تم الاسترداد'],
+                                    'failed' => ['class' => 'status-failed', 'text' => 'فشل'],
+                                    'refunded' => ['class' => 'status-refunded', 'text' => 'تم الاسترداد'],
                                     'returned' => ['class' => 'status-returned', 'text' => 'مسترجع'],
                                 ];
                                 $s = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];
@@ -192,7 +192,7 @@
                 </div>
                 @endif
 
-                @if(in_array($order->status, ['cancelled', 'Failed', 'Refunded', 'returned']))
+                @if(in_array($order->status, ['cancelled', 'failed', 'refunded', 'returned']))
                 <div class="action-section">
                     <div class="no-actions-notice">
                         <i class="fas fa-info-circle"></i>

@@ -68,8 +68,8 @@
                 'shipped': { text: 'مشحون', class: 'order-status-shipped' },
                 'delivered': { text: 'تم التسليم', class: 'order-status-delivered' },
                 'cancelled': { text: 'ملغى', class: 'order-status-cancelled' },
-                'Failed': { text: 'فشل', class: 'order-status-cancelled' },
-                'Refunded': { text: 'مسترجع', class: 'order-status-cancelled' },
+                'failed': { text: 'فشل', class: 'order-status-cancelled' },
+                'refunded': { text: 'مسترجع', class: 'order-status-cancelled' },
                 'returned': { text: 'مرتجع', class: 'order-status-cancelled' }
             };
 

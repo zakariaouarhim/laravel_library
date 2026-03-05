@@ -114,6 +114,10 @@
                             <label class="form-label"><i class="fab fa-whatsapp" style="color: #25D366;"></i> واتساب</label>
                             <input type="text" name="whatsapp_number" class="form-control" value="{{ old('whatsapp_number', $settings['whatsapp_number']) }}" placeholder="212600000000">
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="fab fa-tiktok"></i> تيك توك</label>
+                            <input type="url" name="tiktok_url" class="form-control" value="{{ old('tiktok_url', $settings['tiktok_url']) }}" placeholder="https://tiktok.com/@...">
+                        </div>
                     </div>
                 </div>
 

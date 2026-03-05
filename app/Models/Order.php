@@ -75,8 +75,8 @@ class Order extends Model
         'shipped'    => 'مشحون',
         'delivered'  => 'تم التسليم',
         'cancelled'  => 'ملغي',
-        'Failed'     => 'فشل',
-        'Refunded'   => 'مسترجع',
+        'failed'     => 'فشل',
+        'refunded'   => 'مسترجع',
         'returned'   => 'مرتجع',
     ];
 

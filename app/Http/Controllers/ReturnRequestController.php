@@ -194,7 +194,7 @@ class ReturnRequestController extends Controller
         $returnRequest->save();
 
         if ($newStatus === 'refunded' && $returnRequest->order) {
-            $returnRequest->order->update(['status' => 'Refunded']);
+            $returnRequest->order->update(['status' => 'refunded']);
         }
 
         // Send status change email if status actually changed

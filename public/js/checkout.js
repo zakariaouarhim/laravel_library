@@ -242,44 +242,52 @@ function showCartToast(message, type = 'success') {
 function updateTotals() {
     // Get all cart items
     const cartItems = document.querySelectorAll('[data-item-id]');
-    
-    // Initialize values
+    const config = window.shippingConfig || { cost: 25.00, freeThreshold: 0 };
+
+    // Calculate subtotal
     let subtotal = 0;
-    const shipping = 25.00; // Fixed shipping cost
     let discount = 0;
-    
-    // Calculate subtotal based on all items in cart
+
     cartItems.forEach(item => {
-        const itemId = item.getAttribute('data-item-id');
         const quantityInput = item.querySelector('.quantity-input');
         const quantity = parseInt(quantityInput.value);
         const price = parseFloat(quantityInput.getAttribute('data-price'));
-        
+
         if (!isNaN(quantity) && !isNaN(price)) {
             subtotal += price * quantity;
         }
     });
-    
+
+    // Dynamic shipping: free if threshold is met
+    let shipping = config.cost;
+    if (config.freeThreshold > 0 && subtotal >= config.freeThreshold) {
+        shipping = 0;
+    }
+
     // Get discount value (in case it was set by a coupon)
     const discountElement = document.getElementById('discount');
     if (discountElement) {
-        // Parse the discount value, removing the currency symbol and minus sign
         const discountText = discountElement.textContent.trim();
         const discountMatch = discountText.match(/-?([\d.,]+)/);
         if (discountMatch) {
             discount = parseFloat(discountMatch[1].replace(',', ''));
         }
     }
-    
+
     // Calculate total
     const total = subtotal + shipping - discount;
-    
+
     // Update DOM elements
     document.getElementById('subtotal').textContent = `${subtotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
-    document.getElementById('shipping').textContent = `${shipping.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
+    const shippingEl = document.getElementById('shipping');
+    if (shipping === 0 && config.freeThreshold > 0) {
+        shippingEl.innerHTML = '<span style="color: #28a745; font-weight: 600;">مجاني</span>';
+    } else {
+        shippingEl.textContent = `${shipping.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
+    }
     document.getElementById('discount').textContent = `-${discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
     document.getElementById('total').textContent = `${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} د.م`;
-    
+
     // Disable checkout button if cart is empty
     const completeOrderBtn = document.getElementById('completeOrder');
     if (completeOrderBtn) {
@@ -478,7 +486,9 @@ function enableQuantityInput(itemId) {
             const p = parseFloat(item.querySelector('.quantity-input').getAttribute('data-price'));
             if (!isNaN(q) && !isNaN(p)) subtotal += q * p;
         });
-        const total = subtotal + 25.00 - couponDiscount;
+        const config = window.shippingConfig || { cost: 25.00, freeThreshold: 0 };
+        const shipping = (config.freeThreshold > 0 && subtotal >= config.freeThreshold) ? 0 : config.cost;
+        const total = subtotal + shipping - couponDiscount;
         document.getElementById('total').textContent = total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' د.م';
     };
 })();

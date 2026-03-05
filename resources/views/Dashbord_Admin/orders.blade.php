@@ -75,8 +75,8 @@
                                 <option value="shipped">مشحون</option>
                                 <option value="delivered">تم التسليم</option>
                                 <option value="cancelled">ملغى</option>
-                                <option value="Failed">فشل</option>
-                                <option value="Refunded">مسترجع</option>
+                                <option value="failed">فشل</option>
+                                <option value="refunded">مسترجع</option>
                                 <option value="returned">مرتجع</option>
                             </select>
                         </div>
@@ -132,8 +132,8 @@
                                                 'shipped' => ['class' => 'status-shipped', 'text' => 'مشحون'],
                                                 'delivered' => ['class' => 'status-delivered', 'text' => 'تم التسليم'],
                                                 'cancelled' => ['class' => 'status-cancelled', 'text' => 'ملغى'],
-                                                'Failed' => ['class' => 'status-failed', 'text' => 'فشل'],
-                                                'Refunded' => ['class' => 'status-refunded', 'text' => 'مسترجع'],
+                                                'failed' => ['class' => 'status-failed', 'text' => 'فشل'],
+                                                'refunded' => ['class' => 'status-refunded', 'text' => 'مسترجع'],
                                                 'returned' => ['class' => 'status-returned', 'text' => 'مرتجع'],
                                             ];
                                             $status = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];

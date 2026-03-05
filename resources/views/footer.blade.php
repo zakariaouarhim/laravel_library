@@ -26,6 +26,11 @@
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                             @endif
+                            @if(!empty($footerSettings['tiktok_url']))
+                            <a href="{{ $footerSettings['tiktok_url'] }}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
+                            @endif
                         </div>
                     </div>
 

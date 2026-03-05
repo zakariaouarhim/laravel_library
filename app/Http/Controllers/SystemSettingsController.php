@@ -17,6 +17,7 @@ class SystemSettingsController extends Controller
         'facebook_url'            => '',
         'instagram_url'           => '',
         'whatsapp_number'             => '',
+        'tiktok_url'              => '',
         'min_order_amount'        => '0',
         'max_quantity_per_item'   => '10',
     ];
@@ -43,6 +44,7 @@ class SystemSettingsController extends Controller
             'facebook_url'            => 'nullable|url|max:500',
             'instagram_url'           => 'nullable|url|max:500',
             'whatsapp_number'             => 'nullable|string|max:20',
+            'tiktok_url'              => 'nullable|url|max:500',
             'min_order_amount'        => 'nullable|numeric|min:0',
             'max_quantity_per_item'   => 'nullable|integer|min:1|max:100',
         ]);

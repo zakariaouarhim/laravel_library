@@ -4,10 +4,11 @@ namespace App\Mail;
 
 use App\Models\ReturnRequest;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ReturnRequestStatusMail extends Mailable
+class ReturnRequestStatusMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
