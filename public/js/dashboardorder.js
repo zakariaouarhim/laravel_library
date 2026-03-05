@@ -1,4 +1,11 @@
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
         function viewOrder(orderId) {
             const modalContent = document.getElementById('modalContent');
             modalContent.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>';
@@ -25,8 +32,8 @@
                 let booksHtml = data.order_details.map(item => `
                     <div class="book-item">
                         <div class="book-info">
-                            <div class="book-title">${item.book.title}</div>
-                            <div class="book-quantity">الكمية: ${item.quantity}</div>
+                            <div class="book-title">${escapeHtml(item.book.title)}</div>
+                            <div class="book-quantity">الكمية: ${parseInt(item.quantity)}</div>
                         </div>
                         <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} د.م</div>
                     </div>
@@ -40,7 +47,7 @@
                         </div>
                         <div>
                             <div class="detail-label">رقم التتبع</div>
-                            <div class="detail-value">${data.tracking_number || '-'}</div>
+                            <div class="detail-value">${escapeHtml(data.tracking_number) || '-'}</div>
                         </div>
                     </div>
 
@@ -58,7 +65,7 @@
                     <div class="detail-row">
                         <div>
                             <div class="detail-label">حالة الطلب</div>
-                            <div class="detail-value">${statusMap[data.status] || data.status}</div>
+                            <div class="detail-value">${statusMap[data.status] || escapeHtml(data.status)}</div>
                         </div>
                         <div>
                             <div class="detail-label">تاريخ الطلب</div>
@@ -68,14 +75,32 @@
 
                     <div class="detail-row">
                         <div>
-                            <div class="detail-label">عنوان الشحن</div>
-                            <div class="detail-value">${data.shipping_address || '-'}</div>
+                            <div class="detail-label">العميل</div>
+                            <div class="detail-value">${data.checkout_detail ? escapeHtml(data.checkout_detail.full_name) : '-'}</div>
                         </div>
                         <div>
-                            <div class="detail-label">عنوان الفاتورة</div>
-                            <div class="detail-value">${data.billing_address || '-'}</div>
+                            <div class="detail-label">الهاتف</div>
+                            <div class="detail-value">${data.checkout_detail ? escapeHtml(data.checkout_detail.phone) : '-'}</div>
                         </div>
                     </div>
+
+                    <div class="detail-row">
+                        <div>
+                            <div class="detail-label">عنوان الشحن</div>
+                            <div class="detail-value">${escapeHtml(data.shipping_address) || '-'}</div>
+                        </div>
+                        <div>
+                            <div class="detail-label">المدينة</div>
+                            <div class="detail-value">${data.checkout_detail ? escapeHtml(data.checkout_detail.city) : '-'}</div>
+                        </div>
+                    </div>
+
+                    ${data.checkout_detail && data.checkout_detail.notes ? `
+                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                        <div class="detail-label" style="margin-bottom: 4px;"><i class="fas fa-sticky-note me-1"></i>ملاحظات التوصيل</div>
+                        <div class="detail-value">${escapeHtml(data.checkout_detail.notes)}</div>
+                    </div>
+                    ` : ''}
 
                     <div>
                         <div class="detail-label mb-3">الكتب المطلوبة</div>

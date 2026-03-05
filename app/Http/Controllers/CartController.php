@@ -156,15 +156,11 @@ public function showCart() {
         $subtotal += $item['price'] * $item['quantity'];
     }
 
-    $shipping = (float) \App\Models\SystemSetting::getSetting('shipping_cost', 25.00);
-    $freeThreshold = (float) \App\Models\SystemSetting::getSetting('free_shipping_threshold', 0);
-    if ($freeThreshold > 0 && $subtotal >= $freeThreshold) {
-        $shipping = 0;
-    }
+    ['shipping' => $shipping, 'freeThreshold' => $freeThreshold] = \App\Models\SystemSetting::calculateShipping($subtotal);
     $discount = 0.00;
     $total = $subtotal + $shipping - $discount;
 
-    return view('cart.index', compact('cart', 'subtotal', 'shipping', 'discount', 'total'));
+    return view('cart.index', compact('cart', 'subtotal', 'shipping', 'discount', 'total', 'freeThreshold'));
 }
 
 public function showCheckout() {
@@ -196,11 +192,7 @@ public function showCheckout() {
         $subtotal += $item['price'] * $item['quantity'];
     }
     
-    $shipping = (float) \App\Models\SystemSetting::getSetting('shipping_cost', 25.00);
-    $freeThreshold = (float) \App\Models\SystemSetting::getSetting('free_shipping_threshold', 0);
-    if ($freeThreshold > 0 && $subtotal >= $freeThreshold) {
-        $shipping = 0;
-    }
+    ['shipping' => $shipping, 'freeThreshold' => $freeThreshold] = \App\Models\SystemSetting::calculateShipping($subtotal);
     $discount = 0.00;
     $total = $subtotal + $shipping - $discount;
 
@@ -208,7 +200,7 @@ public function showCheckout() {
     $checkoutToken = \Illuminate\Support\Str::random(40);
     session(['checkout_token' => $checkoutToken]);
 
-    return view('checkout', compact('cart', 'subtotal', 'shipping', 'discount', 'total', 'checkoutToken'));
+    return view('checkout', compact('cart', 'subtotal', 'shipping', 'discount', 'total', 'freeThreshold', 'checkoutToken'));
 }
 
 public function removeFromCart(Request $request)

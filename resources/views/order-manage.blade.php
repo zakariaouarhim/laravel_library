@@ -97,7 +97,7 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <span class="info-label">الاسم</span>
-                        <span class="info-value">{{ $order->checkoutDetail->first_name }} {{ $order->checkoutDetail->last_name }}</span>
+                        <span class="info-value">{{ $order->checkoutDetail->full_name }}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">البريد الإلكتروني</span>
@@ -112,6 +112,13 @@
                         <span class="info-value">{{ $order->checkoutDetail->address }}، {{ $order->checkoutDetail->city }}</span>
                     </div>
                 </div>
+
+                @if($order->checkoutDetail->notes)
+                <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-top: 15px;">
+                    <span class="info-label" style="margin-bottom: 4px; display: block;"><i class="fas fa-sticky-note me-1"></i>ملاحظات التوصيل</span>
+                    <span class="info-value">{{ $order->checkoutDetail->notes }}</span>
+                </div>
+                @endif
             </div>
             @endif
 

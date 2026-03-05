@@ -121,6 +121,50 @@
                     </div>
                 </div>
 
+                <!-- Low Stock Alerts -->
+                @if(isset($lowStockBooks) && $lowStockBooks->count())
+                <div class="recent-orders" style="margin-bottom: 2rem;">
+                    <h3 style="color: #e74c3c;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        تنبيه المخزون المنخفض
+                        <span class="badge bg-danger ms-2">{{ $lowStockBooks->count() }}</span>
+                    </h3>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>الكتاب</th>
+                                    <th>الكمية المتبقية</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($lowStockBooks as $book)
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            @if($book->image)
+                                            <img src="{{ asset('storage/' . $book->image) }}" alt="" style="width: 35px; height: 45px; object-fit: cover; border-radius: 4px;">
+                                            @endif
+                                            <span>{{ $book->title }}</span>
+                                        </div>
+                                    </td>
+                                    <td><strong>{{ $book->Quantity }}</strong></td>
+                                    <td>
+                                        @if($book->Quantity == 0)
+                                            <span class="status-badge" style="background: #e74c3c; color: #fff;">نفذ المخزون</span>
+                                        @else
+                                            <span class="status-badge" style="background: #f39c12; color: #fff;">مخزون منخفض</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Recent Orders -->
                 <div class="recent-orders">
                     <h3>

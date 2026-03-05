@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Book;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -96,11 +97,18 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Low stock books (quantity < 5)
+        $lowStockBooks = Book::where('Quantity', '<', 5)
+            ->orderBy('Quantity')
+            ->limit(10)
+            ->get(['id', 'title', 'Quantity', 'image']);
+
         return view('Dashbord_Admin.dashboard', compact(
             'totalOrders', 'totalRevenue', 'pendingOrders', 'deliveredOrders',
             'processingOrders', 'cancelledOrders', 'recentOrders',
             'ordersIncrease', 'revenueIncrease', 'pendingDecrease', 'deliveredIncrease',
-            'weeklyRevenue', 'monthlyRevenue', 'yearlyRevenue'
+            'weeklyRevenue', 'monthlyRevenue', 'yearlyRevenue',
+            'lowStockBooks'
         ));
     }
 }

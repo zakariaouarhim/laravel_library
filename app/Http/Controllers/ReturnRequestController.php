@@ -209,7 +209,7 @@ class ReturnRequestController extends Controller
 
                 if ($order && $order->checkoutDetail) {
                     $customerEmail = $customerEmail ?: $order->checkoutDetail->email;
-                    $customerName = $order->checkoutDetail->first_name . ' ' . $order->checkoutDetail->last_name;
+                    $customerName = $order->checkoutDetail->full_name;
                 }
 
                 if (!$customerName && $order && $order->user) {

@@ -115,8 +115,23 @@
                                 </div>
                                 <div class="summary-row">
                                     <span>رسوم الشحن</span>
-                                    <span id="shipping">{{ number_format($shipping, 2) }} د.م</span>
+                                    <span id="shipping">
+                                        @if($shipping == 0 && $freeThreshold > 0)
+                                            <span style="color: #28a745; font-weight: 600;">مجاني</span>
+                                        @else
+                                            {{ number_format($shipping, 2) }} د.م
+                                        @endif
+                                    </span>
                                 </div>
+                                @if($shipping == 0 && $freeThreshold > 0)
+                                    <div class="free-shipping-badge" style="background: linear-gradient(135deg, #d4edda, #c3e6cb); color: #155724; padding: 8px 12px; border-radius: 8px; text-align: center; font-size: 0.85rem; font-weight: 600; margin-top: 4px;">
+                                        <i class="fas fa-truck me-1"></i> شحن مجاني! طلبك تجاوز {{ number_format($freeThreshold, 0) }} د.م
+                                    </div>
+                                @elseif($freeThreshold > 0 && $subtotal < $freeThreshold)
+                                    <div class="free-shipping-hint" style="background: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 8px; text-align: center; font-size: 0.82rem; margin-top: 4px;">
+                                        <i class="fas fa-info-circle me-1"></i> أضف {{ number_format($freeThreshold - $subtotal, 2) }} د.م للحصول على شحن مجاني
+                                    </div>
+                                @endif
                                 <div class="summary-row discount-row">
                                     <span>الخصم</span>
                                     <span id="discount">-{{ number_format($discount, 2) }} د.م</span>

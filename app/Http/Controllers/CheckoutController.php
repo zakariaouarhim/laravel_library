@@ -33,27 +33,27 @@ class CheckoutController extends Controller
         try {
             // Validate the checkout form
             $validated = $request->validate([
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
+                'full_name' => 'required|string|max:255',
+                'email' => 'nullable|email|max:255',
                 'phone' => 'required|string|regex:/^[0-9]{10}$/',
                 'address' => 'required|string',
                 'city' => 'required|string',
-                'zip_code' => 'required|string|regex:/^[0-9]{5}$/',
+                'notes' => 'nullable|string|max:500',
                 'payment_method' => 'required|in:cod,bank_transfer',
             ], [
-                'first_name.required' => 'الاسم الأول مطلوب',
-                'last_name.required' => 'الاسم الأخير مطلوب',
-                'email.required' => 'البريد الإلكتروني مطلوب',
+                'full_name.required' => 'الاسم الكامل مطلوب',
                 'email.email' => 'يرجى إدخال بريد إلكتروني صحيح',
                 'phone.required' => 'رقم الهاتف مطلوب',
                 'phone.regex' => 'يرجى إدخال رقم هاتف صحيح (10 أرقام)',
                 'address.required' => 'العنوان مطلوب',
                 'city.required' => 'المدينة مطلوبة',
-                'zip_code.required' => 'الرمز البريدي مطلوب',
-                'zip_code.regex' => 'يرجى إدخال رمز بريدي صحيح (5 أرقام)',
                 'payment_method.required' => 'طريقة الدفع مطلوبة',
             ]);
+
+            // Auto-fill email from authenticated user if not provided
+            if (empty($validated['email']) && Auth::check()) {
+                $validated['email'] = Auth::user()->email;
+            }
 
             // Get cart based on authentication status
             $cart = [];
@@ -115,11 +115,7 @@ class CheckoutController extends Controller
                 $subtotal += $item['price'] * $item['quantity'];
             }
 
-            $shipping = (float) \App\Models\SystemSetting::getSetting('shipping_cost', 25.00);
-            $freeThreshold = (float) \App\Models\SystemSetting::getSetting('free_shipping_threshold', 0);
-            if ($freeThreshold > 0 && $subtotal >= $freeThreshold) {
-                $shipping = 0;
-            }
+            ['shipping' => $shipping] = \App\Models\SystemSetting::calculateShipping($subtotal);
             $discount = 0.00;
             $appliedCouponCode = null;
 
@@ -142,8 +138,8 @@ class CheckoutController extends Controller
                     'user_id' => auth()->check() ? auth()->id() : null,
                     'status' => 'pending',
                     'total_price' => $total,
-                    'shipping_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
-                    'billing_address' => $validated['address'] . ', ' . $validated['city'] . ', ' . $validated['zip_code'],
+                    'shipping_address' => $validated['address'] . ', ' . $validated['city'],
+                    'billing_address' => $validated['address'] . ', ' . $validated['city'],
                     'payment_method' => $validated['payment_method'],
                     'tracking_number' => 'TR-' . Str::upper(Str::random(10)),
                     'management_token' => Str::random(64),
@@ -158,13 +154,12 @@ class CheckoutController extends Controller
                 // Create checkout record
                 CheckoutDetail::create([
                     'order_id' => $order->id,
-                    'first_name' => $validated['first_name'],
-                    'last_name' => $validated['last_name'],
+                    'full_name' => $validated['full_name'],
                     'email' => $validated['email'],
                     'phone' => $validated['phone'],
                     'address' => $validated['address'],
                     'city' => $validated['city'],
-                    'zip_code' => $validated['zip_code'],
+                    'notes' => $validated['notes'] ?? null,
                     'payment_method' => $validated['payment_method'],
                     'subtotal' => $subtotal,
                     'shipping' => $shipping,
@@ -205,25 +200,15 @@ class CheckoutController extends Controller
                 session()->forget('applied_coupon');
             }
 
-            // Send order confirmation email AFTER the HTTP response (non-blocking)
-            $emailData = [
-                'email' => $validated['email'],
-                'name'  => $validated['first_name'] . ' ' . $validated['last_name'],
-                'token' => $order->management_token,
-                'orderId' => $order->id,
-            ];
-            app()->terminating(function () use ($emailData) {
+            // Queue order confirmation email (non-blocking — dispatched to DB queue)
+            if (!empty($validated['email'])) {
                 try {
-                    $order = Order::with('orderDetails.book')->find($emailData['orderId']);
-                    if ($order) {
-                        $manageUrl = url('/order/manage?token=' . $emailData['token']);
-                        Mail::to($emailData['email'])->send(new OrderConfirmationMail($order, $emailData['name'], $manageUrl));
-                        Log::info('Order confirmation email sent', ['email' => $emailData['email']]);
-                    }
+                    $manageUrl = url('/order/manage?token=' . $order->management_token);
+                    Mail::to($validated['email'])->queue(new OrderConfirmationMail($order, $validated['full_name'], $manageUrl));
                 } catch (\Exception $e) {
-                    Log::error('Failed to send order confirmation email', ['error' => $e->getMessage()]);
+                    Log::error('Failed to queue order confirmation email', ['error' => $e->getMessage()]);
                 }
-            });
+            }
 
             // Clear the cart after successful order
             if (Auth::check()) {

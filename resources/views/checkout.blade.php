@@ -140,36 +140,36 @@
                             <div class="card-body">
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">الاسم الأول <span class="text-danger">*</span></label>
-                                        <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror"
-                                            value="{{ old('first_name') }}" required>
-                                        @error('first_name')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">الاسم الأخير <span class="text-danger">*</span></label>
-                                        <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror"
-                                            value="{{ old('last_name') }}" required>
-                                        @error('last_name')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
-                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                            value="{{ old('email') }}" required>
-                                        @error('email')
+                                        <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                                        <input type="text" name="full_name" class="form-control @error('full_name') is-invalid @enderror"
+                                            value="{{ old('full_name', Auth::user()->name ?? '') }}" placeholder="الاسم الأول والأخير" required>
+                                        @error('full_name')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
                                         <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                                            pattern="[0-9]{10}" value="{{ old('phone') }}" required>
+                                            pattern="[0-9]{10}" value="{{ old('phone') }}" placeholder="0600000000" required>
                                         @error('phone')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">المدينة <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('city') is-invalid @enderror" name="city" id="city"
+                                            value="{{ old('city') }}" placeholder="اكتب مدينتك" required>
+                                        @error('city')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                                            value="{{ old('email', Auth::user()->email ?? '') }}" placeholder="example@email.com">
+                                        @error('email')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -177,27 +177,15 @@
                                 <div class="mb-3">
                                     <label class="form-label">العنوان التفصيلي <span class="text-danger">*</span></label>
                                     <textarea name="address" class="form-control @error('address') is-invalid @enderror"
-                                            rows="3" required>{{ old('address') }}</textarea>
+                                            rows="2" placeholder="الحي، الشارع، رقم المنزل..." required>{{ old('address') }}</textarea>
                                     @error('address')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">المدينة <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="city" id="city" placeholder="اكتب مدينتك" required>
-                                        @error('city')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">الرمز البريدي <span class="text-danger">*</span></label>
-                                        <input type="text" name="zip_code" class="form-control @error('zip_code') is-invalid @enderror"
-                                            pattern="[0-9]{5}" value="{{ old('zip_code') }}" required>
-                                        @error('zip_code')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ملاحظات التوصيل</label>
+                                    <textarea name="notes" class="form-control" rows="2"
+                                        placeholder="مثال: الاتصال قبل التوصيل، الطابق الثالث...">{{ old('notes') }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -260,8 +248,23 @@
                                     </div>
                                     <div class="d-flex justify-content-between mb-2">
                                         <span>رسوم الشحن:</span>
-                                        <span id="shipping">{{ number_format($shipping, 2) }} د.م</span>
+                                        <span id="shipping">
+                                            @if($shipping == 0 && $freeThreshold > 0)
+                                                <span style="color: #28a745; font-weight: 600;">مجاني</span>
+                                            @else
+                                                {{ number_format($shipping, 2) }} د.م
+                                            @endif
+                                        </span>
                                     </div>
+                                    @if($shipping == 0 && $freeThreshold > 0)
+                                        <div style="background: linear-gradient(135deg, #d4edda, #c3e6cb); color: #155724; padding: 8px 12px; border-radius: 8px; text-align: center; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
+                                            <i class="fas fa-truck me-1"></i> شحن مجاني!
+                                        </div>
+                                    @elseif($freeThreshold > 0 && $subtotal < $freeThreshold)
+                                        <div style="background: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 8px; text-align: center; font-size: 0.82rem; margin-bottom: 8px;">
+                                            <i class="fas fa-info-circle me-1"></i> أضف {{ number_format($freeThreshold - $subtotal, 2) }} د.م للحصول على شحن مجاني
+                                        </div>
+                                    @endif
                                     <div class="d-flex justify-content-between mb-2 text-success">
                                         <span>الخصم:</span>
                                         <span id="discount">-{{ number_format($discount, 2) }} د.م</span>

@@ -6,23 +6,26 @@
                     <!-- Brand Column -->
                     <div class="footer-col footer-brand">
                         <a href="{{ route('index.page') }}" class="footer-logo">
-                            <img src="{{ asset('images/logo.svg') }}" alt="مكتبة الفقراء">
-                            <span>مكتبة الفقراء</span>
+                            <img src="{{ asset('images/logo.svg') }}" alt="{{ $footerSettings['store_name'] ?? 'مكتبة الفقراء' }}">
+                            <span>{{ $footerSettings['store_name'] ?? 'مكتبة الفقراء' }}</span>
                         </a>
                         <p class="footer-about">نؤمن بأن المعرفة حق للجميع. نسعى لتوفير أفضل الكتب بأسعار مناسبة لكل القراء.</p>
                         <div class="footer-social">
-                            <a href="https://www.facebook.com/maktabatalfokara" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            @if(!empty($footerSettings['facebook_url']))
+                            <a href="{{ $footerSettings['facebook_url'] }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
-                            <a href="https://www.instagram.com/maktabat_lfokara" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                            @endif
+                            @if(!empty($footerSettings['instagram_url']))
+                            <a href="{{ $footerSettings['instagram_url'] }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                                 <i class="fab fa-instagram"></i>
                             </a>
-                            <a href="https://wa.me/212691218840" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                            @endif
+                            @if(!empty($footerSettings['whatsapp_number']))
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $footerSettings['whatsapp_number']) }}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
-                            <a href="https://www.tiktok.com/@maktabatalfokara" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                                <i class="fab fa-tiktok"></i>
-                            </a>
+                            @endif
                         </div>
                     </div>
 
@@ -53,18 +56,24 @@
                     <div class="footer-col">
                         <h4 class="footer-heading">تواصل معنا</h4>
                         <ul class="footer-contact">
+                            @if(!empty($footerSettings['store_email']))
                             <li>
                                 <i class="fas fa-envelope"></i>
-                                <span>info@maktabet-alfuqara.com</span>
+                                <span>{{ $footerSettings['store_email'] }}</span>
                             </li>
+                            @endif
+                            @if(!empty($footerSettings['store_phone']))
                             <li>
                                 <i class="fas fa-phone-alt"></i>
-                                <a href="tel:+212691218840" dir="ltr" style="color:inherit;text-decoration:none;">+212 69 121 8840</a>
+                                <a href="tel:{{ $footerSettings['store_phone'] }}" dir="ltr" style="color:inherit;text-decoration:none;">{{ $footerSettings['store_phone'] }}</a>
                             </li>
+                            @endif
+                            @if(!empty($footerSettings['store_address']))
                             <li>
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>المملكة المغربية</span>
+                                <span>{{ $footerSettings['store_address'] }}</span>
                             </li>
+                            @endif
                             <li>
                                 <i class="fas fa-clock"></i>
                                 <span>الثلثاء - الأحد: 10 صباحاً - 8 مساءً</span>
@@ -79,7 +88,7 @@
         <div class="footer-bottom">
             <div class="container">
                 <div class="footer-bottom-content">
-                    <p>&copy; {{ date('Y') }} مكتبة الفقراء. جميع الحقوق محفوظة.</p>
+                    <p>&copy; {{ date('Y') }} {{ $footerSettings['store_name'] ?? 'مكتبة الفقراء' }}. جميع الحقوق محفوظة.</p>
                     <p>
                         <a href="{{ route('privacy.page') }}" style="color:inherit;opacity:.7;text-decoration:none;font-size:.85rem;">سياسة الخصوصية</a>
                         <span style="opacity:.4;margin:0 8px;">|</span>

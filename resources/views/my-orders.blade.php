@@ -256,7 +256,7 @@
                                         @if($order->checkoutDetail)
                                             <div class="shipping-detail">
                                                 <span class="label">الاسم</span>
-                                                <span>{{ $order->checkoutDetail->first_name }} {{ $order->checkoutDetail->last_name }}</span>
+                                                <span>{{ $order->checkoutDetail->full_name }}</span>
                                             </div>
                                             <div class="shipping-detail">
                                                 <span class="label">العنوان</span>

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\View;
 use App\Models\Category;
 use App\Models\Book;
 use App\View\Composers\AdminSidebarComposer;
+use App\Models\SystemSetting;
 use App\Observers\BookObserver;
 use Illuminate\Support\Facades\Cache;
 
@@ -42,6 +43,18 @@ class AppServiceProvider extends ServiceProvider
        });
 
        View::composer('Dashbord_Admin.Sidebar', AdminSidebarComposer::class);
+
+       View::composer('footer', function ($view) {
+           $view->with('footerSettings', [
+               'store_name'    => SystemSetting::getSetting('store_name', 'مكتبة الفقراء'),
+               'store_email'   => SystemSetting::getSetting('store_email', ''),
+               'store_phone'   => SystemSetting::getSetting('store_phone', ''),
+               'store_address' => SystemSetting::getSetting('store_address', ''),
+               'facebook_url'  => SystemSetting::getSetting('facebook_url', ''),
+               'instagram_url' => SystemSetting::getSetting('instagram_url', ''),
+               'whatsapp_number' => SystemSetting::getSetting('whatsapp_number', ''),
+           ]);
+       });
 
        View::composer(['components.book-carousel', 'partials.book-card-grid', 'moredetail', 'moredetail2'], function ($view) {
            static $wishlistBookIds = null;

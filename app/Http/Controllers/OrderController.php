@@ -137,7 +137,7 @@ class OrderController extends Controller
                 : null;
 
             try {
-                $customerName = $order->checkoutDetail->first_name ?? ($order->user ? $order->user->name : 'العميل');
+                $customerName = $order->checkoutDetail->full_name ?? ($order->user ? $order->user->name : 'العميل');
                 Mail::to($customerEmail)->send(new OrderStatusUpdateMail(
                     $order,
                     $customerName,

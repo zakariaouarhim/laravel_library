@@ -10,8 +10,8 @@ class CheckoutDetail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id', 'first_name', 'last_name', 'email', 'phone', 'address',
-        'city', 'zip_code', 'payment_method', 'subtotal', 'shipping',
+        'order_id', 'full_name', 'email', 'phone', 'address',
+        'city', 'notes', 'payment_method', 'subtotal', 'shipping',
         'discount', 'total', 'status', 'cart_items'
     ];
 

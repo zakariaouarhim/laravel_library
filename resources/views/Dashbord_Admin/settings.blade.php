@@ -111,8 +111,8 @@
                             <input type="url" name="instagram_url" class="form-control" value="{{ old('instagram_url', $settings['instagram_url']) }}" placeholder="https://instagram.com/...">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label"><i class="fab fa-twitter text-info"></i> تويتر</label>
-                            <input type="url" name="twitter_url" class="form-control" value="{{ old('twitter_url', $settings['twitter_url']) }}" placeholder="https://twitter.com/...">
+                            <label class="form-label"><i class="fab fa-whatsapp" style="color: #25D366;"></i> واتساب</label>
+                            <input type="text" name="whatsapp_number" class="form-control" value="{{ old('whatsapp_number', $settings['whatsapp_number']) }}" placeholder="212600000000">
                         </div>
                     </div>
                 </div>

@@ -16,7 +16,7 @@ class SystemSettingsController extends Controller
         'free_shipping_threshold' => '0',
         'facebook_url'            => '',
         'instagram_url'           => '',
-        'twitter_url'             => '',
+        'whatsapp_number'             => '',
         'min_order_amount'        => '0',
         'max_quantity_per_item'   => '10',
     ];
@@ -42,13 +42,13 @@ class SystemSettingsController extends Controller
             'free_shipping_threshold' => 'nullable|numeric|min:0',
             'facebook_url'            => 'nullable|url|max:500',
             'instagram_url'           => 'nullable|url|max:500',
-            'twitter_url'             => 'nullable|url|max:500',
+            'whatsapp_number'             => 'nullable|string|max:20',
             'min_order_amount'        => 'nullable|numeric|min:0',
             'max_quantity_per_item'   => 'nullable|integer|min:1|max:100',
         ]);
 
         foreach (self::DEFAULTS as $key => $default) {
-            SystemSetting::setSetting($key, $request->input($key, $default));
+            SystemSetting::setSetting($key, $request->input($key) ?? $default);
         }
 
         return back()->with('success', 'تم حفظ الإعدادات بنجاح');
