@@ -23,11 +23,12 @@ class SecurityHeaders
         // Content Security Policy
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://www.google.com https://books.google.com",
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
-            "img-src 'self' data: blob:",
-            "connect-src 'self'",
+            "img-src 'self' data: blob: https://books.google.com https://*.googleusercontent.com",
+            "connect-src 'self' https://www.google.com https://books.google.com",
+            "frame-src https://books.google.com https://www.google.com",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self'",

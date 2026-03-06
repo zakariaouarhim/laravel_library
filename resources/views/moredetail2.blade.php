@@ -21,18 +21,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <style>
-    .v2-btn-shelf{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:2px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:.9rem;transition:all .2s;font-family:'Tajawal',sans-serif;}
-    .v2-btn-shelf:hover{border-color:#6c63ff;color:#6c63ff;}
-    .v2-btn-shelf.v2-shelved{border-color:#6c63ff;color:#6c63ff;background:#f0eeff;}
-    .v2-shelf-menu{display:none;position:absolute;top:100%;right:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);padding:6px;min-width:180px;z-index:100;margin-top:4px;}
-    .v2-shelf-menu.show{display:block;}
-    .v2-shelf-option{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:none;cursor:pointer;border-radius:6px;font-size:.85rem;font-family:'Tajawal',sans-serif;transition:background .15s;}
-    .v2-shelf-option:hover{background:#f5f5f5;}
-    .v2-shelf-option.active{color:#6c63ff;font-weight:600;background:#f0eeff;}
-    .v2-shelf-remove{color:#dc3545;}
-    .v2-shelf-remove:hover{background:#fff0f0;}
-    </style>
+    
     @auth
         <meta name="auth-user" content="true">
     @endauth
@@ -80,7 +69,7 @@
                     <div class="v2-share">
                         <span class="v2-share-label"><i class="fas fa-share-alt"></i> مشاركة</span>
                         <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('moredetail2.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-fb" title="فيسبوك"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://twitter.com/intent/tiktok?text={{ urlencode($book->title) }}&url={{ urlencode(route('moredetail2.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-tw" title="tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="{{ \App\Models\SystemSetting::getSetting('tiktok_url', 'https://www.tiktok.com/@maktabatalfokara') }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-tw" title="تيك توك"><i class="fab fa-tiktok"></i></a>
                         <a href="https://api.whatsapp.com/send?text={{ urlencode($book->title . ' ' . route('moredetail2.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-wa" title="واتساب"><i class="fab fa-whatsapp"></i></a>
                         <button class="v2-share-btn v2-copy" title="نسخ الرابط" onclick="copyBookLink()"><i class="fas fa-link"></i></button>
                     </div>
@@ -521,7 +510,7 @@
                         <div class="v2-other-books">
                             <h6>كتب أخرى للمؤلف</h6>
                             <div class="v2-other-books-list">
-                                @foreach($authorBooks->take(4) as $otherBook)
+                                @foreach($authorBooks->take(6) as $otherBook)
                                 <a href="{{ route('moredetail2.page', $otherBook->id) }}" class="v2-other-book">
                                     <img src="{{ asset($otherBook->image) }}" alt="{{ $otherBook->title }}">
                                     <span>{{ Str::limit($otherBook->title, 30) }}</span>
@@ -894,11 +883,15 @@
     </script>
 
     @if($book->ISBN)
-    <script src="https://www.google.com/books/jsapi.js"></script>
     <script>
     (function() {
         var previewLoaded = false;
         var isbn = "{{ $book->ISBN }}";
+        var noPreviewHtml = '<div class="text-center py-5">' +
+            '<i class="fas fa-book" style="font-size:3rem;color:#ccc;"></i>' +
+            '<p class="mt-3 text-muted">لا توجد معاينة متاحة لهذا الكتاب</p>' +
+            '<a href="https://books.google.com/books?q=isbn:' + isbn + '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm mt-2">' +
+            '<i class="fas fa-external-link-alt me-1"></i> البحث في Google Books</a></div>';
 
         document.querySelectorAll('.v2-tab-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -910,18 +903,35 @@
         });
 
         function loadGooglePreview() {
-            google.books.load();
-            google.books.setOnLoadCallback(function() {
-                var viewer = new google.books.DefaultViewer(document.getElementById('googlePreviewContainer'));
-                viewer.load('ISBN:' + isbn, function() {
-                    document.getElementById('googlePreviewContainer').innerHTML =
-                        '<div class="text-center py-5">' +
-                        '<i class="fas fa-book" style="font-size:3rem;color:#ccc;"></i>' +
-                        '<p class="mt-3 text-muted">لا توجد معاينة متاحة لهذا الكتاب</p>' +
-                        '<a href="https://books.google.com/books?q=isbn:' + isbn + '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm mt-2">' +
-                        '<i class="fas fa-external-link-alt me-1"></i> البحث في Google Books</a></div>';
-                });
-            });
+            var container = document.getElementById('googlePreviewContainer');
+            // Timeout: if nothing loads in 8 seconds, show fallback
+            var timeout = setTimeout(function() {
+                container.innerHTML = noPreviewHtml;
+            }, 8000);
+
+            // Dynamically load the script to catch load errors
+            var script = document.createElement('script');
+            script.src = 'https://www.google.com/books/jsapi.js';
+            script.onload = function() {
+                try {
+                    google.books.load();
+                    google.books.setOnLoadCallback(function() {
+                        clearTimeout(timeout);
+                        var viewer = new google.books.DefaultViewer(container);
+                        viewer.load('ISBN:' + isbn, function() {
+                            container.innerHTML = noPreviewHtml;
+                        });
+                    });
+                } catch (e) {
+                    clearTimeout(timeout);
+                    container.innerHTML = noPreviewHtml;
+                }
+            };
+            script.onerror = function() {
+                clearTimeout(timeout);
+                container.innerHTML = noPreviewHtml;
+            };
+            document.head.appendChild(script);
         }
     })();
     </script>
