@@ -1,0 +1,51 @@
+/* ============================================
+   STATUS BADGES - Shared Component
+   Used by: orders, returns, shipments, dashboard
+   ============================================ */
+
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Pending */
+.status-pending,
+.return-status-pending {
+    background: #fef3cd;
+    color: #664d03;
+}
+
+/* Processing */
+.status-processing {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Success states (shipped, delivered, completed, approved) */
+.status-shipped,
+.status-delivered,
+.status-completed,
+.return-status-approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Danger states (cancelled, failed, returned, rejected) */
+.status-cancelled,
+.status-failed,
+.status-returned,
+.return-status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Refunded */
+.status-refunded,
+.return-status-refunded {
+    background: #cfe2ff;
+    color: #084298;
+}

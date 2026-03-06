@@ -54,7 +54,7 @@ body {
     width: 120px;
     height: 120px;
     background: linear-gradient(135deg, #4CAF50, #45a049);
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -70,7 +70,7 @@ body {
     width: 140px;
     height: 140px;
     border: 3px solid rgba(76, 175, 80, 0.3);
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     animation: pulse 2s infinite;
 }
 
@@ -152,7 +152,7 @@ body {
 
 .order-card {
     background: var(--color-bg-light);
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     padding: 2rem;
     margin-bottom: 2rem;
     border: 1px solid var(--color-border);
@@ -168,7 +168,7 @@ body {
     width: 100px;
     height: 100px;
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     transform: translate(30px, -30px);
 }
 
@@ -197,7 +197,7 @@ body {
     padding: 1.2rem;
     border-radius: 15px;
     border: 1px solid var(--color-border);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     position: relative;
 }
 
@@ -291,11 +291,11 @@ body {
 
 .btn-custom {
     padding: 1rem 2.5rem;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     font-weight: 600;
     font-size: 1.1rem;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     border: none;
     cursor: pointer;
@@ -311,7 +311,7 @@ body {
     width: 0;
     height: 0;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     transition: all 0.5s ease;
     transform: translate(-50%, -50%);
 }

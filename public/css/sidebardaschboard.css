@@ -97,7 +97,7 @@
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 6px;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -200,7 +200,7 @@
     color: var(--sidebar-text);
     text-decoration: none;
     border-radius: 6px;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
     font-size: 0.9rem;
     position: relative;
 }
@@ -286,7 +286,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
     flex-shrink: 0;
 }
 
@@ -332,7 +332,7 @@
 .user-avatar {
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     background: #dbeafe;
     color: #0284c7;
     display: flex;
@@ -379,7 +379,7 @@
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
     flex-shrink: 0;
 }
 

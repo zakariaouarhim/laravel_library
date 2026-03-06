@@ -46,7 +46,7 @@ body {
 
 .returns-hero .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: var(--z-above);
 }
 
 .returns-hero .hero-title {
@@ -86,11 +86,11 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 12px 28px;
     font-weight: 600;
     font-size: 15px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-new-return:hover {
@@ -123,11 +123,11 @@ body {
     background-color: white;
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 10px 20px;
     font-weight: 500;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     white-space: nowrap;
     display: flex;
     align-items: center;
@@ -149,7 +149,7 @@ body {
 
 .badge-count {
     background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 2px 8px;
     font-size: 12px;
     font-weight: 600;
@@ -171,9 +171,9 @@ body {
 .return-card {
     background: white;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     border: 1px solid var(--border-color);
 }
 
@@ -217,7 +217,7 @@ body {
     color: var(--text-muted);
     background-color: var(--light-gray);
     padding: 3px 10px;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
 }
 
 .return-header-info {
@@ -245,36 +245,6 @@ body {
     transition: transform 0.3s ease;
 }
 
-/* =================== Status Badges =================== */
-.status-badge {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 13px;
-    white-space: nowrap;
-}
-
-.return-status-pending {
-    background-color: #fef3cd;
-    color: #664d03;
-}
-
-.return-status-approved {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.return-status-rejected {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.return-status-refunded {
-    background-color: #cfe2ff;
-    color: #084298;
-}
-
 /* =================== Return Card Body (Expanded) =================== */
 .return-card-body {
     padding: 0 24px 24px;
@@ -296,7 +266,7 @@ body {
 
 .reason-text {
     background-color: var(--light-gray);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 15px 20px;
     font-size: 14px;
     color: var(--text-color);
@@ -310,7 +280,7 @@ body {
 
 .admin-notes-text {
     background-color: #e8f0fe;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 15px 20px;
     font-size: 14px;
     color: var(--primary-dark);
@@ -323,7 +293,7 @@ body {
     background-color: #d4edda;
     color: #155724;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
     font-weight: 500;
     display: inline-block;
@@ -409,7 +379,7 @@ body {
 /* Return Summary */
 .return-summary-section {
     background-color: var(--light-gray);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 15px 20px;
 }
 
@@ -490,7 +460,7 @@ body {
 /* Order Preview in Modal */
 .order-preview {
     background-color: var(--light-gray);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 15px;
     margin-bottom: 16px;
 }
@@ -545,7 +515,7 @@ body {
     padding: 60px 20px;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .empty-state-icon {
@@ -553,7 +523,7 @@ body {
     height: 100px;
     margin: 0 auto 20px;
     background: linear-gradient(135deg, var(--accent-color), #dce6f5);
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -577,10 +547,10 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 12px 30px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-primary-custom:hover {

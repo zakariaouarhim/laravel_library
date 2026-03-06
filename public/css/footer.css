@@ -40,7 +40,7 @@ main {
     grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
     gap: 40px;
     position: relative;
-    z-index: 2;
+    z-index: var(--z-above);
 }
 
 /* =================== Footer Brand =================== */
@@ -172,7 +172,7 @@ main {
 .footer-contact li i {
     width: 32px;
     height: 32px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: rgba(72, 202, 228, 0.12);
     display: flex;
     align-items: center;
@@ -211,11 +211,11 @@ main {
     bottom: 30px;
     right: 30px;
     display: none;
-    z-index: 9999;
+    z-index: var(--z-toast);
     border: none;
     background: var(--gradient-secondary);
     box-shadow: 0 4px 15px rgba(72, 202, 228, 0.4);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 #backToTop:hover {

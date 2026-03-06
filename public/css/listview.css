@@ -54,10 +54,10 @@
 .book-item.list-style {
     background: #ffffff;
     border: 1px solid #e8ecf1;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 20px;
     margin-bottom: 20px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -72,7 +72,7 @@
     width: 120px;
     height: 160px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-right: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
@@ -126,7 +126,7 @@
 .book-item.list-style .d-flex.align-items-center {
     background: var(--accent-color, var(--color-bg-light));
     padding: 12px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-top: 15px;
 }
 
@@ -153,7 +153,7 @@
     font-weight: 600;
     padding: 8px 16px;
     border-radius: 25px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     font-size: 0.9rem;
 
 }
@@ -371,7 +371,7 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(45deg, rgba(44, 75, 121, 0.05), rgba(90, 132, 195, 0.05));
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;

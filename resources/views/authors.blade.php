@@ -12,7 +12,7 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/authors-browse.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/author-pages.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
 
     <!-- Favicon -->

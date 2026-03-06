@@ -11,7 +11,7 @@
 /* Cart Card */
 .layout-cart .cart-card {
     background: #fff;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
     overflow: hidden;
 }
@@ -35,7 +35,7 @@
     background: #edf2f7;
     color: #4a5568;
     padding: 4px 14px;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     font-size: 0.85rem;
     font-weight: 600;
 }
@@ -50,10 +50,10 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     border: 1px solid #edf2f7;
     margin-bottom: 1rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .layout-cart .cart-item:hover {
@@ -141,7 +141,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
 }
 
 .layout-cart .qty-btn:hover {
@@ -185,12 +185,12 @@
     background: transparent;
     color: #cbd5e0;
     font-size: 0.95rem;
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
 }
 
 .layout-cart .remove-btn:hover {
@@ -224,11 +224,11 @@
     background: transparent;
     color: #e53e3e;
     padding: 8px 18px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
 }
 
 .layout-cart .clear-cart-btn:hover {
@@ -239,7 +239,7 @@
 /* Summary Card */
 .layout-cart .summary-card {
     background: #fff;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     position: sticky;
@@ -300,11 +300,11 @@
     color: #fff;
     text-align: center;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     font-size: 1.05rem;
     font-weight: 700;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     cursor: pointer;
 }
 
@@ -320,7 +320,7 @@
     text-align: center;
     padding: 4rem 2rem;
     background: #fff;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
 }
 
@@ -329,7 +329,7 @@
     height: 100px;
     margin: 0 auto 1.5rem;
     background: #edf2f7;
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -361,7 +361,7 @@
 .layout-cart .cart-item.removing {
     opacity: 0;
     transform: translateX(30px);
-    transition: all 0.4s ease;
+    transition: var(--transition-slow);
 }
 
 /* Toast */
@@ -370,7 +370,7 @@
     top: 20px;
     left: 50%;
     transform: translateX(-50%) translateY(-100px);
-    z-index: 9999;
+    z-index: var(--z-toast);
     padding: 12px 24px;
     border-radius: 10px;
     font-weight: 600;

@@ -17,7 +17,7 @@
 }
 
 .layout-checkout .card {
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     border: none;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -55,7 +55,7 @@
     position: relative;
     transition: background-color 0.2s ease;
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-bottom: 1rem !important;
     border: 1px solid #edf2f7;
 }
@@ -65,7 +65,7 @@
 }
 
 .layout-checkout .cart-items img {
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
 }
@@ -108,7 +108,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
 }
 
 .layout-checkout .quantity-btn:hover {
@@ -147,11 +147,11 @@
     font-size: 1rem;
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
     margin-right: 0.5rem;
 }
 
@@ -173,7 +173,7 @@
 
 .layout-checkout .form-control,
 .layout-checkout .form-select {
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border: 1px solid #e2e8f0;
     padding: 0.75rem 1rem;
     font-size: 0.975rem;
@@ -329,11 +329,11 @@
 .layout-checkout .btn-primary {
     background-color: #4299e1;
     border-color: #4299e1;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 1rem;
     font-weight: 600;
     padding: 0.875rem 1.5rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     position: relative;
     overflow: hidden;
 }
@@ -361,7 +361,7 @@
     margin-top: 0.25rem;
     margin-right: 0.5rem;
     border: 2px solid #cbd5e0;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
 }
 
 .layout-checkout .form-check-input:checked {
@@ -461,14 +461,14 @@
 
 /* Style for toast for delete */
 .layout-checkout .toast-container {
-    z-index: 1080;
+    z-index: var(--z-modal);
     margin-top: -10px;
     margin-bottom: 10px;
 }
 
 .layout-checkout #cartToast {
     min-width: 280px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 

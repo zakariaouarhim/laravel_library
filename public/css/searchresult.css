@@ -27,7 +27,7 @@
 
 .search-hero .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: var(--z-above);
 }
 
 .search-hero .hero-title {
@@ -68,17 +68,17 @@
     max-width: 700px;
     margin: 0 auto;
     position: relative;
-    z-index: 1000;
+    z-index: var(--z-navbar);
 }
 
 .search-box input {
     width: 100%;
     padding: 18px 140px 18px 25px;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     font-size: clamp(14px, 2.5vw, 16px);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     color: #333;
 }
 
@@ -96,11 +96,11 @@
     background: linear-gradient(135deg, var(--primary-color, var(--color-primary)) 0%, var(--secondary-color, #5A84C3) 100%);
     border: none;
     padding: 12px 25px;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     color: white;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     font-size: clamp(13px, 2vw, 15px);
     white-space: nowrap;
 }
@@ -120,7 +120,7 @@
     width: 100% !important;
     background-color: white !important;
     color: black;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
     text-align: right;
     max-height: 400px;

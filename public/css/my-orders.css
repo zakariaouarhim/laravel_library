@@ -46,7 +46,7 @@ body {
 
 .orders-hero .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: var(--z-above);
 }
 
 .orders-hero .hero-title {
@@ -98,11 +98,11 @@ body {
     background-color: white;
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 10px 20px;
     font-weight: 500;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     white-space: nowrap;
     display: flex;
     align-items: center;
@@ -124,7 +124,7 @@ body {
 
 .badge-count {
     background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 2px 8px;
     font-size: 12px;
     font-weight: 600;
@@ -146,9 +146,9 @@ body {
 .order-card {
     background: white;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     border: 1px solid var(--border-color);
 }
 
@@ -192,7 +192,7 @@ body {
     color: var(--text-muted);
     background-color: var(--light-gray);
     padding: 3px 10px;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
 }
 
 .order-header-info {
@@ -224,56 +224,6 @@ body {
 .expand-icon {
     color: var(--text-muted);
     transition: transform 0.3s ease;
-}
-
-/* =================== Status Badges =================== */
-.status-badge {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 13px;
-    white-space: nowrap;
-}
-
-.status-pending {
-    background-color: #fef3cd;
-    color: #664d03;
-}
-
-.status-processing {
-    background-color: #d1ecf1;
-    color: #0c5460;
-}
-
-.status-shipped {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-delivered {
-    background-color: #c3e6cb;
-    color: #0f5132;
-}
-
-.status-cancelled {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.status-failed {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.status-refunded {
-    background-color: #cfe2ff;
-    color: #084298;
-}
-
-.status-returned {
-    background-color: #f8d7da;
-    color: #721c24;
 }
 
 /* =================== Order Card Body (Expanded) =================== */
@@ -385,7 +335,7 @@ body {
 .summary-section,
 .shipping-section {
     background-color: var(--light-gray);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 15px 20px;
 }
 
@@ -441,11 +391,11 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 10px 24px;
     font-weight: 600;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-track:hover {
@@ -458,11 +408,11 @@ body {
     background-color: var(--danger-color);
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 10px 24px;
     font-weight: 600;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-cancel-order:hover {
@@ -476,11 +426,11 @@ body {
     background-color: var(--warning-color);
     color: #333;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 10px 24px;
     font-weight: 600;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     text-decoration: none;
 }
 
@@ -497,7 +447,7 @@ body {
     padding: 60px 20px;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .empty-state-icon {
@@ -505,7 +455,7 @@ body {
     height: 100px;
     margin: 0 auto 20px;
     background: linear-gradient(135deg, var(--accent-color), #dce6f5);
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -529,10 +479,10 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 12px 30px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-primary-custom:hover {
@@ -585,20 +535,20 @@ body {
     align-items: center;
     text-align: center;
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
     flex: 1;
 }
 
 .timeline-step-dot {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 16px;
     margin-bottom: 8px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     border: 3px solid var(--border-color);
     background-color: white;
     color: var(--text-muted);
@@ -661,7 +611,7 @@ body {
     background-color: #f8d7da;
     color: #721c24;
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
     font-weight: 600;
     text-align: center;
@@ -672,7 +622,7 @@ body {
     background: linear-gradient(135deg, #d4edda, #c3e6cb);
     color: #155724;
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
     font-weight: 600;
     text-align: center;

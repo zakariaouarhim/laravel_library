@@ -34,7 +34,7 @@
     border: none;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
  .btn-share {
@@ -71,9 +71,9 @@
     background: white;
     padding: 2rem;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     border-top: 4px solid;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     position: relative;
     overflow: hidden;
 }
@@ -86,13 +86,13 @@
     width: 100px;
     height: 100px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     transform: translate(30px, -30px);
 }
 
  .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
 }
 
  .stat-card.orders {
@@ -115,7 +115,7 @@
     font-size: 2.5rem;
     margin-bottom: 1rem;
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
 }
 
  .stat-card.orders .stat-icon {
@@ -140,7 +140,7 @@
     margin-bottom: 0.5rem;
     font-weight: 500;
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
 }
 
 .stat-value {
@@ -148,7 +148,7 @@
     font-weight: 700;
     color: #2c3e50;
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
 }
 
  .stat-change {
@@ -156,7 +156,7 @@
     margin-top: 0.5rem;
     font-weight: 600;
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
 }
 
  .stat-change.positive {
@@ -179,7 +179,7 @@
     background: white;
     padding: 2rem;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
  .chart-title {
@@ -207,7 +207,7 @@
     background: white;
     padding: 2rem;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
  .recent-orders h3 {
@@ -255,7 +255,7 @@
 
  .badge-custom {
     padding: 0.5rem 1rem;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     font-weight: 600;
     font-size: 0.85rem;
 }
@@ -270,7 +270,7 @@
  }
  .status-badge {
      padding: 0.5rem 1rem;
-     border-radius: 20px;
+     border-radius: var(--radius-xl);
      font-weight: 600;
      font-size: 0.85rem;
  }
@@ -324,10 +324,10 @@
     color: white;
     border: none;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 0.85rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
  .view-btn:hover {
@@ -405,13 +405,13 @@
 .book-item {
     background: white;
     padding: 1.2rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-bottom: 0.8rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-right: 3px solid var(--color-info);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .book-item:hover {
@@ -470,7 +470,7 @@
 }
 
 .status-update-section .form-select {
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border: 1px solid #d1ecf1;
     padding: 0.8rem;
     font-family: 'Cairo', sans-serif;
@@ -485,13 +485,13 @@
     background: linear-gradient(135deg, var(--color-success-alt), #229954);
     border: none;
     color: white;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 0.8rem 1.5rem;
     font-weight: 600;
     margin-top: 1rem;
     width: 100%;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     font-family: 'Cairo', sans-serif;
     font-size: 1rem;
 }

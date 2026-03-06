@@ -29,7 +29,7 @@ body {
     width: 80px;
     height: 80px;
     background: linear-gradient(135deg, var(--color-info), var(--color-secondary));
-    border-radius: 50%;
+    border-radius: var(--radius-circle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -57,7 +57,7 @@ body {
 /* Cards */
 .manage-card {
     background: white;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     padding: 2rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
@@ -88,7 +88,7 @@ body {
 .info-item {
     background: var(--color-bg-light);
     padding: 1rem;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     border-right: 3px solid var(--color-info);
 }
 
@@ -112,59 +112,10 @@ body {
     font-size: 1.1rem;
 }
 
-/* Status Badges */
-.status-badge {
-    padding: 0.4rem 1rem;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    display: inline-block;
-}
-
-.status-pending {
-    background: #fef3cd;
-    color: #664d03;
-}
-
-.status-processing {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-.status-shipped {
-    background: #cce5ff;
-    color: #004085;
-}
-
-.status-delivered {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-cancelled {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-failed {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-refunded {
-    background: #cfe2ff;
-    color: #084298;
-}
-
-.status-returned {
-    background: #f8d7da;
-    color: #721c24;
-}
-
 /* Books List */
 .books-list {
     background: var(--color-bg-light);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 1rem;
 }
 
@@ -212,7 +163,7 @@ body {
 .action-section {
     padding: 1.5rem;
     background: var(--color-bg-light);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     margin-bottom: 1rem;
 }
 
@@ -241,7 +192,7 @@ body {
     font-weight: 600;
     font-family: 'Cairo', sans-serif;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-cancel:hover {
@@ -259,7 +210,7 @@ body {
     font-weight: 600;
     font-family: 'Cairo', sans-serif;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-return:hover {
@@ -295,7 +246,7 @@ body {
 /* Return Requests History */
 .return-item {
     background: var(--color-bg-light);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 1.2rem;
     margin-bottom: 1rem;
     border-right: 4px solid var(--color-info);
@@ -320,7 +271,7 @@ body {
 
 .return-status {
     padding: 0.3rem 0.8rem;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     font-size: 0.8rem;
     font-weight: 600;
 }
@@ -355,7 +306,7 @@ body {
 .return-admin-notes {
     background: #e8f0fe;
     padding: 0.8rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 0.85rem;
     color: #2c3e50;
     margin-bottom: 0.5rem;
@@ -375,12 +326,12 @@ body {
     background: linear-gradient(135deg, var(--color-info), var(--color-secondary));
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     padding: 0.8rem 2.5rem;
     font-weight: 600;
     font-family: 'Cairo', sans-serif;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     text-decoration: none;
 }
 
@@ -392,7 +343,7 @@ body {
 
 /* Alerts */
 .alert {
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     font-family: 'Cairo', sans-serif;
     font-weight: 500;
 }

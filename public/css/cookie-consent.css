@@ -4,7 +4,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 9999;
+    z-index: var(--z-toast);
     padding: 0 20px 20px;
     transform: translateY(100%);
     opacity: 0;
@@ -25,7 +25,7 @@
     max-width: 900px;
     margin: 0 auto;
     background: #fff;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     padding: 20px 28px;
     display: flex;
     align-items: center;
@@ -76,7 +76,7 @@
     font-weight: 600;
     cursor: pointer;
     border: none;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     white-space: nowrap;
 }
 

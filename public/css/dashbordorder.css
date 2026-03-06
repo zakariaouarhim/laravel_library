@@ -35,7 +35,7 @@ body {
     padding: 1.5rem;
     border-radius: 15px;
     margin-bottom: 2rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .filter-section .form-control,
@@ -57,7 +57,7 @@ body {
     border-radius: 10px;
     color: white;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-apply-filters:hover {
@@ -78,9 +78,9 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     border-right: 4px solid var(--color-info);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .stat-card:hover {
@@ -125,7 +125,7 @@ body {
 .table-section {
     background: white;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
 
@@ -163,65 +163,9 @@ body {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     padding: 0.5rem 1rem;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     font-weight: 600;
     font-size: 0.9rem;
-}
-
-/* Status Badges */
-.status-badge {
-    padding: 0.6rem 1.2rem;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    display: inline-block;
-}
-.badge{
-    
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.85rem;
-
-}
-.status-pending {
-    background: #fef3cd;
-    color: #664d03;
-}
-
-.status-processing {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-.status-shipped {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-delivered {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-cancelled {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-failed {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-refunded {
-    background: #cfe2ff;
-    color: #084298;
-}
-
-.status-returned {
-    background: #f8d7da;
-    color: #721c24;
 }
 
 /* Action Buttons */
@@ -232,12 +176,12 @@ body {
 
 .btn-action {
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border: none;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-view {
@@ -332,7 +276,7 @@ body {
 .book-item {
     background: white;
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-bottom: 0.8rem;
     display: flex;
     justify-content: space-between;
@@ -380,7 +324,7 @@ body {
 }
 
 .status-update-section .form-select {
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border: 1px solid #e0e6ed;
 }
 
@@ -388,7 +332,7 @@ body {
     background: linear-gradient(135deg, var(--color-success-alt), #229954);
     border: none;
     color: white;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 0.8rem 1.5rem;
     font-weight: 600;
     margin-top: 1rem;
@@ -408,7 +352,7 @@ body {
 }
 
 .page-link {
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     color: var(--color-info);
     border-color: #e0e6ed;
 }

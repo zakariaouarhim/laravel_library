@@ -1,0 +1,817 @@
+/* ============================================
+   AUTHOR PAGES STYLES
+   Merged from: authors-browse.css, author-profile.css
+   ============================================ */
+
+/* ============================================
+   Section 1: Authors Browse Page
+   ============================================ */
+* {
+    font-family: 'Tajawal', sans-serif;
+}
+
+body {
+    background-color: #f9fafc;
+    
+}
+
+/* =================== Filters Bar =================== */
+.filters-bar {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.filters-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 42px 10px 14px;
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'Tajawal', sans-serif;
+    transition: border-color 0.3s;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--color-secondary);
+}
+
+.filter-select {
+    padding: 10px 14px;
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Tajawal', sans-serif;
+    background: white;
+    min-width: 140px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--color-secondary);
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    background: var(--gradient-secondary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-btn:hover {
+    background: var(--gradient-secondary-dark);
+    transform: translateY(-1px);
+}
+
+/* Reset Button */
+.reset-btn {
+    padding: 10px 20px;
+    background: var(--color-bg-light);
+    color: var(--color-text-grey);
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.reset-btn:hover {
+    background: var(--color-border);
+    color: #495057;
+    border-color: #dee2e6;
+    text-decoration: none;
+}
+
+/* =================== Letter Filter =================== */
+.letter-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.letter-item {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #495057;
+    background: white;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    transition: all 0.2s;
+}
+
+.letter-item:first-child {
+    width: auto;
+    padding: 0 14px;
+    font-size: 13px;
+}
+
+.letter-item:hover {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+}
+
+.letter-item.active {
+    background: var(--color-secondary);
+    color: white;
+    border-color: var(--color-secondary);
+}
+
+/* =================== Results Info =================== */
+.results-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--color-text-grey);
+}
+
+.search-term {
+    background: #e8f8f5;
+    color: #1abc9c;
+    padding: 4px 12px;
+    border-radius: var(--radius-xl);
+    font-size: 13px;
+}
+
+/* =================== Authors Grid =================== */
+.authors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.author-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    color: inherit;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    transition: var(--transition-base);
+}
+
+.author-card:hover {
+    border-color: var(--color-secondary);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(72, 202, 228, 0.15);
+}
+
+/* Avatar as link */
+a.author-card-avatar {
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+/* Name Link */
+.author-card-name-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.author-card-name-link:hover .author-card-name {
+    color: var(--color-secondary);
+}
+
+/* Follow Button on Card */
+.follow-btn-card {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-circle);
+    border: 2px solid var(--color-primary);
+    background: transparent;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-size: 0.8rem;
+}
+
+.follow-btn-card:hover {
+    background: var(--color-primary);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.follow-btn-card.following {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: #fff;
+}
+
+.follow-btn-card.following:hover {
+    background: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* Avatar */
+.author-card-avatar {
+    flex-shrink: 0;
+}
+
+.author-card-avatar img {
+    width: 70px;
+    height: 70px;
+    border-radius: var(--radius-circle);
+    object-fit: cover;
+    border: 3px solid #e8f4f8;
+}
+
+.author-card-placeholder {
+    width: 70px;
+    height: 70px;
+    border-radius: var(--radius-circle);
+    background: var(--gradient-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.author-card-placeholder span {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Card Info */
+.author-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.author-card-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.author-card-nationality {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--color-text-grey);
+    margin-bottom: 4px;
+}
+
+.author-card-nationality i {
+    color: var(--color-secondary);
+    font-size: 12px;
+}
+
+.author-card-books {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--color-secondary);
+    font-weight: 600;
+}
+
+/* =================== Pagination =================== */
+/* Pagination */
+.pagination {
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.page-link {
+    border-radius: var(--radius-sm);
+    color: var(--color-secondary) ;
+    border-color: #e0e6ed;
+}
+
+.page-link:hover {
+    background-color: var(--color-secondary) ;
+    color: white;
+    border-color: var(--color-secondary) ;
+}
+
+.page-item.active .page-link {
+    background-color: var(--color-secondary) ;
+    border-color: var(--color-secondary) ;
+}
+
+/* =================== Empty State =================== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-grey);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.empty-state .btn {
+    margin-top: 15px;
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+/* =================== Responsive =================== */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .filters-form {
+        flex-direction: column;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .letter-item {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .authors-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .follow-btn-card {
+        width: 32px;
+        height: 32px;
+        font-size: 0.7rem;
+    }
+}
+
+/* ============================================
+   Section 2: Author Profile Page
+   ============================================ */
+* {
+    font-family: 'Tajawal', sans-serif;
+}
+
+body {
+    background-color: #f9fafc;
+}
+
+/* =================== Hero Section =================== */
+.author-hero {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 2.5rem 0 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.author-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/images/pattern.webp');
+    opacity: 0.08;
+}
+
+.author-hero .container {
+    position: relative;
+    z-index: var(--z-above);
+}
+
+/* Breadcrumb in hero */
+.author-hero .breadcrumb {
+    background: transparent;
+    margin-bottom: 1.5rem;
+    padding: 0;
+    font-size: 14px;
+}
+
+.author-hero .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.author-hero .breadcrumb-item a:hover {
+    color: #fff;
+}
+
+.author-hero .breadcrumb-item.active {
+    color: #fff;
+}
+
+.author-hero .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Profile in hero */
+.hero-profile {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.hero-avatar {
+    flex-shrink: 0;
+}
+
+.hero-avatar img {
+    width: 140px;
+    height: 140px;
+    border-radius: var(--radius-circle);
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-placeholder {
+    width: 140px;
+    height: 140px;
+    border-radius: var(--radius-circle);
+    background: rgba(255, 255, 255, 0.15);
+    border: 4px solid rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-placeholder span {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.hero-info h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 15px;
+}
+
+.hero-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.9;
+}
+
+.hero-meta i {
+    opacity: 0.7;
+}
+
+/* =================== Details Section =================== */
+.author-details-section {
+    margin-top: -30px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 3;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 25px;
+}
+
+.detail-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.detail-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #f0f4f8;
+}
+
+.detail-card-header i {
+    color: var(--color-secondary);
+    font-size: 1.2rem;
+}
+
+.detail-card-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+}
+
+/* Bio Card */
+.bio-text {
+    color: #495057;
+    line-height: 1.9;
+    font-size: 15px;
+    margin: 0;
+}
+
+/* Info Card */
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.info-list li:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--color-text-grey);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-label i {
+    color: var(--color-secondary);
+    width: 18px;
+    text-align: center;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.info-link {
+    color: var(--color-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.info-link:hover {
+    color: var(--color-secondary-dark);
+}
+
+/* Role Stats */
+.role-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid #f0f4f8;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: var(--radius-xl);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.role-primary {
+    background: #e8f8f5;
+    color: #1abc9c;
+}
+
+.role-coauthor {
+    background: #ebf5fb;
+    color: var(--color-info);
+}
+
+.role-translator {
+    background: #fef9e7;
+    color: var(--color-warning-alt);
+}
+
+.role-editor {
+    background: #fdedec;
+    color: var(--color-danger-alt);
+}
+
+.role-illustrator {
+    background: #f4ecf7;
+    color: #8e44ad;
+}
+
+/* =================== Books Sections =================== */
+.author-books {
+    padding: 10px 0 60px;
+}
+
+.books-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--color-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: var(--color-secondary);
+}
+
+/* Books Grid */
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+    justify-items: center;
+}
+
+/* =================== Pagination =================== */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.pagination-wrapper .page-link {
+    color: var(--color-secondary);
+    border-color: #e0e6ed;
+    border-radius: var(--radius-sm);
+}
+
+.pagination-wrapper .page-link:hover {
+    background-color: var(--color-secondary);
+    color: white;
+    border-color: var(--color-secondary);
+}
+
+.pagination-wrapper .page-item.active .page-link {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+/* =================== Empty State =================== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-grey);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.empty-state .btn {
+    margin-top: 20px;
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+/* =================== Responsive =================== */
+@media (max-width: 992px) {
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .author-hero {
+        padding: 2rem 0 2.5rem;
+    }
+
+    .hero-profile {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .hero-avatar img,
+    .avatar-placeholder {
+        width: 110px;
+        height: 110px;
+    }
+
+    .avatar-placeholder span {
+        font-size: 2.5rem;
+    }
+
+    .hero-info h1 {
+        font-size: 1.7rem;
+    }
+
+    .hero-meta {
+        justify-content: center;
+    }
+
+    .detail-card {
+        padding: 20px;
+    }
+
+    .books-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+
+    .info-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}

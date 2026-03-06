@@ -43,9 +43,9 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     border-right: 4px solid var(--color-info);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .stat-card:hover {
@@ -84,7 +84,7 @@ body {
     padding: 1.5rem;
     border-radius: 15px;
     margin-bottom: 2rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .filter-section .form-control,
@@ -107,7 +107,7 @@ body {
     color: white;
     font-weight: 600;
     padding: 0.8rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .btn-apply-filters:hover {
@@ -120,7 +120,7 @@ body {
 .table-section {
     background: white;
     border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
 
@@ -200,7 +200,7 @@ body {
     border: none;
     cursor: pointer;
     padding: 6px 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     transition: 0.2s;
     font-size: 0.9rem;
 }
@@ -243,12 +243,12 @@ body {
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .current-img-thumb {
     height: 60px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     object-fit: cover;
 }
 
@@ -305,12 +305,12 @@ body {
     position: fixed;
     bottom: 1.5rem;
     left: 1.5rem;
-    z-index: 9999;
+    z-index: var(--z-toast);
 }
 
 .toast-box {
     padding: 0.75rem 1.2rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     color: #fff;
     margin-top: 0.5rem;
     font-family: 'Cairo', sans-serif;
