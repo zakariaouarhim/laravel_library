@@ -31,7 +31,7 @@ body {
 }
 
 .page-header h1 i {
-    color: #48CAE4;
+    color: var(--color-secondary);
 }
 
 /* Stats Cards */
@@ -47,7 +47,7 @@ body {
     padding: 1.5rem;
     border-radius: 15px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    border-left: 4px solid #48CAE4;
+    border-left: 4px solid var(--color-secondary);
     transition: all 0.3s ease;
 }
 
@@ -105,12 +105,12 @@ body {
 
 .form-control:focus,
 .form-select:focus {
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
     box-shadow: 0 0 0 0.2rem rgba(72, 202, 228, 0.25);
 }
 
 .btn-add {
-    background: linear-gradient(135deg, #48CAE4, #00B4D8);
+    background: var(--gradient-secondary);
     border: none;
     color: white;
     padding: 0.8rem 1.5rem;
@@ -164,7 +164,7 @@ body {
 }
 
 .table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--color-bg-light);
 }
 
 /* Product Image */
@@ -189,7 +189,7 @@ body {
 }
 
 .product-price {
-    color: #27ae60;
+    color: var(--color-success-alt);
     font-weight: 700;
     font-size: 1.1rem;
 }
@@ -223,17 +223,17 @@ body {
 }
 
 .btn-view {
-    background: #48CAE4;
+    background: var(--color-secondary);
     color: white;
 }
 
 .btn-view:hover {
-    background: #00B4D8;
+    background: var(--color-secondary-dark);
     transform: translateY(-2px);
 }
 
 .btn-edit {
-    background: #f39c12;
+    background: var(--color-warning-alt);
     color: white;
 }
 
@@ -243,12 +243,12 @@ body {
 }
 
 .btn-delete {
-    background: #e74c3c;
+    background: var(--color-danger-alt);
     color: white;
 }
 
 .btn-delete:hover {
-    background: #c0392b;
+    background: var(--color-danger-dark);
     transform: translateY(-2px);
 }
 
@@ -273,7 +273,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #48CAE4, #00B4D8);
+    background: var(--gradient-secondary);
     color: white;
     border: none;
     border-radius: 15px 15px 0 0;
@@ -295,7 +295,7 @@ body {
 
 .modal-footer {
     padding: 1.5rem;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--color-border);
 }
 
 .form-label {
@@ -311,20 +311,20 @@ body {
 }
 
 .page-link {
-    color: #48CAE4;
+    color: var(--color-secondary);
     border-color: #e0e6ed;
     border-radius: 8px;
 }
 
 .page-link:hover {
-    background-color: #48CAE4;
+    background-color: var(--color-secondary);
     color: white;
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
 }
 
 .page-item.active .page-link {
-    background-color: #48CAE4;
-    border-color: #48CAE4;
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
 }
 
 /* Alert Styles */

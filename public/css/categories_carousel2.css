@@ -4,12 +4,12 @@
 .category-section2 {
     --color-primary: #5de1e6;
     --color-primary-dark: #00695C;
-    --color-accent: #48cae4;
-    --color-white: #ffffff;
+    --color-accent: var(--color-secondary);
+    --color-white: var(--color-white);
     --color-dark: #2c3e50;
-    --color-muted: #6c757d;
-    --color-bg-light: #f8f9fa;
-    --color-border: #dee2e6;
+    --color-muted: var(--color-text-grey);
+    --color-bg-light: var(--color-bg-light);
+    --color-border: var(--color-border-dark);
 
     --spacing-sm: 1rem;
     --spacing-md: 1.5rem;

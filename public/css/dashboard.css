@@ -49,7 +49,7 @@
 }
 
  .btn-export {
-    background: linear-gradient(135deg, #27ae60, #229954);
+    background: linear-gradient(135deg, var(--color-success-alt), #229954);
     color: white;
 }
 
@@ -96,19 +96,19 @@
 }
 
  .stat-card.orders {
-    border-top-color: #3498db;
+    border-top-color: var(--color-info);
 }
 
  .stat-card.revenue {
-    border-top-color: #27ae60;
+    border-top-color: var(--color-success-alt);
 }
 
  .stat-card.pending {
-    border-top-color: #f39c12;
+    border-top-color: var(--color-warning-alt);
 }
 
  .stat-card.delivered {
-    border-top-color: #9b59b6;
+    border-top-color: var(--color-purple);
 }
 
  .stat-icon {
@@ -119,19 +119,19 @@
 }
 
  .stat-card.orders .stat-icon {
-    color: #3498db;
+    color: var(--color-info);
 }
 
 .stat-card.revenue .stat-icon {
-    color: #27ae60;
+    color: var(--color-success-alt);
 }
 
 .stat-card.pending .stat-icon {
-    color: #f39c12;
+    color: var(--color-warning-alt);
 }
 
 .stat-card.delivered .stat-icon {
-    color: #9b59b6;
+    color: var(--color-purple);
 }
 
 .stat-title {
@@ -160,11 +160,11 @@
 }
 
  .stat-change.positive {
-    color: #27ae60;
+    color: var(--color-success-alt);
 }
 
  .stat-change.negative {
-    color: #e74c3c;
+    color: var(--color-danger-alt);
 }
 
 /* Charts Section */
@@ -192,7 +192,7 @@
 }
 
  .chart-title i {
-    color: #3498db;
+    color: var(--color-info);
     font-size: 1.3rem;
 }
 
@@ -220,7 +220,7 @@
 }
 
   .recent-orders h3 i {
-    color: #3498db;
+    color: var(--color-info);
 }
 
  .table {
@@ -228,7 +228,7 @@
 }
 
  .table thead {
-    background: #f8f9fa;
+    background: var(--color-bg-light);
 }
 
  .table thead th {
@@ -241,7 +241,7 @@
  .table tbody td {
     color: #555;
     padding: 1rem;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
 }
 
@@ -250,7 +250,7 @@
 }
 
  .table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--color-bg-light);
 }
 
  .badge-custom {
@@ -315,12 +315,12 @@
  }
 
  .order-id {
-    color: #3498db;
+    color: var(--color-info);
     font-weight: 700;
 }
 
  .view-btn {
-    background: #3498db;
+    background: var(--color-info);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -343,7 +343,7 @@
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #3498db, #2196F3);
+    background: linear-gradient(135deg, var(--color-info), #2196F3);
     color: white;
     border: none;
     border-radius: 15px 15px 0 0;
@@ -370,7 +370,7 @@
     gap: 2rem;
     margin-bottom: 2rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .detail-row:last-of-type {
@@ -396,7 +396,7 @@
 
 /* Books List */
 .books-list {
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     padding: 1.5rem;
     border-radius: 10px;
     margin-top: 1rem;
@@ -410,7 +410,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-right: 3px solid #3498db;
+    border-right: 3px solid var(--color-info);
     transition: all 0.3s ease;
 }
 
@@ -440,7 +440,7 @@
 
 .book-price {
     font-weight: 600;
-    color: #3498db;
+    color: var(--color-info);
     font-size: 1.1rem;
     text-align: left;
     white-space: nowrap;
@@ -466,7 +466,7 @@
 }
 
 .status-update-section h6 i {
-    color: #3498db;
+    color: var(--color-info);
 }
 
 .status-update-section .form-select {
@@ -477,12 +477,12 @@
 }
 
 .status-update-section .form-select:focus {
-    border-color: #3498db;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
 
 .btn-update-status {
-    background: linear-gradient(135deg, #27ae60, #229954);
+    background: linear-gradient(135deg, var(--color-success-alt), #229954);
     border: none;
     color: white;
     border-radius: 8px;

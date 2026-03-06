@@ -3,20 +3,20 @@
    ============================================ */
 
 :root {
-    --primary-color: #2C4B79;
-    --primary-light: #3a5f93;
-    --primary-dark: #203a61;
-    --secondary-color: #5A84C3;
-    --accent-color: #F0F4FA;
-    --text-color: #333;
-    --text-light: #666;
-    --text-muted: #888;
-    --light-gray: #f8f9fa;
-    --border-color: #e9ecef;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    --primary-color: var(--color-primary);
+    --primary-light: var(--color-primary-light);
+    --primary-dark: var(--color-primary-dark);
+    --secondary-color: var(--color-accent);
+    --accent-color: var(--color-accent-bg);
+    --text-color: var(--color-text);
+    --text-light: var(--color-text-light);
+    --text-muted: var(--color-text-muted);
+    --light-gray: var(--color-bg-light);
+    --border-color: var(--color-border);
+    --success-color: var(--color-success);
+    --danger-color: var(--color-danger);
+    --warning-color: var(--color-warning);
+    --card-shadow: var(--shadow-card);
 }
 
 body {

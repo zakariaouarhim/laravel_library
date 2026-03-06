@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>طلبات الإسترجاع</title>
 
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <!-- Bootstrap RTL CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
     <!-- Stylesheets -->

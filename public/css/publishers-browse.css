@@ -9,7 +9,7 @@ body {
 
 /* =================== Hero =================== */
 .publishers-hero {
-    background: linear-gradient(135deg, #2C4B79 0%, #48CAE4 100%);
+    background: var(--gradient-primary);
     color: white;
     padding: 3rem 0;
     position: relative;
@@ -103,7 +103,7 @@ body {
 .search-box input {
     width: 100%;
     padding: 10px 42px 10px 14px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color-border);
     border-radius: 10px;
     font-size: 15px;
     font-family: 'Tajawal', sans-serif;
@@ -112,12 +112,12 @@ body {
 
 .search-box input:focus {
     outline: none;
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
 }
 
 .filter-select {
     padding: 10px 14px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color-border);
     border-radius: 10px;
     font-size: 14px;
     font-family: 'Tajawal', sans-serif;
@@ -129,12 +129,12 @@ body {
 
 .filter-select:focus {
     outline: none;
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
 }
 
 .filter-btn {
     padding: 10px 20px;
-    background: linear-gradient(135deg, #48CAE4, #00B4D8);
+    background: var(--gradient-secondary);
     color: white;
     border: none;
     border-radius: 10px;
@@ -149,15 +149,15 @@ body {
 }
 
 .filter-btn:hover {
-    background: linear-gradient(135deg, #00B4D8, #0096c7);
+    background: var(--gradient-secondary-dark);
     transform: translateY(-1px);
 }
 
 .reset-btn {
     padding: 10px 20px;
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
+    background: var(--color-bg-light);
+    color: var(--color-text-grey);
+    border: 2px solid var(--color-border);
     border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
@@ -171,7 +171,7 @@ body {
 }
 
 .reset-btn:hover {
-    background: #e9ecef;
+    background: var(--color-border);
     color: #495057;
     border-color: #dee2e6;
     text-decoration: none;
@@ -184,7 +184,7 @@ body {
     gap: 12px;
     margin-bottom: 20px;
     font-size: 14px;
-    color: #6c757d;
+    color: var(--color-text-grey);
 }
 
 .search-term {
@@ -216,7 +216,7 @@ body {
 }
 
 .publisher-card:hover {
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
     transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(72, 202, 228, 0.15);
 }
@@ -252,7 +252,7 @@ a.publisher-card-logo {
 
 .publisher-card-placeholder i {
     font-size: 1.5rem;
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 /* Card Name Link */
@@ -262,7 +262,7 @@ a.publisher-card-logo {
 }
 
 .publisher-card-name-link:hover .publisher-card-name {
-    color: #48CAE4;
+    color: var(--color-secondary);
 }
 
 /* Follow Button on Card */
@@ -271,9 +271,9 @@ a.publisher-card-logo {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: 2px solid #2C4B79;
+    border: 2px solid var(--color-primary);
     background: transparent;
-    color: #2C4B79;
+    color: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -283,21 +283,21 @@ a.publisher-card-logo {
 }
 
 .follow-btn-card:hover {
-    background: #2C4B79;
+    background: var(--color-primary);
     color: #fff;
     transform: scale(1.1);
 }
 
 .follow-btn-card.following {
-    background: #48CAE4;
-    border-color: #48CAE4;
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
     color: #fff;
 }
 
 .follow-btn-card.following:hover {
     background: transparent;
-    color: #2C4B79;
-    border-color: #2C4B79;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 /* Card Info */
@@ -321,12 +321,12 @@ a.publisher-card-logo {
     align-items: center;
     gap: 5px;
     font-size: 13px;
-    color: #6c757d;
+    color: var(--color-text-grey);
     margin-bottom: 4px;
 }
 
 .publisher-card-country i {
-    color: #48CAE4;
+    color: var(--color-secondary);
     font-size: 12px;
 }
 
@@ -335,7 +335,7 @@ a.publisher-card-logo {
     align-items: center;
     gap: 5px;
     font-size: 13px;
-    color: #48CAE4;
+    color: var(--color-secondary);
     font-weight: 600;
 }
 
@@ -347,26 +347,26 @@ a.publisher-card-logo {
 
 .page-link {
     border-radius: 8px;
-    color: #48CAE4;
+    color: var(--color-secondary);
     border-color: #e0e6ed;
 }
 
 .page-link:hover {
-    background-color: #48CAE4;
+    background-color: var(--color-secondary);
     color: white;
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
 }
 
 .page-item.active .page-link {
-    background-color: #48CAE4;
-    border-color: #48CAE4;
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
 }
 
 /* =================== Empty State =================== */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #6c757d;
+    color: var(--color-text-grey);
 }
 
 .empty-state i {
@@ -383,8 +383,8 @@ a.publisher-card-logo {
 
 .empty-state .btn {
     margin-top: 15px;
-    background: #48CAE4;
-    border-color: #48CAE4;
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
 }
 
 /* =================== Responsive =================== */

@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>سلّة التسوق</title>
     <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
     <link rel="stylesheet" href="{{ asset('css/cart.css') }}">

@@ -1,0 +1,104 @@
+/* ============================================
+   DESIGN SYSTEM - Centralized CSS Variables
+   Loaded before all other stylesheets.
+   ============================================ */
+
+:root {
+    /* ---- Brand Colors ---- */
+    --color-primary: #2C4B79;
+    --color-primary-light: #3a5f93;
+    --color-primary-dark: #203a61;
+    --color-primary-darker: #1a3a5c;
+    --color-secondary: #48CAE4;
+    --color-secondary-dark: #00B4D8;
+    --color-secondary-darker: #0096c7;
+    --color-accent: #5A84C3;
+    --color-accent-bg: #F0F4FA;
+    
+    /* ---- Neutral Colors ---- */
+    --color-white: #ffffff;
+    --color-bg-light: #f8f9fa;
+    --color-bg-page: #f9fafc;
+    --color-border: #e9ecef;
+    --color-border-dark: #dee2e6;
+    --color-border-light: #f0f0f0;
+
+    /* ---- Text Colors ---- */
+    --color-text: #333;
+    --color-text-dark: #1a2f4e;
+    --color-text-light: #666;
+    --color-text-muted: #888;
+    --color-text-grey: #6c757d;
+
+    /* ---- Status Colors ---- */
+    --color-success: #28a745;
+    --color-success-alt: #27ae60;
+    --color-success-light: #2ecc71;
+    --color-danger: #dc3545;
+    --color-danger-dark: #c0392b;
+    --color-danger-alt: #e74c3c;
+    --color-warning: #ffc107;
+    --color-warning-alt: #f39c12;
+    --color-info: #3498db;
+    --color-purple: #9b59b6;
+
+    /* ---- Gradients ---- */
+    --gradient-primary: linear-gradient(135deg, #2C4B79 0%, #48CAE4 100%);
+    --gradient-secondary: linear-gradient(135deg, #48CAE4, #00B4D8);
+    --gradient-secondary-dark: linear-gradient(135deg, #00B4D8, #0096c7);
+    --gradient-admin: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+
+    /* ---- Shadows ---- */
+    --shadow-xs: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+    --shadow-card: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+    /* ---- Border Radius ---- */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-pill: 50px;
+    --radius-circle: 50%;
+
+    /* ---- Transitions ---- */
+    --transition-fast: all 0.2s ease;
+    --transition-base: all 0.3s ease;
+    --transition-slow: all 0.4s ease;
+
+    /* ---- Z-Index Scale ---- */
+    --z-base: 1;
+    --z-above: 2;
+    --z-dropdown: 100;
+    --z-sticky: 500;
+    --z-navbar: 1000;
+    --z-overlay: 1050;
+    --z-modal: 1080;
+    --z-toast: 9999;
+
+    /* ---- Font Family ---- */
+    --font-main: 'Tajawal', sans-serif;
+    --font-admin: 'Cairo', sans-serif;
+
+    /* ---- Spacing ---- */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+
+    /* ---- Font Sizes ---- */
+    --text-xs: 0.75rem;
+    --text-sm: 0.85rem;
+    --text-base: 0.95rem;
+    --text-md: 1.1rem;
+    --text-lg: 1.2rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 2rem;
+    --text-3xl: 2.5rem;
+}

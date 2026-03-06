@@ -31,7 +31,7 @@
  }
 
  .page-header h1 i {
-     color: #3498db;
+     color: var(--color-info);
  }
 
  .header-actions {
@@ -41,7 +41,7 @@
  }
 
  .btn-action-header {
-     background: linear-gradient(135deg, #3498db, #2196F3);
+     background: linear-gradient(135deg, var(--color-info), #2196F3);
      border: none;
      color: white;
      padding: 0.8rem 1.5rem;
@@ -61,7 +61,7 @@
  }
 
  .btn-action-header.secondary {
-     background: linear-gradient(135deg, #9b59b6, #8e44ad);
+     background: linear-gradient(135deg, var(--color-purple), #8e44ad);
  }
 
  .btn-action-header.secondary:hover {
@@ -81,7 +81,7 @@
      padding: 1.5rem;
      border-radius: 15px;
      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-     border-left: 4px solid #3498db;
+     border-left: 4px solid var(--color-info);
      transition: all 0.3s ease;
  }
 
@@ -139,12 +139,12 @@
 
  .form-control:focus,
  .form-select:focus {
-     border-color: #3498db;
+     border-color: var(--color-info);
      box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
  }
 
  .btn-filter {
-     background: linear-gradient(135deg, #f39c12, #e67e22);
+     background: linear-gradient(135deg, var(--color-warning-alt), #e67e22);
      border: none;
      color: white;
      padding: 0.8rem 1.5rem;
@@ -209,7 +209,7 @@
  }
 
  .table tbody tr:hover {
-     background-color: #f8f9fa;
+     background-color: var(--color-bg-light);
  }
 
  /* Checkbox */
@@ -218,8 +218,8 @@
  }
 
  .form-check-input:checked {
-     background-color: #3498db;
-     border-color: #3498db;
+     background-color: var(--color-info);
+     border-color: var(--color-info);
  }
 
  /* Product Image */
@@ -247,7 +247,7 @@
  }
 
  .product-price {
-     color: #27ae60;
+     color: var(--color-success-alt);
      font-weight: 700;
  }
 
@@ -294,7 +294,7 @@
  }
 
  .btn-outline-info {
-     background: #3498db;
+     background: var(--color-info);
      color: white;
  }
 
@@ -304,7 +304,7 @@
  }
 
  .btn-outline-primary {
-     background: #f39c12;
+     background: var(--color-warning-alt);
      color: white;
  }
 
@@ -314,17 +314,17 @@
  }
 
  .btn-outline-danger {
-     background: #e74c3c;
+     background: var(--color-danger-alt);
      color: white;
  }
 
  .btn-outline-danger:hover {
-     background: #c0392b;
+     background: var(--color-danger-dark);
      transform: translateY(-2px);
  }
 
  .btn-outline-warning {
-     background: #9b59b6;
+     background: var(--color-purple);
      color: white;
  }
 
@@ -353,20 +353,20 @@
  }
 
  .page-link {
-     color: #3498db;
+     color: var(--color-info);
      border-color: #e0e6ed;
      border-radius: 8px;
  }
 
  .page-link:hover {
-     background-color: #3498db;
+     background-color: var(--color-info);
      color: white;
-     border-color: #3498db;
+     border-color: var(--color-info);
  }
 
  .page-item.active .page-link {
-     background-color: #3498db;
-     border-color: #3498db;
+     background-color: var(--color-info);
+     border-color: var(--color-info);
  }
 
  /* Modal Styles */
@@ -377,7 +377,7 @@
  }
 
  .modal-header {
-     background: linear-gradient(135deg, #3498db, #2196F3);
+     background: linear-gradient(135deg, var(--color-info), #2196F3);
      color: white;
      border: none;
      border-radius: 15px 15px 0 0;
@@ -399,7 +399,7 @@
 
  .modal-footer {
      padding: 1.5rem;
-     border-top: 1px solid #e9ecef;
+     border-top: 1px solid var(--color-border);
  }
 
  .form-label {

@@ -1,13 +1,13 @@
 body {
     font-family: 'Tajawal', sans-serif;
-    background-color: #f8f9fa;
+    background-color: var(--color-bg-light);
 }
 
 /* ============================
    Profile Header
    ============================ */
 .profile-header {
-    background: linear-gradient(135deg, #2C4B79 0%, #48CAE4 100%);
+    background: var(--gradient-primary);
     padding: 2.5rem 0;
     color: white;
     border-radius: 0 0 20px 20px;
@@ -92,7 +92,7 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #2C4B79, #48CAE4);
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
 }
 
 .stats-card:hover {
@@ -102,18 +102,18 @@ body {
 
 .stats-icon {
     font-size: 1.5rem;
-    color: #48CAE4;
+    color: var(--color-secondary);
     margin-bottom: 0.5rem;
 }
 
 .stats-number {
     font-size: 2rem;
     font-weight: bold;
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 .stats-label {
-    color: #6c757d;
+    color: var(--color-text-grey);
     font-size: 0.9rem;
 }
 
@@ -121,7 +121,7 @@ body {
    Navigation Pills
    ============================ */
 .nav-pills .nav-link {
-    color: #2C4B79;
+    color: var(--color-primary);
     border-radius: 10px;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -130,11 +130,11 @@ body {
 
 .nav-pills .nav-link:hover:not(.active) {
     background: #f0f4ff;
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 .nav-pills .nav-link.active {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     border: none;
     box-shadow: 0 4px 12px rgba(44, 75, 121, 0.25);
 }
@@ -157,7 +157,7 @@ body {
 .activity-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -185,40 +185,40 @@ body {
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: #6c757d;
+    color: var(--color-text-grey);
 }
 
 .empty-state i {
     font-size: 3rem;
     margin-bottom: 1rem;
     opacity: 0.5;
-    color: #48CAE4;
+    color: var(--color-secondary);
 }
 
 /* ============================
    Buttons
    ============================ */
 .btn-outline-primary {
-    border-color: #2C4B79;
-    color: #2C4B79;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
     transition: all 0.3s ease;
 }
 
 .btn-outline-primary:hover {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
-    border-color: #2C4B79;
+    background: var(--gradient-primary);
+    border-color: var(--color-primary);
     color: #fff;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(44, 75, 121, 0.25);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     border: none;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #1a2f4e, #2C4B79);
+    background: linear-gradient(135deg, var(--color-text-dark), var(--color-primary));
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(44, 75, 121, 0.25);
 }
@@ -238,7 +238,7 @@ body {
 .book-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 30px rgba(44, 75, 121, 0.15);
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
 }
 
 .book-image {
@@ -260,14 +260,14 @@ body {
    Reading Progress
    ============================ */
 .reading-progress {
-    background-color: #e9ecef;
+    background-color: var(--color-border);
     border-radius: 10px;
     height: 8px;
     overflow: hidden;
 }
 
 .reading-progress-bar {
-    background: linear-gradient(90deg, #2C4B79, #48CAE4);
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
     height: 100%;
     transition: width 0.3s ease;
 }
@@ -285,7 +285,7 @@ body {
 .recommendation-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(44, 75, 121, 0.1);
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
 }
 
 .recommendation-item img {
@@ -314,7 +314,7 @@ body {
 }
 
 .follow-item:hover {
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
     box-shadow: 0 2px 8px rgba(44, 75, 121, 0.08);
 }
 
@@ -328,7 +328,7 @@ body {
 .follow-avatar-placeholder {
     width: 38px;
     height: 38px;
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     color: #fff;
     font-weight: 700;
     font-size: 0.9rem;

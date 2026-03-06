@@ -28,7 +28,7 @@ body {
 .manage-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #3498db, #48CAE4);
+    background: linear-gradient(135deg, var(--color-info), var(--color-secondary));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -61,7 +61,7 @@ body {
     padding: 2rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--color-border);
 }
 
 .card-title {
@@ -75,7 +75,7 @@ body {
 }
 
 .card-title i {
-    color: #3498db;
+    color: var(--color-info);
 }
 
 /* Info Grid */
@@ -86,10 +86,10 @@ body {
 }
 
 .info-item {
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     padding: 1rem;
     border-radius: 12px;
-    border-right: 3px solid #3498db;
+    border-right: 3px solid var(--color-info);
 }
 
 .info-label {
@@ -107,7 +107,7 @@ body {
 }
 
 .total-price {
-    color: #27ae60;
+    color: var(--color-success-alt);
     font-weight: 700;
     font-size: 1.1rem;
 }
@@ -163,7 +163,7 @@ body {
 
 /* Books List */
 .books-list {
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     border-radius: 12px;
     padding: 1rem;
 }
@@ -176,7 +176,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-right: 3px solid #3498db;
+    border-right: 3px solid var(--color-info);
 }
 
 .book-item:last-child {
@@ -200,18 +200,18 @@ body {
 
 .book-price {
     font-weight: 600;
-    color: #3498db;
+    color: var(--color-info);
     font-size: 1.05rem;
 }
 
 /* Actions Card */
 .actions-card {
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color-border);
 }
 
 .action-section {
     padding: 1.5rem;
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     border-radius: 12px;
     margin-bottom: 1rem;
 }
@@ -233,7 +233,7 @@ body {
 }
 
 .btn-cancel {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    background: linear-gradient(135deg, var(--color-danger-alt), var(--color-danger-dark));
     color: white;
     border: none;
     border-radius: 10px;
@@ -251,7 +251,7 @@ body {
 }
 
 .btn-return {
-    background: linear-gradient(135deg, #f39c12, #e67e22);
+    background: linear-gradient(135deg, var(--color-warning-alt), #e67e22);
     color: white;
     border: none;
     border-radius: 10px;
@@ -275,7 +275,7 @@ body {
 }
 
 .action-section .form-control:focus {
-    border-color: #3498db;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
 
@@ -294,11 +294,11 @@ body {
 
 /* Return Requests History */
 .return-item {
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     border-radius: 12px;
     padding: 1.2rem;
     margin-bottom: 1rem;
-    border-right: 4px solid #3498db;
+    border-right: 4px solid var(--color-info);
 }
 
 .return-item:last-child {
@@ -359,7 +359,7 @@ body {
     font-size: 0.85rem;
     color: #2c3e50;
     margin-bottom: 0.5rem;
-    border-right: 3px solid #3498db;
+    border-right: 3px solid var(--color-info);
 }
 
 .return-meta {
@@ -372,7 +372,7 @@ body {
 
 /* Back Button */
 .btn-back {
-    background: linear-gradient(135deg, #3498db, #48CAE4);
+    background: linear-gradient(135deg, var(--color-info), var(--color-secondary));
     color: white;
     border: none;
     border-radius: 50px;

@@ -81,7 +81,7 @@
 }
 
 .cookie-btn-accept {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     color: #fff;
 }
 

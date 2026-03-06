@@ -7,11 +7,11 @@
     /* Colors */
     --c-primary: #007bff;
     --c-primary-dark: #0056b3;
-    --c-secondary: #48CAE4;
+    --c-secondary: var(--color-secondary);
     --c-accent-light: #ADE8F4;
     --c-text-dark: #03045E;
-    --c-text-muted: #6c757d;
-    --c-bg-light: #f8f9fa;
+    --c-text-muted: var(--color-text-grey);
+    --c-bg-light: var(--color-bg-light);
     --c-border: #e2e8f0;
 
     /* Effects */

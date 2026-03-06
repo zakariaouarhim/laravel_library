@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>تم إنجاز الطلب - مكتبة الفقراء</title>
     
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <!-- Bootstrap RTL CSS -->

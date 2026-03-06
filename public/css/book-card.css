@@ -31,7 +31,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #2C4B79, #48CAE4);
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
     transform: scaleX(0);
     transition: transform 0.3s ease;
     transform-origin: left;
@@ -40,7 +40,7 @@
 .book-card:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: 0 12px 30px rgba(44, 75, 121, 0.18);
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
 }
 
 .book-card:hover::before {
@@ -139,12 +139,12 @@
 }
 
 .book-card h6 a:hover {
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 /* Author */
 .book-card .book-author {
-    color: #6c757d;
+    color: var(--color-text-grey);
     font-size: 14px;
     margin-bottom: 15px;
     min-height: 20px;
@@ -157,7 +157,7 @@
 }
 
 .book-card .book-author a:hover {
-    color: #48CAE4;
+    color: var(--color-secondary);
 }
 
 /* Star Rating on Cards */
@@ -170,13 +170,13 @@
 }
 
 .book-card-rating i {
-    color: #ffc107;
+    color: var(--color-warning);
     font-size: 11px;
 }
 
 .book-card-rating .rating-count {
     font-size: 11px;
-    color: #6c757d;
+    color: var(--color-text-grey);
     margin-right: 4px;
     font-weight: 500;
 }
@@ -208,13 +208,13 @@
 }
 
 .book-card .price {
-    color: #2C4B79;
+    color: var(--color-primary);
     font-weight: 700;
     font-size: 18px;
 }
 
 .book-card .original-price {
-    color: #6c757d;
+    color: var(--color-text-grey);
     font-size: 14px;
     text-decoration: line-through;
     margin-left: 8px;
@@ -224,7 +224,7 @@
 .book-card .add-btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #2C4B79 0%, #00b4d8 50%, #48CAE4 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary-dark) 50%, var(--color-secondary) 100%);
     border: none;
     border-radius: 12px;
     color: white;
@@ -255,7 +255,7 @@
 }
 
 .book-card .add-btn:hover {
-    background: linear-gradient(135deg, #48CAE4 0%, #00b4d8 50%, #2C4B79 100%);
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 50%, var(--color-primary) 100%);
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 8px 25px rgba(44, 75, 121, 0.35);
 }
@@ -268,7 +268,7 @@
 .book-card .view-btn {
     display: inline-block;
     padding: 8px 16px;
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: linear-gradient(135deg, var(--color-success), #20c997);
     color: white;
     text-decoration: none;
     border-radius: 20px;
@@ -314,7 +314,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2C4B79;
+    color: var(--color-primary);
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -322,7 +322,7 @@
 }
 
 .action-btn:hover {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     color: white;
     transform: scale(1.12);
     box-shadow: 0 4px 14px rgba(44, 75, 121, 0.35);
@@ -333,9 +333,9 @@
     width: 100%;
     padding: 11px 12px;
     background: transparent;
-    border: 2px solid #f39c12;
+    border: 2px solid var(--color-warning-alt);
     border-radius: 12px;
-    color: #f39c12;
+    color: var(--color-warning-alt);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -348,7 +348,7 @@
 }
 
 .book-card .notify-btn:hover {
-    background: #f39c12;
+    background: var(--color-warning-alt);
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
@@ -374,7 +374,7 @@
 
 /* Followed badge (personalized) */
 .badge.badge-followed {
-    background:  #48CAE4;
+    background:  var(--color-secondary);
     color: #fff;
     font-size: 11px;
     padding: 4px 10px;
@@ -390,7 +390,7 @@
 
 /* Out-of-stock badge */
 .badge.out-of-stock-badge {
-    background: #6c757d;
+    background: var(--color-text-grey);
     color: #fff;
     font-size: 12px;
     padding: 5px 12px;
@@ -401,8 +401,8 @@
 
 /* List-view notify button */
 .btn-notify-outline {
-    border: 2px solid #f39c12 !important;
-    color: #f39c12 !important;
+    border: 2px solid var(--color-warning-alt) !important;
+    color: var(--color-warning-alt) !important;
     background: transparent !important;
     font-weight: 600;
     border-radius: 25px;
@@ -411,7 +411,7 @@
 }
 
 .btn-notify-outline:hover {
-    background: #f39c12 !important;
+    background: var(--color-warning-alt) !important;
     color: white !important;
     box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
 }

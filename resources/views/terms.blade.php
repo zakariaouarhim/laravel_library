@@ -9,6 +9,7 @@
         'metaDescription' => 'الشروط والأحكام لاستخدام متجر مكتبة الفقراء — الطلبات، الشحن، الإرجاع، وحقوقك.',
     ])
 
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/about.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">

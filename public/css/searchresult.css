@@ -6,7 +6,7 @@
 
 /* =================== Search Hero Banner =================== */
 .search-hero {
-    background: linear-gradient(135deg, var(--primary-color, #2C4B79) 0%, var(--secondary-color, #5A84C3) 100%);
+    background: linear-gradient(135deg, var(--primary-color, var(--color-primary)) 0%, var(--secondary-color, #5A84C3) 100%);
     color: white;
     padding: 3rem 0 2.5rem;
     position: relative;
@@ -93,7 +93,7 @@
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, var(--primary-color, #2C4B79) 0%, var(--secondary-color, #5A84C3) 100%);
+    background: linear-gradient(135deg, var(--primary-color, var(--color-primary)) 0%, var(--secondary-color, #5A84C3) 100%);
     border: none;
     padding: 12px 25px;
     border-radius: 50px;
@@ -140,7 +140,7 @@
 }
 
 .search-results .list-group-item:hover {
-    background-color: #f8f9fa !important;
+    background-color: var(--color-bg-light) !important;
 }
 
 .search-results .list-group-item:last-child {
@@ -150,7 +150,7 @@
 
 /* =================== Category Sidebar =================== */
 .category-parent {
-    border-bottom: 1px solid var(--border-color, #e9ecef);
+    border-bottom: 1px solid var(--border-color, var(--color-border));
 }
 
 .category-parent:last-child {
@@ -184,7 +184,7 @@
 }
 
 .category-toggle:hover {
-    color: var(--primary-color, #2C4B79);
+    color: var(--primary-color, var(--color-primary));
     background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -202,7 +202,7 @@
 #showMoreCategoriesBtn {
     background-color: transparent;
     border: none;
-    color: var(--primary-color, #2C4B79);
+    color: var(--primary-color, var(--color-primary));
     font-weight: 500;
     cursor: pointer;
     transition: color 0.3s ease;
@@ -221,9 +221,9 @@
 /* =================== Related Books Section =================== */
 .related-section h4 {
     font-weight: 600;
-    color: var(--primary-color, #2C4B79);
+    color: var(--primary-color, var(--color-primary));
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--border-color, #e9ecef);
+    border-bottom: 2px solid var(--border-color, var(--color-border));
 }
 
 /* =================== Responsive =================== */

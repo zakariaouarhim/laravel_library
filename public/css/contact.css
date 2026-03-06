@@ -9,7 +9,7 @@ body {
 
 /* =================== Hero =================== */
 .contact-hero {
-    background: linear-gradient(135deg, #2C4B79 0%, #48CAE4 100%);
+    background: var(--gradient-primary);
     color: white;
     padding: 3rem 0;
     position: relative;
@@ -96,7 +96,7 @@ body {
 }
 
 .card-header-custom i {
-    color: #48CAE4;
+    color: var(--color-secondary);
     font-size: 1.3rem;
 }
 
@@ -122,12 +122,12 @@ body {
 }
 
 .form-group label i {
-    color: #48CAE4;
+    color: var(--color-secondary);
     font-size: 13px;
 }
 
 .form-group .form-control {
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color-border);
     border-radius: 10px;
     padding: 10px 14px;
     font-size: 15px;
@@ -137,7 +137,7 @@ body {
 
 .form-group .form-control:focus {
     outline: none;
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
     box-shadow: 0 0 0 3px rgba(72, 202, 228, 0.1);
 }
 
@@ -149,7 +149,7 @@ body {
 .submit-btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #48CAE4, #00B4D8);
+    background: var(--gradient-secondary);
     color: white;
     border: none;
     border-radius: 10px;
@@ -157,7 +157,7 @@ body {
     font-weight: 600;
     font-family: 'Tajawal', sans-serif;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: var(--transition-base);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,7 +165,7 @@ body {
 }
 
 .submit-btn:hover {
-    background: linear-gradient(135deg, #00B4D8, #0096c7);
+    background: var(--gradient-secondary-dark);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(72, 202, 228, 0.3);
 }
@@ -190,7 +190,7 @@ body {
 }
 
 .info-card:hover {
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(72, 202, 228, 0.1);
 }
@@ -199,7 +199,7 @@ body {
     width: 50px;
     height: 50px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #48CAE4, #00B4D8);
+    background: var(--gradient-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -220,7 +220,7 @@ body {
 
 .info-card p {
     font-size: 14px;
-    color: #6c757d;
+    color: var(--color-text-grey);
     margin: 0;
 }
 
@@ -254,14 +254,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6c757d;
+    color: var(--color-text-grey);
     text-decoration: none;
     transition: all 0.3s;
     font-size: 1.1rem;
 }
 
 .social-link:hover {
-    background: linear-gradient(135deg, #48CAE4, #00B4D8);
+    background: var(--gradient-secondary);
     color: white;
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(72, 202, 228, 0.3);

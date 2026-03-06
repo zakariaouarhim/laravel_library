@@ -64,7 +64,7 @@
 .book-item.list-style:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary-color, #48CAE4);
+    border-color: var(--primary-color, var(--color-secondary));
 }
 
 /* Book Image Styling - Specific to list style */
@@ -97,13 +97,13 @@
 }
 
 .book-item.list-style h5 a:hover {
-    color: var(--primary-color, #2C4B79);
+    color: var(--primary-color, var(--color-primary));
     text-decoration: underline;
 }
 
 /* Author Information - Specific to list style */
 .book-item.list-style p:first-of-type {
-    color: var(--text-light, #6c757d);
+    color: var(--text-light, var(--color-text-grey));
     font-size: 0.95rem;
     margin-bottom: 8px;
     font-weight: 500;
@@ -116,7 +116,7 @@
 
 /* Description Text - Specific to list style */
 .book-item.list-style .text-muted {
-    color: var(--text-light, #6c757d) !important;
+    color: var(--text-light, var(--color-text-grey)) !important;
     font-size: 0.9rem;
     line-height: 1.5;
     margin-bottom: 15px;
@@ -124,7 +124,7 @@
 
 /* Price Section - Specific to list style */
 .book-item.list-style .d-flex.align-items-center {
-    background: var(--accent-color, #f8f9fa);
+    background: var(--accent-color, var(--color-bg-light));
     padding: 12px;
     border-radius: 8px;
     margin-top: 15px;
@@ -134,21 +134,21 @@
 .book-item.list-style .fw-bold.text-primary {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #2C4B79 !important;
+    color: var(--color-primary) !important;
     margin-right: 15px;
 }
 
 /* Original Price (Strikethrough) - Specific to list style */
 .book-item.list-style del {
-    color: var(--danger-color, #dc3545) !important;
+    color: var(--danger-color, var(--color-danger)) !important;
     font-size: 0.9rem;
     opacity: 0.7;
 }
 
 /* Add to Cart Button - Specific to list style */
 .book-item.list-style .btn-outline-primary {
-    border: 2px solid  #48CAE4;
-    color:  #48CAE4;
+    border: 2px solid  var(--color-secondary);
+    color:  var(--color-secondary);
     background: transparent;
     font-weight: 600;
     padding: 8px 16px;
@@ -159,7 +159,7 @@
 }
 
 .book-item.list-style .btn-outline-primary:hover {
-    background:  #48CAE4;
+    background:  var(--color-secondary);
     color: #ffffff;
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(44, 75, 121, 0.3);

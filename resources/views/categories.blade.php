@@ -9,6 +9,7 @@
         'metaDescription' => 'تصفح جميع أقسام وتصنيفات الكتب المتوفرة في مكتبة الفقراء.',
     ])
     <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/categories.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">

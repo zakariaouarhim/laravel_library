@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تعيين كلمة مرور جديدة</title>
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">

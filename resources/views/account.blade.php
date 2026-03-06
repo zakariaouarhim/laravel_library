@@ -7,6 +7,7 @@
     <title>حسابي - مكتبة الفقراء</title>
     
     <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/account.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">

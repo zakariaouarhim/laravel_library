@@ -4,7 +4,7 @@
 
 body {
     
-    background: linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #90E0EF 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, var(--color-info) 50%, #90E0EF 100%);
     min-height: 100vh;
     margin: 0;
     
@@ -151,11 +151,11 @@ body {
 }
 
 .order-card {
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     border-radius: 20px;
     padding: 2rem;
     margin-bottom: 2rem;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--color-border);
     position: relative;
     overflow: hidden;
 }
@@ -183,7 +183,7 @@ body {
 }
 
 .section-title i {
-    color: #48CAE4;
+    color: var(--color-secondary);
 }
 
 .detail-grid {
@@ -196,7 +196,7 @@ body {
     background: white;
     padding: 1.2rem;
     border-radius: 15px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--color-border);
     transition: all 0.3s ease;
     position: relative;
 }
@@ -222,7 +222,7 @@ body {
 }
 
 .status-badge {
-    background: linear-gradient(135deg, #ffc107, #ff8f00);
+    background: linear-gradient(135deg, var(--color-warning), #ff8f00);
     color: white;
     padding: 0.4rem 1rem;
     border-radius: 25px;
@@ -235,11 +235,11 @@ body {
     background: white;
     border-radius: 15px;
     overflow: hidden;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--color-border);
 }
 
 .item-header {
-    background: linear-gradient(135deg, #3498db, #48CAE4);
+    background: linear-gradient(135deg, var(--color-info), var(--color-secondary));
     color: white;
     padding: 1rem 1.5rem;
     font-weight: 600;
@@ -247,7 +247,7 @@ body {
 
 .order-item {
     padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid #f8f9fa;
+    border-bottom: 1px solid var(--color-bg-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -255,7 +255,7 @@ body {
 }
 
 .order-item:hover {
-    background-color: #f8f9fa;
+    background-color: var(--color-bg-light);
 }
 
 .order-item:last-child {
@@ -280,7 +280,7 @@ body {
 .item-price {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #3498db;
+    color: var(--color-info);
 }
 
 .action-buttons {
@@ -322,7 +322,7 @@ body {
 }
 
 .btn-primary-custom {
-    background: linear-gradient(135deg, #3498db, #48CAE4);
+    background: linear-gradient(135deg, var(--color-info), var(--color-secondary));
     color: white;
 }
 
@@ -334,12 +334,12 @@ body {
 
 .btn-outline-custom {
     background: transparent;
-    color: #48CAE4;
-    border: 2px solid #48CAE4;
+    color: var(--color-secondary);
+    border: 2px solid var(--color-secondary);
 }
 
 .btn-outline-custom:hover {
-    background: #3498db;
+    background: var(--color-info);
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
@@ -400,7 +400,7 @@ body {
 
 /* Manage Order Card */
 .manage-card {
-    border: 2px dashed #3498db;
+    border: 2px dashed var(--color-info);
     background: linear-gradient(135deg, rgba(52, 152, 219, 0.05), rgba(72, 202, 228, 0.05));
 }
 
@@ -410,7 +410,7 @@ body {
 }
 
 .btn-manage-custom {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    background: linear-gradient(135deg, var(--color-success-alt), var(--color-success-light));
     color: white;
 }
 

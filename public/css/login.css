@@ -21,7 +21,7 @@ body {
 /* ===== Left Banner Panel ===== */
 .login-banner {
     flex: 0 0 45%;
-    background: linear-gradient(135deg, #2C4B79 0%, #48CAE4 100%);
+    background: var(--gradient-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -124,12 +124,12 @@ body {
     padding: 12px 20px;
     border: none;
     background: transparent;
-    color: #6c757d;
+    color: var(--color-text-grey);
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     border-radius: 10px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -137,11 +137,11 @@ body {
 }
 
 .form-tab:hover {
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 .form-tab.active {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     color: #fff;
     box-shadow: 0 4px 15px rgba(44, 75, 121, 0.3);
 }
@@ -168,7 +168,7 @@ body {
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: #2C4B79;
+    color: var(--color-primary);
     font-size: 0.9rem;
     z-index: 2;
     pointer-events: none;
@@ -176,16 +176,16 @@ body {
 
 .input-group-custom .form-control {
     padding: 14px 45px 14px 45px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color-border);
     border-radius: 12px;
     font-size: 0.95rem;
     transition: all 0.3s ease;
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     text-align: right;
 }
 
 .input-group-custom .form-control:focus {
-    border-color: #48CAE4;
+    border-color: var(--color-secondary);
     box-shadow: 0 0 0 3px rgba(72, 202, 228, 0.15);
     background: #fff;
     outline: none;
@@ -212,7 +212,7 @@ body {
 }
 
 .password-toggle:hover {
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 /* ===== Form Options (Remember + Forgot) ===== */
@@ -229,23 +229,23 @@ body {
 }
 
 .form-options .form-check-input {
-    border-color: #2C4B79;
+    border-color: var(--color-primary);
 }
 
 .form-options .form-check-input:checked {
-    background-color: #2C4B79;
-    border-color: #2C4B79;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .forgot-link {
     font-size: 0.9rem;
-    color: #2C4B79;
+    color: var(--color-primary);
     text-decoration: none;
     transition: color 0.2s;
 }
 
 .forgot-link:hover {
-    color: #48CAE4;
+    color: var(--color-secondary);
 }
 
 /* ===== Submit Button ===== */
@@ -254,7 +254,7 @@ body {
     padding: 14px;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: var(--gradient-primary);
     color: #fff;
     font-size: 1rem;
     font-weight: 600;
@@ -292,7 +292,7 @@ body {
 }
 
 .back-home a {
-    color: #6c757d;
+    color: var(--color-text-grey);
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.2s;
@@ -302,7 +302,7 @@ body {
 }
 
 .back-home a:hover {
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 /* ===== Alerts ===== */
