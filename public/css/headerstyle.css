@@ -1036,42 +1036,6 @@
     }
 }
 
-/* ===== Legacy support — keep old header-section styles for homepage hero ===== */
-.layout-header .header-section {
-    background-size: cover;
-    height: 400px;
-    position: relative;
-    color: white;
-    text-align: center;
-    padding: 20px;
-}
-
-.layout-header .header-section::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: var(--z-base);
-}
-
-.layout-header .header-section .container {
-    position: relative;
-    z-index: var(--z-above);
-}
-
-.layout-header .header-section form input,
-.layout-header .header-section form button {
-    border-radius: 25px;
-    padding: 10px 20px;
-}
-
-.layout-header .header-section form button {
-    padding: 10px 30px;
-}
-
 .letters-background {
     position: absolute;
     top: 0;

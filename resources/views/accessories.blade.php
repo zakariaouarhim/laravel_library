@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
     <link rel="stylesheet" href="{{ asset('css/listview.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/accessories.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
 
     <!-- Favicon -->

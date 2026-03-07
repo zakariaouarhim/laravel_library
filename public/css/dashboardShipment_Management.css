@@ -342,37 +342,6 @@ body {
     gap: 0.5rem;
 }
 
-.remove-item-btn {
-    background: var(--color-danger-alt);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: var(--transition-base);
-}
-
-.remove-item-btn:hover {
-    background: var(--color-danger-dark);
-}
-
-.add-item-btn {
-    background: var(--color-success-alt);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition-base);
-    width: 100%;
-    margin-top: 1rem;
-}
-
-.add-item-btn:hover {
-    background: #229954;
-}
-
 .search-phase,
 .item-details-phase {
     padding: 1rem;

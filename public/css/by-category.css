@@ -382,32 +382,6 @@ body {
     background-color: var(--color-info);
     border-color: var(--color-info);
 }
-/*=================modal==================*/
-#wishlistModal .modal-header.bg-success {
-    background-color: #198754 !important;
-}
-
-#wishlistModal .modal-header.bg-danger {
-    background-color: var(--color-danger) !important;
-}
-
-#wishlistModal .modal-header.bg-warning {
-    background-color: var(--color-warning) !important;
-}
-
-#wishlistModal .modal-header.bg-info {
-    background-color: #0dcaf0 !important;
-}
-
-#wishlistModal .modal-body {
-    padding: 20px;
-    font-size: 16px;
-    text-align: center;
-}
-
-#wishlistModal .close-btn {
-    cursor: pointer;
-}
 /* =================== Toast Notifications =================== */
 .toast-container {
     z-index: var(--z-overlay);

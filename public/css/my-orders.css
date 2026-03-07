@@ -25,62 +25,6 @@ body {
     
 }
 
-/* =================== Hero Banner =================== */
-.orders-hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: white;
-    padding: 3rem 0 2.5rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.orders-hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('/images/pattern.webp');
-    opacity: 0.1;
-}
-
-.orders-hero .hero-content {
-    position: relative;
-    z-index: var(--z-above);
-}
-
-.orders-hero .hero-title {
-    font-family: 'Amiri', 'Tajawal', serif;
-    font-size: clamp(24px, 5vw, 2.5rem);
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.orders-hero .breadcrumb {
-    background-color: transparent;
-    margin-bottom: 0;
-    padding: 0;
-}
-
-.orders-hero .breadcrumb-item a {
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.orders-hero .breadcrumb-item a:hover {
-    color: #fff;
-}
-
-.orders-hero .breadcrumb-item.active {
-    color: #fff;
-}
-
-.orders-hero .breadcrumb-item+.breadcrumb-item::before {
-    color: rgba(255, 255, 255, 0.5);
-}
-
 /* =================== Status Filter Tabs =================== */
 .status-tabs-wrapper {
     overflow-x: auto;
@@ -631,10 +575,6 @@ body {
 
 /* =================== Responsive =================== */
 @media (max-width: 768px) {
-    .orders-hero {
-        padding: 2rem 0 1.5rem;
-    }
-
     .order-card-header {
         padding: 16px;
     }
@@ -666,10 +606,6 @@ body {
 }
 
 @media (max-width: 576px) {
-    .orders-hero {
-        padding: 1.5rem 0 1rem;
-    }
-
     .order-id-section {
         flex-direction: column;
         align-items: flex-start;

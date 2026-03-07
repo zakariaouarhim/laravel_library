@@ -32,24 +32,6 @@
     height: 250px;
 }
 
-.list-view .book-details {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.list-view .book-title,
-.list-view .book-author,
-.list-view .book-publisher {
-    height: auto;
-    max-width: 100%;
-    white-space: normal;
-}
-
-.list-view .book-actions {
-    margin-top: auto;
-}
-
 /* =================== Book List Item Styling =================== */
 .book-item.list-style {
     background: #ffffff;
@@ -416,11 +398,6 @@
 .books-container.list-view .book-item.list-style .d-flex.align-items-center {
     padding-left: 20px !important;
     /* Push everything from left */
-}
-
-.books-containers.list-view .book-item.list-style .btn {
-    margin-left: 30px !important;
-    /* Exact space from price to button */
 }
 
 /* For RTL (Arabic) */

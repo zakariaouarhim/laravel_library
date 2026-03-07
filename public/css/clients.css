@@ -892,13 +892,3 @@ body {
     border: none;
     margin-bottom: 1rem;
 }
-
-.edit-alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.edit-alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-}

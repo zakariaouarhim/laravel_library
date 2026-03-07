@@ -222,15 +222,6 @@
      border-color: var(--color-info);
  }
 
- /* Product Image */
- .product-img-thumbnail {
-     width: 50px;
-     height: 70px;
-     border-radius: var(--radius-sm);
-     object-fit: cover;
-     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
- }
-
  /* Product Info */
  .product-name {
      font-weight: 600;
@@ -249,29 +240,6 @@
  .product-price {
      color: var(--color-success-alt);
      font-weight: 700;
- }
-
- /* API Status Badge */
- .api-status {
-     padding: 0.5rem 1rem;
-     border-radius: var(--radius-xl);
-     font-weight: 600;
-     font-size: 0.85rem;
- }
-
- .api-enriched {
-     background: #d4edda;
-     color: #155724;
- }
-
- .api-pending {
-     background: #fef3cd;
-     color: #664d03;
- }
-
- .api-failed {
-     background: #f8d7da;
-     color: #721c24;
  }
 
  /* Action Buttons */

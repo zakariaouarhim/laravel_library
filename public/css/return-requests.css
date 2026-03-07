@@ -25,62 +25,6 @@ body {
     
 }
 
-/* =================== Hero Banner =================== */
-.returns-hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: white;
-    padding: 3rem 0 2.5rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.returns-hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('/images/pattern.webp');
-    opacity: 0.1;
-}
-
-.returns-hero .hero-content {
-    position: relative;
-    z-index: var(--z-above);
-}
-
-.returns-hero .hero-title {
-    font-family: 'Amiri', 'Tajawal', serif;
-    font-size: clamp(24px, 5vw, 2.5rem);
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.returns-hero .breadcrumb {
-    background-color: transparent;
-    margin-bottom: 0;
-    padding: 0;
-}
-
-.returns-hero .breadcrumb-item a {
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.returns-hero .breadcrumb-item a:hover {
-    color: #fff;
-}
-
-.returns-hero .breadcrumb-item.active {
-    color: #fff;
-}
-
-.returns-hero .breadcrumb-item+.breadcrumb-item::before {
-    color: rgba(255, 255, 255, 0.5);
-}
-
 /* =================== New Return Request Button =================== */
 .btn-new-return {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -578,10 +522,6 @@ body {
 
 /* =================== Responsive =================== */
 @media (max-width: 768px) {
-    .returns-hero {
-        padding: 2rem 0 1.5rem;
-    }
-
     .return-card-header {
         padding: 16px;
     }
@@ -608,10 +548,6 @@ body {
 }
 
 @media (max-width: 576px) {
-    .returns-hero {
-        padding: 1.5rem 0 1rem;
-    }
-
     .return-id-section {
         flex-direction: column;
         align-items: flex-start;

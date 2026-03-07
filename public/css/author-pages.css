@@ -123,48 +123,6 @@ body {
     text-decoration: none;
 }
 
-/* =================== Letter Filter =================== */
-.letter-filter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.letter-item {
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    color: #495057;
-    background: white;
-    text-decoration: none;
-    border: 2px solid var(--color-border);
-    transition: all 0.2s;
-}
-
-.letter-item:first-child {
-    width: auto;
-    padding: 0 14px;
-    font-size: 13px;
-}
-
-.letter-item:hover {
-    border-color: var(--color-secondary);
-    color: var(--color-secondary);
-}
-
-.letter-item.active {
-    background: var(--color-secondary);
-    color: white;
-    border-color: var(--color-secondary);
-}
-
 /* =================== Results Info =================== */
 .results-info {
     display: flex;
@@ -393,12 +351,6 @@ a.author-card-avatar {
 
     .filter-select {
         width: 100%;
-    }
-
-    .letter-item {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
     }
 
     .authors-grid {
