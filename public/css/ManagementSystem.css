@@ -199,7 +199,7 @@
 
  .table tbody td {
      padding: 1.2rem;
-     border-bottom: 1px solid #f0f0f0;
+     border-bottom: 1px solid var(--color-border-light);
      vertical-align: middle;
      color: #555;
  }
@@ -337,39 +337,6 @@
      border-color: var(--color-info);
  }
 
- /* Modal Styles */
- .modal-content {
-     border-radius: 15px;
-     border: none;
-     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
- }
-
- .modal-header {
-     background: linear-gradient(135deg, var(--color-info), #2196F3);
-     color: white;
-     border: none;
-     border-radius: 15px 15px 0 0;
-     padding: 1.5rem;
- }
-
- .modal-header h5 {
-     font-weight: 700;
-     margin: 0;
- }
-
- .modal-header .btn-close {
-     filter: brightness(0) invert(1);
- }
-
- .modal-body {
-     padding: 2rem;
- }
-
- .modal-footer {
-     padding: 1.5rem;
-     border-top: 1px solid var(--color-border);
- }
-
  .form-label {
      color: #2c3e50;
      font-weight: 600;
@@ -462,7 +429,7 @@
  }
 
  #enrichPreviewModal .alert-warning {
-     border-right: 4px solid #ffc107;
+     border-right: 4px solid var(--color-warning);
      background-color: #fff3cd;
  }
 
@@ -489,12 +456,12 @@
  }
 
  #enrichPreviewModal .btn-success {
-     background: linear-gradient(135deg, #28a745, #218838);
+     background: linear-gradient(135deg, var(--color-success), #218838);
      border: none;
  }
 
  #enrichPreviewModal .btn-danger {
-     background: linear-gradient(135deg, #dc3545, #c82333);
+     background: linear-gradient(135deg, var(--color-danger), #c82333);
      border: none;
  }
 

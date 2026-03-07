@@ -3,7 +3,7 @@
 }
 
 body {
-    background-color: #f9fafc;
+    background-color: var(--color-bg-page);
     
 }
 

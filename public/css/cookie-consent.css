@@ -59,7 +59,7 @@
 .cookie-consent-text p {
     margin: 0;
     font-size: 13px;
-    color: #666;
+    color: var(--color-text-light);
     line-height: 1.6;
 }
 
@@ -91,7 +91,7 @@
 }
 
 .cookie-btn-decline {
-    background: #f0f0f0;
+    background: var(--color-border-light);
     color: #555;
 }
 

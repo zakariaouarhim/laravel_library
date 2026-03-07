@@ -12,7 +12,7 @@
 
 .layout-indexpage {
   font-family: --font-main;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, var(--color-bg-light) 0%, var(--color-border) 100%);
   line-height: 1.6;
   
 }
@@ -87,9 +87,9 @@
    Section 2: Hero Search Bar (Index-searchbar.css)
    ============================================ */
 /* ============================================
-   CSS Variables (search hero overrides + local)
+   CSS Variables (scoped to search hero section)
    ============================================ */
-:root {
+.layout-searchbar {
     --color-primary: #5de1e6;
     --color-accent-secondary: #ff8a65;
 

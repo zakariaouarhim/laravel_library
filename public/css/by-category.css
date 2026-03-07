@@ -2,7 +2,7 @@
 
 body {
     font-family: 'Tajawal', sans-serif;
-    background-color: #f9fafc;
+    background-color: var(--color-bg-page);
     color: var(--color-text);
     line-height: 1.6;
     
@@ -382,7 +382,7 @@ body {
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 10px;
-    background-color: #ffffff;
+    background-color: var(--color-white);
     border-right: 4px solid var(--color-success);
 }
 
@@ -400,7 +400,7 @@ body {
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: center;
-    background-color: #ffffff !important;
+    background-color: var(--color-white) !important;
 }
 
 #cartToast .toast-header strong {
@@ -438,7 +438,7 @@ body {
 .toast-body {
     padding: 1rem;
     background-color: #fff;
-    color: #333;
+    color: var(--color-text);
     font-size: 0.95rem;
     line-height: 1.5;
 }
@@ -544,6 +544,6 @@ body {
 
 .dropdown-item.active {
     font-weight: bold;
-    background-color: #f0f0f0;
+    background-color: var(--color-border-light);
 }
 

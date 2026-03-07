@@ -3,7 +3,7 @@
 }
 
 body {
-    background-color: #f9fafc;
+    background-color: var(--color-bg-page);
     
 }
 
@@ -115,7 +115,7 @@ body {
     padding: 10px 22px;
     background: var(--color-bg-light);
     cursor: pointer;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--color-border-light);
     transition: background 0.3s;
     font-size: 13px;
     color: var(--color-text-grey);
@@ -152,7 +152,7 @@ body {
     text-decoration: none;
     color: #495057;
     font-size: 14px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--color-border-light);
     transition: all 0.2s;
 }
 
@@ -191,7 +191,7 @@ body {
 .empty-state i,
 .no-results i {
     font-size: 3rem;
-    color: #dee2e6;
+    color: var(--color-border-dark);
     margin-bottom: 16px;
     display: block;
 }

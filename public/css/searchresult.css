@@ -6,7 +6,7 @@
 
 /* =================== Search Hero Banner =================== */
 .search-hero {
-    background: linear-gradient(135deg, var(--primary-color, var(--color-primary)) 0%, var(--secondary-color, #5A84C3) 100%);
+    background: linear-gradient(135deg, var(--primary-color, var(--color-primary)) 0%, var(--secondary-color, var(--color-accent)) 100%);
     color: white;
     padding: 3rem 0 2.5rem;
     position: relative;
@@ -79,7 +79,7 @@
     font-size: clamp(14px, 2.5vw, 16px);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     transition: var(--transition-base);
-    color: #333;
+    color: var(--color-text);
 }
 
 .search-box input:focus {
@@ -93,7 +93,7 @@
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, var(--primary-color, var(--color-primary)) 0%, var(--secondary-color, #5A84C3) 100%);
+    background: linear-gradient(135deg, var(--primary-color, var(--color-primary)) 0%, var(--secondary-color, var(--color-accent)) 100%);
     border: none;
     padding: 12px 25px;
     border-radius: var(--radius-pill);
@@ -130,7 +130,7 @@
 
 .search-results .list-group-item {
     border: none;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border-light);
     transition: background-color 0.2s ease;
     padding: 12px 15px;
     cursor: pointer;

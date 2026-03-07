@@ -178,7 +178,7 @@ body {
 }
 
 .action-info p {
-    color: #666;
+    color: var(--color-text-light);
     font-size: 0.9rem;
     margin-bottom: 1rem;
 }

@@ -11,7 +11,7 @@
 }
 
 body {
-    background-color: #f9fafc;
+    background-color: var(--color-bg-page);
     
 }
 
@@ -118,7 +118,7 @@ body {
 .reset-btn:hover {
     background: var(--color-border);
     color: #495057;
-    border-color: #dee2e6;
+    border-color: var(--color-border-dark);
     text-decoration: none;
 }
 
@@ -316,7 +316,7 @@ a.publisher-card-logo {
 
 .empty-state i {
     font-size: 4rem;
-    color: #dee2e6;
+    color: var(--color-border-dark);
     margin-bottom: 20px;
     display: block;
 }
@@ -369,7 +369,7 @@ a.publisher-card-logo {
 }
 
 body {
-    background-color: #f9fafc;
+    background-color: var(--color-bg-page);
 }
 
 /* =================== Hero Section =================== */
@@ -652,7 +652,7 @@ body {
 
 .empty-state i {
     font-size: 4rem;
-    color: #dee2e6;
+    color: var(--color-border-dark);
     margin-bottom: 20px;
     display: block;
 }

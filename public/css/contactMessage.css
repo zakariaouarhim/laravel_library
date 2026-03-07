@@ -13,7 +13,7 @@ body {
 /* Page Header */
 .page-header {
     margin-bottom: 2rem;
-    border-bottom: 3px solid #2C4B79;
+    border-bottom: 3px solid var(--color-primary);
     padding-bottom: 1rem;
 }
 
@@ -26,7 +26,7 @@ body {
 }
 
 .page-header i {
-    color: #2C4B79;
+    color: var(--color-primary);
     font-size: 2rem;
 }
 
@@ -43,7 +43,7 @@ body {
     padding: 1.5rem;
     border-radius: 15px;
     box-shadow: var(--shadow-sm);
-    border-right: 4px solid #2C4B79;
+    border-right: 4px solid var(--color-primary);
     transition: var(--transition-base);
 }
 
@@ -53,7 +53,7 @@ body {
 }
 
 .stat-card.total {
-    border-right-color: #2C4B79;
+    border-right-color: var(--color-primary);
 }
 
 .stat-card.unread {
@@ -99,12 +99,12 @@ body {
 
 .filter-section .form-control:focus,
 .filter-section .form-select:focus {
-    border-color: #2C4B79;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 0.2rem rgba(44, 75, 121, 0.25);
 }
 
 .btn-apply-filters {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: linear-gradient(135deg, var(--color-primary), #48CAE4);
     border: none;
     border-radius: 10px;
     color: white;
@@ -128,7 +128,7 @@ body {
 }
 
 .table thead th {
-    background: #2C4B79;
+    background: var(--color-primary);
     color: white;
     font-weight: 600;
     padding: 1rem;
@@ -148,7 +148,7 @@ body {
 .table tbody td {
     padding: 1rem;
     vertical-align: middle;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border-light);
 }
 
 .table tbody tr.unread-row {
@@ -198,11 +198,11 @@ body {
 
 .btn-view {
     background: #e8f4fd;
-    color: #2C4B79;
+    color: var(--color-primary);
 }
 
 .btn-view:hover {
-    background: #2C4B79;
+    background: var(--color-primary);
     color: white;
 }
 
@@ -247,7 +247,7 @@ body {
 
 /* Modal */
 .message-modal .modal-header {
-    background: linear-gradient(135deg, #2C4B79, #48CAE4);
+    background: linear-gradient(135deg, var(--color-primary), #48CAE4);
     color: white;
     border-radius: 15px 15px 0 0;
 }
@@ -275,7 +275,7 @@ body {
 }
 
 .message-body {
-    background: #f8f9fa;
+    background: var(--color-bg-light);
     padding: 20px;
     border-radius: var(--radius-md);
     line-height: 1.8;
@@ -291,7 +291,7 @@ body {
 
 .empty-state i {
     font-size: 4rem;
-    color: #dee2e6;
+    color: var(--color-border-dark);
     margin-bottom: 1rem;
 }
 
@@ -310,13 +310,13 @@ body {
 .pagination .page-link {
     border-radius: var(--radius-sm);
     margin: 0 3px;
-    color: #2C4B79;
+    color: var(--color-primary);
     border-color: #e0e6ed;
 }
 
 .pagination .page-item.active .page-link {
-    background: #2C4B79;
-    border-color: #2C4B79;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 @media (max-width: 768px) {

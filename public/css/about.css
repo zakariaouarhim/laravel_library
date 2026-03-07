@@ -3,7 +3,7 @@
 }
 
 body {
-    background-color: #f9fafc;
+    background-color: var(--color-bg-page);
     
 }
 
@@ -151,7 +151,7 @@ body {
 }
 
 .feature-card {
-    background: #f9fafc;
+    background: var(--color-bg-page);
     border-radius: var(--radius-lg);
     padding: 30px 24px;
     text-align: center;

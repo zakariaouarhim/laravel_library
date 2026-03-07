@@ -351,7 +351,7 @@ body {
 
 .btn-return-request {
     background-color: var(--color-warning);
-    color: #333;
+    color: var(--color-text);
     border: none;
     border-radius: var(--radius-pill);
     padding: 10px 24px;
@@ -365,7 +365,7 @@ body {
     background-color: #e0a800;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
-    color: #333;
+    color: var(--color-text);
 }
 
 /* =================== Empty State =================== */

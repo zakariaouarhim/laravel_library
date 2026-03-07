@@ -8,7 +8,7 @@
 .layout-checkout body,
 .layout-checkout {
     background-color: #f7f9fc;
-    color: #333;
+    color: var(--color-text);
     line-height: 1.6;
 }
 
@@ -30,7 +30,7 @@
 }
 
 .layout-checkout .card-header {
-    background-color: #ffffff;
+    background-color: var(--color-white);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     padding: 1.25rem 1.5rem;
 }
@@ -126,7 +126,7 @@
     text-align: center;
     width: 56px;
     font-weight: 600;
-    background-color: #ffffff;
+    background-color: var(--color-white);
 }
 
 .layout-checkout .quantity-input::-webkit-outer-spin-button,
