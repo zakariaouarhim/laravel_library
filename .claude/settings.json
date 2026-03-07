@@ -53,7 +53,13 @@
       "Bash(do sed -i \"/variables\\\\.css/a\\\\    <link rel=\"\"stylesheet\"\" href=\"\"{{ asset\\(''css/components/badges.css''\\) }}\"\">\" \"$f\")",
       "Bash(ls -lh /c/laravel/library_fokara/public/css/bootstrap*.css /c/laravel/library_fokara/public/css/app.css)",
       "Bash(/tmp/css_analysis.txt:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(for file in public/css/by-category.css public/css/my-orders.css public/css/recommendations.css public/css/return-requests.css public/css/moredetail-V2.css)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(for f in public/css/my-orders.css public/css/recommendations.css public/css/return-requests.css)",
+      "Bash(do)",
+      "Bash(sed -i -e 's/var\\(--primary-color\\)/var\\(--color-primary\\)/g' -e 's/var\\(--primary-light\\)/var\\(--color-primary-light\\)/g' -e 's/var\\(--primary-dark\\)/var\\(--color-primary-dark\\)/g' -e 's/var\\(--secondary-color\\)/var\\(--color-accent\\)/g' -e 's/var\\(--accent-color\\)/var\\(--color-accent-bg\\)/g' -e 's/var\\(--text-color\\)/var\\(--color-text\\)/g' -e 's/var\\(--text-light\\)/var\\(--color-text-light\\)/g' -e 's/var\\(--text-muted\\)/var\\(--color-text-muted\\)/g' -e 's/var\\(--light-gray\\)/var\\(--color-bg-light\\)/g' -e 's/var\\(--border-color\\)/var\\(--color-border\\)/g' -e 's/var\\(--success-color\\)/var\\(--color-success\\)/g' -e 's/var\\(--danger-color\\)/var\\(--color-danger\\)/g' -e 's/var\\(--warning-color\\)/var\\(--color-warning\\)/g' -e 's/var\\(--card-shadow\\)/var\\(--shadow-card\\)/g' -e 's/var\\(--transition-speed\\)/0.3s/g' \"$f\")",
+      "Bash(echo \"Replaced aliases in $f\")"
     ],
     "additionalDirectories": [
       "c:\\laravel\\library_fokara"

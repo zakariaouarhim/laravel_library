@@ -87,16 +87,12 @@
    Section 2: Hero Search Bar (Index-searchbar.css)
    ============================================ */
 /* ============================================
-   CSS Variables
+   CSS Variables (search hero overrides + local)
    ============================================ */
 :root {
     --color-primary: #5de1e6;
-    --color-primary-dark: var(--color-primary);
-    --color-primary-darker: var(--color-primary-darker);
-    --color-accent: var(--color-secondary);
     --color-accent-secondary: #ff8a65;
 
-    --color-white: var(--color-white);
     --color-white-alpha-90: rgba(255, 255, 255, 0.9);
     --color-white-alpha-40: rgba(255, 255, 255, 0.4);
     --color-white-alpha-30: rgba(255, 255, 255, 0.3);
@@ -106,25 +102,14 @@
     --color-black-alpha-20: rgba(0, 0, 0, 0.2);
     --color-black-alpha-30: rgba(0, 0, 0, 0.3);
 
-    --color-border-light: var(--color-border-light);
-    --color-bg-light: var(--color-bg-light);
-
-    --transition-speed: 0.3s;
     --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --shadow-sm: 0 4px 8px var(--color-black-alpha-20);
     --shadow-lg: 0 10px 40px var(--color-black-alpha-10);
     --shadow-xl: 0 12px 40px var(--color-black-alpha-30);
 
-    --border-radius-sm: 8px;
-    --border-radius-md: 12px;
-    --border-radius-lg: 50px;
-
-    --z-index-background: 1;
-    --z-index-overlay: 2;
     --z-index-category: 4;
     --z-index-content: 999;
-    --z-index-search-box: 1000;
     --z-index-dropdown: 99999;
     --z-index-dropdown-item: 100000;
 }
@@ -165,7 +150,7 @@
 .layout-searchbar .letters-background {
     position: absolute;
     inset: 0;
-    z-index: var(--z-index-background);
+    z-index: var(--z-base);
     overflow: hidden;
 }
 
@@ -175,7 +160,7 @@
     font-size: 30px;
     animation: fallDown linear infinite;
     font-family: 'cairo', sans-serif;
-    z-index: var(--z-index-overlay);
+    z-index: var(--z-above);
 }
 
 /* ============================================
@@ -225,7 +210,7 @@
     max-width: 700px;
     margin: 0 auto;
     position: relative;
-    z-index: var(--z-index-search-box);
+    z-index: var(--z-navbar);
     width: 100%;
 }
 
@@ -234,18 +219,18 @@
     padding: 18px 140px 18px 25px;
     background: var(--color-white-alpha-90);
     border: 2px solid transparent;
-    border-radius: var(--border-radius-lg);
+    border-radius: var(--radius-pill);
     font-size: clamp(14px, 2.5vw, 1.1rem);
     box-shadow: var(--shadow-lg);
     backdrop-filter: blur(10px);
-    transition: all var(--transition-speed);
+    transition: all 0.3s;
     box-sizing: border-box;
 }
 
 .search-box input:focus {
     outline: none;
     background: rgba(255, 255, 255, 0.95);
-    border-color: var(--color-accent);
+    border-color: var(--color-secondary);
     box-shadow: 0 0 0 0.2rem rgba(72, 202, 228, 0.25), 0 15px 50px var(--color-black-alpha-15);
     transform: translateY(-2px);
 }
@@ -255,16 +240,16 @@
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    background: var(--color-secondary) /*linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)*/;
+    background: var(--color-secondary) /*linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%)*/;
     border: none;
     padding: 12px 25px;
-    border-radius: var(--border-radius-lg);
+    border-radius: var(--radius-pill);
     color: var(--color-white);
     font-weight: 600;
     font-size: clamp(13px, 2vw, 15px);
     cursor: pointer;
     white-space: nowrap;
-    transition: all var(--transition-speed);
+    transition: all 0.3s;
 }
 
 .search-box button:hover {
@@ -284,7 +269,7 @@
     width: 100%;
     background-color: var(--color-white);
     color: black;
-    border-radius: var(--border-radius-md);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-xl);
     text-align: right;
     max-height: 400px;
@@ -307,7 +292,7 @@
 
 .search-results .list-group-item:last-child {
     border-bottom: none;
-    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 /* New search result components */
@@ -360,7 +345,7 @@
     background-color: var(--color-primary);
     color: var(--color-white);
     border: none;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--radius-sm);
     padding: 10px 15px;
     font-size: 0.9rem;
     font-weight: 600;
@@ -400,7 +385,7 @@
 }
 
 .layout-searchbar .category-btn.small {
-    background-color: var(--color-primary-dark);
+    background-color: var(--color-primary);
 }
 
 /* ============================================
@@ -513,7 +498,7 @@
 
     .search-results {
         max-height: 300px;
-        border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+        border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     }
 }
 
@@ -658,7 +643,7 @@
     /* Aligned for RTL */
     width: 60px;
     height: 4px;
-    background: linear-gradient(270deg, var(--color-accent), #CAF0F8);
+    background: linear-gradient(270deg, var(--color-secondary), #CAF0F8);
     border-radius: 2px;
 }
 
@@ -701,7 +686,7 @@
   padding: 30px;
   border-radius: var(--border-radius);
   text-align: center;
-  transition: all var(--transition-speed);
+  transition: all 0.3s;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   border: 2px solid transparent;
   position: relative;
@@ -715,16 +700,16 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
   transform: scaleX(0);
-  transition: transform var(--transition-speed);
+  transition: transform 0.3s;
   transform-origin: right;
 }
 
 .category-section2 .category-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-hover);
-  border-color: var(--color-accent);
+  border-color: var(--color-secondary);
 }
 
 .category-section2 .category-card:hover::before {
@@ -737,7 +722,7 @@
   margin-bottom: 20px;
   object-fit: cover;
   border-radius: var(--radius-circle);
-  transition: transform var(--transition-speed);
+  transition: transform 0.3s;
 }
 
 .category-section2 .category-card:hover .category-icon {
@@ -765,13 +750,13 @@
 .category-section2 .category-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 30px rgba(93, 225, 230, 0.2);
-    border-color: var(--color-accent);
+    border-color: var(--color-secondary);
     background-color: rgba(93, 225, 230, 0.05);
 }
 
 .category-section2 .category-icon {
     font-size: clamp(2.5rem, 8vw, 3.5rem);
-    color: var(--color-accent);
+    color: var(--color-secondary);
     margin-bottom: 1rem;
     transition: transform var(--transition-smooth);
 }

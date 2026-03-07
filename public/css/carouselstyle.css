@@ -7,11 +7,8 @@
     /* Colors */
     --c-primary: #007bff;
     --c-primary-dark: #0056b3;
-    --c-secondary: var(--color-secondary);
     --c-accent-light: #ADE8F4;
     --c-text-dark: #03045E;
-    --c-text-muted: var(--color-text-grey);
-    --c-bg-light: var(--color-bg-light);
     --c-border: #e2e8f0;
 
     /* Effects */
@@ -53,7 +50,7 @@
     inset-inline-start: 0;
     width: 60px;
     height: 4px;
-    background: linear-gradient(90deg, var(--c-secondary), var(--c-accent-light));
+    background: linear-gradient(90deg, var(--color-secondary), var(--c-accent-light));
     border-radius: 2px;
 }
 
@@ -160,7 +157,7 @@
 .carousel-nav:disabled {
     opacity: 0.3;
     cursor: not-allowed;
-    background: var(--c-bg-light);
+    background: var(--color-bg-light);
 }
 
 /* Indicators */
@@ -230,7 +227,7 @@
     justify-content: center;
     padding: 2rem;
     border: 2px dashed var(--c-border);
-    background-color: var(--c-bg-light);
+    background-color: var(--color-bg-light);
     transition: transform 0.3s ease;
 }
 
