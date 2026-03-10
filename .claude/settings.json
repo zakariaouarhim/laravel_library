@@ -99,7 +99,14 @@
       "Bash(find public/css -name '*.css' ! -name 'variables.css' -exec sed -i 's/#2C4B79/var\\(--color-primary\\)/gI' {} +)",
       "Bash(find public/css -name '*.css' ! -name 'variables.css' -exec sed -i 's/#5A84C3/var\\(--color-accent\\)/gI' {} +)",
       "Bash(find public/css -name '*.css' ! -name 'variables.css' -exec sed -i 's/#ffffff/var\\(--color-white\\)/gI' {} +)",
-      "Bash(grep -rni '#ffffff' public/css/*.css)"
+      "Bash(grep -rni '#ffffff' public/css/*.css)",
+      "Bash(sed 's/.*=> //')",
+      "Bash(for tbl in books order_details cart_items wishlists checkout_details reviews book_authors quotes)",
+      "Bash(do echo \"=== $tbl ===\")",
+      "Bash(for tbl in orders cart hidden_recommendations return_requests reading_goals reading_shelves stock_notifications user_notifications follows review_likes quote_likes)",
+      "Bash(for tbl in reviews order_details cart_items checkout_details wishlists)",
+      "Bash(grep -rn \"''user''\" app/Models/*.php app/Http/Controllers/*.php)",
+      "Bash(for tbl in authors publishing_houses book_authors shipments shipment_items inventory_logs system_settings)"
     ],
     "additionalDirectories": [
       "c:\\laravel\\library_fokara"

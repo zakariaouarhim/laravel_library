@@ -191,7 +191,7 @@ function searchBooksAutocomplete(query, containerId) {
                         var author = highlightMatch(book.author || '', query);
                         var publisher = book.Publishing_House ? highlightMatch(book.Publishing_House, query) : '';
 
-                        html += '<a href="/moredetail/' + book.id + '" class="search-result-item">';
+                        html += '<a href="/moredetail-v2/' + book.id + '" class="search-result-item">';
                         html += '<img src="/' + imageUrl + '" alt="' + (book.title || '') + '">';
                         html += '<div class="search-result-info">';
                         html += '<div class="search-result-title">' + title + '</div>';

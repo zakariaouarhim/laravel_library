@@ -297,19 +297,30 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">الفئة</label>
-                                    <select name="Productcategorie" id="Productcategorie" class="form-select" required>
-                                        <option value="">اختر فئة</option>
+                                    <label class="form-label">الفئات <small class="text-muted">(اختر واحدة أو أكثر)</small></label>
+                                    <div class="category-checkbox-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px;">
                                         @foreach ($categories as $cat)
                                             @if($cat->parent_id == null)
-                                                <option value="{{ $cat->id }}" style="font-weight: bold;">{{ $cat->name }}</option>
+                                                <div style="font-weight: bold; margin-top: 4px;">
+                                                    <label class="d-flex align-items-center gap-2">
+                                                        <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="form-check-input add-category-cb">
+                                                        <input type="radio" name="primary_category_id" value="{{ $cat->id }}" class="form-check-input add-primary-radio" style="display:none;">
+                                                        {{ $cat->name }}
+                                                    </label>
+                                                </div>
                                                 @foreach($cat->children as $child)
-                                                    <option value="{{ $child->id }}" style="padding-left: 20px;">── {{ $child->name }}</option>
+                                                    <div style="padding-right: 20px;">
+                                                        <label class="d-flex align-items-center gap-2">
+                                                            <input type="checkbox" name="categories[]" value="{{ $child->id }}" class="form-check-input add-category-cb">
+                                                            <input type="radio" name="primary_category_id" value="{{ $child->id }}" class="form-check-input add-primary-radio" style="display:none;">
+                                                            ── {{ $child->name }}
+                                                        </label>
+                                                    </div>
                                                 @endforeach
                                             @endif
                                         @endforeach
-                                        
-                                    </select>
+                                    </div>
+                                    <small class="text-muted mt-1 d-block add-primary-hint" style="display:none !important;">⭐ الفئة الأولى المحددة ستكون الرئيسية. اضغط الدائرة لتغييرها.</small>
                                 </div>
                             </div>
                         </div>
@@ -437,18 +448,30 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">الفئة</label>
-                                    <select name="category_id" id="category_id" class="form-select" required>
-                                        <option value="">اختر فئة</option>
+                                    <label class="form-label">الفئات <small class="text-muted">(اختر واحدة أو أكثر)</small></label>
+                                    <div class="category-checkbox-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px;">
                                         @foreach ($categories as $cat)
                                             @if($cat->parent_id == null)
-                                                <option value="{{ $cat->id }}" style="font-weight: bold;">{{ $cat->name }}</option>
+                                                <div style="font-weight: bold; margin-top: 4px;">
+                                                    <label class="d-flex align-items-center gap-2">
+                                                        <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="form-check-input edit-category-cb">
+                                                        <input type="radio" name="primary_category_id" value="{{ $cat->id }}" class="form-check-input edit-primary-radio" style="display:none;">
+                                                        {{ $cat->name }}
+                                                    </label>
+                                                </div>
                                                 @foreach($cat->children as $child)
-                                                    <option value="{{ $child->id }}" style="padding-left: 20px;">── {{ $child->name }}</option>
+                                                    <div style="padding-right: 20px;">
+                                                        <label class="d-flex align-items-center gap-2">
+                                                            <input type="checkbox" name="categories[]" value="{{ $child->id }}" class="form-check-input edit-category-cb">
+                                                            <input type="radio" name="primary_category_id" value="{{ $child->id }}" class="form-check-input edit-primary-radio" style="display:none;">
+                                                            ── {{ $child->name }}
+                                                        </label>
+                                                    </div>
                                                 @endforeach
                                             @endif
                                         @endforeach
-                                    </select>
+                                    </div>
+                                    <small class="text-muted mt-1 d-block edit-primary-hint" style="display:none !important;">⭐ الفئة الأولى المحددة ستكون الرئيسية. اضغط الدائرة لتغييرها.</small>
                                 </div>
                             </div>
                         </div>
@@ -474,7 +497,109 @@
     </div>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/DashboardProduct.js') }}"></script> 
+    <script src="{{ asset('js/DashboardProduct.js') }}"></script>
+    <script>
+    // Multi-category checkbox/radio logic
+    function setupCategoryCheckboxes(prefix) {
+        const checkboxes = document.querySelectorAll(`.${prefix}-category-cb`);
+        const radios = document.querySelectorAll(`.${prefix}-primary-radio`);
+        const hint = document.querySelector(`.${prefix}-primary-hint`);
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const radio = this.closest('label').querySelector(`.${prefix}-primary-radio`);
+                const checked = document.querySelectorAll(`.${prefix}-category-cb:checked`);
+
+                if (this.checked) {
+                    radio.style.display = '';
+                    // Auto-select as primary if it's the first checked
+                    if (checked.length === 1) {
+                        radio.checked = true;
+                    }
+                } else {
+                    radio.style.display = 'none';
+                    radio.checked = false;
+                    // If unchecked was the primary, auto-select first remaining
+                    if (checked.length > 0) {
+                        const firstChecked = checked[0];
+                        firstChecked.closest('label').querySelector(`.${prefix}-primary-radio`).checked = true;
+                    }
+                }
+
+                // Show/hide hint
+                if (hint) hint.style.cssText = checked.length > 1 ? '' : 'display:none !important;';
+            });
+        });
+    }
+
+    // Initialize both add and edit modal checkbox logic
+    setupCategoryCheckboxes('add');
+    setupCategoryCheckboxes('edit');
+
+    // Override editProduct to also populate categories
+    const _originalEditProduct = window.editProduct;
+    window.editProduct = function(productId) {
+        // Reset edit checkboxes
+        document.querySelectorAll('.edit-category-cb').forEach(cb => { cb.checked = false; });
+        document.querySelectorAll('.edit-primary-radio').forEach(r => { r.checked = false; r.style.display = 'none'; });
+
+        // Fetch product with categories and populate
+        fetch(`/admin/products/${productId}`, {
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(product => {
+            document.getElementById('productId').value = product.id;
+            document.getElementById('editProductName').value = product.title;
+            document.getElementById('editAuthor').value = product.author;
+            document.getElementById('editProductDescription').value = product.description;
+            document.getElementById('editProductPrice').value = product.price;
+            document.getElementById('editProductPageNum').value = product.Page_Num;
+            document.getElementById('editProductLanguage').value = product.Langue;
+            document.getElementById('editProductISBN').value = product.ISBN;
+            document.getElementById('editProductPublishingHouse').value = product.Publishing_House;
+            document.getElementById('editProductQuantity').value = product.Quantity;
+
+            if (product.image) {
+                const preview = document.getElementById('editProductImagePreview');
+                preview.src = `/${product.image}`;
+                preview.style.display = 'block';
+            }
+
+            // Populate categories from pivot
+            if (product.categories) {
+                product.categories.forEach(cat => {
+                    const cb = document.querySelector(`.edit-category-cb[value="${cat.id}"]`);
+                    if (cb) {
+                        cb.checked = true;
+                        const radio = cb.closest('label').querySelector('.edit-primary-radio');
+                        radio.style.display = '';
+                        if (cat.pivot && cat.pivot.is_primary) {
+                            radio.checked = true;
+                        }
+                    }
+                });
+                // If no primary was set from pivot, default to category_id
+                if (!document.querySelector('.edit-primary-radio:checked') && product.category_id) {
+                    const fallback = document.querySelector(`.edit-category-cb[value="${product.category_id}"]`);
+                    if (fallback) {
+                        fallback.checked = true;
+                        const radio = fallback.closest('label').querySelector('.edit-primary-radio');
+                        radio.style.display = '';
+                        radio.checked = true;
+                    }
+                }
+                // Show hint if multiple
+                const hint = document.querySelector('.edit-primary-hint');
+                const checked = document.querySelectorAll('.edit-category-cb:checked');
+                if (hint) hint.style.cssText = checked.length > 1 ? '' : 'display:none !important;';
+            }
+
+            new bootstrap.Modal(document.getElementById('editProductModal')).show();
+        })
+        .catch(err => { console.error('Error:', err); alert('فشل في تحميل بيانات المنتج'); });
+    };
+    </script>
 </body>
 </html>
                         

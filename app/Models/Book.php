@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Illuminate\Support\Carbon;
 
 class Book extends Model
 {
-    use HasFactory, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
      protected $table = 'books';
      const LANGUAGES = ['arabic', 'english', 'french', 'spanish', 'german'];
      const LANGUAGE_LABELS = [
@@ -86,10 +87,29 @@ class Book extends Model
         return $this->image ?? 'images/book-placeholder.png';
     }
 
-    // Define relationships
+    // Primary category (denormalized for breadcrumbs/display)
     public function category()
     {
        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    // All categories (many-to-many via pivot)
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'book_category')
+                    ->withPivot('is_primary')
+                    ->withTimestamps();
+    }
+
+    // Sync categories and keep books.category_id in sync with primary
+    public function syncCategories(array $categoryIds, int $primaryCategoryId): void
+    {
+        $pivotData = [];
+        foreach ($categoryIds as $catId) {
+            $pivotData[$catId] = ['is_primary' => ($catId == $primaryCategoryId)];
+        }
+        $this->categories()->sync($pivotData);
+        $this->update(['category_id' => $primaryCategoryId]);
     }
     public function getIsNewAttribute()
     {

@@ -81,7 +81,11 @@
 
                     <!-- Category pills -->
                     <div class="v2-categories">
-                        @if($book->category)
+                        @if($book->categories->isNotEmpty())
+                            @foreach($book->categories as $cat)
+                                <a href="{{ route('by-category', $cat->id) }}" class="v2-cat-pill {{ $cat->pivot->is_primary ? 'v2-cat-sub' : '' }}">{{ $cat->name }}</a>
+                            @endforeach
+                        @elseif($book->category)
                             @if($book->category->parent)
                                 <a href="{{ route('by-category', $book->category->parent->id) }}" class="v2-cat-pill">{{ $book->category->parent->name }}</a>
                             @endif

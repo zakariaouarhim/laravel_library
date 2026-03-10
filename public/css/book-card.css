@@ -224,7 +224,7 @@
 .book-card .add-btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary-dark) 50%, var(--color-secondary) 100%);
+    background: var(--color-secondary);
     border: none;
     border-radius: var(--radius-md);
     color: white;
@@ -255,7 +255,7 @@
 }
 
 .book-card .add-btn:hover {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 50%, var(--color-primary) 100%);
+    background: var(--color-secondary-darker);
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 8px 25px rgba(44, 75, 121, 0.35);
 }

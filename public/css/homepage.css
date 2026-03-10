@@ -90,8 +90,8 @@
    CSS Variables (scoped to search hero section)
    ============================================ */
 .layout-searchbar {
-    --color-primary: #5de1e6;
-    --color-accent-secondary: #ff8a65;
+    
+    
 
     --color-white-alpha-90: rgba(255, 255, 255, 0.9);
     --color-white-alpha-40: rgba(255, 255, 255, 0.4);
@@ -120,7 +120,7 @@
    pushes search to center-top and categories to bottom
    ============================================ */
 .layout-searchbar .hero-search-section {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary-dark) 50%, var(--color-secondary) 100%);
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 50%, var(--color-secondary-darker) 100%);
     /*background: #48CAE4;*/
     position: relative;
     min-height: 420px;

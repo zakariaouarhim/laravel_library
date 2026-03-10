@@ -36,10 +36,12 @@ class Category extends Model
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
-    // Relationship with Books
+    // Relationship with Books (many-to-many via pivot)
     public function books()
     {
-        return $this->hasMany(Book::class);
+        return $this->belongsToMany(Book::class, 'book_category')
+                    ->withPivot('is_primary')
+                    ->withTimestamps();
     }
     // Get all descendant categories (children, grandchildren, etc.)
     public function descendants()
@@ -47,12 +49,11 @@ class Category extends Model
         return $this->children()->with('descendants');
     }
 
-    // Get all books including from child categories
+    // Get all books including from child categories (via pivot)
     public function allBooks()
     {
-        $childCategoryIds = $this->children->pluck('id')->toArray();
-        $allCategoryIds = array_merge([$this->id], $childCategoryIds);
-        
-        return Book::whereIn('category_id', $allCategoryIds);
+        $allCategoryIds = array_merge([$this->id], $this->children->pluck('id')->toArray());
+
+        return Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $allCategoryIds));
     }
 }

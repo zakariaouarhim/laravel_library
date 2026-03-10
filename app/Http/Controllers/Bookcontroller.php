@@ -34,8 +34,8 @@ class BookController extends Controller
     public function show($id)
     {
         // Get the book with its category, category's parent, and author relationship
-        $book = Book::with(['category.parent', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
-        
+        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
+
         // Get all authors (cached 1 hour)
         $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
 
@@ -62,18 +62,19 @@ class BookController extends Controller
                 ->get();
         }
 
-        // Get related books from the same category with author relationship
+        // Get related books from the same categories with author relationship
+        $bookCategoryIds = $book->categories->pluck('id')->toArray();
         $relatedBooks = Book::with('primaryAuthor')
-            ->where('category_id', $book->category_id)
+            ->whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $bookCategoryIds))
             ->where('id', '!=', $book->id)
             ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
             ->take(10)
             ->get();
 
-        // If no related books found in same category, try to get books from parent category
+        // If no related books found in same categories, try parent category
         if ($relatedBooks->isEmpty() && $book->category && $book->category->parent_id) {
             $relatedBooks = Book::with('primaryAuthor')
-                ->where('category_id', $book->category->parent_id)
+                ->whereHas('categories', fn($q) => $q->where('book_category.category_id', $book->category->parent_id))
                 ->where('id', '!=', $book->id)
                 ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
@@ -133,7 +134,7 @@ class BookController extends Controller
 
     private function getBookPageData($id)
     {
-        $book = Book::with(['category.parent', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
+        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
         $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
         $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
         $primaryAuthor = $book->primaryAuthor;
@@ -145,9 +146,10 @@ class BookController extends Controller
             $authorBooks = Book::where('author', $book->author)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
         }
 
-        $relatedBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('category_id', $book->category_id)->where('id', '!=', $book->id)->take(10)->get();
+        $bookCatIds = $book->categories->pluck('id')->toArray();
+        $relatedBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $bookCatIds))->where('id', '!=', $book->id)->take(10)->get();
         if ($relatedBooks->isEmpty() && $book->category && $book->category->parent_id) {
-            $relatedBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('category_id', $book->category->parent_id)->where('id', '!=', $book->id)->take(10)->get();
+            $relatedBooks = Book::with('primaryAuthor')->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->whereHas('categories', fn($q) => $q->where('book_category.category_id', $book->category->parent_id))->where('id', '!=', $book->id)->take(10)->get();
         }
         if ($relatedBooks->isEmpty()) $relatedBooks = $authorBooks->take(10);
         if ($relatedBooks->isEmpty()) {
@@ -301,7 +303,9 @@ public function addProduct(Request $request)
         'productLanguage' => 'nullable|string|max:100',
         'ProductPublishingHouse' => 'nullable|string|max:255',
         'productIsbn' => 'nullable|string|max:50',
-        'Productcategorie' => 'required|integer|exists:categories,id',
+        'categories' => 'required|array|min:1',
+        'categories.*' => 'exists:categories,id',
+        'primary_category_id' => 'required|in_array:categories.*',
         'productQuantity' => 'required|integer|min:0',
         'productImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
         'auto_enrich' => 'nullable|boolean'
@@ -368,7 +372,7 @@ public function addProduct(Request $request)
         $product->author = $authorName;
         $product->author_id = $author->id;
         $product->price = $validated['productPrice'];
-        $product->category_id = $validated['Productcategorie'];
+        $product->category_id = $validated['primary_category_id'];
         $product->description = $validated['productDescription'];
         $product->image = $imagePath; // Will be null or the valid path
         $product->Page_Num = $validated['productNumPages'] ?? null;
@@ -398,6 +402,9 @@ public function addProduct(Request $request)
         $product->authors()->syncWithoutDetaching([
             $author->id => ['author_type' => 'primary']
         ]);
+
+        // 8. Sync categories pivot
+        $product->syncCategories($validated['categories'], $validated['primary_category_id']);
 
         // Notify followers of the author and publisher
         $notifyUserIds = collect();
@@ -1019,10 +1026,13 @@ public function searchResults(Request $request)
 
     // 🔍 1. Search
     $books = $this->searchBooks2($query);
+    if ($books->isNotEmpty()) {
+        $books->load('categories');
+    }
 
     // 🎛 2. Apply filters
     if ($categoryId) {
-        $books = $books->where('category_id', (int) $categoryId);
+        $books = $books->filter(fn($b) => $b->categories->contains('id', (int) $categoryId));
     }
     if ($request->has('publishers')) {
         $publisherIds = collect($request->input('publishers'))->map(fn($v) => (int) $v);
@@ -1072,8 +1082,9 @@ public function searchResults(Request $request)
     }
 
     // 📂 7. Detect primary category from results and reorder sidebar
-    $primaryCategoryId = $books->groupBy('category_id')
-        ->sortByDesc(fn($group) => $group->count())
+    $primaryCategoryId = $books->flatMap(fn($b) => $b->categories->pluck('id'))
+        ->countBy()
+        ->sortDesc()
         ->keys()
         ->first();
 
@@ -1145,7 +1156,7 @@ private function applyFilters($books, ?string $filter, ?int $categoryId)
 {
     // Category filter
     if ($categoryId) {
-        $books = $books->where('category_id', $categoryId);
+        $books = $books->filter(fn($b) => $b->categories->contains('id', $categoryId));
     }
 
     // Sorting
@@ -1165,7 +1176,8 @@ private function getRelatedBooks($books)
     $mainBook = $books->first();
     $excludedIds = $books->pluck('id')->toArray();
 
-    return Book::where('category_id', $mainBook->category_id)
+    $mainBookCatIds = $mainBook->categories->pluck('id')->toArray();
+    return Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $mainBookCatIds ?: [$mainBook->category_id]))
         ->whereNotIn('id', $excludedIds)
         ->inRandomOrder()
         ->take(10)
@@ -1174,11 +1186,12 @@ private function getRelatedBooks($books)
 
 private function relatedBooks(int $bookId)
 {
-    $book = Book::with(['category.parent', 'primaryAuthor'])
+    $book = Book::with(['category.parent', 'primaryAuthor', 'categories'])
         ->findOrFail($bookId);
 
-    // 1️⃣ Same category
-    $related = Book::where('category_id', $book->category_id)
+    // 1️⃣ Same categories
+    $catIds = $book->categories->pluck('id')->toArray();
+    $related = Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $catIds ?: [$book->category_id]))
         ->where('id', '!=', $book->id)
         ->take(10)
         ->get();
@@ -1424,7 +1437,12 @@ public function searchBooksAjax(Request $request)
         }
         
         $book = Book::create($bookData);
-        
+
+        // Sync category to pivot table
+        if ($book->category_id) {
+            $book->syncCategories([$book->category_id], $book->category_id);
+        }
+
         // Create primary author relationship in book_authors table
         if (isset($author)) {
             BookAuthor::create([
@@ -1433,7 +1451,7 @@ public function searchBooksAjax(Request $request)
                 'author_type' => 'primary'
             ]);
         }
-        
+
         // Notify followers of the author and publisher
         $notifyUserIds = collect();
 
@@ -1491,8 +1509,8 @@ public function searchBooksAjax(Request $request)
         $childCategoryIds = $category->children->pluck('id')->toArray();
         $allCategoryIds = array_merge([$category->id], $childCategoryIds);
 
-        // Start the query with category filter
-        $query = Book::whereIn('category_id', $allCategoryIds);
+        // Start the query with category filter (via pivot)
+        $query = Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $allCategoryIds));
 
         // ✅ Apply publishing house filter
         if ($request->has('publishers')) {
@@ -1549,7 +1567,7 @@ public function searchBooksAjax(Request $request)
     {
         $childCategoryIds = $category->children->pluck('id')->toArray();
         $allCategoryIds = array_merge([$category->id], $childCategoryIds);
-        $books = Book::whereIn('category_id', $allCategoryIds)->paginate(12);
+        $books = Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $allCategoryIds))->paginate(12);
         $categories = Category::all();
 
         return view('Dashbord_Admin.ManagementSystem', compact('books', 'category', 'categories'));
@@ -1578,7 +1596,7 @@ public function searchBooksAjax(Request $request)
                     ...$category->children->pluck('id')
                 ])->filter()->unique();
 
-                $query->whereIn('category_id', $categoryIds);
+                $query->whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $categoryIds));
             }
         }
 
@@ -1586,12 +1604,12 @@ public function searchBooksAjax(Request $request)
                         ->paginate(15)
                         ->withQueryString();
 
-        //get categories
-        $categories = Category::whereNull('parent_id')->get();
+        //get categories with children for dropdown/checkboxes
+        $categories = Category::whereNull('parent_id')->with('children')->get();
         // Get statistics for stats cards
         $totalProducts = Book::count();
         $availableProducts = Book::where('Quantity', '>', 0)->count();
-        $totalCategories = Book::distinct('category_id')->count('category_id');
+        $totalCategories = DB::table('book_category')->distinct('category_id')->count('category_id');
 
         return view('Dashbord_Admin.product', compact(
             'products',
@@ -1602,8 +1620,7 @@ public function searchBooksAjax(Request $request)
         ));
     }
     public function viewProduct($id){
-        // Get the book with its category, category's parent, and author relationship
-        $product =  Book::findOrFail($id);
+        $product = Book::with('categories')->findOrFail($id);
 
         return response()->json($product);
     }
@@ -1630,6 +1647,9 @@ public function searchBooksAjax(Request $request)
                 'Publishing_House' => 'nullable|string|max:255',
                 'ISBN' => 'nullable|string|max:50',
                 'Quantity' => 'required|integer|min:0',
+                'categories' => 'nullable|array|min:1',
+                'categories.*' => 'exists:categories,id',
+                'primary_category_id' => 'nullable|in_array:categories.*',
                 'category_id' => 'nullable|integer|exists:categories,id',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048'
             ]);
@@ -1668,8 +1688,11 @@ public function searchBooksAjax(Request $request)
             $product->ISBN = $validated['ISBN'] ?? null;
             $product->Quantity = $validated['Quantity'];
         
-            // Handle category_id
-            if (isset($validated['category_id'])) {
+            // Handle categories (multi-select with primary)
+            if (!empty($validated['categories'])) {
+                $primaryId = $validated['primary_category_id'] ?? $validated['categories'][0];
+                $product->category_id = $primaryId;
+            } elseif (isset($validated['category_id'])) {
                 $product->category_id = $validated['category_id'];
             }
         
@@ -1746,6 +1769,12 @@ public function searchBooksAjax(Request $request)
             $product->authors()->sync([
                 $author->id => ['author_type' => 'primary']
             ]);
+
+            // Sync categories pivot if provided
+            if (!empty($validated['categories'])) {
+                $primaryId = $validated['primary_category_id'] ?? $validated['categories'][0];
+                $product->syncCategories($validated['categories'], $primaryId);
+            }
 
             \Log::info('=== UPDATE PRODUCT SUCCESS ===');
 
