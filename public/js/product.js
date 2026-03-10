@@ -36,10 +36,10 @@ async function renderProducts() {
   max-width: 200px;
 ">${product.description}</td>
         <td>${product.price} ريال</td>
-        <td>${product.author}</td>
-        <td>${product.Page_Num}</td>
-        <td>${product.Langue}</td>
-        <td>${product.ISBN}</td>
+        <td>${product.author_name}</td>
+        <td>${product.page_num}</td>
+        <td>${product.language}</td>
+        <td>${product.isbn}</td>
         <td class="action-buttons">
           <button class="btn btn-sm btn-success" onclick="editProduct(${product.id})">
             <span data-feather="edit-2"></span> تعديل
@@ -82,10 +82,10 @@ function renderFilteredProducts(filteredProducts) {
         <td>${product.title}</td>
         <td>${product.description}</td>
         <td>${product.price} ريال</td>
-        <td>${product.author}</td>
-        <td>${product.Page_Num}</td>
-        <td>${product.Langue}</td>
-        <td>${product.ISBN}</td>
+        <td>${product.author_name}</td>
+        <td>${product.page_num}</td>
+        <td>${product.language}</td>
+        <td>${product.isbn}</td>
         <td class="action-buttons">
           <button class="btn btn-sm btn-success" onclick="editProduct(${product.id})">
             <span data-feather="edit-2"></span> تعديل
@@ -126,13 +126,13 @@ async function editProduct(productId) {
   // Populate form fields
   document.getElementById('productId').value = product.id;
   document.getElementById('editProductName').value = product.title;
-  document.getElementById('editAuthor').value = product.author;
+  document.getElementById('editAuthor').value = product.author_name;
   document.getElementById('editProductDescription').value = product.description;
   document.getElementById('editProductPrice').value = product.price;
-  document.getElementById('editProductPageNum').value = product.Page_Num;
-  document.getElementById('editProductLangue').value = product.Langue;
-  document.getElementById('editProductPublishingHouse').value = product.Publishing_House;
-  document.getElementById('editProductISBN').value = product.ISBN;
+  document.getElementById('editProductPageNum').value = product.page_num;
+  document.getElementById('editProductLangue').value = product.language;
+  document.getElementById('editProductPublishingHouse').value = product.publishing_house_name;
+  document.getElementById('editProductISBN').value = product.isbn;
 
   // Show the modal
   const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
@@ -147,10 +147,10 @@ async function saveProduct() {
     author: document.getElementById('editAuthor').value,
     description: document.getElementById('editProductDescription').value,
     price: parseFloat(document.getElementById('editProductPrice').value),
-    Page_Num: document.getElementById('editProductPageNum').value,
-    Langue: document.getElementById('editProductLangue').value,
-    Publishing_House: document.getElementById('editProductPublishingHouse').value,
-    ISBN: document.getElementById('editProductISBN').value,
+    page_num: document.getElementById('editProductPageNum').value,
+    language: document.getElementById('editProductLangue').value,
+    publishing_house: document.getElementById('editProductPublishingHouse').value,
+    isbn: document.getElementById('editProductISBN').value,
   };
 
   try {

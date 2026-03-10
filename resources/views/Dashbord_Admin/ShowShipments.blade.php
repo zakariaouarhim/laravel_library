@@ -74,7 +74,7 @@
                                         <tr>
                                             <td>{{ $item->isbn }}</td>
                                             <td>{{ $item->title }}</td>
-                                            <td>{{ $item->author ?? 'غير محدد' }}</td>
+                                            <td>{{ $item->author?->name ?? 'غير محدد' }}</td>
                                             <td>{{ $item->quantity_received }}</td>
                                             <td>{{ $item->cost_price ? number_format($item->cost_price, 2) : 'N/A' }}</td>
                                             <td>{{ number_format($item->selling_price, 2) }}</td>

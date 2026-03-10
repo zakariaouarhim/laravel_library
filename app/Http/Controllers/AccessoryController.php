@@ -103,7 +103,7 @@ class AccessoryController extends Controller
         $categories = Category::whereNull('parent_id')->with('children')->get();
 
         $totalAccessories = Book::accessories()->count();
-        $availableAccessories = Book::accessories()->where('Quantity', '>', 0)->count();
+        $availableAccessories = Book::accessories()->where('quantity', '>', 0)->count();
         $totalCategories = Book::accessories()->distinct('category_id')->count('category_id');
 
         return view('Dashbord_Admin.accessories', compact(
@@ -126,7 +126,7 @@ class AccessoryController extends Controller
             'price' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
-            'Quantity' => 'required|integer|min:0',
+            'quantity' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
         ]);
 
@@ -160,7 +160,7 @@ class AccessoryController extends Controller
             'price' => $validated['price'],
             'discount' => $validated['discount'] ?? null,
             'category_id' => $validated['category_id'],
-            'Quantity' => $validated['Quantity'],
+            'quantity' => $validated['quantity'],
             'image' => $imagePath,
         ]);
 
@@ -189,7 +189,7 @@ class AccessoryController extends Controller
             'price' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
-            'Quantity' => 'required|integer|min:0',
+            'quantity' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
         ]);
 

@@ -152,9 +152,9 @@
                                             <span>{{ $book->title }}</span>
                                         </div>
                                     </td>
-                                    <td><strong>{{ $book->Quantity }}</strong></td>
+                                    <td><strong>{{ $book->quantity }}</strong></td>
                                     <td>
-                                        @if($book->Quantity == 0)
+                                        @if($book->quantity == 0)
                                             <span class="status-badge" style="background: #e74c3c; color: #fff;">نفذ المخزون</span>
                                         @else
                                             <span class="status-badge" style="background: #f39c12; color: #fff;">مخزون منخفض</span>

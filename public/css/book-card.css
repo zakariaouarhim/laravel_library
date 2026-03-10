@@ -329,7 +329,7 @@
 }
 
 /* ===== Notify Me Button ===== */
-.book-card .notify-btn {
+.notify-btn {
     width: 100%;
     padding: 11px 12px;
     background: transparent;
@@ -347,14 +347,14 @@
     font-size: clamp(0.78rem, 1.8vw, 0.92rem);
 }
 
-.book-card .notify-btn:hover {
+.notify-btn:hover {
     background: var(--color-warning-alt);
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
 }
 
-.book-card .notify-btn:disabled {
+.notify-btn:disabled {
     opacity: .6;
     cursor: not-allowed;
     transform: none;

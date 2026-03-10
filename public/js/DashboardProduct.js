@@ -40,7 +40,7 @@
                             <h4 style="color: #2c3e50; font-weight: 700; margin-bottom: 1rem;">${product.title}</h4>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">المؤلف</label>
-                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.author}</p>
+                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.author_name}</p>
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">السعر</label>
@@ -48,19 +48,19 @@
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">عدد الصفحات</label>
-                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.Page_Num || '-'}</p>
+                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.page_num || '-'}</p>
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">اللغة</label>
-                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.Langue || '-'}</p>
+                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.language || '-'}</p>
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">ISBN</label>
-                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.ISBN || '-'}</p>
+                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.isbn || '-'}</p>
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="color: #667eea; font-weight: 600; font-size: 0.9rem;">دار النشر</label>
-                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.Publishing_House || '-'}</p>
+                                <p style="color: #2c3e50; margin: 0.5rem 0 0;">${product.publishing_house_name || '-'}</p>
                             </div>
                         </div>
                     </div>
@@ -103,14 +103,14 @@
             .then(product => {
                 document.getElementById('productId').value = product.id;
                 document.getElementById('editProductName').value = product.title;
-                document.getElementById('editAuthor').value = product.author;
+                document.getElementById('editAuthor').value = product.author_name;
                 document.getElementById('editProductDescription').value = product.description;
                 document.getElementById('editProductPrice').value = product.price;
-                document.getElementById('editProductPageNum').value = product.Page_Num;
-                document.getElementById('editProductLanguage').value = product.Langue;
-                document.getElementById('editProductISBN').value = product.ISBN;
-                document.getElementById('editProductPublishingHouse').value = product.Publishing_House;
-                document.getElementById('editProductQuantity').value = product.Quantity;
+                document.getElementById('editProductPageNum').value = product.page_num;
+                document.getElementById('editProductLanguage').value = product.language;
+                document.getElementById('editProductISBN').value = product.isbn;
+                document.getElementById('editProductPublishingHouse').value = product.publishing_house_name;
+                document.getElementById('editProductQuantity').value = product.quantity;
 
                 if (product.image) {
                     const preview = document.getElementById('editProductImagePreview');

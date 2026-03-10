@@ -40,7 +40,7 @@ class RecommendationController extends Controller
         }
 
         if ($request->filled('language')) {
-            $query->where('Langue', $request->input('language'));
+            $query->where('language', $request->input('language'));
         }
 
         if ($request->filled('price_min')) {

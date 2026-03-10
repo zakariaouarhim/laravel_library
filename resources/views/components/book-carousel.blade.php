@@ -5,7 +5,7 @@
         <div class="carousel-container">
             <div class="carousel-wrapper" data-carousel-wrapper>
                 @foreach($books as $book)
-                @php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
+                @php $outOfStock = ($book->quantity ?? 0) <= 0; @endphp
                 <div class="book-card {{ $outOfStock ? 'out-of-stock' : '' }}">
                     <!-- Image wrapper with link - FULL WIDTH -->
                     <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">

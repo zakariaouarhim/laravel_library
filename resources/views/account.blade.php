@@ -321,7 +321,7 @@
                                                         class="book-thumb me-3">
                                                     <div class="p-2 flex-fill">
                                                         <h6 class="fw-bold mb-1">{{ $book['title'] }}</h6>
-                                                        <p class="text-muted small mb-2">{{ $book['author'] ?? 'مؤلف غير معروف' }}</p>
+                                                        <p class="text-muted small mb-2">{{ $book['author_name'] ?? 'مؤلف غير معروف' }}</p>
 
                                                         <small class="text-muted">التقدم في القراءة</small>
                                                         <div class="reading-progress">
@@ -393,7 +393,7 @@
                                                              class="book-thumb me-3">
                                                         <div class="p-2 flex-fill">
                                                             <h6 class="fw-bold mb-1">{{ Str::limit($entry->book->title, 40) }}</h6>
-                                                            <p class="text-muted small mb-1">{{ $entry->book->author ?? 'مؤلف غير معروف' }}</p>
+                                                            <p class="text-muted small mb-1">{{ $entry->book->author_name ?? 'مؤلف غير معروف' }}</p>
                                                             @if($entry->started_at)
                                                                 <small class="text-muted"><i class="bi bi-calendar3"></i> بدأت: {{ $entry->started_at->format('d/m/Y') }}</small>
                                                             @endif
@@ -547,7 +547,7 @@
                                 </h6>
                                 
                                 <p class="text-muted small mb-1">
-                                    <i class="bi bi-person me-1"></i>{{ $rec['author'] }}
+                                    <i class="bi bi-person me-1"></i>{{ $rec['author_name'] }}
                                 </p>
                                 
                                 @if(isset($rec['category']) && $rec['category'])

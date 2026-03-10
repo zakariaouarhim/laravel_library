@@ -8,7 +8,7 @@ class InventoryService
     public function logChange($bookId, $type, $quantityChange, $reference = null)
     {
         $book = Book::findOrFail($bookId);
-        $quantityBefore = $book->Quantity;
+        $quantityBefore = $book->quantity;
         $quantityAfter = $quantityBefore + $quantityChange;
 
         InventoryLog::create([

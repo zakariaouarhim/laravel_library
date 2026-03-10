@@ -49,7 +49,7 @@ function viewAccessory(id) {
                     ` : ''}
                     <div style="margin-bottom: 1rem;">
                         <label style="color: #48CAE4; font-weight: 600; font-size: 0.9rem;">الكمية المتاحة</label>
-                        <p style="color: #2c3e50; margin: 0.5rem 0 0;">${item.Quantity}</p>
+                        <p style="color: #2c3e50; margin: 0.5rem 0 0;">${item.quantity}</p>
                     </div>
                     <div style="margin-bottom: 1rem;">
                         <label style="color: #48CAE4; font-weight: 600; font-size: 0.9rem;">الصنف</label>
@@ -99,7 +99,7 @@ function editAccessory(id) {
         document.getElementById('editDescription').value = item.description || '';
         document.getElementById('editPrice').value = item.price;
         document.getElementById('editDiscount').value = item.discount || '';
-        document.getElementById('editQuantity').value = item.Quantity;
+        document.getElementById('editQuantity').value = item.quantity;
         document.getElementById('editCategoryId').value = item.category_id || '';
 
         if (item.image) {

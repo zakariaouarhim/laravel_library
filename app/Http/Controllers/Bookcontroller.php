@@ -55,7 +55,7 @@ class BookController extends Controller
                 ->get();
         } else {
             // If no author relationship, try to find books by author name
-            $authorBooks = Book::where('author', $book->author)
+            $authorBooks = Book::whereHas('primaryAuthor', fn($q) => $q->where('id', $book->author_id))
                 ->where('id', '!=', $book->id)
                 ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
@@ -143,7 +143,7 @@ class BookController extends Controller
         if ($primaryAuthor) {
             $authorBooks = Book::where('author_id', $primaryAuthor->id)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
         } else {
-            $authorBooks = Book::where('author', $book->author)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
+            $authorBooks = Book::whereHas('primaryAuthor', fn($q) => $q->where('id', $book->author_id))->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
         }
 
         $bookCatIds = $book->categories->pluck('id')->toArray();
@@ -220,8 +220,8 @@ class BookController extends Controller
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', "%$search%")
-                  ->orWhere('author', 'like', "%$search%")
-                  ->orWhere('ISBN', 'like', "%$search%");
+                  ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'like', "%$search%"))
+                  ->orWhere('isbn', 'like', "%$search%");
             });
         }
 
@@ -369,18 +369,16 @@ public function addProduct(Request $request)
         // 5. Create the object but don't save yet
         $product = new Book();
         $product->title = $validated['productName'];
-        $product->author = $authorName;
         $product->author_id = $author->id;
         $product->price = $validated['productPrice'];
         $product->category_id = $validated['primary_category_id'];
         $product->description = $validated['productDescription'];
         $product->image = $imagePath; // Will be null or the valid path
-        $product->Page_Num = $validated['productNumPages'] ?? null;
-        $product->Langue = $validated['productLanguage'] ?? null;
-        $product->Publishing_House = $publishingHouseName ?: null;
+        $product->page_num = $validated['productNumPages'] ?? null;
+        $product->language = $validated['productLanguage'] ?? null;
         $product->publishing_house_id = $publishingHouseId;
-        $product->ISBN = $validated['productIsbn'] ?? null;
-        $product->Quantity = $validated['productQuantity'];
+        $product->isbn = $validated['productIsbn'] ?? null;
+        $product->quantity = $validated['productQuantity'];
         $product->api_data_status = 'pending';
 
         // 6. FIX: Handle Algolia/Scout Crash Gracefully
@@ -587,7 +585,7 @@ public function addProduct(Request $request)
             // Fallback to title+author search
             if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
                 $title = $book->title;
-                $author = $book->author;
+                $author = $book->author_name;
 
                 if (empty($title)) {
                     return response()->json([
@@ -632,9 +630,9 @@ public function addProduct(Request $request)
                     'will_update' => !empty($bookInfo['title']) && strlen(trim($bookInfo['title'])) > strlen(trim($book->title ?? ''))
                 ],
                 'author' => [
-                    'current' => $book->author,
+                    'current' => $book->author_name,
                     'api' => isset($bookInfo['authors']) ? implode(', ', $bookInfo['authors']) : null,
-                    'will_update' => !empty($bookInfo['authors']) && strlen(implode(', ', $bookInfo['authors'] ?? [])) > strlen(trim($book->author ?? ''))
+                    'will_update' => !empty($bookInfo['authors']) && strlen(implode(', ', $bookInfo['authors'] ?? [])) > strlen(trim($book->author_name ?? ''))
                 ],
                 'description' => [
                     'current' => $book->description ? substr($book->description, 0, 200) . '...' : null,
@@ -642,19 +640,19 @@ public function addProduct(Request $request)
                     'will_update' => !empty($bookInfo['description']) && (strlen($bookInfo['description']) > strlen($book->description ?? '') * 1.5 || strlen($book->description ?? '') < 50)
                 ],
                 'page_count' => [
-                    'current' => $book->Page_Num,
+                    'current' => $book->page_num,
                     'api' => $bookInfo['pageCount'] ?? null,
-                    'will_update' => !empty($bookInfo['pageCount']) && (empty($book->Page_Num) || $book->Page_Num == 0)
+                    'will_update' => !empty($bookInfo['pageCount']) && (empty($book->page_num) || $book->page_num == 0)
                 ],
                 'publisher' => [
-                    'current' => $book->Publishing_House,
+                    'current' => $book->publishing_house_name,
                     'api' => $bookInfo['publisher'] ?? null,
-                    'will_update' => !empty($bookInfo['publisher']) && strlen($bookInfo['publisher']) > strlen($book->Publishing_House ?? '')
+                    'will_update' => !empty($bookInfo['publisher']) && strlen($bookInfo['publisher']) > strlen($book->publishing_house_name ?? '')
                 ],
                 'language' => [
-                    'current' => $book->Langue,
+                    'current' => $book->language,
                     'api' => isset($bookInfo['language']) ? $this->mapLanguageCode($bookInfo['language']) : null,
-                    'will_update' => !empty($bookInfo['language']) && (empty($book->Langue) || $book->Langue === 'Unknown')
+                    'will_update' => !empty($bookInfo['language']) && (empty($book->language) || $book->language === 'Unknown')
                 ],
                 'image' => [
                     'current' => $book->image,
@@ -668,7 +666,7 @@ public function addProduct(Request $request)
                 'book' => [
                     'id' => $book->id,
                     'title' => $book->title,
-                    'author' => $book->author
+                    'author' => $book->author_name
                 ],
                 'search_method' => $searchMethod,
                 'preview' => $previewData,
@@ -721,7 +719,7 @@ public function addProduct(Request $request)
 
             // Fallback to title search
             if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
-                $apiData = $this->apiService->fetchBookDataByTitle($book->title, $book->author);
+                $apiData = $this->apiService->fetchBookDataByTitle($book->title, $book->author_name);
             }
 
             if (!isset($apiData['items']) || empty($apiData['items'])) {
@@ -738,11 +736,9 @@ public function addProduct(Request $request)
             // Map selected fields to database columns
             $fieldMapping = [
                 'title' => 'title',
-                'author' => 'author',
                 'description' => 'description',
-                'page_count' => 'Page_Num',
-                'publisher' => 'Publishing_House',
-                'language' => 'Langue'
+                'page_count' => 'page_num',
+                'language' => 'language'
             ];
 
             foreach ($selectedFields as $field) {
@@ -750,24 +746,16 @@ public function addProduct(Request $request)
                     $updateData['title'] = $bookInfo['title'];
                     $updatedFields[] = 'title';
                 }
-                elseif ($field === 'author' && isset($bookInfo['authors'])) {
-                    $updateData['author'] = implode(', ', $bookInfo['authors']);
-                    $updatedFields[] = 'author';
-                }
                 elseif ($field === 'description' && isset($bookInfo['description'])) {
                     $updateData['description'] = strip_tags($bookInfo['description']);
                     $updatedFields[] = 'description';
                 }
                 elseif ($field === 'page_count' && isset($bookInfo['pageCount'])) {
-                    $updateData['Page_Num'] = $bookInfo['pageCount'];
+                    $updateData['page_num'] = $bookInfo['pageCount'];
                     $updatedFields[] = 'page_count';
                 }
-                elseif ($field === 'publisher' && isset($bookInfo['publisher'])) {
-                    $updateData['Publishing_House'] = $bookInfo['publisher'];
-                    $updatedFields[] = 'publisher';
-                }
                 elseif ($field === 'language' && isset($bookInfo['language'])) {
-                    $updateData['Langue'] = $this->mapLanguageCode($bookInfo['language']);
+                    $updateData['language'] = $this->mapLanguageCode($bookInfo['language']);
                     $updatedFields[] = 'language';
                 }
                 elseif ($field === 'image') {
@@ -880,7 +868,7 @@ public function addProduct(Request $request)
      */
     protected function extractISBN(Book $book)
     {
-        $isbn = $book->ISBN ?? $book->isbn ?? null;
+        $isbn = $book->isbn ?? null;
 
         if (empty($isbn) || trim($isbn) === '') {
             return null;
@@ -969,11 +957,11 @@ public function addProduct(Request $request)
         try {
             // First try exact match
             $books = Book::where('title', 'LIKE', "%{$query}%")
-                        ->orWhere('author', 'LIKE', "%{$query}%")
-                        ->orWhere('ISBN', 'LIKE', "%{$query}%")
-                        ->orWhere('Publishing_House', 'LIKE', "%{$query}%")
+                        ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
+                        ->orWhere('isbn', 'LIKE', "%{$query}%")
+                        ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
                         ->get();
-            
+
             // If no results, try n-gram approach with DB query
             if ($books->isEmpty()) {
                 $tokens = [];
@@ -985,8 +973,8 @@ public function addProduct(Request $request)
                     $ngramQuery = Book::where(function ($q) use ($tokens) {
                         foreach ($tokens as $token) {
                             $q->orWhere('title', 'LIKE', "%{$token}%")
-                              ->orWhere('author', 'LIKE', "%{$token}%")
-                              ->orWhere('Publishing_House', 'LIKE', "%{$token}%");
+                              ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$token}%"))
+                              ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$token}%"));
                         }
                     })->take(10)->get();
                     $books = $ngramQuery;
@@ -1039,7 +1027,7 @@ public function searchResults(Request $request)
         $books = $books->whereIn('publishing_house_id', $publisherIds);
     }
     if ($request->filled('language')) {
-        $books = $books->where('Langue', $request->input('language'));
+        $books = $books->where('language', $request->input('language'));
     }
     if ($request->filled('price_min')) {
         $books = $books->where('price', '>=', (float) $request->input('price_min'));
@@ -1121,9 +1109,9 @@ private function searchBooks2(?string $query)
     $query = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
     $books = Book::where('title', 'LIKE', "%{$query}%")
-        ->orWhere('author', 'LIKE', "%{$query}%")
-        ->orWhere('ISBN', 'LIKE', "%{$query}%")
-        ->orWhere('Publishing_House', 'LIKE', "%{$query}%")
+        ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
+        ->orWhere('isbn', 'LIKE', "%{$query}%")
+        ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
         ->get();
 
     if ($books->isNotEmpty()) {
@@ -1147,8 +1135,8 @@ private function smartFallbackSearch(string $query)
     return Book::where(function ($q) use ($tokens) {
         foreach ($tokens as $token) {
             $q->orWhere('title', 'LIKE', "%{$token}%")
-              ->orWhere('author', 'LIKE', "%{$token}%")
-              ->orWhere('Publishing_House', 'LIKE', "%{$token}%");
+              ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$token}%"))
+              ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$token}%"));
         }
     })->take(20)->get();
 }
@@ -1163,7 +1151,7 @@ private function applyFilters($books, ?string $filter, ?int $categoryId)
     return match ($filter) {
         'price_low'  => $books->sortBy('price')->values(),
         'price_high' => $books->sortByDesc('price')->values(),
-        'author'     => $books->sortBy('author')->values(),
+        'author'     => $books->sortBy('author_name')->values(),
         default      => $books
     };
 }
@@ -1254,23 +1242,23 @@ public function searchBooksAjax(Request $request)
     try {
         // First try exact match
         $books = Book::where('title', 'LIKE', "%{$query}%")
-                    ->orWhere('author', 'LIKE', "%{$query}%")
-                    ->orWhere('ISBN', 'LIKE', "%{$query}%")
+                    ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
+                    ->orWhere('isbn', 'LIKE', "%{$query}%")
                     ->take(5) // Limit for autocomplete
                     ->get();
-        
+
         // If no results, try n-gram approach
         if ($books->isEmpty()) {
             $tokens = [];
             for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
                 $tokens[] = mb_substr($query, $i, 3);
             }
-            
+
             if (!empty($tokens)) {
                 $books = Book::where(function ($q) use ($tokens) {
                     foreach ($tokens as $token) {
                         $q->orWhere('title', 'LIKE', "%{$token}%")
-                          ->orWhere('author', 'LIKE', "%{$token}%");
+                          ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$token}%"));
                     }
                 })->take(5)->get();
             }
@@ -1338,7 +1326,7 @@ public function searchBooksAjax(Request $request)
 
         // Get English books with relationships (cached 30 min)
         $englishBooks = Cache::remember('english_books', 1800, function () {
-            return Book::where('Langue', 'English')
+            return Book::where('language', 'English')
                 ->with(['primaryAuthor', 'authors', 'publishingHouse'])
                 ->withCount('reviews')
                 ->withAvg('reviews as reviews_avg_rating', 'rating')
@@ -1409,10 +1397,10 @@ public function searchBooksAjax(Request $request)
             'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
             'publishing_house_id' => 'nullable|exists:publishing_houses,id',
-            'ISBN' => 'required|string|unique:books,ISBN',
-            'Page_Num' => 'required|integer|min:1',
-            'Langue' => 'required|string',
-            'Quantity' => 'required|integer|min:0',
+            'isbn' => 'required|string|unique:books,isbn',
+            'page_num' => 'required|integer|min:1',
+            'language' => 'required|string',
+            'quantity' => 'required|integer|min:0',
         ]);
 
         $bookData = $validated;
@@ -1424,16 +1412,8 @@ public function searchBooksAjax(Request $request)
                 ['status' => 'active']
             );
             $bookData['author_id'] = $author->id;
-            $bookData['author'] = $author->name; // Keep old field for compatibility
         } elseif ($request->author_id) {
             $author = Author::find($request->author_id);
-            $bookData['author'] = $author->name; // Keep old field for compatibility
-        }
-        
-        // Handle publishing house
-        if ($request->publishing_house_id) {
-            $publishingHouse = PublishingHouse::find($request->publishing_house_id);
-            $bookData['Publishing_House'] = $publishingHouse->name; // Keep old field for compatibility
         }
         
         $book = Book::create($bookData);
@@ -1514,12 +1494,12 @@ public function searchBooksAjax(Request $request)
 
         // ✅ Apply publishing house filter
         if ($request->has('publishers')) {
-            $query->whereIn('Publishing_House_id', $request->input('publishers'));
+            $query->whereIn('publishing_house_id', $request->input('publishers'));
         }
 
         // ✅ Apply language filter
         if ($request->filled('language')) {
-            $query->where('Langue', $request->input('language'));
+            $query->where('language', $request->input('language'));
         }
 
         // ✅ Apply price range filters
@@ -1582,7 +1562,7 @@ public function searchBooksAjax(Request $request)
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                ->orWhere('author', 'like', "%{$search}%");
+                ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -1608,7 +1588,7 @@ public function searchBooksAjax(Request $request)
         $categories = Category::whereNull('parent_id')->with('children')->get();
         // Get statistics for stats cards
         $totalProducts = Book::count();
-        $availableProducts = Book::where('Quantity', '>', 0)->count();
+        $availableProducts = Book::where('quantity', '>', 0)->count();
         $totalCategories = DB::table('book_category')->distinct('category_id')->count('category_id');
 
         return view('Dashbord_Admin.product', compact(
@@ -1642,11 +1622,11 @@ public function searchBooksAjax(Request $request)
                 'description' => 'required|string',
                 'price' => 'required|numeric|min:0',
                 'author' => 'required|string|max:255',
-                'Page_Num' => 'nullable|integer|min:1',
-                'Langue' => 'nullable|string|max:100',
-                'Publishing_House' => 'nullable|string|max:255',
-                'ISBN' => 'nullable|string|max:50',
-                'Quantity' => 'required|integer|min:0',
+                'page_num' => 'nullable|integer|min:1',
+                'language' => 'nullable|string|max:100',
+                'publishing_house' => 'nullable|string|max:255',
+                'isbn' => 'nullable|string|max:50',
+                'quantity' => 'required|integer|min:0',
                 'categories' => 'nullable|array|min:1',
                 'categories.*' => 'exists:categories,id',
                 'primary_category_id' => 'nullable|in_array:categories.*',
@@ -1663,7 +1643,7 @@ public function searchBooksAjax(Request $request)
 
             // Find or create Publishing House
             $publishingHouseId = null;
-            $publishingHouseName = trim($validated['Publishing_House'] ?? '');
+            $publishingHouseName = trim($validated['publishing_house'] ?? '');
             if (!empty($publishingHouseName)) {
                 $publishingHouse = PublishingHouse::firstOrCreate(
                     ['name' => $publishingHouseName],
@@ -1673,20 +1653,18 @@ public function searchBooksAjax(Request $request)
             }
 
             // Capture stock state before update (for notification trigger)
-            $wasOutOfStock = ($product->Quantity == 0);
+            $wasOutOfStock = ($product->quantity == 0);
 
             // Update basic fields
             $product->title = $validated['title'];
             $product->description = $validated['description'];
             $product->price = $validated['price'];
-            $product->author = $authorName;
             $product->author_id = $author->id;
-            $product->Page_Num = $validated['Page_Num'] ?? null;
-            $product->Langue = $validated['Langue'] ?? null;
-            $product->Publishing_House = $publishingHouseName ?: null;
+            $product->page_num = $validated['page_num'] ?? null;
+            $product->language = $validated['language'] ?? null;
             $product->publishing_house_id = $publishingHouseId;
-            $product->ISBN = $validated['ISBN'] ?? null;
-            $product->Quantity = $validated['Quantity'];
+            $product->isbn = $validated['isbn'] ?? null;
+            $product->quantity = $validated['quantity'];
         
             // Handle categories (multi-select with primary)
             if (!empty($validated['categories'])) {
@@ -1779,7 +1757,7 @@ public function searchBooksAjax(Request $request)
             \Log::info('=== UPDATE PRODUCT SUCCESS ===');
 
             // If stock was restored (0 → >0), email and notify all waiting subscribers
-            if ($wasOutOfStock && $product->Quantity > 0) {
+            if ($wasOutOfStock && $product->quantity > 0) {
                 $notifications = StockNotification::where('book_id', $product->id)
                     ->whereNull('notified_at')
                     ->get();
@@ -1866,10 +1844,10 @@ public function searchBooksAjax(Request $request)
         $query = $request->query('q');
         $safeQuery = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
-        $books = Book::where('ISBN', $query)
+        $books = Book::where('isbn', $query)
             ->orWhere('title', 'like', "%{$safeQuery}%")
-            ->orWhere('author', 'like', "%{$safeQuery}%")
-            ->select('id', 'ISBN', 'title', 'author', 'price', 'Quantity', 'cost_price')
+            ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'like', "%{$safeQuery}%"))
+            ->select('id', 'isbn', 'title', 'author_id', 'price', 'quantity', 'cost_price')
             ->limit(10)
             ->get();
         

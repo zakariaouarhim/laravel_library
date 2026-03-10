@@ -53,7 +53,7 @@ class BookService
                 // Fallback to title+author search if ISBN failed or not available
                 if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
                     $title = $book->title;
-                    $author = $book->author;
+                    $author = $book->author_name;
 
                     if (empty($title)) {
                         throw new \Exception('Book has no ISBN and no title for enrichment. Book ID: ' . $book->id);
@@ -115,7 +115,7 @@ class BookService
     protected function extractISBN(Book $book)
     {
         // Get ISBN from various possible fields
-        $isbn = $book->ISBN ?? $book->isbn ?? null;
+        $isbn = $book->isbn ?? null;
         \Log::info('Raw ISBN from database: ' . var_export($isbn, true));
         
         if (empty($isbn) || trim($isbn) === '') {
@@ -139,7 +139,7 @@ class BookService
     {
         // Add error handling for empty API response
         if (!isset($apiData['items']) || empty($apiData['items'])) {
-            \Log::warning('API returned no items for book: ' . ($book->ISBN ?? $book->isbn ?? 'Unknown'));
+            \Log::warning('API returned no items for book: ' . ($book->isbn ?? 'Unknown'));
             throw new \Exception('No data found in API response');
         }
         
@@ -166,13 +166,13 @@ class BookService
         }
         
         if (!empty($bookInfo['authors']) && is_array($bookInfo['authors'])) {
-            $apiAuthors = implode(', ', array_filter($bookInfo['authors']));
-            $currentAuthor = trim($book->author ?? '');
-            
-            if (strlen($apiAuthors) > strlen($currentAuthor) || 
-                empty($currentAuthor) || 
-                in_array(strtolower($currentAuthor), ['unknown', 'no author', 'author'])) {
-                $mappedData['author'] = $apiAuthors;
+            $primaryAuthorName = trim($bookInfo['authors'][0] ?? '');
+            if (!empty($primaryAuthorName) && !$book->author_id) {
+                $author = \App\Models\Author::firstOrCreate(
+                    ['name' => $primaryAuthorName],
+                    ['status' => 'active']
+                );
+                $mappedData['author_id'] = $author->id;
             }
         }
         
@@ -189,29 +189,34 @@ class BookService
         
         if (!empty($bookInfo['pageCount']) && is_numeric($bookInfo['pageCount'])) {
             $apiPageCount = (int)$bookInfo['pageCount'];
-            $currentPageCount = (int)($book->Page_Num ?? 0);
-            
+            $currentPageCount = (int)($book->page_num ?? 0);
+
             // Update if current page count is 0 or API has a reasonable page count
             if ($currentPageCount == 0 || ($apiPageCount > 0 && $apiPageCount < 10000)) {
-                $mappedData['Page_Num'] = $apiPageCount;
+                $mappedData['page_num'] = $apiPageCount;
             }
         }
-        
+
         if (!empty($bookInfo['publisher'])) {
             $apiPublisher = trim($bookInfo['publisher']);
-            $currentPublisher = trim($book->Publishing_House ?? '');
-            
+            $currentPublisher = trim($book->publishing_house_name ?? '');
+
             if (strlen($apiPublisher) > strlen($currentPublisher) || empty($currentPublisher)) {
-                $mappedData['Publishing_House'] = $apiPublisher;
+                // Find or create publishing house and set FK
+                $ph = \App\Models\PublishingHouse::firstOrCreate(
+                    ['name' => $apiPublisher],
+                    ['status' => 'active']
+                );
+                $mappedData['publishing_house_id'] = $ph->id;
             }
         }
-        
+
         if (!empty($bookInfo['language'])) {
             $mappedLanguage = $this->mapLanguageCode($bookInfo['language']);
-            $currentLanguage = trim($book->Langue ?? '');
-            
+            $currentLanguage = trim($book->language ?? '');
+
             if (empty($currentLanguage) || $currentLanguage === 'Unknown') {
-                $mappedData['Langue'] = $mappedLanguage;
+                $mappedData['language'] = $mappedLanguage;
             }
         }
         

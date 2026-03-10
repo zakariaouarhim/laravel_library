@@ -124,14 +124,14 @@ function renderProductsTable(products) {
                 <td>
                     <span class="badge bg-success">${product.price} درهم</span>
                 </td>
-                <td>${product.author || 'غير محدد'}</td>
+                <td>${product.author_name || 'غير محدد'}</td>
                 <td>
-                    <span class="badge ${product.Quantity  > 0 ? 'bg-primary' : 'bg-danger'}">
-                        ${product.Quantity }
+                    <span class="badge ${product.quantity  > 0 ? 'bg-primary' : 'bg-danger'}">
+                        ${product.quantity }
                     </span>
                 </td>
                 <td>
-                    <small class="text-muted">${product.ISBN || 'غير محدد'}</small>
+                    <small class="text-muted">${product.isbn || 'غير محدد'}</small>
                 </td>
                 <td>
                     ${renderApiStatus(product.api_data_status)}
@@ -266,13 +266,13 @@ function viewProduct(id) {
                         </div>
                         <div class="col-md-8">
                             <h4>${product.title}</h4>
-                            <p><strong>المؤلف:</strong> ${product.author || 'غير محدد'}</p>
+                            <p><strong>المؤلف:</strong> ${product.author_name || 'غير محدد'}</p>
                             <p><strong>السعر:</strong> ${product.price} درهم</p>
-                            <p><strong>الكمية:</strong> ${product.Quantity}</p>
-                            <p><strong>ISBN:</strong> ${product.ISBN || 'غير محدد'}</p>
-                            <p><strong>عدد الصفحات:</strong> ${product.	Page_Num || 'غير محدد'}</p>
-                            <p><strong>اللغة:</strong> ${product.Langue || 'غير محدد'}</p>
-                            <p><strong>دار النشر:</strong> ${product.Publishing_House || 'غير محدد'}</p>
+                            <p><strong>الكمية:</strong> ${product.quantity}</p>
+                            <p><strong>ISBN:</strong> ${product.isbn || 'غير محدد'}</p>
+                            <p><strong>عدد الصفحات:</strong> ${product.page_num || 'غير محدد'}</p>
+                            <p><strong>اللغة:</strong> ${product.language || 'غير محدد'}</p>
+                            <p><strong>دار النشر:</strong> ${product.publishing_house_name || 'غير محدد'}</p>
                             <p><strong>حالة API:</strong> ${renderApiStatus(product.api_data_status)}</p>
                             <hr>
                             <h6>الوصف:</h6>
@@ -299,15 +299,15 @@ function editProduct(id) {
                 const product = response.data;
                 $('#editProductId').val(product.id);
                 $('#editProductName').val(product.title); // Changed from 'name' to 'title'
-                $('#editProductAuthor').val(product.author);
+                $('#editProductAuthor').val(product.author_name);
                 $('#editProductDescription').val(product.description);
                 $('#editProductPrice').val(product.price);
-                $('#editProductNumPages').val(product.Page_Num); // Match your DB column
-                $('#editProductLanguage').val(product.Langue); // Match your DB column
-                $('#editProductPublishingHouse').val(product.Publishing_House); // Match your DB column
-                $('#editProductIsbn').val(product.ISBN); // Match your DB column
+                $('#editProductNumPages').val(product.page_num);
+                $('#editProductLanguage').val(product.language);
+                $('#editProductPublishingHouse').val(product.publishing_house_name);
+                $('#editProductIsbn').val(product.isbn);
                 $('#editProductCategorie').val(product.category_id);
-                $('#editProductQuantity').val(product.Quantity); // Match your DB column
+                $('#editProductQuantity').val(product.quantity);
                 $('#editProductModal').modal('show');
             } else {
                 showAlert('لم يتم العثور على المنتج', 'danger');
@@ -334,12 +334,12 @@ function updateProduct() {
     formData.append('author', $('#editProductAuthor').val());
     formData.append('description', $('#editProductDescription').val());
     formData.append('price', $('#editProductPrice').val());
-    formData.append('Page_Num', $('#editProductNumPages').val() || '');
-    formData.append('Langue', $('#editProductLanguage').val() || '');
-    formData.append('Publishing_House', $('#editProductPublishingHouse').val() || '');
-    formData.append('ISBN', $('#editProductIsbn').val() || '');
+    formData.append('page_num', $('#editProductNumPages').val() || '');
+    formData.append('language', $('#editProductLanguage').val() || '');
+    formData.append('publishing_house', $('#editProductPublishingHouse').val() || '');
+    formData.append('isbn', $('#editProductIsbn').val() || '');
     formData.append('category_id', $('#editProductCategorie').val());
-    formData.append('Quantity', $('#editProductQuantity').val());
+    formData.append('quantity', $('#editProductQuantity').val());
     formData.append('auto_enrich', $('#editAutoEnrich').is(':checked') ? '1' : '0');
     
     const imageFile = $('#editProductImage')[0].files[0];

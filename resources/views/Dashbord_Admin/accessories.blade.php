@@ -154,8 +154,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="{{ $accessory->Quantity > 0 ? 'text-success' : 'text-danger' }} fw-bold">
-                                            {{ $accessory->Quantity }}
+                                        <span class="{{ $accessory->quantity > 0 ? 'text-success' : 'text-danger' }} fw-bold">
+                                            {{ $accessory->quantity }}
                                         </span>
                                     </td>
                                     <td>{{ $accessory->category->name ?? '-' }}</td>
@@ -257,7 +257,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">الكمية</label>
-                                    <input type="number" class="form-control" name="Quantity" required>
+                                    <input type="number" class="form-control" name="quantity" required>
                                 </div>
                             </div>
                         </div>
@@ -362,7 +362,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">الكمية</label>
-                                    <input type="number" class="form-control" id="editQuantity" name="Quantity" required>
+                                    <input type="number" class="form-control" id="editQuantity" name="quantity" required>
                                 </div>
                             </div>
                         </div>

@@ -105,7 +105,7 @@
                             @if($book->primaryAuthor)
                                 <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
                             @else
-                                {{ $book->author }}
+                                {{ $book->author_name }}
                             @endif
                         </p>
                         @if($book->primaryAuthor)
@@ -146,6 +146,7 @@
 
                     <!-- Actions -->
                     <div class="v2-actions">
+                        @if($book->quantity > 0)
                         <div class="v2-qty-wrap">
                             <button class="v2-qty-btn" onclick="this.nextElementSibling.stepDown()">−</button>
                             <input type="number" class="v2-qty-input" value="1" min="1" aria-label="عدد النسخ">
@@ -160,6 +161,11 @@
                                 onclick="addToCartM({{ $book->id }})">
                             <i class="fas fa-shopping-cart"></i> أضف إلى السلة
                         </button>
+                        @else
+                        <button class="notify-btn" onclick="notifyStock({{ $book->id }}, this)" style="flex: 1;">
+                            <i class="fas fa-bell"></i> أبلغني عند التوفر
+                        </button>
+                        @endif
                         <button class="v2-btn-wishlist {{ in_array($book->id, $wishlistBookIds) ? 'v2-wishlisted' : '' }}"
                                 title="{{ in_array($book->id, $wishlistBookIds) ? 'إزالة من المفضلة' : 'أضف للمفضلة' }}"
                                 onclick="toggleWishlist({{ $book->id }}, this)">
@@ -211,14 +217,14 @@
                             <i class="fas fa-globe-africa"></i>
                             <div>
                                 <span class="v2-stat-label">اللغة</span>
-                                <span class="v2-stat-value">{{ $book->Langue }}</span>
+                                <span class="v2-stat-value">{{ $book->language }}</span>
                             </div>
                         </div>
                         <div class="v2-stat">
                             <i class="fas fa-book-open"></i>
                             <div>
                                 <span class="v2-stat-label">الصفحات</span>
-                                <span class="v2-stat-value">{{ $book->Page_Num }}</span>
+                                <span class="v2-stat-value">{{ $book->page_num }}</span>
                             </div>
                         </div>
                         @if($book->publishingHouse)
@@ -230,12 +236,12 @@
                             </div>
                         </div>
                         @endif
-                        @if($book->ISBN)
+                        @if($book->isbn)
                         <div class="v2-stat">
                             <i class="fas fa-barcode"></i>
                             <div>
                                 <span class="v2-stat-label">ISBN</span>
-                                <span class="v2-stat-value">{{ $book->ISBN }}</span>
+                                <span class="v2-stat-value">{{ $book->isbn }}</span>
                             </div>
                         </div>
                         @endif
@@ -251,7 +257,7 @@
                     <button class="v2-tab-btn" data-target="v2-reviews"><i class="fas fa-star"></i> التقييمات @if($book->reviews_count > 0)<span class="v2-tab-badge">{{ $book->reviews_count }}</span>@endif</button>
                     <button class="v2-tab-btn" data-target="v2-quotes"><i class="fas fa-quote-right"></i> اقتباسات @if(isset($book->quotes) && $book->quotes->count() > 0)<span class="v2-tab-badge">{{ $book->quotes->count() }}</span>@endif</button>
                     <button class="v2-tab-btn" data-target="v2-author"><i class="fas fa-user-edit"></i> عن الكاتب</button>
-                    @if($book->ISBN)
+                    @if($book->isbn)
                     <button class="v2-tab-btn" data-target="v2-preview"><i class="fas fa-book-open"></i> معاينة</button>
                     @endif
                 </div>
@@ -266,12 +272,12 @@
                     <!-- Details -->
                     <div class="v2-tab-pane" id="v2-details">
                         <div class="v2-details-grid">
-                            @if($book->ISBN)
-                            <div class="v2-detail-row"><span>ISBN</span><span>{{ $book->ISBN }}</span></div>
+                            @if($book->isbn)
+                            <div class="v2-detail-row"><span>ISBN</span><span>{{ $book->isbn }}</span></div>
                             @endif
                             <div class="v2-detail-row"><span>تاريخ الإضافة</span><span>{{ $book->created_at->format('d / m / Y') }}</span></div>
-                            <div class="v2-detail-row"><span>اللغة</span><span>{{ $book->Langue }}</span></div>
-                            <div class="v2-detail-row"><span>عدد الصفحات</span><span>{{ $book->Page_Num }}</span></div>
+                            <div class="v2-detail-row"><span>اللغة</span><span>{{ $book->language }}</span></div>
+                            <div class="v2-detail-row"><span>عدد الصفحات</span><span>{{ $book->page_num }}</span></div>
                             @if($book->publishingHouse)
                             <div class="v2-detail-row"><span>دار النشر</span><a href="{{ route('publisher.show', $book->publishing_house_id) }}" class="v2-stat-link">{{ $book->publishingHouse->name }}</a></div>
                             @endif
@@ -483,14 +489,14 @@
                         <div class="v2-author-card">
                             <div class="v2-author-avatar">
                                 @if(isset($book->primaryAuthor) && $book->primaryAuthor && $book->primaryAuthor->profile_image)
-                                    <img src="{{ Storage::url($book->primaryAuthor->profile_image) }}" alt="{{ $book->author }}">
+                                    <img src="{{ Storage::url($book->primaryAuthor->profile_image) }}" alt="{{ $book->author_name }}">
                                 @else
-                                    <div class="v2-avatar v2-avatar-lg">{{ mb_substr($book->author ?? 'م', 0, 1, 'UTF-8') }}</div>
+                                    <div class="v2-avatar v2-avatar-lg">{{ mb_substr($book->author_name ?? 'م', 0, 1, 'UTF-8') }}</div>
                                 @endif
                             </div>
                             <div class="v2-author-info">
                                 <h4>
-                                    {{ $book->author }}
+                                    {{ $book->author_name }}
                                     @if($book->primaryAuthor)
                                         @auth
                                             @php $isFollowingAuthor = \App\Models\Follow::isFollowing(Auth::id(), 'author', $book->primaryAuthor->id); @endphp
@@ -526,7 +532,7 @@
                         @endif
                     </div>
 
-                    @if($book->ISBN)
+                    @if($book->isbn)
                     <!-- Google Books Preview -->
                     <div class="v2-tab-pane" id="v2-preview">
                         <div id="googlePreviewContainer" style="min-height:400px;">
@@ -887,11 +893,11 @@
         }
     </script>
 
-    @if($book->ISBN)
+    @if($book->isbn)
     <script>
     (function() {
         var previewLoaded = false;
-        var isbn = "{{ $book->ISBN }}";
+        var isbn = "{{ $book->isbn }}";
         var noPreviewHtml = '<div class="text-center py-5">' +
             '<i class="fas fa-book" style="font-size:3rem;color:#ccc;"></i>' +
             '<p class="mt-3 text-muted">لا توجد معاينة متاحة لهذا الكتاب</p>' +

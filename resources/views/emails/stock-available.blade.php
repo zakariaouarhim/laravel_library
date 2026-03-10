@@ -9,8 +9,8 @@
 
     <div class="detail-box">
         <div style="font-size: 1.1rem; font-weight: 700; color: #1a2f4e;">{{ $book->title }}</div>
-        @if($book->author)
-            <div style="font-size: .9rem; color: #666; margin-top: 6px;"><i>{{ $book->author }}</i></div>
+        @if($book->author_name)
+            <div style="font-size: .9rem; color: #666; margin-top: 6px;"><i>{{ $book->author_name }}</i></div>
         @endif
     </div>
 

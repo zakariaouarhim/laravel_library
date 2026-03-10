@@ -52,11 +52,11 @@ function searchBooks() {
                     <div class="d-flex justify-content-between">
                         <div>
                             <strong>${book.title}</strong>
-                            <br><small class="text-muted">ISBN: ${book.ISBN}</small>
-                            <br><small>المؤلف: ${book.author}</small>
+                            <br><small class="text-muted">ISBN: ${book.isbn}</small>
+                            <br><small>المؤلف: ${book.author_name}</small>
                         </div>
                         <div class="text-end">
-                            <span class="badge bg-success">الكمية: ${book.Quantity}</span>
+                            <span class="badge bg-success">الكمية: ${book.quantity}</span>
                             <br><span class="badge bg-info">${book.price} DH</span>
                         </div>
                     </div>
@@ -87,18 +87,18 @@ function searchBooks() {
 function selectExistingBook(book) {
     currentItem = {
         book_id: book.id,
-        isbn: book.ISBN,
+        isbn: book.isbn,
         title: book.title,
         author_id: null,
-        author_name: book.author,
+        author_name: book.author_name,
         publishing_house_id: null,
         publisher_name: null
     };
 
     document.getElementById('existingBookTitle').textContent = book.title;
-    document.getElementById('existingBookISBN').textContent = book.ISBN;
-    document.getElementById('existingBookAuthor').textContent = book.author;
-    document.getElementById('existingBookQuantity').textContent = book.Quantity;
+    document.getElementById('existingBookISBN').textContent = book.isbn;
+    document.getElementById('existingBookAuthor').textContent = book.author_name;
+    document.getElementById('existingBookQuantity').textContent = book.quantity;
     document.getElementById('existingBookPrice').textContent = book.price;
 
     document.getElementById('searchResults').style.display = 'none';

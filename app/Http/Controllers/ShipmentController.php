@@ -140,9 +140,9 @@ class ShipmentController extends Controller
 
             // Optionally: decrease book quantity if needed
             if ($book) {
-                $book->Quantity -= $item->quantity_received;
-                if ($book->Quantity < 0) {
-                    $book->Quantity = 0;
+                $book->quantity -= $item->quantity_received;
+                if ($book->quantity < 0) {
+                    $book->quantity = 0;
                 }
                 $book->save();
             }
@@ -210,24 +210,22 @@ class ShipmentController extends Controller
         // Check if linking to existing book
         if (!empty($itemData['book_id'])) {
             $book = Book::find($itemData['book_id']);
-            $book->Quantity += $itemData['quantity_received'];
+            $book->quantity += $itemData['quantity_received'];
             $book->price = $itemData['selling_price'];
             $book->save();
         } else {
             // Create new book with proper relationships
             $book = Book::create([
                 'title' => $itemData['title'],
-                'author' => 'غير محدد', // Default author string
-                'ISBN' => $itemData['isbn'],
+                'isbn' => $itemData['isbn'],
                 'author_id' => $itemData['author_id'],
                 'price' => $itemData['selling_price'],
                 'cost_price' => $itemData['cost_price'] ?? 0,
-                'Quantity' => $itemData['quantity_received'],
-                'Publishing_House' => 'غير محدد', // Default Publishing_House string
+                'quantity' => $itemData['quantity_received'],
                 'publishing_house_id' => $itemData['publishing_house_id'],
                 'category_id' => 1,// Default category
-                'Page_Num' => 0,
-                'Langue' => $itemData['language'] ?? 'arabic',
+                'page_num' => 0,
+                'language' => $itemData['language'] ?? 'arabic',
                 'description' => 'تم إضافته من خلال الشحنة رقم: ' . $validated['shipment_reference'],
                 'image' => 'images/books/default.jpg',
                 'api_data_status' => 'pending'
@@ -398,12 +396,10 @@ class ShipmentController extends Controller
             $product->title = $request->input('title');
             $product->description = $request->input('description');
             $product->price = $request->input('price');
-            $product->author = $request->input('author');
-            $product->Page_Num = $request->input('Page_Num');
-            $product->Langue = $request->input('Langue');
-            $product->Publishing_House = $request->input('Publishing_House');
-            $product->ISBN = $request->input('ISBN');
-            $product->Quantity = $request->input('Quantity');
+            $product->page_num = $request->input('page_num');
+            $product->language = $request->input('language');
+            $product->isbn = $request->input('isbn');
+            $product->quantity = $request->input('quantity');
 
             if ($request->has('category_id')) {
                 $product->category_id = $request->input('category_id');

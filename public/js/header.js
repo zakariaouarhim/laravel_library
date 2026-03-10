@@ -188,8 +188,8 @@ function searchBooksAutocomplete(query, containerId) {
                     data.books.forEach(function(book) {
                         var imageUrl = book.image ? book.image : '/default-book.png';
                         var title = highlightMatch(book.title, query);
-                        var author = highlightMatch(book.author || '', query);
-                        var publisher = book.Publishing_House ? highlightMatch(book.Publishing_House, query) : '';
+                        var author = highlightMatch(book.author_name || '', query);
+                        var publisher = book.publishing_house_name ? highlightMatch(book.publishing_house_name, query) : '';
 
                         html += '<a href="/moredetail-v2/' + book.id + '" class="search-result-item">';
                         html += '<img src="/' + imageUrl + '" alt="' + (book.title || '') + '">';

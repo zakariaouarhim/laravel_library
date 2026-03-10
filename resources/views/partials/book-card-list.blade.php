@@ -1,10 +1,10 @@
-@php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
+@php $outOfStock = ($book->quantity ?? 0) <= 0; @endphp
 <div class="book-item list-style d-flex mb-3 p-3 border rounded {{ $outOfStock ? 'out-of-stock' : '' }}">
     <img src="{{ asset($book->thumbnail) }}" alt="{{ $book->title }}" width="120" height="170" class="me-3" loading="lazy"
          onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
     <div>
         <h5><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h5>
-        <p><i class="fas fa-user-edit me-1"></i>{{ $book->author }}</p>
+        <p><i class="fas fa-user-edit me-1"></i>{{ $book->author_name }}</p>
         @if(($book->reviews_count ?? 0) > 0)
         <div class="book-card-rating">
             @php $avgRating = round($book->reviews_avg_rating ?? 0, 1); @endphp

@@ -1,4 +1,4 @@
-@php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
+@php $outOfStock = ($book->quantity ?? 0) <= 0; @endphp
 <div class="book-item">
     <div class="book-card {{ $outOfStock ? 'out-of-stock' : '' }}">
         <div class="quick-actions">
@@ -39,8 +39,8 @@
                 <i class="fas fa-user-edit"></i>
                 <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
             </p>
-        @elseif($book->author)
-            <p class="book-author"><i class="fas fa-user-edit"></i> {{ $book->author }}</p>
+        @elseif($book->author_name)
+            <p class="book-author"><i class="fas fa-user-edit"></i> {{ $book->author_name }}</p>
         @endif
 
         @if(($book->reviews_count ?? 0) > 0)

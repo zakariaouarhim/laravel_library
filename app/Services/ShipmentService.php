@@ -65,7 +65,7 @@ class ShipmentService
 
     protected function updateInventory(Book $book, $quantity)
     {
-        $book->increment('Quantity', $quantity);
+        $book->increment('quantity', $quantity);
         (new InventoryService())->logChange(
             $book->id,
             'stock_in',

@@ -138,8 +138,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/Dashbord_Admin/Authors', [AuthorController::class, 'index'])->name('Dashbord_Admin.authors');
     Route::get('/authors/api', [AuthorController::class, 'getAuthorsApi'])->name('authors.api');
     Route::get('/authors/check-duplicates', [AuthorController::class, 'checkDuplicates'])->name('authors.check-duplicates');
-    Route::post('/authors/import-from-books', [AuthorController::class, 'importFromBooks'])->name('authors.import-from-books');
-    Route::post('/authors/resolve-duplicate', [AuthorController::class, 'resolveDuplicate'])->name('authors.resolve-duplicate');
     Route::get('/authors/{id}', [AuthorController::class, 'show'])->name('authors.show');
     Route::put('/authors/{id}', [AuthorController::class, 'update'])->name('authors.update');
     Route::delete('/authors/{id}', [AuthorController::class, 'destroy'])->name('authors.destroy');

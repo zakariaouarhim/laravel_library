@@ -19,7 +19,7 @@ class StockNotificationController extends Controller
 
         $book = Book::findOrFail($bookId);
 
-        if (($book->Quantity ?? 0) > 0) {
+        if (($book->quantity ?? 0) > 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'الكتاب متوفر حالياً، يمكنك إضافته للسلة مباشرة.',

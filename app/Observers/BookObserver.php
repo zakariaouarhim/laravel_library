@@ -25,10 +25,10 @@ class BookObserver
      */
     public function updating(Book $book): void
     {
-        // Back in stock: Quantity changed from 0 to > 0
-        if ($book->isDirty('Quantity')
-            && $book->getOriginal('Quantity') == 0
-            && $book->Quantity > 0
+        // Back in stock: quantity changed from 0 to > 0
+        if ($book->isDirty('quantity')
+            && $book->getOriginal('quantity') == 0
+            && $book->quantity > 0
         ) {
             $this->notifyWishlistUsers($book, 'back_in_stock');
         }

@@ -98,10 +98,10 @@ class AdminDashboardController extends Controller
             ->get();
 
         // Low stock books (quantity < 5)
-        $lowStockBooks = Book::where('Quantity', '<', 5)
-            ->orderBy('Quantity')
+        $lowStockBooks = Book::where('quantity', '<', 5)
+            ->orderBy('quantity')
             ->limit(10)
-            ->get(['id', 'title', 'Quantity', 'image']);
+            ->get(['id', 'title', 'quantity', 'image']);
 
         return view('Dashbord_Admin.dashboard', compact(
             'totalOrders', 'totalRevenue', 'pendingOrders', 'deliveredOrders',

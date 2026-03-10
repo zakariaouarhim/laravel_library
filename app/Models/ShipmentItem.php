@@ -10,7 +10,7 @@ class ShipmentItem extends Model
         'book_id',
         'isbn',
         'title',
-        'author',
+        'author_id',
         'quantity_received',
         'cost_price',
         'selling_price',

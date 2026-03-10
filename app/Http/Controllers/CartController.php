@@ -15,7 +15,7 @@ class CartController extends Controller
     try {
         $book = Book::findOrFail($bookId);
 
-        if (($book->Quantity ?? 0) <= 0) {
+        if (($book->quantity ?? 0) <= 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'عذراً، هذا الكتاب غير متوفر حالياً.',
@@ -285,10 +285,10 @@ public function updateQuantity(Request $request)
 
         // Check stock availability
         $book = Book::find($itemId);
-        if ($book && $book->Quantity < $newQuantity) {
+        if ($book && $book->quantity < $newQuantity) {
             return response()->json([
                 'success' => false,
-                'message' => 'الكمية المطلوبة غير متوفرة. المتوفر: ' . $book->Quantity
+                'message' => 'الكمية المطلوبة غير متوفرة. المتوفر: ' . $book->quantity
             ], 422);
         }
 

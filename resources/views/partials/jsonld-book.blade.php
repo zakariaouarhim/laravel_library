@@ -2,8 +2,8 @@
     $approvedReviews = $book->reviews->where('status', 'approved');
     $ratingCount = $approvedReviews->count();
     $avgRating = $approvedReviews->avg('rating') ?? 0;
-    $authorName = $book->primaryAuthor?->name ?? $book->author ?? null;
-    $publisherName = $book->publishingHouse?->name ?? $book->Publishing_House ?? null;
+    $authorName = $book->primaryAuthor?->name ?? $book->author_name ?? null;
+    $publisherName = $book->publishingHouse?->name ?? $book->publishing_house_name ?? null;
 
     $schema = [
         '@context' => 'https://schema.org',
@@ -16,16 +16,16 @@
             '@type' => 'Offer',
             'price' => $book->price,
             'priceCurrency' => 'DZD',
-            'availability' => ($book->Quantity ?? 0) > 0
+            'availability' => ($book->quantity ?? 0) > 0
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
             'url' => route('moredetail2.page', $book->id),
         ],
     ];
 
-    if ($book->ISBN) $schema['isbn'] = $book->ISBN;
-    if ($book->Langue) $schema['inLanguage'] = $book->Langue;
-    if ($book->Page_Num) $schema['numberOfPages'] = (int) $book->Page_Num;
+    if ($book->isbn) $schema['isbn'] = $book->isbn;
+    if ($book->language) $schema['inLanguage'] = $book->language;
+    if ($book->page_num) $schema['numberOfPages'] = (int) $book->page_num;
     if ($authorName) $schema['author'] = ['@type' => 'Person', 'name' => $authorName];
     if ($publisherName) $schema['publisher'] = ['@type' => 'Organization', 'name' => $publisherName];
 

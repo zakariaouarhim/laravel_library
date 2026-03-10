@@ -101,8 +101,8 @@ class CheckoutController extends Controller
                 $book = Book::find($id);
                 if (!$book) {
                     $outOfStock[] = $item['title'] . ' (لم يعد متوفراً)';
-                } elseif ($book->Quantity < $item['quantity']) {
-                    $outOfStock[] = $item['title'] . ' (المتوفر: ' . $book->Quantity . ')';
+                } elseif ($book->quantity < $item['quantity']) {
+                    $outOfStock[] = $item['title'] . ' (المتوفر: ' . $book->quantity . ')';
                 }
             }
             if (!empty($outOfStock)) {
@@ -180,8 +180,8 @@ class CheckoutController extends Controller
 
                     // Decrement stock — use DB-level update to prevent overselling
                     $updated = Book::where('id', $id)
-                        ->where('Quantity', '>=', $item['quantity'])
-                        ->decrement('Quantity', $item['quantity']);
+                        ->where('quantity', '>=', $item['quantity'])
+                        ->decrement('quantity', $item['quantity']);
 
                     if (!$updated) {
                         throw new \Exception('الكتاب "' . $item['title'] . '" لم يعد متوفراً بالكمية المطلوبة');

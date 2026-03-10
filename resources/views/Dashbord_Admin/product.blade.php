@@ -156,14 +156,14 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="product-author">{{ $product->author }}</div>
+                                        <div class="product-author">{{ $product->author_name }}</div>
                                     </td>
                                     <td>
                                         <div class="product-price">{{ number_format($product->price, 2) }} د.م</div>
                                     </td>
-                                    <td>{{ $product->Page_Num ?? '-' }}</td>
-                                    <td>{{ $product->Langue ?? '-' }}</td>
-                                    <td>{{ $product->ISBN ?? '-' }}</td>
+                                    <td>{{ $product->page_num ?? '-' }}</td>
+                                    <td>{{ $product->language ?? '-' }}</td>
+                                    <td>{{ $product->isbn ?? '-' }}</td>
                                     <td>
                                         <div class="action-buttons">
                                             <button 
@@ -408,7 +408,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">عدد الصفحات</label>
-                                    <input type="number" class="form-control" id="editProductPageNum" name="Page_Num" required>
+                                    <input type="number" class="form-control" id="editProductPageNum" name="page_num" required>
                                 </div>
                             </div>
                         </div>
@@ -418,7 +418,7 @@
                                 <div class="mb-3">
                                     
                                     <label class="form-label">اللغة</label>
-                                    <select name="Langue"id="editProductLanguage" class="form-select"  required>
+                                    <select name="language" id="editProductLanguage" class="form-select"  required>
                                         @foreach(App\Models\Book::LANGUAGES as $lang)
                                             <option value="{{ $lang }}">{{ ucfirst($lang) }}</option>
                                         @endforeach
@@ -428,7 +428,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">ISBN</label>
-                                    <input type="text" class="form-control" id="editProductISBN" name="ISBN" required>
+                                    <input type="text" class="form-control" id="editProductISBN" name="isbn" required>
                                 </div>
                             </div>
                         </div>
@@ -437,13 +437,13 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">دار النشر</label>
-                                    <input type="text" class="form-control" id="editProductPublishingHouse" name="Publishing_House" required>
+                                    <input type="text" class="form-control" id="editProductPublishingHouse" name="publishing_house" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الكمية </label>
-                                    <input type="text" class="form-control" id="editProductQuantity" name="Quantity" required>
+                                    <input type="text" class="form-control" id="editProductQuantity" name="quantity" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -551,14 +551,14 @@
         .then(product => {
             document.getElementById('productId').value = product.id;
             document.getElementById('editProductName').value = product.title;
-            document.getElementById('editAuthor').value = product.author;
+            document.getElementById('editAuthor').value = product.author_name;
             document.getElementById('editProductDescription').value = product.description;
             document.getElementById('editProductPrice').value = product.price;
-            document.getElementById('editProductPageNum').value = product.Page_Num;
-            document.getElementById('editProductLanguage').value = product.Langue;
-            document.getElementById('editProductISBN').value = product.ISBN;
-            document.getElementById('editProductPublishingHouse').value = product.Publishing_House;
-            document.getElementById('editProductQuantity').value = product.Quantity;
+            document.getElementById('editProductPageNum').value = product.page_num;
+            document.getElementById('editProductLanguage').value = product.language;
+            document.getElementById('editProductISBN').value = product.isbn;
+            document.getElementById('editProductPublishingHouse').value = product.publishing_house_name;
+            document.getElementById('editProductQuantity').value = product.quantity;
 
             if (product.image) {
                 const preview = document.getElementById('editProductImagePreview');

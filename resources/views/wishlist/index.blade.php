@@ -62,7 +62,7 @@
             <!-- Books Grid -->
             <div class="wl-grid" id="wishlistGrid">
                 @foreach ($wishlist as $book)
-                @php $outOfStock = ($book->Quantity ?? 0) <= 0; @endphp
+                @php $outOfStock = ($book->quantity ?? 0) <= 0; @endphp
                 <div class="wl-card {{ $outOfStock ? 'wl-out-of-stock' : '' }}" id="wl-item-{{ $book->id }}">
                     <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="wl-card-image">
                         <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" width="120" height="170" loading="lazy"
@@ -82,8 +82,8 @@
                             <i class="fas fa-user-edit"></i>
                             <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
                         </p>
-                        @elseif($book->author)
-                        <p class="wl-card-author"><i class="fas fa-user-edit"></i> {{ $book->author }}</p>
+                        @elseif($book->author_name)
+                        <p class="wl-card-author"><i class="fas fa-user-edit"></i> {{ $book->author_name }}</p>
                         @endif
                         @if($book->category)
                         <p class="wl-card-category">

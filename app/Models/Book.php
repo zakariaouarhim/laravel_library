@@ -21,22 +21,22 @@ class Book extends Model
         'german'  => 'الألمانية',
     ];
     // Define fillable attributes
+    protected $appends = ['author_name', 'publishing_house_name'];
+
     protected $fillable = [
         'title',
         'type',
-        'author',           // Keep for backward compatibility
-        'author_id',        // New primary author ID
+        'author_id',
         'description',
         'price',
         'discount',
         'category_id',
         'image',
-        'Page_Num',
-        'Langue',
-        'Publishing_House', // Keep for backward compatibility
+        'page_num',
+        'language',
         'publishing_house_id',
-        'ISBN',
-        'Quantity',
+        'isbn',
+        'quantity',
         'api_data_status',
         'api_source',
         'api_id',
@@ -212,8 +212,7 @@ class Book extends Model
             return $primaryAuthor->name;
         }
         
-        // Fallback to the old author field
-        return $this->attributes['author'] ?? 'Unknown Author';
+        return 'Unknown Author';
     }
 
     // Enhanced publishing house name accessor
@@ -223,8 +222,7 @@ class Book extends Model
             return $this->publishingHouse->name;
         }
         
-        // Fallback to the old Publishing_House field
-        return $this->attributes['Publishing_House'] ?? 'Unknown Publisher';
+        return 'Unknown Publisher';
     }
 
     // Get all authors as a formatted string
@@ -250,7 +248,7 @@ class Book extends Model
     // Scope for books with low stock
     public function scopeLowStock($query)
     {
-        return $query->whereColumn('Quantity', '<=', 'min_stock_level');
+        return $query->whereColumn('quantity', '<=', 'min_stock_level');
     }
 
     // Scope for active books
@@ -274,13 +272,13 @@ class Book extends Model
     // Check if book is in stock
     public function getInStockAttribute()
     {
-        return $this->Quantity > 0 && $this->status === 'active';
+        return $this->quantity > 0 && $this->status === 'active';
     }
 
     // Check if book needs reordering
     public function getNeedsReorderAttribute()
     {
-        return $this->Quantity <= $this->reorder_point;
+        return $this->quantity <= $this->reorder_point;
     }
     public function reviews() {
         return $this->hasMany(Book_Review::class, 'book_id', 'id')->with('user')->latest();

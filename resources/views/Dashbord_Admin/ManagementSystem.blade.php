@@ -295,7 +295,7 @@
                                 <div class="mb-3">
                                     
                                     <label class="form-label">اللغة</label>
-                                    <select name="Langue" id="editProductLanguage" class="form-select" required>
+                                    <select name="language" id="editProductLanguage" class="form-select" required>
                                         @foreach(App\Models\Book::LANGUAGES as $lang)
                                             <option value="{{ $lang }}">{{ ucfirst($lang) }}</option>
                                         @endforeach
