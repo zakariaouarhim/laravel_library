@@ -81,29 +81,4 @@ class Quote extends Model
         }
     }
 
-    /**
-     * Scope for approved quotes only
-     */
-    public function scopeApproved($query)
-    {
-        return $query->where('is_approved', true);
-    }
-
-    /**
-     * Get quotes for a specific book
-     */
-    public function scopeForBook($query, $bookId)
-    {
-        return $query->where('book_id', $bookId);
-    }
-
-    /**
-     * Get formatted text with proper Arabic text handling
-     */
-    public function getFormattedTextAttribute(): string
-    {
-        return trim($this->text);
-    }
-
-   
 }

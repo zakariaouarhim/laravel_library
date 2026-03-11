@@ -13,7 +13,7 @@ class ReadingGoal extends Model
 
     public function user()
     {
-        return $this->belongsTo(Usermodel::class, 'user_id');
+        return $this->belongsTo(UserModel::class, 'user_id');
     }
 
 }

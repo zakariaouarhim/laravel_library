@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Follow;
 
 class PublishingHouse extends Model
 {
@@ -38,12 +37,6 @@ class PublishingHouse extends Model
         return $this->hasMany(Book::class, 'publishing_house_id');
     }
 
-    // Relationship with shipment items
-    public function shipmentItems()
-    {
-        return $this->hasMany(ShipmentItem::class, 'publishing_house_id');
-    }
-
     // Scope for active publishing houses
     public function scopeActive($query)
     {
@@ -65,9 +58,4 @@ class PublishingHouse extends Model
         return now()->year - $this->founded_year;
     }
 
-    // Users following this publisher
-    public function followers()
-    {
-        return Follow::where('followable_type', 'publisher')->where('followable_id', $this->id)->pluck('user_id');
-    }
 }

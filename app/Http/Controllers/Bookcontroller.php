@@ -2,34 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Author;
-use App\Models\BookAuthor;
 use App\Models\PublishingHouse;
 use App\Models\Category;
-use App\Services\BookService;
-use App\Services\APIService;
+use App\Services\BookEnrichmentService;
+use App\Services\BookSearchService;
+use App\Services\BookAdminService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\StockAvailableMail;
-use App\Models\StockNotification;
 use App\Models\Follow;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Auth;
 
 class BookController extends Controller
 {
-    protected $bookService;
-    protected $apiService;
-
-    public function __construct(BookService $bookService, APIService $apiService)
-    {
-        $this->bookService = $bookService;
-        $this->apiService = $apiService;
-    }
+    public function __construct(
+        private BookEnrichmentService $enrichmentService,
+        private BookSearchService $searchService,
+        private BookAdminService $adminService,
+    ) {}
    
     public function show($id)
     {
@@ -200,13 +193,6 @@ class BookController extends Controller
         return compact('book', 'relatedBooks', 'authors', 'publishingHouses', 'primaryAuthor', 'authorBooks', 'publisherBooks', 'alsoBoughtBooks', 'shelfStatus');
     }
 
-    
-    
-    public function getProducts()
-    {
-        $products = Book::with('category')->get();
-        return response()->json($products); 
-    }
     public function getProductsApi(Request $request)
     {
         // Get search and status filters from request
@@ -292,7 +278,7 @@ class BookController extends Controller
 
 
 
-public function addProduct(Request $request) 
+public function addProduct(Request $request)
 {
     $validated = $request->validate([
         'productName' => 'required|string|max:255',
@@ -311,36 +297,11 @@ public function addProduct(Request $request)
         'auto_enrich' => 'nullable|boolean'
     ]);
 
-    // 1. FIX: Default to null, NOT the product name
-    $imagePath = null; 
+    $imagePath = null;
 
-    // 2. Handle Image Upload
     if ($request->hasFile('productImage')) {
         try {
-            $file = $request->file('productImage');
-            $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $destinationPath = public_path('images/books');
-            
-            if ($request->hasFile('productImage')) {
-            $file = $request->file('productImage');
-            $imageName = time() . '_' . uniqid() . '.webp';
-            $destinationPath = public_path('images/books');
-            $thumbPath = public_path('images/books/thumbs');
-
-            // 1. Read the image
-            $image = Image::read($file);
-
-            // 2. Resize to 400px width and save main image
-            $image->scale(width: 400);
-            $image->toWebp(80)->save($destinationPath . '/' . $imageName);
-
-            // 3. Generate 150px thumbnail for cards/lists
-            $thumb = Image::read($destinationPath . '/' . $imageName);
-            $thumb->scale(width: 150);
-            $thumb->toWebp(75)->save($thumbPath . '/' . $imageName);
-
-    $imagePath = 'images/books/' . $imageName;
-}
+            $imagePath = $this->adminService->processBookImage($request->file('productImage'));
         } catch (\Exception $e) {
             \Log::error('Image upload failed: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Image upload failed'], 500);
@@ -348,32 +309,16 @@ public function addProduct(Request $request)
     }
 
     try {
-        // 3. Find or create Author
-        $authorName = trim($validated['productauthor']);
-        $author = Author::firstOrCreate(
-            ['name' => $authorName],
-            ['status' => 'active']
-        );
+        $author = $this->adminService->findOrCreateAuthor($validated['productauthor']);
+        $publishingHouseId = $this->adminService->findOrCreatePublishingHouse($validated['ProductPublishingHouse'] ?? null);
 
-        // 4. Find or create Publishing House
-        $publishingHouseId = null;
-        $publishingHouseName = trim($validated['ProductPublishingHouse'] ?? '');
-        if (!empty($publishingHouseName)) {
-            $publishingHouse = PublishingHouse::firstOrCreate(
-                ['name' => $publishingHouseName],
-                ['status' => 'active']
-            );
-            $publishingHouseId = $publishingHouse->id;
-        }
-
-        // 5. Create the object but don't save yet
         $product = new Book();
         $product->title = $validated['productName'];
         $product->author_id = $author->id;
         $product->price = $validated['productPrice'];
         $product->category_id = $validated['primary_category_id'];
         $product->description = $validated['productDescription'];
-        $product->image = $imagePath; // Will be null or the valid path
+        $product->image = $imagePath;
         $product->page_num = $validated['productNumPages'] ?? null;
         $product->language = $validated['productLanguage'] ?? null;
         $product->publishing_house_id = $publishingHouseId;
@@ -381,30 +326,23 @@ public function addProduct(Request $request)
         $product->quantity = $validated['productQuantity'];
         $product->api_data_status = 'pending';
 
-        // 6. FIX: Handle Algolia/Scout Crash Gracefully
-        // We wrap save() in a specific try-catch to allow DB success even if Search fails
+        // Handle Algolia/Scout crash gracefully
         try {
             $product->save();
         } catch (\Exception $e) {
-            // Check if the error is related to Algolia/Scout
             if (str_contains($e->getMessage(), 'Algolia') || str_contains($e->getMessage(), 'scout')) {
                 \Log::warning('Product saved to DB, but Algolia sync failed: ' . $e->getMessage());
-                // Do NOT re-throw the error. Let the code continue.
             } else {
-                // If it's a real Database error (SQL), re-throw it so the outer catch block handles it
                 throw $e;
             }
         }
 
-        // 7. Create book_authors pivot entry
         $product->authors()->syncWithoutDetaching([
             $author->id => ['author_type' => 'primary']
         ]);
-
-        // 8. Sync categories pivot
         $product->syncCategories($validated['categories'], $validated['primary_category_id']);
 
-        // Notify followers of the author and publisher
+        // Notify followers
         $notifyUserIds = collect();
         $notifyUserIds = $notifyUserIds->merge(Follow::followersOf('author', $author->id));
         if ($publishingHouseId) {
@@ -414,7 +352,7 @@ public function addProduct(Request $request)
             UserNotification::newBook($userId, $product);
         }
 
-        // 5. Enrichment Logic (Only runs if save was successful)
+        // Enrichment (optional, non-blocking)
         $message = 'Product added successfully!';
         if ($request->boolean('auto_enrich')) {
             try {
@@ -422,500 +360,62 @@ public function addProduct(Request $request)
                 $message = 'Product added and enriched successfully!';
             } catch (\Exception $e) {
                 \Log::warning('Enrichment failed: ' . $e->getMessage());
-                // We don't fail the whole request just because enrichment failed
             }
         }
 
         if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-                'product' => $product
-            ]);
+            return response()->json(['success' => true, 'message' => $message, 'product' => $product]);
         }
-        
         return redirect()->route('admin.Dashbord_Admin.product')->with('success', $message);
-        
+
     } catch (\Exception $e) {
         \Log::error('CRITICAL Error adding product: ' . $e->getMessage());
-        
-        // 6. Only delete the image if the PRODUCT FAILED TO SAVE to the DB
-        // If $product exists and has an ID, it means it was saved, so don't delete the image!
+
         if (!isset($product->id) && $imagePath && file_exists(public_path($imagePath))) {
             unlink(public_path($imagePath));
         }
-        
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في إضافة المنتج، يرجى المحاولة لاحقاً.',
-            ], 500);
-        }
 
+        if ($request->ajax()) {
+            return response()->json(['success' => false, 'message' => 'فشل في إضافة المنتج، يرجى المحاولة لاحقاً.'], 500);
+        }
         return redirect()->back()->withErrors(['error' => 'فشل في إضافة المنتج، يرجى المحاولة لاحقاً.'])->withInput();
     }
 }
-    // New method to enrich a single book
     public function enrichBook(Book $book)
-{
-    try {
-        // Check if book is already being processed
-        if ($book->api_data_status === 'processing') {
-            // Check if the processing has been stuck for too long (more than 5 minutes)
-            $processingTimeout = 5; // minutes
-            if ($book->api_last_updated && $book->api_last_updated->diffInMinutes(now()) > $processingTimeout) {
-                \Log::warning("Book ID {$book->id} was stuck in processing state for over {$processingTimeout} minutes. Resetting status.");
-                $book->update(['api_data_status' => 'pending']);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Book enrichment is already in progress. Please wait and try again later.'
-                ], 409);
-            }
-        }
+    {
+        $result = $this->enrichmentService->enrichBook($book);
+        $status = $result['status'] ?? ($result['success'] ? 200 : 500);
+        unset($result['status']);
 
-        // Check if book is already enriched
-        if ($book->api_data_status === 'enriched') {
-            return response()->json([
-                'success' => true,
-                'message' => 'Book is already enriched.',
-                'book' => $book->fresh()
-            ]);
-        }
-
-        \Log::info('Starting enrichment for book ID: ' . $book->id);
-        
-        // Perform enrichment using DB transaction to ensure atomicity
-        DB::beginTransaction();
-        
-        try {
-            $enrichedBook = $this->bookService->enrichBookFromAPI($book);
-            DB::commit();
-            
-            \Log::info('Enrichment completed successfully for book ID: ' . $book->id);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Book enriched successfully!',
-                'book' => $enrichedBook
-            ]);
-            
-        } catch (\Exception $enrichmentError) {
-            DB::rollback();
-            throw $enrichmentError;
-        }
-                 
-    } catch (\Illuminate\Database\QueryException $e) {
-        \Log::error('Database error during enrichment for book ID ' . $book->id . ': ' . $e->getMessage());
-        
-        // Reset processing status if database error occurs
-        try {
-            $book->update(['api_data_status' => 'pending']);
-        } catch (\Exception $resetError) {
-            \Log::error('Failed to reset book status: ' . $resetError->getMessage());
-        }
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Database error occurred during enrichment. Please try again.'
-        ], 500);
-        
-    } catch (\Exception $e) {
-        \Log::error('Error enriching book ID ' . $book->id . ': ' . $e->getMessage());
-        \Log::error('Stack trace: ' . $e->getTraceAsString());
-        
-        // Make sure to reset the status if enrichment fails
-        try {
-            $book->update(['api_data_status' => 'pending', 'api_error_message' => substr($e->getMessage(), 0, 500)]);
-        } catch (\Exception $resetError) {
-            \Log::error('Failed to reset book status after error: ' . $resetError->getMessage());
-        }
-        
-        // Provide more specific error messages based on the error type
-        $message = 'Failed to enrich book';
-        
-        if (strpos($e->getMessage(), 'ISBN') !== false) {
-            $message = 'Book has invalid or missing ISBN';
-        } elseif (strpos($e->getMessage(), 'API') !== false) {
-            $message = 'External API is currently unavailable';
-        } elseif (strpos($e->getMessage(), 'No book data found') !== false) {
-            $message = 'No additional data found for this book';
-        } elseif (strpos($e->getMessage(), 'timeout') !== false) {
-            $message = 'Request timed out. Please try again';
-        }
-        
-        return response()->json([
-            'success' => false,
-            'message' => $message,
-            'debug_message' => config('app.debug') ? $e->getMessage() : null
-        ], 500);
+        return response()->json($result, $status);
     }
-}
 
-    /**
-     * Preview API enrichment data without applying it
-     * Allows user to review and confirm before applying changes
-     */
     public function previewEnrichment(Book $book)
     {
-        try {
-            \Log::info('Previewing enrichment for book ID: ' . $book->id);
+        $result = $this->enrichmentService->previewEnrichment($book);
+        $status = $result['status'] ?? ($result['success'] ? 200 : 500);
+        unset($result['status']);
 
-            $apiData = null;
-            $searchMethod = null;
-
-            // Try ISBN first if available
-            $isbn = $this->extractISBN($book);
-
-            if (!empty($isbn)) {
-                \Log::info('Trying ISBN search first: ' . $isbn);
-                try {
-                    $apiData = $this->apiService->fetchBookDataByISBN($isbn);
-                    if (isset($apiData['items']) && !empty($apiData['items'])) {
-                        $searchMethod = 'ISBN';
-                    } else {
-                        $apiData = null;
-                    }
-                } catch (\Exception $e) {
-                    \Log::warning('ISBN search failed: ' . $e->getMessage());
-                    $apiData = null;
-                }
-            }
-
-            // Fallback to title+author search
-            if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
-                $title = $book->title;
-                $author = $book->author_name;
-
-                if (empty($title)) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'الكتاب ليس له عنوان أو ISBN للبحث'
-                    ], 422);
-                }
-
-                \Log::info('Trying title+author search: ' . $title);
-                $apiData = $this->apiService->fetchBookDataByTitle($title, $author);
-
-                if (!isset($apiData['items']) || empty($apiData['items'])) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'لم يتم العثور على بيانات لهذا الكتاب في API'
-                    ], 404);
-                }
-
-                $searchMethod = 'title+author';
-            }
-
-            // Extract the book info from API response
-            $bookInfo = $apiData['items'][0]['volumeInfo'] ?? [];
-
-            // Get image URL
-            $imageUrl = null;
-            if (isset($apiData['items'][0]['volumeInfo']['imageLinks'])) {
-                $imageLinks = $apiData['items'][0]['volumeInfo']['imageLinks'];
-                $imageUrl = $imageLinks['thumbnail'] ?? $imageLinks['smallThumbnail'] ?? null;
-                // Get higher quality image
-                if ($imageUrl) {
-                    $imageUrl = str_replace('zoom=1', 'zoom=2', $imageUrl);
-                    $imageUrl = str_replace('&edge=curl', '', $imageUrl);
-                }
-            }
-
-            // Prepare preview data comparing current vs API values
-            $previewData = [
-                'title' => [
-                    'current' => $book->title,
-                    'api' => $bookInfo['title'] ?? null,
-                    'will_update' => !empty($bookInfo['title']) && strlen(trim($bookInfo['title'])) > strlen(trim($book->title ?? ''))
-                ],
-                'author' => [
-                    'current' => $book->author_name,
-                    'api' => isset($bookInfo['authors']) ? implode(', ', $bookInfo['authors']) : null,
-                    'will_update' => !empty($bookInfo['authors']) && strlen(implode(', ', $bookInfo['authors'] ?? [])) > strlen(trim($book->author_name ?? ''))
-                ],
-                'description' => [
-                    'current' => $book->description ? substr($book->description, 0, 200) . '...' : null,
-                    'api' => isset($bookInfo['description']) ? substr(strip_tags($bookInfo['description']), 0, 200) . '...' : null,
-                    'will_update' => !empty($bookInfo['description']) && (strlen($bookInfo['description']) > strlen($book->description ?? '') * 1.5 || strlen($book->description ?? '') < 50)
-                ],
-                'page_count' => [
-                    'current' => $book->page_num,
-                    'api' => $bookInfo['pageCount'] ?? null,
-                    'will_update' => !empty($bookInfo['pageCount']) && (empty($book->page_num) || $book->page_num == 0)
-                ],
-                'publisher' => [
-                    'current' => $book->publishing_house_name,
-                    'api' => $bookInfo['publisher'] ?? null,
-                    'will_update' => !empty($bookInfo['publisher']) && strlen($bookInfo['publisher']) > strlen($book->publishing_house_name ?? '')
-                ],
-                'language' => [
-                    'current' => $book->language,
-                    'api' => isset($bookInfo['language']) ? $this->mapLanguageCode($bookInfo['language']) : null,
-                    'will_update' => !empty($bookInfo['language']) && (empty($book->language) || $book->language === 'Unknown')
-                ],
-                'image' => [
-                    'current' => $book->image,
-                    'api' => $imageUrl,
-                    'will_update' => $imageUrl && (empty($book->image) || $book->image === 'images/books/default-book.png')
-                ]
-            ];
-
-            return response()->json([
-                'success' => true,
-                'book' => [
-                    'id' => $book->id,
-                    'title' => $book->title,
-                    'author' => $book->author_name
-                ],
-                'search_method' => $searchMethod,
-                'preview' => $previewData,
-                'api_book_title' => $bookInfo['title'] ?? 'Unknown',
-                'message' => 'تمت معاينة البيانات بنجاح. يرجى مراجعة البيانات قبل التأكيد.'
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error previewing enrichment for book ID ' . $book->id . ': ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'حدث خطأ أثناء معاينة البيانات: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json($result, $status);
     }
 
-    /**
-     * Apply selected enrichment fields from API
-     * Allows user to choose which fields to update
-     */
     public function applySelectedEnrichment(Request $request, Book $book)
     {
-        try {
-            $selectedFields = $request->input('selected_fields', []);
+        $result = $this->enrichmentService->applySelectedFields($book, $request->input('selected_fields', []));
+        $status = $result['status'] ?? ($result['success'] ? 200 : 500);
+        unset($result['status']);
 
-            if (empty($selectedFields)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'لم يتم اختيار أي حقول للتحديث'
-                ], 400);
-            }
-
-            \Log::info('Applying selected enrichment for book ID: ' . $book->id . ', fields: ' . implode(', ', $selectedFields));
-
-            // Fetch API data again
-            $apiData = null;
-            $isbn = $this->extractISBN($book);
-
-            if (!empty($isbn)) {
-                try {
-                    $apiData = $this->apiService->fetchBookDataByISBN($isbn);
-                    if (!isset($apiData['items']) || empty($apiData['items'])) {
-                        $apiData = null;
-                    }
-                } catch (\Exception $e) {
-                    $apiData = null;
-                }
-            }
-
-            // Fallback to title search
-            if (empty($apiData) || !isset($apiData['items']) || empty($apiData['items'])) {
-                $apiData = $this->apiService->fetchBookDataByTitle($book->title, $book->author_name);
-            }
-
-            if (!isset($apiData['items']) || empty($apiData['items'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'لم يتم العثور على بيانات من API'
-                ], 404);
-            }
-
-            $bookInfo = $apiData['items'][0]['volumeInfo'] ?? [];
-            $updateData = [];
-            $updatedFields = [];
-
-            // Map selected fields to database columns
-            $fieldMapping = [
-                'title' => 'title',
-                'description' => 'description',
-                'page_count' => 'page_num',
-                'language' => 'language'
-            ];
-
-            foreach ($selectedFields as $field) {
-                if ($field === 'title' && isset($bookInfo['title'])) {
-                    $updateData['title'] = $bookInfo['title'];
-                    $updatedFields[] = 'title';
-                }
-                elseif ($field === 'description' && isset($bookInfo['description'])) {
-                    $updateData['description'] = strip_tags($bookInfo['description']);
-                    $updatedFields[] = 'description';
-                }
-                elseif ($field === 'page_count' && isset($bookInfo['pageCount'])) {
-                    $updateData['page_num'] = $bookInfo['pageCount'];
-                    $updatedFields[] = 'page_count';
-                }
-                elseif ($field === 'language' && isset($bookInfo['language'])) {
-                    $updateData['language'] = $this->mapLanguageCode($bookInfo['language']);
-                    $updatedFields[] = 'language';
-                }
-                elseif ($field === 'image') {
-                    // Handle image download
-                    $imageUrl = null;
-                    if (isset($bookInfo['imageLinks'])) {
-                        $imageLinks = $bookInfo['imageLinks'];
-                        $imageUrl = $imageLinks['thumbnail'] ?? $imageLinks['smallThumbnail'] ?? null;
-                        if ($imageUrl) {
-                            $imageUrl = str_replace('zoom=1', 'zoom=2', $imageUrl);
-                            $imageUrl = str_replace('&edge=curl', '', $imageUrl);
-                        }
-                    }
-
-                    if ($imageUrl) {
-                        try {
-                            $localPath = $this->downloadAndStoreBookImage($imageUrl, $book->id);
-                            if ($localPath) {
-                                $updateData['image'] = $localPath;
-                                $updatedFields[] = 'image';
-                            }
-                        } catch (\Exception $e) {
-                            \Log::warning('Failed to download image: ' . $e->getMessage());
-                        }
-                    }
-                }
-            }
-
-            if (empty($updateData)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'لم يتم العثور على بيانات للحقول المحددة'
-                ], 400);
-            }
-
-            // Update the book
-            $updateData['api_data_status'] = 'enriched';
-            $updateData['api_last_updated'] = now();
-            $book->update($updateData);
-
-            \Log::info('Successfully updated book ID: ' . $book->id . ' with fields: ' . implode(', ', $updatedFields));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تحديث الحقول المحددة بنجاح',
-                'updated_fields' => $updatedFields,
-                'book' => $book->fresh()
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error applying selected enrichment for book ID ' . $book->id . ': ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'حدث خطأ أثناء تطبيق البيانات: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json($result, $status);
     }
 
-    /**
-     * Download and store book cover image locally
-     */
-    protected function downloadAndStoreBookImage($imageUrl, $bookId)
-    {
-        try {
-            $highQualityUrl = str_replace('zoom=1', 'zoom=2', $imageUrl);
-            $highQualityUrl = str_replace('&edge=curl', '', $highQualityUrl);
-
-            $imageContent = @file_get_contents($highQualityUrl);
-            if ($imageContent === false) {
-                $imageContent = @file_get_contents($imageUrl);
-            }
-
-            if ($imageContent === false) {
-                throw new \Exception('Failed to download image from URL');
-            }
-
-            $extension = 'jpg';
-            $finfo = new \finfo(FILEINFO_MIME_TYPE);
-            $mimeType = $finfo->buffer($imageContent);
-
-            if (strpos($mimeType, 'png') !== false) {
-                $extension = 'png';
-            } elseif (strpos($mimeType, 'webp') !== false) {
-                $extension = 'webp';
-            }
-
-            $filename = 'api_' . $bookId . '_' . time() . '.' . $extension;
-            $destinationPath = public_path('images/books');
-
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            $fullPath = $destinationPath . '/' . $filename;
-            if (file_put_contents($fullPath, $imageContent) === false) {
-                throw new \Exception('Failed to save image to disk');
-            }
-
-            return 'images/books/' . $filename;
-
-        } catch (\Exception $e) {
-            \Log::error('Error downloading book image: ' . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Extract ISBN from book (helper method)
-     */
-    protected function extractISBN(Book $book)
-    {
-        $isbn = $book->isbn ?? null;
-
-        if (empty($isbn) || trim($isbn) === '') {
-            return null;
-        }
-
-        $cleanIsbn = preg_replace('/[^0-9X]/', '', strtoupper($isbn));
-
-        if (strlen($cleanIsbn) !== 10 && strlen($cleanIsbn) !== 13) {
-            return null;
-        }
-
-        return $cleanIsbn;
-    }
-
-    /**
-     * Map language code to full name
-     */
-    protected function mapLanguageCode($langCode)
-    {
-        $languageMap = [
-            'en' => 'English',
-            'fr' => 'French',
-            'es' => 'Spanish',
-            'de' => 'German',
-            'ar' => 'Arabic',
-            'it' => 'Italian',
-            'pt' => 'Portuguese',
-            'ru' => 'Russian',
-            'ja' => 'Japanese',
-            'zh' => 'Chinese',
-            'ko' => 'Korean'
-        ];
-
-        return $languageMap[strtolower($langCode)] ?? ucfirst($langCode);
-    }
-
-    // New method to get books that need enrichment
     public function getPendingEnrichment()
     {
         $books = Book::needsEnrichment()->with('category')->get();
         return response()->json($books);
     }
 
-    // New method to bulk enrich books
     public function bulkEnrichBooks(Request $request)
     {
-        // Accept both 'book_ids' and 'product_ids' for compatibility
         $bookIds = $request->input('book_ids', $request->input('product_ids', []));
 
         if (empty($bookIds)) {
@@ -929,7 +429,7 @@ public function addProduct(Request $request)
         foreach ($bookIds as $bookId) {
             try {
                 $book = Book::findOrFail($bookId);
-                $this->bookService->enrichBookFromAPI($book);
+                $this->enrichmentService->enrichBookFromAPI($book);
                 $enriched++;
             } catch (\Exception $e) {
                 $failed++;
@@ -941,7 +441,7 @@ public function addProduct(Request $request)
         return response()->json([
             'success' => true,
             'enriched' => $enriched,
-            'enriched_count' => $enriched, // Alias for JS compatibility
+            'enriched_count' => $enriched,
             'failed' => $failed,
             'errors' => $errors,
             'message' => "Enrichment completed. Enriched: {$enriched}, Failed: {$failed}"
@@ -951,40 +451,11 @@ public function addProduct(Request $request)
     public function searchproductBooks(Request $request)
     {
         $request->validate(['query' => 'nullable|string|max:200']);
-        $query = $request->input('query', '');
-        $query = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
         try {
-            // First try exact match
-            $books = Book::where('title', 'LIKE', "%{$query}%")
-                        ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
-                        ->orWhere('isbn', 'LIKE', "%{$query}%")
-                        ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
-                        ->get();
+            $books = $this->searchService->search($request->input('query', ''), 10);
 
-            // If no results, try n-gram approach with DB query
-            if ($books->isEmpty()) {
-                $tokens = [];
-                for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
-                    $tokens[] = mb_substr($query, $i, 3);
-                }
-
-                if (!empty($tokens)) {
-                    $ngramQuery = Book::where(function ($q) use ($tokens) {
-                        foreach ($tokens as $token) {
-                            $q->orWhere('title', 'LIKE', "%{$token}%")
-                              ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$token}%"))
-                              ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$token}%"));
-                        }
-                    })->take(10)->get();
-                    $books = $ngramQuery;
-                }
-            }
-
-            return response()->json([
-                'success' => true,
-                'books' => $books
-            ]);
+            return response()->json(['success' => true, 'books' => $books]);
         } catch (\Exception $e) {
             \Log::error('Error in searchBooks:', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
@@ -1012,13 +483,13 @@ public function searchResults(Request $request)
     $categories = Category::whereNull('parent_id')->with('children')->get();
     $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
 
-    // 🔍 1. Search
-    $books = $this->searchBooks2($query);
+    // 1. Search
+    $books = $this->searchService->search($query);
     if ($books->isNotEmpty()) {
         $books->load('categories');
     }
 
-    // 🎛 2. Apply filters
+    // 2. Apply filters
     if ($categoryId) {
         $books = $books->filter(fn($b) => $b->categories->contains('id', (int) $categoryId));
     }
@@ -1036,7 +507,7 @@ public function searchResults(Request $request)
         $books = $books->where('price', '<=', (float) $request->input('price_max'));
     }
 
-    // 🔀 3. Sort
+    // 3. Sort
     $books = match ($sort) {
         'newest'     => $books->sortByDesc('created_at')->values(),
         'price_asc'  => $books->sortBy('price')->values(),
@@ -1045,11 +516,11 @@ public function searchResults(Request $request)
         default      => $books->values(),
     };
 
-    // 🔗 4. Related books
-    $relatedBooks = $this->getRelatedBooks($books);
+    // 4. Related books
+    $relatedBooks = $this->searchService->getRelatedBooks($books);
     $totalCount = $books->count() + $relatedBooks->count();
 
-    // 📄 5. Paginate the collection
+    // 5. Paginate the collection
     $perPage = 12;
     $page = $request->input('page', 1);
     $paginatedBooks = new \Illuminate\Pagination\LengthAwarePaginator(
@@ -1060,16 +531,16 @@ public function searchResults(Request $request)
         ['path' => $request->url(), 'query' => $request->query()]
     );
 
-    // 🏷 6. Related categories
+    // 6. Related categories
     $relatedCategories = collect();
     if ($categoryId) {
-        $relatedCategories = $this->relatedCategories($categoryId);
+        $relatedCategories = $this->searchService->relatedCategories($categoryId);
     }
     if ($relatedCategories->isEmpty()) {
-        $relatedCategories = $this->popularCategories();
+        $relatedCategories = $this->searchService->popularCategories();
     }
 
-    // 📂 7. Detect primary category from results and reorder sidebar
+    // 7. Detect primary category from results and reorder sidebar
     $primaryCategoryId = $books->flatMap(fn($b) => $b->categories->pluck('id'))
         ->countBy()
         ->sortDesc()
@@ -1100,174 +571,14 @@ public function searchResults(Request $request)
         'primaryParentId'    => $primaryParentId,
     ]);
 }
-private function searchBooks2(?string $query)
-{
-    if (!$query) {
-        return collect();
-    }
-
-    $query = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
-
-    $books = Book::where('title', 'LIKE', "%{$query}%")
-        ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
-        ->orWhere('isbn', 'LIKE', "%{$query}%")
-        ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
-        ->get();
-
-    if ($books->isNotEmpty()) {
-        return $books;
-    }
-
-    return $this->smartFallbackSearch($query);
-}
-private function smartFallbackSearch(string $query)
-{
-    $tokens = [];
-
-    for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
-        $tokens[] = mb_substr($query, $i, 3);
-    }
-
-    if (empty($tokens)) {
-        return collect();
-    }
-
-    return Book::where(function ($q) use ($tokens) {
-        foreach ($tokens as $token) {
-            $q->orWhere('title', 'LIKE', "%{$token}%")
-              ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$token}%"))
-              ->orWhereHas('publishingHouse', fn($q) => $q->where('name', 'LIKE', "%{$token}%"));
-        }
-    })->take(20)->get();
-}
-private function applyFilters($books, ?string $filter, ?int $categoryId)
-{
-    // Category filter
-    if ($categoryId) {
-        $books = $books->filter(fn($b) => $b->categories->contains('id', $categoryId));
-    }
-
-    // Sorting
-    return match ($filter) {
-        'price_low'  => $books->sortBy('price')->values(),
-        'price_high' => $books->sortByDesc('price')->values(),
-        'author'     => $books->sortBy('author_name')->values(),
-        default      => $books
-    };
-}
-private function getRelatedBooks($books)
-{
-    if ($books->isEmpty()) {
-        return collect();
-    }
-
-    $mainBook = $books->first();
-    $excludedIds = $books->pluck('id')->toArray();
-
-    $mainBookCatIds = $mainBook->categories->pluck('id')->toArray();
-    return Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $mainBookCatIds ?: [$mainBook->category_id]))
-        ->whereNotIn('id', $excludedIds)
-        ->inRandomOrder()
-        ->take(10)
-        ->get();
-}
-
-private function relatedBooks(int $bookId)
-{
-    $book = Book::with(['category.parent', 'primaryAuthor', 'categories'])
-        ->findOrFail($bookId);
-
-    // 1️⃣ Same categories
-    $catIds = $book->categories->pluck('id')->toArray();
-    $related = Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $catIds ?: [$book->category_id]))
-        ->where('id', '!=', $book->id)
-        ->take(10)
-        ->get();
-
-    // 2️⃣ Same author (fallback)
-    if ($related->isEmpty() && $book->primaryAuthor) {
-        $related = Book::where('author_id', $book->primaryAuthor->id)
-            ->where('id', '!=', $book->id)
-            ->take(10)
-            ->get();
-    }
-
-    // 3️⃣ Last fallback: latest books
-    if ($related->isEmpty()) {
-        $related = Book::latest()
-            ->where('id', '!=', $book->id)
-            ->take(10)
-            ->get();
-    }
-
-    return $related;
-}
-private function relatedCategories($categoryId)
-{
-    $category = Category::find($categoryId);
-
-    if (!$category) {
-        return collect();
-    }
-
-    // If category has a parent → get siblings
-    if ($category->parent_id) {
-        return Category::where('parent_id', $category->parent_id)
-            ->where('id', '!=', $category->id)
-            ->take(10)
-            ->get();
-    }
-
-    // If category is parent → get children
-    return Category::where('parent_id', $category->id)
-        ->take(10)
-        ->get();
-}
-private function popularCategories($limit = 10)
-{
-    return Category::withCount('books')
-        ->orderByDesc('books_count')
-        ->take($limit)
-        ->get();
-}
-
-
-// AJAX method for autocomplete (keep your existing one)
 public function searchBooksAjax(Request $request)
 {
     $request->validate(['query' => 'nullable|string|max:200']);
-    $query = $request->input('query', '');
-    $query = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
     try {
-        // First try exact match
-        $books = Book::where('title', 'LIKE', "%{$query}%")
-                    ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$query}%"))
-                    ->orWhere('isbn', 'LIKE', "%{$query}%")
-                    ->take(5) // Limit for autocomplete
-                    ->get();
+        $books = $this->searchService->search($request->input('query', ''), 5);
 
-        // If no results, try n-gram approach
-        if ($books->isEmpty()) {
-            $tokens = [];
-            for ($i = 0; $i < mb_strlen($query) - 2; $i++) {
-                $tokens[] = mb_substr($query, $i, 3);
-            }
-
-            if (!empty($tokens)) {
-                $books = Book::where(function ($q) use ($tokens) {
-                    foreach ($tokens as $token) {
-                        $q->orWhere('title', 'LIKE', "%{$token}%")
-                          ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'LIKE', "%{$token}%"));
-                    }
-                })->take(5)->get();
-            }
-        }
-        
-        return response()->json([
-            'success' => true,
-            'books' => $books
-        ]);
+        return response()->json(['success' => true, 'books' => $books]);
     } catch (\Exception $e) {
         \Log::error('Error in searchBooks:', ['error' => $e->getMessage()]);
         return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
@@ -1454,35 +765,6 @@ public function searchBooksAjax(Request $request)
         return redirect()->route('books.index')->with('success', 'Book created successfully!');
     }
 
-    // Method to add additional authors to a book
-    public function addAuthor(Request $request, Book $book)
-    {
-        $request->validate([
-            'author_id' => 'required|exists:authors,id',
-            'author_type' => 'required|in:co-author,editor,translator,illustrator'
-        ]);
-        
-        // Check if this author-book-type combination already exists
-        $exists = BookAuthor::where([
-            'book_id' => $book->id,
-            'author_id' => $request->author_id,
-            'author_type' => $request->author_type
-        ])->exists();
-        
-        if (!$exists) {
-            BookAuthor::create([
-                'book_id' => $book->id,
-                'author_id' => $request->author_id,
-                'author_type' => $request->author_type
-            ]);
-            
-            return response()->json(['success' => true, 'message' => 'Author added successfully!']);
-        }
-        
-        return response()->json(['success' => false, 'message' => 'This author is already associated with this book in this role.']);
-    }
-
-
     public function byCategory(Request $request, Category $category)
     {
         // Get current category and its children
@@ -1543,15 +825,6 @@ public function searchBooksAjax(Request $request)
         ));
     }
 
-    public function byCategory2(Category $category)
-    {
-        $childCategoryIds = $category->children->pluck('id')->toArray();
-        $allCategoryIds = array_merge([$category->id], $childCategoryIds);
-        $books = Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $allCategoryIds))->paginate(12);
-        $categories = Category::all();
-
-        return view('Dashbord_Admin.ManagementSystem', compact('books', 'category', 'categories'));
-    }
     public function showproduct(Request $request)
     {
         $search = $request->search;
@@ -1607,16 +880,8 @@ public function searchBooksAjax(Request $request)
     public function updateProduct(Request $request, $id)
     {
         try {
-            \Log::info('=== UPDATE PRODUCT START ===');
-            \Log::info('Product ID: ' . $id);
-            \Log::info('Request Method: ' . $request->method());
-            \Log::info('Request Data: ', $request->except(['image'])); // Don't log file data
-        
-            // Find the product
             $product = Book::findOrFail($id);
-            \Log::info('Product found: ' . $product->title);
-            
-            // Validate the request
+
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -1633,29 +898,12 @@ public function searchBooksAjax(Request $request)
                 'category_id' => 'nullable|integer|exists:categories,id',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048'
             ]);
-            
-            // Find or create Author
-            $authorName = trim($validated['author']);
-            $author = Author::firstOrCreate(
-                ['name' => $authorName],
-                ['status' => 'active']
-            );
 
-            // Find or create Publishing House
-            $publishingHouseId = null;
-            $publishingHouseName = trim($validated['publishing_house'] ?? '');
-            if (!empty($publishingHouseName)) {
-                $publishingHouse = PublishingHouse::firstOrCreate(
-                    ['name' => $publishingHouseName],
-                    ['status' => 'active']
-                );
-                $publishingHouseId = $publishingHouse->id;
-            }
-
-            // Capture stock state before update (for notification trigger)
+            $author = $this->adminService->findOrCreateAuthor($validated['author']);
+            $publishingHouseId = $this->adminService->findOrCreatePublishingHouse($validated['publishing_house'] ?? null);
             $wasOutOfStock = ($product->quantity == 0);
 
-            // Update basic fields
+            // Update fields
             $product->title = $validated['title'];
             $product->description = $validated['description'];
             $product->price = $validated['price'];
@@ -1665,192 +913,74 @@ public function searchBooksAjax(Request $request)
             $product->publishing_house_id = $publishingHouseId;
             $product->isbn = $validated['isbn'] ?? null;
             $product->quantity = $validated['quantity'];
-        
-            // Handle categories (multi-select with primary)
+
+            // Handle categories
             if (!empty($validated['categories'])) {
-                $primaryId = $validated['primary_category_id'] ?? $validated['categories'][0];
-                $product->category_id = $primaryId;
+                $product->category_id = $validated['primary_category_id'] ?? $validated['categories'][0];
             } elseif (isset($validated['category_id'])) {
                 $product->category_id = $validated['category_id'];
             }
-        
+
             // Handle image upload
             if ($request->hasFile('image')) {
-                \Log::info('Processing image upload...');
-                
                 try {
-                    $file = $request->file('image');
-                    \Log::info('File details: ' . $file->getClientOriginalName() . ' (' . $file->getSize() . ' bytes)');
-                    
-                    // Delete old image if exists
-                    if ($product->image) {
-                        $oldImagePath = public_path($product->image);
-                        if (file_exists($oldImagePath)) {
-                            unlink($oldImagePath);
-                            \Log::info('Old image deleted: ' . $oldImagePath);
-                        }
-                    }
-                    
-                    // Generate unique filename (always save as WebP)
-                    $imageName = time() . '_' . uniqid() . '.webp';
-                    $destinationPath = public_path('images/books');
-                    $thumbPath = public_path('images/books/thumbs');
-
-                    // Create directories if they don't exist
-                    if (!file_exists($destinationPath)) {
-                        mkdir($destinationPath, 0755, true);
-                    }
-                    if (!file_exists($thumbPath)) {
-                        mkdir($thumbPath, 0755, true);
-                    }
-
-                    // Re-encode via Intervention Image (strips EXIF/malicious payloads)
-                    $image = Image::read($file->getRealPath());
-                    $image->scale(width: 400);
-                    $image->toWebp(80)->save($destinationPath . '/' . $imageName);
-
-                    // Generate thumbnail
-                    $thumb = Image::read($file->getRealPath());
-                    $thumb->scale(width: 150);
-                    $thumb->toWebp(75)->save($thumbPath . '/' . $imageName);
-
-                    $imagePath = 'images/books/' . $imageName;
-                    $product->image = $imagePath;
-                    \Log::info('Image re-encoded and stored: ' . $imagePath);
-                    
+                    $product->image = $this->adminService->processBookImage($request->file('image'), $product->image);
                 } catch (\Exception $imageError) {
                     \Log::error('Image upload error: ' . $imageError->getMessage());
-                    
-                    // For AJAX requests, return the error
                     if ($request->ajax()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Failed to upload image: ' . $imageError->getMessage()
-                        ], 500);
+                        return response()->json(['success' => false, 'message' => 'Failed to upload image: ' . $imageError->getMessage()], 500);
                     }
-                    
-                    // For regular requests, continue without image
-                    \Log::warning('Continuing update without image due to upload error');
                 }
             }
-        
-            // Save the product
-            \Log::info('Attempting to save product...');
+
             $saved = $product->saveQuietly();
-            \Log::info('Product save result: ' . ($saved ? 'SUCCESS' : 'FAILED'));
-        
             if (!$saved) {
                 throw new \Exception('Failed to save product to database');
             }
 
-            // Update book_authors pivot entry
-            $product->authors()->sync([
-                $author->id => ['author_type' => 'primary']
-            ]);
+            $product->authors()->sync([$author->id => ['author_type' => 'primary']]);
 
-            // Sync categories pivot if provided
             if (!empty($validated['categories'])) {
                 $primaryId = $validated['primary_category_id'] ?? $validated['categories'][0];
                 $product->syncCategories($validated['categories'], $primaryId);
             }
 
-            \Log::info('=== UPDATE PRODUCT SUCCESS ===');
-
-            // If stock was restored (0 → >0), email and notify all waiting subscribers
+            // Notify stock subscribers if restocked
             if ($wasOutOfStock && $product->quantity > 0) {
-                $notifications = StockNotification::where('book_id', $product->id)
-                    ->whereNull('notified_at')
-                    ->get();
-
-                foreach ($notifications as $notification) {
-                    // Send email
-                    try {
-                        Mail::to($notification->email)->send(new StockAvailableMail($product));
-                        $notification->update(['notified_at' => now()]);
-                    } catch (\Exception $mailError) {
-                        \Log::error('Stock notification email failed for book ' . $product->id . ': ' . $mailError->getMessage());
-                    }
-
-                    // Create in-app notification for logged-in users
-                    if ($notification->user_id) {
-                        UserNotification::create([
-                            'user_id' => $notification->user_id,
-                            'type'    => 'stock_available',
-                            'title'   => 'الكتاب متوفر الآن',
-                            'body'    => '«' . $product->title . '» أصبح متوفراً. أضفه للسلة قبل نفاد الكمية!',
-                            'url'     => route('moredetail2.page', $product->id),
-                        ]);
-                    }
-                }
+                $this->adminService->notifyStockSubscribers($product);
             }
-        
-            // Return appropriate response based on request type
+
             if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم تحديث المنتج بنجاح!',
-                    'product' => $product->load('category')
-                ], 200);
+                return response()->json(['success' => true, 'message' => 'تم تحديث المنتج بنجاح!', 'product' => $product->load('category')]);
             }
-            
             return redirect()->back()->with('success', 'Product updated successfully!');
-        
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            \Log::error('Product not found: ' . $e->getMessage());
-            
             if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'المنتج غير موجود.'
-                ], 404);
+                return response()->json(['success' => false, 'message' => 'المنتج غير موجود.'], 404);
             }
-            
             return redirect()->back()->withErrors(['error' => 'Product not found.']);
-        
+
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation failed: ', $e->errors());
-            
             if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'فشل في التحقق من البيانات',
-                    'errors' => $e->errors()
-                ], 422);
+                return response()->json(['success' => false, 'message' => 'فشل في التحقق من البيانات', 'errors' => $e->errors()], 422);
             }
-            
             return redirect()->back()->withErrors($e->errors())->withInput();
-        
+
         } catch (\Exception $e) {
-            \Log::error('=== UPDATE PRODUCT ERROR ===');
-            \Log::error('Error Message: ' . $e->getMessage());
-            \Log::error('Error File: ' . $e->getFile());
-            \Log::error('Error Line: ' . $e->getLine());
-            \Log::error('Stack Trace: ' . $e->getTraceAsString());
-            \Log::error('=========================');
-        
+            \Log::error('Update product error: ' . $e->getMessage());
             if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'حدث خطأ أثناء تحديث المنتج، يرجى المحاولة لاحقاً.'
-                ], 500);
+                return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء تحديث المنتج، يرجى المحاولة لاحقاً.'], 500);
             }
-            
             return redirect()->back()->withErrors(['error' => 'An error occurred while updating the product.'])->withInput();
         }
     }
     public function searchBook(Request $request)
     {
         $request->validate(['q' => 'required|string|min:3|max:100']);
-        $query = $request->query('q');
-        $safeQuery = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
 
-        $books = Book::where('isbn', $query)
-            ->orWhere('title', 'like', "%{$safeQuery}%")
-            ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'like', "%{$safeQuery}%"))
-            ->select('id', 'isbn', 'title', 'author_id', 'price', 'quantity', 'cost_price')
-            ->limit(10)
-            ->get();
-        
-        return response()->json($books);
+        return response()->json(
+            $this->searchService->searchForAdmin($request->query('q'))
+        );
     }
 }

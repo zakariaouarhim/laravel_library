@@ -78,27 +78,4 @@ class AdminUserController extends Controller
         return response()->json(['success' => true, 'message' => 'تم تخفيض المشرف إلى زبون بنجاح']);
     }
 
-    public function destroy($id)
-    {
-        $target      = UserModel::findOrFail($id);
-        $currentUser = auth()->user();
-
-        if ($target->id === $currentUser->id) {
-            return response()->json(['success' => false, 'message' => 'لا يمكنك حذف حسابك الخاص'], 422);
-        }
-
-        if ($target->role === 'super_admin') {
-            return response()->json(['success' => false, 'message' => 'غير مصرح'], 403);
-        }
-
-        if ($currentUser->role === 'admin' && $target->role === 'admin') {
-            return response()->json(['success' => false, 'message' => 'غير مصرح بحذف المشرفين'], 403);
-        }
-
-        Log::info('User deleted', ['by' => $currentUser->id, 'target' => $id, 'role' => $target->role]);
-
-        $target->delete();
-
-        return response()->json(['success' => true, 'message' => 'تم حذف المستخدم بنجاح']);
-    }
 }

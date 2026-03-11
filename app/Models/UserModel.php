@@ -44,12 +44,6 @@ class UserModel extends Authenticatable
         )->withTimestamps();
     }
 
-    // Alternative, more explicit way:
-    public function wishlistBooks()
-    {
-        return $this->belongsToMany(Book::class, 'wishlists', 'user_id', 'book_id')
-                    ->withTimestamps();
-    }
    /**
      * Get all quotes created by this user
      */
@@ -104,11 +98,6 @@ class UserModel extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(UserNotification::class, 'user_id')->latest();
-    }
-
-    public function unreadNotificationsCount(): int
-    {
-        return $this->notifications()->whereNull('read_at')->count();
     }
 
     public function follows()

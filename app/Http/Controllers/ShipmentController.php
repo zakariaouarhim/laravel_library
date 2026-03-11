@@ -7,7 +7,7 @@ use App\Models\Shipment;
 use App\Models\ShipmentItem;
 use App\Models\Book;
 use App\Services\ShipmentService;
-use App\Services\BookService;
+use App\Services\BookEnrichmentService;
 use App\Models\Category;
 
 class ShipmentController extends Controller
@@ -15,7 +15,7 @@ class ShipmentController extends Controller
     protected $shipmentService;
     protected $bookService;
 
-    public function __construct(ShipmentService $shipmentService, BookService $bookService)
+    public function __construct(ShipmentService $shipmentService, BookEnrichmentService $bookService)
     {
         $this->shipmentService = $shipmentService;
         $this->bookService = $bookService;
@@ -159,17 +159,15 @@ class ShipmentController extends Controller
             return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
         }
     }
-    public function showmanagement(Category $category)     
-{         
-    $childCategoryIds = $category->children->pluck('id')->toArray();         
-    $allCategoryIds = array_merge([$category->id], $childCategoryIds);         
-    $books = Book::whereIn('category_id', $allCategoryIds)->paginate(12);         
-    
-    // Get categories organized hierarchically
-    $categories = Category::with('children')->whereNull('parent_id')->get();
-    
-    return view('Dashbord_Admin.ManagementSystem', compact('books', 'category', 'categories'));     
-}
+    public function showmanagement()
+    {
+        $books = Book::paginate(12);
+
+        // Get categories organized hierarchically
+        $categories = Category::with('children')->whereNull('parent_id')->get();
+
+        return view('Dashbord_Admin.ManagementSystem', compact('books', 'categories'));
+    }
     public function create()
     {
         return view('Dashbord_Admin.shipments.create');
@@ -248,7 +246,6 @@ class ShipmentController extends Controller
     return redirect()->route('admin.Dashbord_Admin.Shipment_Management')
         ->with('success', 'تم إنشاء الشحنة بنجاح!');
     }
-    /////////////////======delete shipment===========
     public function destroy(Shipment $shipment)
     {
         try {
@@ -385,55 +382,6 @@ class ShipmentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-    public function updateProduct(Request $request, $id)
-    {
-        try {
-            $product = Book::findOrFail($id);
-
-            $product->title = $request->input('title');
-            $product->description = $request->input('description');
-            $product->price = $request->input('price');
-            $product->page_num = $request->input('page_num');
-            $product->language = $request->input('language');
-            $product->isbn = $request->input('isbn');
-            $product->quantity = $request->input('quantity');
-
-            if ($request->has('category_id')) {
-                $product->category_id = $request->input('category_id');
-            }
-
-            if ($request->hasFile('image')) {
-                try {
-                    $imagePath = $request->file('image')->store('products', 'public');
-                    $product->image = $imagePath;
-                } catch (\Exception $imageError) {
-                    \Log::error('Image upload error: ' . $imageError->getMessage());
-                }
-            }
-
-            $product->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Product updated successfully!',
-                'product_id' => $product->id
-            ], 200);
-
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Product not found.'
-            ], 404);
-
-        } catch (\Exception $e) {
-            \Log::error('Update product error: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while updating the product: ' . $e->getMessage()
             ], 500);
         }
     }

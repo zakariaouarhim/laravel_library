@@ -9,6 +9,15 @@ use App\Models\Book;
 
 class WishlistController extends Controller
 {
+    private function findBookOrFail(int $bookId): Book
+    {
+        $book = Book::find($bookId);
+        if (!$book) {
+            abort(response()->json(['success' => false, 'message' => 'الكتاب غير موجود'], 404));
+        }
+        return $book;
+    }
+
     public function add($bookId)
     {
         try {
@@ -16,19 +25,12 @@ class WishlistController extends Controller
             $user = Auth::user();
             if (!$user) {
                 return response()->json([
-                    'success' => false, 
+                    'success' => false,
                     'message' => 'الرجاء تسجيل الدخول أولاً'
                 ], 401);
             }
-            
-            // Validate book exists
-            $book = Book::find($bookId);
-            if (!$book) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'الكتاب غير موجود'
-                ], 404);
-            }
+
+            $this->findBookOrFail($bookId);
 
             // Check if book is already in wishlist
             $existsInWishlist = $user->wishlist()->where('book_id', $bookId)->exists();
@@ -67,14 +69,7 @@ class WishlistController extends Controller
                 ], 401);
             }
 
-            // Validate book exists
-            $book = Book::find($bookId);
-            if (!$book) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'الكتاب غير موجود'
-                ], 404);
-            }
+            $this->findBookOrFail($bookId);
 
             // Check if book is in wishlist before removing
             $existsInWishlist = $user->wishlist()->where('book_id', $bookId)->exists();
@@ -105,13 +100,7 @@ class WishlistController extends Controller
     public function addToSession($bookId)
     {
         try {
-            $book = Book::find($bookId);
-            if (!$book) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'الكتاب غير موجود'
-                ], 404);
-            }
+            $this->findBookOrFail($bookId);
 
             // Get wishlist from session or create new array
             $wishlist = session()->get('wishlist', []);
@@ -147,13 +136,7 @@ class WishlistController extends Controller
     public function removeFromSession($bookId)
     {
         try {
-            $book = Book::find($bookId);
-            if (!$book) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'الكتاب غير موجود'
-                ], 404);
-            }
+            $this->findBookOrFail($bookId);
 
             // Get wishlist from session
             $wishlist = session()->get('wishlist', []);

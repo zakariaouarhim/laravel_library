@@ -136,18 +136,6 @@ class QuoteController extends Controller
     }
 
     /**
-     * Get quotes for a specific book (API endpoint)
-     */
-    public function getBookQuotes(Book $book)
-    {
-        $quotes = $book->quotes()
-                      ->orderBy('created_at', 'desc')
-                      ->paginate(10);
-
-        return response()->json($quotes);
-    }
-
-    /**
      * Get user's quotes
      */
     public function getUserQuotes()

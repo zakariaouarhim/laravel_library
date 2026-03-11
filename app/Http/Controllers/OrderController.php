@@ -3,178 +3,93 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\CheckoutDetail;
 use App\Models\Order;
-use App\Models\OrderStatusHistory;
+use App\Services\OrderService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\OrderStatusUpdateMail;
-use Carbon\Carbon;
- 
-
 
 class OrderController extends Controller
 {
-    
+    public function __construct(
+        private OrderService $orderService,
+    ) {}
+
     public function index(Request $request)
     {
         $query = Order::with(['orderDetails.book', 'checkoutDetail']);
-        
-        // Search by order ID or tracking number
+
         if ($request->has('search') && $request->search) {
             $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $request->search);
             $query->where('id', 'like', '%' . $search . '%')
                   ->orWhere('tracking_number', 'like', '%' . $search . '%');
         }
-        
-        // Filter by status
+
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
         }
-        
-        $orders = $query->latest()->paginate(15);
-        
-        // Count orders by status (single query instead of 4)
-        $statusCounts = Order::selectRaw('status, count(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
 
-        $pendingCount = $statusCounts->get('pending', 0);
+        $orders = $query->latest()->paginate(15);
+
+        $statusCounts = $this->orderService->getStatusCounts();
+
+        $pendingCount    = $statusCounts->get('pending', 0);
         $processingCount = $statusCounts->get('processing', 0);
-        $deliveredCount = $statusCounts->get('delivered', 0);
-        $cancelledCount = $statusCounts->get('cancelled', 0);
+        $deliveredCount  = $statusCounts->get('delivered', 0);
+        $cancelledCount  = $statusCounts->get('cancelled', 0);
 
         return view('Dashbord_Admin.orders', compact(
-            'orders',
-            'pendingCount',
-            'processingCount',
-            'deliveredCount',
-            'cancelledCount'
+            'orders', 'pendingCount', 'processingCount', 'deliveredCount', 'cancelledCount'
         ));
     }
 
-    /**
-     * Show a single order (JSON response for modal)
-     */
     public function show($id)
     {
         $order = Order::with(['orderDetails.book', 'checkoutDetail'])->findOrFail($id);
-        
         return response()->json($order);
     }
 
-    /**
-     * Show the edit form for an order
-     */
     public function edit($id)
     {
         $order = Order::with(['orderDetails.book', 'checkoutDetail'])->findOrFail($id);
-        
         return view('Dashbord_Admin.editorder', compact('order'));
     }
-
-    /**
-     * Update order status
-     */
-    /**
-     * Valid status transitions to prevent invalid state jumps
-     */
-    private static array $allowedTransitions = [
-        'pending'    => ['processing', 'cancelled', 'failed'],
-        'processing' => ['shipped', 'cancelled', 'failed'],
-        'shipped'    => ['delivered', 'returned'],
-        'delivered'  => ['returned', 'refunded'],
-        'cancelled'  => [],
-        'failed'     => ['pending'],
-        'refunded'   => [],
-        'returned'   => ['refunded'],
-    ];
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,failed,refunded,returned'
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,failed,refunded,returned',
         ]);
 
         $order = Order::with('checkoutDetail')->findOrFail($id);
-        $oldStatus = $order->status;
-        $newStatus = $request->status;
 
-        // Enforce valid status transitions
-        $allowed = self::$allowedTransitions[$oldStatus] ?? [];
-        if ($oldStatus !== $newStatus && !in_array($newStatus, $allowed)) {
-            $message = "لا يمكن تغيير الحالة من \"{$oldStatus}\" إلى \"{$newStatus}\"";
+        try {
+            $this->orderService->updateStatus($order, $request->status, $request->input('note'));
+        } catch (\InvalidArgumentException $e) {
             if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => $message], 422);
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
             }
-            return redirect()->back()->with('error', $message);
+            return redirect()->back()->with('error', $e->getMessage());
         }
 
-        $updateData = ['status' => $newStatus];
-
-        // Set estimated delivery date when shipped (+3 business days)
-        if ($newStatus === 'shipped') {
-            $updateData['estimated_delivery_date'] = Carbon::now()->addWeekdays(3)->toDateString();
-        } elseif ($newStatus === 'delivered') {
-            $updateData['estimated_delivery_date'] = null;
-        }
-
-        $order->update($updateData);
-
-        // Log status change in history
-        OrderStatusHistory::create([
-            'order_id' => $order->id,
-            'status' => $newStatus,
-            'note' => $request->input('note'),
-        ]);
-
-        // Send status update email to customer
-        $customerEmail = $order->checkoutDetail->email ?? ($order->user ? $order->user->email : null);
-        if ($customerEmail) {
-            $statusLabels = Order::STATUS_LABELS;
-            $manageUrl = $order->management_token
-                ? route('order.manage', ['token' => $order->management_token])
-                : null;
-
-            try {
-                $customerName = $order->checkoutDetail->full_name ?? ($order->user ? $order->user->name : 'العميل');
-                Mail::to($customerEmail)->send(new OrderStatusUpdateMail(
-                    $order,
-                    $customerName,
-                    $statusLabels[$oldStatus] ?? $oldStatus,
-                    $statusLabels[$newStatus] ?? $newStatus,
-                    $request->input('note'),
-                    $manageUrl
-                ));
-            } catch (\Exception $e) {
-                \Log::error('Failed to send order status email: ' . $e->getMessage());
-            }
-        }
-
-        // If AJAX request, return JSON
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'تم تحديث حالة الطلب بنجاح',
-                'order' => $order
+                'order'   => $order,
             ]);
         }
 
         return redirect()->route('admin.orders.index')->with('success', 'تم تحديث حالة الطلب بنجاح');
     }
 
-    /**
-     * Store order (if needed for creating new orders)
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'nullable|exists:users,id',
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,failed,refunded,returned',
-            'total_price' => 'required|numeric',
-            'payment_method' => 'required|in:cod,credit_card',
+            'user_id'          => 'nullable|exists:users,id',
+            'status'           => 'required|in:pending,processing,shipped,delivered,cancelled,failed,refunded,returned',
+            'total_price'      => 'required|numeric',
+            'payment_method'   => 'required|in:cod,credit_card',
             'shipping_address' => 'required|string',
-            'tracking_number' => 'nullable|unique:orders,tracking_number'
+            'tracking_number'  => 'nullable|unique:orders,tracking_number',
         ]);
 
         Order::create($validated);
@@ -182,19 +97,6 @@ class OrderController extends Controller
         return redirect()->route('admin.orders.index')->with('success', 'تم إنشاء الطلب بنجاح');
     }
 
-    /**
-     * Delete an order (soft delete recommended)
-     */
-    public function destroy($id)
-    {
-        $order = Order::findOrFail($id);
-        $order->delete();
-
-        return redirect()->route('admin.orders.index')->with('success', 'تم حذف الطلب بنجاح');
-    }
-    /**
-     * Show authenticated user's orders
-     */
     public function myOrders(Request $request)
     {
         $userId = Auth::id();
@@ -209,13 +111,9 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(10)->appends($request->query());
 
-        // Count orders by status for this user (single query instead of 6)
-        $counts = Order::where('user_id', $userId)
-            ->selectRaw('status, count(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
-
+        $counts   = $this->orderService->getStatusCounts($userId);
         $allCount = $counts->sum();
+
         $statusCounts = [
             'all'        => $allCount,
             'pending'    => $counts->get('pending', 0),
@@ -228,9 +126,6 @@ class OrderController extends Controller
         return view('my-orders', compact('orders', 'status', 'statusCounts'));
     }
 
-    /**
-     * Cancel an order (customer action)
-     */
     public function cancelOrder(Request $request, $id)
     {
         $order = Order::where('id', $id)

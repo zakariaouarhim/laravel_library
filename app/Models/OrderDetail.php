@@ -75,29 +75,4 @@ class OrderDetail extends Model
         return number_format($this->price, 2) . ' ر.س';
     }
 
-    /**
-     * Scope to get order details for a specific order.
-     */
-    public function scopeForOrder($query, $orderId)
-    {
-        return $query->where('order_id', $orderId);
-    }
-
-    /**
-     * Scope to get order details for a specific book.
-     */
-    public function scopeForBook($query, $bookId)
-    {
-        return $query->where('book_id', $bookId);
-    }
-
-    /**
-     * Get the subtotal for all items (static method for calculations).
-     */
-    public static function calculateSubtotal($orderDetails)
-    {
-        return $orderDetails->sum(function ($detail) {
-            return $detail->price * $detail->quantity;
-        });
-    }
 }

@@ -40,8 +40,6 @@ class ReviewController extends Controller
 
         if ($request->ajax()) {
             $review->load('user');
-            $avgRating = Book_Review::where('book_id', $request->book_id)->where('status', 'approved')->avg('rating');
-            $reviewsCount = Book_Review::where('book_id', $request->book_id)->where('status', 'approved')->count();
 
             return response()->json([
                 'success' => true,
@@ -56,10 +54,7 @@ class ReviewController extends Controller
                     'user_name' => $review->user->name ?? 'مستخدم',
                     'user_initial' => mb_substr($review->user->name ?? 'م', 0, 1),
                 ],
-                'summary' => [
-                    'avg_rating' => round($avgRating ?? 0, 1),
-                    'reviews_count' => $reviewsCount,
-                ],
+                'summary' => $this->getReviewSummary($request->book_id),
             ]);
         }
 
@@ -68,12 +63,7 @@ class ReviewController extends Controller
 
     public function update(Request $request, Book_Review $review)
     {
-        if (auth()->id() !== $review->user_id) {
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'message' => 'غير مصرح'], 403);
-            }
-            abort(403);
-        }
+        $this->authorizeReviewOwner($request, $review);
 
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
@@ -86,9 +76,6 @@ class ReviewController extends Controller
         ]);
 
         if ($request->ajax()) {
-            $avgRating = Book_Review::where('book_id', $review->book_id)->where('status', 'approved')->avg('rating');
-            $reviewsCount = Book_Review::where('book_id', $review->book_id)->where('status', 'approved')->count();
-
             return response()->json([
                 'success' => true,
                 'message' => 'تم تحديث تقييمك بنجاح.',
@@ -97,10 +84,7 @@ class ReviewController extends Controller
                     'rating' => $review->rating,
                     'comment' => $review->comment,
                 ],
-                'summary' => [
-                    'avg_rating' => round($avgRating ?? 0, 1),
-                    'reviews_count' => $reviewsCount,
-                ],
+                'summary' => $this->getReviewSummary($review->book_id),
             ]);
         }
 
@@ -109,27 +93,16 @@ class ReviewController extends Controller
 
     public function destroy(Request $request, Book_Review $review)
     {
-        if (auth()->id() !== $review->user_id) {
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'message' => 'غير مصرح'], 403);
-            }
-            abort(403);
-        }
+        $this->authorizeReviewOwner($request, $review);
 
         $bookId = $review->book_id;
         $review->delete();
 
         if ($request->ajax()) {
-            $avgRating = Book_Review::where('book_id', $bookId)->where('status', 'approved')->avg('rating') ?? 0;
-            $reviewsCount = Book_Review::where('book_id', $bookId)->where('status', 'approved')->count();
-
             return response()->json([
                 'success' => true,
                 'message' => 'تم حذف تقييمك.',
-                'summary' => [
-                    'avg_rating' => round($avgRating, 1),
-                    'reviews_count' => $reviewsCount,
-                ],
+                'summary' => $this->getReviewSummary($bookId),
             ]);
         }
 
@@ -166,6 +139,24 @@ class ReviewController extends Controller
         }
 
         return back();
+    }
+
+    private function getReviewSummary(int $bookId): array
+    {
+        return [
+            'avg_rating' => round(Book_Review::where('book_id', $bookId)->where('status', 'approved')->avg('rating') ?? 0, 1),
+            'reviews_count' => Book_Review::where('book_id', $bookId)->where('status', 'approved')->count(),
+        ];
+    }
+
+    private function authorizeReviewOwner(Request $request, Book_Review $review): void
+    {
+        if (auth()->id() !== $review->user_id) {
+            if ($request->ajax()) {
+                abort(response()->json(['success' => false, 'message' => 'غير مصرح'], 403));
+            }
+            abort(403);
+        }
     }
 
     // ==================== ADMIN METHODS ====================

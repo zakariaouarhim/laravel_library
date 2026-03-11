@@ -37,8 +37,4 @@ class ShipmentItem extends Model
         return $this->belongsTo(Author::class);
     }
 
-    public function publishingHouse()
-    {
-        return $this->belongsTo(PublishingHouse::class);
-    }
 }

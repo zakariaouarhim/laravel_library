@@ -5,11 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Author;
-use App\Models\BookAuthor;
 use App\Models\PublishingHouse;
-use App\Models\Category;
-use App\Services\BookService;
-use App\Services\APIService;
 
 class PublisherController extends Controller
 {
