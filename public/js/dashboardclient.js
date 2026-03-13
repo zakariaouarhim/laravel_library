@@ -16,11 +16,8 @@
             });
         });
 
-        // Sort functionality
+        // Sort functionality — TODO: implement server-side sorting
         document.getElementById('sortBy').addEventListener('change', function() {
-            const value = this.value;
-            // Add sorting logic here
-            alert('سيتم تفعيل الترتيب قريباً: ' + value);
         });
 
         // Reset filters
@@ -195,7 +192,6 @@
             modal.show();
         })
         .catch(error => {
-            console.error('Error:', error);
             clientDetailsContent.innerHTML = `
                 <div class="alert alert-danger" role="alert">
                     <i class="fas fa-exclamation-circle me-2"></i>
@@ -261,7 +257,6 @@
             editModal.show();
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('خطأ في تحميل بيانات الزبون. يرجى المحاولة مرة أخرى.');
             document.getElementById('editClientForm').style.opacity = '1';
             document.querySelector('#editClientModal .btn-primary').disabled = false;
@@ -316,7 +311,6 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             showAlert('خطأ في حفظ البيانات. يرجى المحاولة مرة أخرى.', 'danger');
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -398,7 +392,6 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             showAlert(error.message || 'خطأ في تعيين كلمة المرور. يرجى المحاولة مرة أخرى.', 'danger');
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -499,10 +492,9 @@
     }
 
 
-        // Delete client
+        // Delete client — TODO: implement server-side deletion
         function deleteClient(id) {
             if (confirm('هل أنت متأكد من حذف هذا الزبون؟')) {
-                alert('حذف الزبون #' + id);
-                // Add delete logic here
+                // TODO: implement DELETE /admin/client/{id}
             }
         }

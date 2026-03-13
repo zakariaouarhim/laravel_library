@@ -79,7 +79,6 @@ function searchBooks() {
             document.getElementById('searchResults').style.display = 'block';
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('حدث خطأ أثناء البحث');
         });
 }
@@ -455,9 +454,7 @@ document.getElementById('addShipmentModal').addEventListener('shown.bs.modal', f
                 document.getElementById('shipmentReference').value = data.reference;
             }
         })
-        .catch(error => {
-            console.error('Error fetching next shipment reference:', error);
-        });
+        .catch(() => {});
 });
 
 //  ==========Open edit modal=============
@@ -508,7 +505,6 @@ function editshipment(shipmentId) {
             modal.show();
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('حدث خطأ أثناء تحميل بيانات الشحنة');
         });
 }
@@ -537,7 +533,6 @@ function deleteItem(shipmentId, itemId) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('حدث خطأ أثناء حذف العنصر');
         });
     }
@@ -588,7 +583,6 @@ function deleteshipment(shipmentId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         alert('حدث خطأ أثناء حذف الشحنة');
         button.disabled = false;
         button.innerHTML = originalContent;
@@ -652,7 +646,6 @@ function updateShipmentStatus(shipmentId, newStatus, successMessage) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         alert('حدث خطأ أثناء تحديث الحالة');
         button.disabled = false;
         button.innerHTML = originalContent;

@@ -106,7 +106,12 @@
       "Bash(for tbl in orders cart hidden_recommendations return_requests reading_goals reading_shelves stock_notifications user_notifications follows review_likes quote_likes)",
       "Bash(for tbl in reviews order_details cart_items checkout_details wishlists)",
       "Bash(grep -rn \"''user''\" app/Models/*.php app/Http/Controllers/*.php)",
-      "Bash(for tbl in authors publishing_houses book_authors shipments shipment_items inventory_logs system_settings)"
+      "Bash(for tbl in authors publishing_houses book_authors shipments shipment_items inventory_logs system_settings)",
+      "Bash(wc -l app/Services/*.php)",
+      "Bash(wc -l c:/laravel/library_fokara/public/js/*.js)",
+      "Bash(for file:*)",
+      "Bash(do basename:*)",
+      "Bash(__NEW_LINE_2180d31b69752080__ echo:*)"
     ],
     "additionalDirectories": [
       "c:\\laravel\\library_fokara"

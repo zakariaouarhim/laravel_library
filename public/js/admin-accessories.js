@@ -65,7 +65,6 @@ function viewAccessory(id) {
         viewContent.innerHTML = content;
     })
     .catch(error => {
-        console.error('Error:', error);
         viewContent.innerHTML = `
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-circle me-2"></i>
@@ -113,7 +112,6 @@ function editAccessory(id) {
         editModal.show();
     })
     .catch(error => {
-        console.error('Error:', error);
         alert('خطأ في تحميل بيانات الإكسسوار');
     });
 }
@@ -139,7 +137,6 @@ function deleteAccessory(id) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('خطأ في حذف الإكسسوار');
         });
     }
@@ -173,7 +170,6 @@ document.getElementById('editAccessoryForm').addEventListener('submit', function
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         alert('خطأ في حفظ البيانات');
     });
 });

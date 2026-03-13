@@ -131,7 +131,6 @@
                 modalContent.innerHTML = content;
             })
             .catch(error => {
-                console.error('Error:', error);
                 modalContent.innerHTML = '<div class="alert alert-danger">خطأ في تحميل البيانات</div>';
             });
         }
@@ -160,7 +159,7 @@
                     location.reload();
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(() => {});
         }
 
         function editOrder(orderId) {

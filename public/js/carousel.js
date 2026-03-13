@@ -8,7 +8,6 @@ class EnhancedCarousel {
         this.indicators = this.container.querySelector('[data-carousel-indicators]');
         
         if (!this.wrapper || !this.prevBtn || !this.nextBtn || !this.indicators) {
-            console.warn('Carousel missing required elements:', element);
             return;
         }
         

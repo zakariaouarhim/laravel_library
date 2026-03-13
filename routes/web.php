@@ -67,7 +67,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/client/{id}', [AdminClientController::class, 'showclient'])->name('client.show');
     Route::put('/client/{id}', [AdminClientController::class, 'update'])->name('client.update');
     Route::post('/client/{id}/reset-password', [AdminClientController::class, 'resetPasswordAdmin'])->name('client.reset-password');
-    Route::resource('client', AdminClientController::class);
+    Route::get('/client', [AdminClientController::class, 'index'])->name('client.index');
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -92,13 +92,10 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
     Route::put('/products/api/{id}', [BookController::class, 'updateProduct'])->name('products.api.update');
 
-    Route::get('/products/{id}', [BookController::class, 'viewProduct']);
-    Route::put('/products/{id}', [BookController::class, 'updateProduct']);
-
     // Search helpers
-    Route::get('/search-book', [BookController::class, 'searchBook']);
-    Route::get('/search-authors', [AuthorController::class, 'search']);
-    Route::get('/search-publishers', [PublisherController::class, 'search']);
+    Route::get('/search-book', [BookController::class, 'searchBook'])->name('search.book');
+    Route::get('/search-authors', [AuthorController::class, 'search'])->name('search.authors');
+    Route::get('/search-publishers', [PublisherController::class, 'search'])->name('search.publishers');
 
     // Shipment management
     Route::get('/Dashbord_Admin/Shipment_Management', [ShipmentController::class, 'index'])->name('Dashbord_Admin.Shipment_Management');
@@ -107,9 +104,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
     Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
     Route::post('/shipments/{shipment}/process', [ShipmentController::class, 'processShipment'])->name('shipments.process');
-    Route::get('/shipments/{shipment}/edit', [ShipmentController::class, 'editShipment']);
+    Route::get('/shipments/{shipment}/edit', [ShipmentController::class, 'editShipment'])->name('shipments.edit');
     Route::put('/shipments/{shipment}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
-    Route::delete('/shipments/{shipment}/items/{item}', [ShipmentController::class, 'destroyItem']);
+    Route::delete('/shipments/{shipment}/items/{item}', [ShipmentController::class, 'destroyItem'])->name('shipments.items.destroy');
     Route::patch('/shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.status');
     Route::delete('/shipments/{shipment}', [ShipmentController::class, 'destroy'])->name('shipments.destroy');
 
@@ -304,7 +301,7 @@ Route::post('/adduser', [AuthController::class, 'adduser'])->name('adduser')->mi
 // Logout via POST to prevent CSRF-based forced logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // GET /logout: redirect to home (no logout — prevents CSRF forced-logout attacks)
-Route::get('/logout', [AuthController::class, 'logoutRedirect']);
+Route::get('/logout', [AuthController::class, 'logoutRedirect'])->name('logout.redirect');
 
 // Password reset
 Route::get('/forgot-password', [PasswordResetController::class, 'showForgotPasswordForm'])

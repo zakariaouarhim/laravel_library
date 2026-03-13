@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             if (callback) callback(false, null);
             showCartToast('حدث خطأ في الاتصال بالخادم', 'error');
         });
@@ -209,7 +208,6 @@ function removeFromCart2(itemId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         showCartToast('حدث خطأ أثناء حذف المنتج. يرجى المحاولة لاحقًا.', 'error');
     });
 }

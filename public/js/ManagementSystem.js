@@ -347,9 +347,6 @@ function updateProduct() {
         formData.append('image', imageFile);
     }
 
-    // Show loading
-    // showLoadingModal();
-
     $.ajax({
         url: `/admin/products/${productId}`,
         type: 'POST',
@@ -369,8 +366,6 @@ function updateProduct() {
                 showAlert('تم تحديث المنتج بنجاح', 'success');
                 loadProducts(currentPage);
             } else {
-                // Handle unexpected success response format
-                console.warn('Unexpected response format:', response);
                 showAlert(response.message || 'تم التحديث ولكن هناك مشكلة في الاستجابة', 'warning');
                 // Still reload products since update might have worked
                 loadProducts(currentPage);
@@ -709,7 +704,6 @@ $('#addproductform').on('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
-    //showLoadingModal();
 
     $.ajax({
         url: $(this).attr('action'),
@@ -801,22 +795,6 @@ $(document).on('keydown', function(e) {
     }
 });
 
-// Auto-save functionality for edit form
-let autoSaveTimeout;
-$('#editProductForm input, #editProductForm textarea, #editProductForm select').on('input change', function() {
-    clearTimeout(autoSaveTimeout);
-    autoSaveTimeout = setTimeout(function() {
-        // Could implement auto-save draft functionality here
-    }, 2000);
-});
-
-// Table row hover effects
-$(document).on('mouseenter', '#productsTable tbody tr', function() {
-    $(this).addClass('table-hover-highlight');
-}).on('mouseleave', '#productsTable tbody tr', function() {
-    $(this).removeClass('table-hover-highlight');
-});
-
 // Bulk actions
 function bulkDelete() {
     updateSelectedProducts();
@@ -885,19 +863,6 @@ function refreshProducts() {
     showAlert('تم تحديث القائمة', 'info', 2000);
 }
 
-// Check for updates every 30 seconds
-setInterval(function() {
-    // Could implement real-time updates here
-    // For now, just refresh if user is idle
-    if (document.hidden === false) {
-        // Refresh only if no modals are open
-        if ($('.modal.show').length === 0) {
-            // Uncomment to enable auto-refresh
-            // loadProducts(currentPage);
-        }
-    }
-}, 30000);
-
 // Handle connection errors gracefully
 $(document).ajaxError(function(event, xhr, settings) {
     if (xhr.status === 419) {
@@ -909,13 +874,3 @@ $(document).ajaxError(function(event, xhr, settings) {
     }
 });
 
-// Service worker registration for offline functionality
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(function(registration) {
-            // SW registered
-        })
-        .catch(function(registrationError) {
-            // SW registration failed
-        });
-}

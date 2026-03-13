@@ -134,7 +134,6 @@ function viewReturnRequest(id) {
         modalContent.innerHTML = content;
     })
     .catch(error => {
-        console.error('Error:', error);
         modalContent.innerHTML = '<div class="alert alert-danger">خطأ في تحميل البيانات</div>';
     });
 }
@@ -167,7 +166,7 @@ function updateReturnRequest(id) {
             location.reload();
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(() => {});
 }
 
 function applyFilters() {

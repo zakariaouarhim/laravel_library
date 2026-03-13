@@ -72,7 +72,6 @@
                 viewContent.innerHTML = content;
             })
             .catch(error => {
-                console.error('Error:', error);
                 viewContent.innerHTML = `
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-circle me-2"></i>
@@ -121,7 +120,6 @@
                 editModal.show();
             })
             .catch(error => {
-                console.error('Error:', error);
                 alert('خطأ في تحميل بيانات المنتج');
             });
         }
@@ -147,7 +145,6 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
                     alert('خطأ في حذف المنتج');
                 });
             }
@@ -181,7 +178,6 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 alert('خطأ في حفظ البيانات');
             });
         });

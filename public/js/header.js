@@ -59,7 +59,6 @@ function showCartModal() {
             new bootstrap.Modal(document.getElementById('cartDetailsModal')).show();
         })
         .catch(error => {
-            console.error('Error:', error);
             showCartToast('حدث خطأ أثناء تحميل السلة');
         });
 }
@@ -96,7 +95,7 @@ function removeFromCart(itemId) {
             alert('حدث خطأ أثناء حذف المنتج');
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(() => {});
 }
 // Sticky scroll behavior is handled in header.blade.php
 

@@ -135,7 +135,6 @@ function viewOrder(orderId) {
         modalContent.innerHTML = content;
     })
     .catch(error => {
-        console.error('Error:', error);
         modalContent.innerHTML = `
             <div class="alert alert-danger" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>
@@ -196,7 +195,6 @@ function updateOrderStatus(orderId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         alert('خطأ في تحديث حالة الطلب');
         button.disabled = false;
         button.innerHTML = '<i class="fas fa-save me-2"></i>حفظ التغييرات';
@@ -212,9 +210,3 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-/**
- * Export Data
- */
-function exportData() {
-    alert('سيتم تصدير البيانات قريباً');
-}

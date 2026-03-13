@@ -42,7 +42,6 @@ function addToCart(bookId, bookTitle, bookPrice, bookImage) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         showCartAlert('حدث خطأ أثناء الإضافة إلى السلة', 'danger');
     });
 }
@@ -155,9 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateCartCount(data.cartCount);
             }
         })
-        .catch(error => {
-            console.error('Error loading cart count:', error);
-        });
+        .catch(() => {});
 });
 
 document.getElementById('cartDetailsModal').addEventListener('hidden.bs.modal', function () {

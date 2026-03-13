@@ -37,7 +37,6 @@ function addToWishlist(bookId) {
         }
     })
     .catch(error => {
-        console.error('Fetch Error Details:', error);
         showToast('حدث خطأ في الشبكة: ' + error.message, 'error');
         button.innerHTML = originalContent;
     })
@@ -82,7 +81,6 @@ function hideRecommendation(bookId) {
         }
     })
     .catch(error => {
-        console.error('Hide recommendation error:', error);
         showToast('حدث خطأ في إخفاء الترشيح', 'error');
     });
 }
