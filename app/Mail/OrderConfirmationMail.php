@@ -3,14 +3,12 @@
 namespace App\Mail;
 
 use App\Models\Order;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderConfirmationMail extends Mailable implements ShouldQueue
+class OrderConfirmationMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public Order $order;
     public string $customerName;

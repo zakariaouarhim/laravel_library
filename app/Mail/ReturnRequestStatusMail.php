@@ -3,14 +3,12 @@
 namespace App\Mail;
 
 use App\Models\ReturnRequest;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ReturnRequestStatusMail extends Mailable implements ShouldQueue
+class ReturnRequestStatusMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public ReturnRequest $returnRequest;
     public string $customerName;

@@ -2,14 +2,12 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ContactAutoReply extends Mailable implements ShouldQueue
+class ContactAutoReply extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public string $customerName;
     public string $subject;

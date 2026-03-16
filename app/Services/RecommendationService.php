@@ -120,7 +120,7 @@ class RecommendationService
             return [
                 'id' => $book->id,
                 'title' => $book->title,
-                'author' => $book->primaryAuthor->name ?? 'مؤلف غير محدد',
+                'author_name' => $book->primaryAuthor->name ?? 'مؤلف غير محدد',
                 'image' => $book->image ? asset($book->image) : asset('images/default-book.jpg'),
                 'rating' => round($book->reviews_avg_rating ?? 0),
                 'category' => $book->category->name ?? ''

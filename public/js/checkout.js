@@ -495,7 +495,14 @@ function enableQuantityInput(itemId) {
 document.addEventListener('DOMContentLoaded', function() {
     const checkoutForm = document.getElementById('checkoutForm');
     if (checkoutForm) {
+        var submitting = false;
         checkoutForm.addEventListener('submit', function(e) {
+            if (submitting) {
+                e.preventDefault();
+                return;
+            }
+            submitting = true;
+
             // Sync all quantity inputs before submission
             document.querySelectorAll('[data-item-id]').forEach(function(itemElement) {
                 const visibleInput = itemElement.querySelector('.quantity-input');
@@ -504,12 +511,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     hiddenInput.value = visibleInput.value;
                 }
             });
-            
+
             // Show loading state
             const submitBtn = this.querySelector('#completeOrder');
             const submitText = submitBtn.querySelector('.submit-text');
             const spinner = submitBtn.querySelector('.spinner-border');
-            
+
             if (submitText && spinner) {
                 submitText.classList.add('d-none');
                 spinner.classList.remove('d-none');

@@ -21,6 +21,9 @@ class CheckoutController extends Controller
         // Double-submit protection
         $sessionToken = session()->pull('checkout_token');
         if (!$sessionToken || $request->input('checkout_token') !== $sessionToken) {
+            Log::warning('Checkout token mismatch — possible double submit', [
+                'had_token' => (bool) $sessionToken,
+            ]);
             return redirect()->route('cart.page')->with('error', 'تم تقديم الطلب بالفعل أو انتهت صلاحية الجلسة. يرجى المحاولة مرة أخرى.');
         }
 
@@ -49,6 +52,7 @@ class CheckoutController extends Controller
 
             $cart = $this->cartService->loadCartForCheckout();
             if (empty($cart)) {
+                Log::warning('Checkout: cart was empty at submit time');
                 return redirect()->back()->with('error', 'السلة فارغة');
             }
 
@@ -70,13 +74,16 @@ class CheckoutController extends Controller
             $this->checkoutService->sendOrderConfirmation($order, $validated['email'] ?? '', $validated['full_name']);
             $this->cartService->clearCart();
 
+            Log::info('Checkout success — redirecting to success page', ['order_id' => $order->id]);
+
             return redirect()->route('success', ['id' => $order->id, 'token' => $order->management_token])
                    ->with('success', 'تم إرسال طلبك بنجاح! سيتم التواصل معك قريباً.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Checkout validation failed', ['errors' => $e->errors()]);
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            Log::error('Checkout submission failed', ['message' => $e->getMessage()]);
+            Log::error('Checkout submission failed', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.');
         }
     }
@@ -100,6 +107,8 @@ class CheckoutController extends Controller
 
     public function success($orderId)
     {
+        Log::info('Success page hit', ['order_id' => $orderId, 'token' => request('token')]);
+
         try {
             $order = Order::with('orderDetails.book')->findOrFail($orderId);
         } catch (\Exception $e) {

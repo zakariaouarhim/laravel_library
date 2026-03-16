@@ -143,7 +143,7 @@ class CheckoutService
 
         try {
             $manageUrl = url('/order/manage?token=' . $order->management_token);
-            Mail::to($email)->queue(new OrderConfirmationMail($order, $fullName, $manageUrl));
+            Mail::to($email)->send(new OrderConfirmationMail($order, $fullName, $manageUrl));
         } catch (\Exception $e) {
             Log::error('Failed to queue order confirmation email', ['error' => $e->getMessage()]);
         }
