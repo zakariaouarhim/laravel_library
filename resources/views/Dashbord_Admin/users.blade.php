@@ -181,7 +181,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 let confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));

@@ -40,6 +40,14 @@ class AppServiceProvider extends ServiceProvider
                return Category::parentWithChildren()->get();
            });
            $view->with('navCategories', $navCategories);
+
+           $wishlistCount = 0;
+           if (auth()->check()) {
+               $wishlistCount = auth()->user()->wishlist()->count();
+           } elseif (session()->has('wishlist')) {
+               $wishlistCount = count(session('wishlist'));
+           }
+           $view->with('wishlistCount', $wishlistCount);
        });
 
        View::composer('Dashbord_Admin.Sidebar', AdminSidebarComposer::class);

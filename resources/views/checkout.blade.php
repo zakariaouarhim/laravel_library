@@ -89,7 +89,9 @@
                                         <div class="d-flex align-items-center mb-3 pb-3 border-bottom" id="element{{ $id }}" data-item-id="{{ $id }}">
                                             <img src="{{ asset($item['image']) }}"
                                                 class="img-fluid rounded me-3"
-                                                style="width: 80px; height: 110px; object-fit: cover;"
+                                                width="80" height="110"
+                                                style="object-fit: cover;"
+                                                loading="lazy"
                                                 onerror="this.src='{{ asset('images/book-placeholder.png') }}'">
                                             <div class="flex-grow-1">
                                                 <h3 class="fs-6 mb-1">{{ $item['title'] }}</h3>
@@ -336,8 +338,8 @@
             freeThreshold: {{ $freeThreshold }}
         };
     </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ asset('js/checkout.js') }}"></script>
-    <script src="{{ asset('js/header.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script src="{{ asset('js/checkout.js') }}" defer></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
 </body>
 </html>

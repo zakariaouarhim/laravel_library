@@ -1,5 +1,5 @@
 @php
-    $approvedReviews = $book->reviews->where('status', 'approved');
+    $approvedReviews = $book->reviewsWithUsers->where('status', 'approved');
     $ratingCount = $approvedReviews->count();
     $avgRating = $approvedReviews->avg('rating') ?? 0;
     $authorName = $book->primaryAuthor?->name ?? $book->author_name ?? null;

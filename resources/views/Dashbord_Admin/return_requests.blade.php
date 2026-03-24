@@ -203,10 +203,10 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js" defer></script>
 
-    <script src="{{ asset('js/dashboard.js') }}"></script>
-    <script src="{{ asset('js/admin-return-requests.js') }}"></script>
+    <script src="{{ asset('js/dashboard.js') }}" defer></script>
+    <script src="{{ asset('js/admin-return-requests.js') }}" defer></script>
 </body>
 </html>

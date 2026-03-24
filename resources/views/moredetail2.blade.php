@@ -255,7 +255,7 @@
                     <button class="v2-tab-btn active" data-target="v2-desc"><i class="fas fa-align-right"></i> الوصف</button>
                     <button class="v2-tab-btn" data-target="v2-details"><i class="fas fa-list-ul"></i> تفاصيل</button>
                     <button class="v2-tab-btn" data-target="v2-reviews"><i class="fas fa-star"></i> التقييمات @if($book->reviews_count > 0)<span class="v2-tab-badge">{{ $book->reviews_count }}</span>@endif</button>
-                    <button class="v2-tab-btn" data-target="v2-quotes"><i class="fas fa-quote-right"></i> اقتباسات @if(isset($book->quotes) && $book->quotes->count() > 0)<span class="v2-tab-badge">{{ $book->quotes->count() }}</span>@endif</button>
+                    <button class="v2-tab-btn" data-target="v2-quotes"><i class="fas fa-quote-right"></i> اقتباسات @if(isset($book->quotesWithUsers) && $book->quotesWithUsers->count() > 0)<span class="v2-tab-badge">{{ $book->quotesWithUsers->count() }}</span>@endif</button>
                     <button class="v2-tab-btn" data-target="v2-author"><i class="fas fa-user-edit"></i> عن الكاتب</button>
                     @if($book->isbn)
                     <button class="v2-tab-btn" data-target="v2-preview"><i class="fas fa-book-open"></i> معاينة</button>
@@ -287,7 +287,7 @@
                     <!-- Reviews -->
                     <div class="v2-tab-pane" id="v2-reviews">
                         @php
-                            $approvedReviews = $book->reviews->where('status', 'approved');
+                            $approvedReviews = $book->reviewsWithUsers->where('status', 'approved');
                             $reviewsList = $approvedReviews->sortByDesc('created_at');
                             $avgRating = $approvedReviews->avg('rating') ?? 0;
                             $totalReviews = $approvedReviews->count();
@@ -391,7 +391,7 @@
                         </div>
 
                         @auth
-                            @php $userReview = $book->reviews->where('user_id', auth()->id())->first(); @endphp
+                            @php $userReview = $book->reviewsWithUsers->where('user_id', auth()->id())->first(); @endphp
                             <div class="v2-form-card" id="reviewFormCard" style="{{ $userReview ? 'display:none' : '' }}">
                                 <h5><i class="fas fa-star me-2"></i>أضف تقييمك</h5>
                                 <form id="reviewForm">
@@ -436,9 +436,9 @@
                         <div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i>{{ session('quote_success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                         @endif
 
-                        @if(isset($book->quotes) && $book->quotes->count() > 0)
+                        @if(isset($book->quotesWithUsers) && $book->quotesWithUsers->count() > 0)
                         <div class="v2-quotes-grid">
-                            @foreach($book->quotes->sortByDesc('created_at') as $quote)
+                            @foreach($book->quotesWithUsers->sortByDesc('created_at') as $quote)
                             <div class="v2-quote-card">
                                 <i class="fas fa-quote-right v2-quote-icon"></i>
                                 <p class="v2-quote-text">"{{ $quote->text }}"</p>
@@ -489,7 +489,7 @@
                         <div class="v2-author-card">
                             <div class="v2-author-avatar">
                                 @if(isset($book->primaryAuthor) && $book->primaryAuthor && $book->primaryAuthor->profile_image)
-                                    <img src="{{ Storage::url($book->primaryAuthor->profile_image) }}" alt="{{ $book->author_name }}">
+                                    <img src="{{ Storage::url($book->primaryAuthor->profile_image) }}" alt="{{ $book->author_name }}" width="80" height="80" loading="lazy">
                                 @else
                                     <div class="v2-avatar v2-avatar-lg">{{ mb_substr($book->author_name ?? 'م', 0, 1, 'UTF-8') }}</div>
                                 @endif
@@ -523,7 +523,7 @@
                             <div class="v2-other-books-list">
                                 @foreach($authorBooks->take(6) as $otherBook)
                                 <a href="{{ route('moredetail2.page', $otherBook->id) }}" class="v2-other-book">
-                                    <img src="{{ asset($otherBook->image) }}" alt="{{ $otherBook->title }}">
+                                    <img src="{{ asset($otherBook->image) }}" alt="{{ $otherBook->title }}" width="80" height="112" loading="lazy">
                                     <span>{{ Str::limit($otherBook->title, 30) }}</span>
                                 </a>
                                 @endforeach
@@ -562,11 +562,11 @@
         @include('footer')
     </footer>
 
-    <script src="{{ asset('js/moredetail.js') }}"></script>
-    <script src="{{ asset('js/header.js') }}"></script>
-    <script src="{{ asset('js/carousel.js') }}"></script>
-    <script src="{{ asset('js/card.js') }}"></script>
-    <script src="{{ asset('js/scripts.js') }}"></script>
+    <script src="{{ asset('js/moredetail.js') }}" defer></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
+    <script src="{{ asset('js/carousel.js') }}" defer></script>
+    <script src="{{ asset('js/card.js') }}" defer></script>
+    <script src="{{ asset('js/scripts.js') }}" defer></script>
 
     @auth
     <script>

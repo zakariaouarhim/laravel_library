@@ -301,7 +301,7 @@
                                             <td>
                                                 @if($item->book)
                                                     <div class="d-flex align-items-center">
-                                                        <img src="{{ asset($item->book->image ?? 'images/placeholder.jpg') }}" alt="" class="book-thumb">
+                                                        <img src="{{ asset($item->book->image ?? 'images/placeholder.jpg') }}" alt="" class="book-thumb" width="35" height="50" loading="lazy">
                                                         <span>{{ Str::limit($item->book->title, 35) }}</span>
                                                     </div>
                                                 @else
@@ -413,8 +413,8 @@
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
 
 <script>
     const monthLabels = [

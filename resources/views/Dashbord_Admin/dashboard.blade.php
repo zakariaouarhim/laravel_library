@@ -147,7 +147,7 @@
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 10px;">
                                             @if($book->image)
-                                            <img src="{{ asset('storage/' . $book->image) }}" alt="" style="width: 35px; height: 45px; object-fit: cover; border-radius: 4px;">
+                                            <img src="{{ asset('storage/' . $book->image) }}" alt="" width="35" height="45" style="object-fit: cover; border-radius: 4px;" loading="lazy">
                                             @endif
                                             <span>{{ $book->title }}</span>
                                         </div>
@@ -256,10 +256,10 @@
     </div>
 </div>
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
     
-    <script src="{{ asset('js/dashboard.js') }}"></script> 
+    <script src="{{ asset('js/dashboard.js') }}" defer></script> 
     <script>
         // Revenue Chart - Weekly
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');

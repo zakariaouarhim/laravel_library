@@ -82,7 +82,7 @@
                 <div class="author-card">
                     <a href="{{ route('author.show', $author->id) }}" class="author-card-avatar">
                         @if($author->profile_image)
-                            <img src="{{ asset('storage/' . $author->profile_image) }}" alt="{{ $author->name }}">
+                            <img src="{{ asset('storage/' . $author->profile_image) }}" alt="{{ $author->name }}" width="120" height="120" loading="lazy">
                         @else
                             <div class="author-card-placeholder">
                                 <span>{{ mb_substr($author->name, 0, 1) }}</span>
@@ -196,7 +196,7 @@
             authors.forEach(author => {
                 const firstLetter = author.name ? author.name.charAt(0) : '?';
                 const avatarHtml = author.profile_image
-                    ? `<img src="${storageUrl}/${author.profile_image}" alt="${author.name}">`
+                    ? `<img src="${storageUrl}/${author.profile_image}" alt="${author.name}" width="120" height="120" loading="lazy">`
                     : `<div class="author-card-placeholder"><span>${firstLetter}</span></div>`;
 
                 const nationalityHtml = author.nationality

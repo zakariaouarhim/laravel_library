@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -50,8 +51,8 @@ class AdminCategoryController extends Controller
         }
 
         if ($request->hasFile('categorie_image')) {
-            $validated['categorie_image'] = $request->file('categorie_image')
-                ->store('categories', 'public');
+            $validated['categorie_image'] = app(ImageService::class)
+                ->processCategoryImage($request->file('categorie_image'));
         }
 
         Category::create($validated);
@@ -99,11 +100,8 @@ class AdminCategoryController extends Controller
         }
 
         if ($request->hasFile('categorie_image')) {
-            if ($category->categorie_image) {
-                Storage::disk('public')->delete($category->categorie_image);
-            }
-            $validated['categorie_image'] = $request->file('categorie_image')
-                ->store('categories', 'public');
+            $validated['categorie_image'] = app(ImageService::class)
+                ->processCategoryImage($request->file('categorie_image'), $category->categorie_image);
         } else {
             // Keep existing image; don't overwrite with null
             unset($validated['categorie_image']);

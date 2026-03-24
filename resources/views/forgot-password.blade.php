@@ -15,7 +15,7 @@
         <!-- Logo -->
         <div class="logo-container text-center my-4">
             <a href="{{ route('index.page') }}">
-                <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة" class="img-fluid">
+                <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة" class="img-fluid" width="180" height="60">
             </a>
         </div>
 
@@ -86,6 +86,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 </body>
 </html>

@@ -259,7 +259,7 @@
 
 <div id="toast-container" style="position:fixed;bottom:1.5rem;left:1.5rem;z-index:9999;"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 

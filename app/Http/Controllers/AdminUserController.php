@@ -33,11 +33,15 @@ class AdminUserController extends Controller
         }
 
         $users       = $query->latest()->paginate(15);
-        $totalUsers  = UserModel::where('role', 'user')->count();
-        $totalAdmins = UserModel::where('role', 'admin')->count();
-        $newThisMonth = UserModel::whereIn('role', ['user', 'admin'])
-                            ->where('created_at', '>=', Carbon::now()->startOfMonth())
-                            ->count();
+        $userStats = UserModel::selectRaw("
+            SUM(CASE WHEN role = 'user' THEN 1 ELSE 0 END) as total_users,
+            SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as total_admins,
+            SUM(CASE WHEN role IN ('user','admin') AND created_at >= ? THEN 1 ELSE 0 END) as new_this_month
+        ", [Carbon::now()->startOfMonth()])->first();
+
+        $totalUsers = (int) $userStats->total_users;
+        $totalAdmins = (int) $userStats->total_admins;
+        $newThisMonth = (int) $userStats->new_this_month;
 
         return view('Dashbord_Admin.users', compact('users', 'totalUsers', 'totalAdmins', 'newThisMonth'));
     }

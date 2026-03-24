@@ -82,7 +82,7 @@
                 <div class="publisher-card">
                     <a href="{{ route('publisher.show', $publisher->id) }}" class="publisher-card-logo">
                         @if($publisher->logo)
-                            <img src="{{ asset('storage/' . $publisher->logo) }}" alt="{{ $publisher->name }}">
+                            <img src="{{ asset('storage/' . $publisher->logo) }}" alt="{{ $publisher->name }}" width="120" height="120" loading="lazy">
                         @else
                             <div class="publisher-card-placeholder">
                                 <i class="fas fa-building"></i>
@@ -191,7 +191,7 @@
             const isAuth = document.querySelector('meta[name="csrf-token"]') !== null;
             publishers.forEach(pub => {
                 const logoHtml = pub.logo
-                    ? `<img src="${storageUrl}/${pub.logo}" alt="${pub.name}">`
+                    ? `<img src="${storageUrl}/${pub.logo}" alt="${pub.name}" width="120" height="120" loading="lazy">`
                     : `<div class="publisher-card-placeholder"><i class="fas fa-building"></i></div>`;
 
                 const countryHtml = pub.country

@@ -26,18 +26,16 @@ class ProfileController extends Controller
         $user = auth()->user();
         $userId = auth()->id();
         $reviews = Book_Review::where('user_id', $userId)
-                            ->with('book')
+                            ->with('book.primaryAuthor')
                             ->latest()
                             ->get();
-        $lastReview = Book_Review::where('user_id', $userId)
-                         ->with('book')
-                         ->latest()
-                         ->first();
-        $lastWishlistBook = auth()->user()
+        $lastReview = $reviews->first();
+        $WishlistBook = auth()->user()
             ->wishlist()
+            ->with('primaryAuthor')
             ->latest('pivot_created_at')
-            ->first();
-        $wishlist = auth()->user()->wishlist();
+            ->get();
+        $lastWishlistBook = $WishlistBook->first();
         $booksRead = Book_Review::where('user_id', $userId)
             ->where('is_read', 1)
             ->with('book')
@@ -50,19 +48,13 @@ class ProfileController extends Controller
         $target = $readingGoal?->target ?? 12;
         $progressPercent = min(100, intval(($booksRead / $target) * 100));
         $recommendations = $this->recommendationService->getRecommendations($userId);
-        $wishlistBookIds = auth()->check()
-            ? auth()->user()->wishlist()->pluck('books.id')->toArray()
-            : [];
+        $wishlistBookIds = $WishlistBook->pluck('id')->toArray();
         $quotes = Quote::where('user_id', $userId)
                             ->with('book')
                             ->latest()
                             ->get();
         $lastQuote = auth()->user()->latestQuote;
 
-        $WishlistBook = auth()->user()
-            ->wishlist()
-            ->latest('pivot_created_at')
-            ->get();
         $OrderNumber = Order::where('user_id', $userId)->count();
 
         $userFollows = Follow::where('user_id', $userId)->get();

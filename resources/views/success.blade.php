@@ -139,7 +139,7 @@
     @include('footer')
 
     
-    <script src="{{ asset('js/header.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
     <script>
         // Add some interactive elements
         document.addEventListener('DOMContentLoaded', function() {

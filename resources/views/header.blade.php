@@ -29,7 +29,7 @@
         <div class="navbar-inner">
             <!-- Logo -->
             <a class="navbar-logo" href="{{ route('index.page') }}">
-                <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة">
+                <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة" width="140" height="50">
                 
             </a>
 
@@ -58,14 +58,6 @@
                 <!-- Wishlist -->
                 <a href="{{ route('wishlist.index') }}" class="nav-action-btn" title="قائمة الأمنيات">
                     <i class="fas fa-heart"></i>
-                    @php
-                        $wishlistCount = 0;
-                        if(auth()->check()) {
-                            $wishlistCount = auth()->user()->wishlist()->count();
-                        } elseif(session()->has('wishlist')) {
-                            $wishlistCount = count(session('wishlist'));
-                        }
-                    @endphp
                     @if($wishlistCount > 0)
                     <span class="action-badge wishlist-badge">{{ $wishlistCount }}</span>
                     @endif
@@ -218,7 +210,7 @@
 <!-- Mobile Slide Menu -->
 <div class="mobile-slide-menu" id="mobileMenu">
     <div class="mobile-menu-header">
-        <img src="{{ asset('images/logo.svg') }}" alt="شعار المكتبة">
+        <img src="{{ asset('images/logo.svg') }}" alt="شعار المكتبة" width="40" height="40">
         <button class="mobile-menu-close" id="mobileMenuClose"><i class="fas fa-times"></i></button>
     </div>
 
@@ -244,7 +236,7 @@
 </div>
 
 <!-- Bootstrap JS and Icons -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
 <script>
@@ -253,6 +245,6 @@ window.loginUrl   = "{{ route('login2.page') }}";
 </script>
 
 @if(session('is_logged_in'))
-<script src="{{ asset('js/notifications.js') }}"></script>
+<script src="{{ asset('js/notifications.js') }}" defer></script>
 @endif
-<script src="{{ asset('js/navigation.js') }}"></script>
+<script src="{{ asset('js/navigation.js') }}" defer></script>

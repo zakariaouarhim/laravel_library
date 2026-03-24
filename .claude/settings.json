@@ -111,10 +111,26 @@
       "Bash(wc -l c:/laravel/library_fokara/public/js/*.js)",
       "Bash(for file:*)",
       "Bash(do basename:*)",
-      "Bash(__NEW_LINE_2180d31b69752080__ echo:*)"
+      "Bash(__NEW_LINE_2180d31b69752080__ echo:*)",
+      "Bash(find /c/laravel/library_fokara -type f \\\\\\(-name *.php -o -name *.log -o -name *.txt \\\\\\))",
+      "Bash(sqlite3 /c/laravel/library_fokara/database/database.sqlite \".schema quotes\")",
+      "Bash(find c:/laravel/library_fokara/public/images -type f \\\\\\(-iname *.jpg -o -iname *.jpeg -o -iname *.png -o -iname *.gif -o -iname *.svg -o -iname *.webp -o -iname *.ico \\\\\\))",
+      "Bash(find c:/laravel/library_fokara/public/images -type f \\\\\\(-iname *.jpg -o -iname *.jpeg -o -iname *.png -o -iname *.webp \\\\\\))",
+      "Bash(find c:/laravel/library_fokara/public/images -type f \\\\\\(-iname *.jpg -o -iname *.jpeg -o -iname *.png -o -iname *.webp -o -iname *.svg -o -iname *.ico -o -iname *.gif \\\\\\))",
+      "Bash(find c:/laravel/library_fokara/storage/app/public -type f \\\\\\(-iname *.jpg -o -iname *.jpeg -o -iname *.png -o -iname *.webp \\\\\\))",
+      "Bash(2)",
+      "Read(//c/laravel/library_fokara/{print $5 \"\"\"\"\"\"\"\"/**)",
+      "Bash(find c:/laravel/library_fokara/public/images/books -type f \\\\\\(-iname *.jpg -o -iname *.jpeg \\\\\\))",
+      "Bash(ls -lhS c:/laravel/library_fokara/public/images/*.svg c:/laravel/library_fokara/public/images/categories/*.svg)",
+      "Bash(while read:*)",
+      "Bash(do sed:*)",
+      "Bash(ls -lh /c/laravel/library_fokara/public/images/*.svg)",
+      "Bash(ls -lhS /c/laravel/library_fokara/public/images/*.svg)",
+      "Bash(xargs ls:*)"
     ],
     "additionalDirectories": [
-      "c:\\laravel\\library_fokara"
+      "c:\\laravel\\library_fokara",
+      "C:\\laravel\\library_fokara\\public\\images"
     ]
   }
 }

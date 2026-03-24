@@ -17,7 +17,7 @@
         <div class="login-banner">
             <div class="banner-content">
                 <a href="{{ route('index.page') }}">
-                    <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة" class="banner-logo">
+                    <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة" class="banner-logo" width="180" height="60">
                 </a>
                 <h1 class="banner-title">مرحباً بك في مكتبة الفقراء</h1>
                 <p class="banner-subtitle">اكتشف عالماً من الكتب والمعرفة</p>
@@ -32,7 +32,7 @@
             <!-- Mobile Logo -->
             <div class="mobile-logo">
                 <a href="{{ route('index.page') }}">
-                    <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة">
+                    <img src="{{ asset('images/Logo2Black.svg') }}" alt="شعار المكتبة" width="140" height="50">
                 </a>
             </div>
 
@@ -157,7 +157,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/login.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/login.js') }}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 </body>
 </html>

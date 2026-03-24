@@ -27,7 +27,10 @@ class BookController extends Controller
     public function show($id)
     {
         // Get the book with its category, category's parent, and author relationship
-        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
+        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse', 'reviewsWithUsers', 'quotesWithUsers'])
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
+            ->findOrFail($id);
 
         // Get all authors (cached 1 hour)
         $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
@@ -41,14 +44,16 @@ class BookController extends Controller
         // Get other books by the same author
         $authorBooks = collect();
         if ($primaryAuthor) {
-            $authorBooks = Book::where('author_id', $primaryAuthor->id)
+            $authorBooks = Book::with('primaryAuthor')
+                ->where('author_id', $primaryAuthor->id)
                 ->where('id', '!=', $book->id)
                 ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
                 ->get();
         } else {
             // If no author relationship, try to find books by author name
-            $authorBooks = Book::whereHas('primaryAuthor', fn($q) => $q->where('id', $book->author_id))
+            $authorBooks = Book::with('primaryAuthor')
+                ->whereHas('primaryAuthor', fn($q) => $q->where('id', $book->author_id))
                 ->where('id', '!=', $book->id)
                 ->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')
                 ->take(10)
@@ -127,16 +132,19 @@ class BookController extends Controller
 
     private function getBookPageData($id)
     {
-        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
+        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse', 'reviewsWithUsers', 'quotesWithUsers'])
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
+            ->findOrFail($id);
         $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
         $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
         $primaryAuthor = $book->primaryAuthor;
 
         $authorBooks = collect();
         if ($primaryAuthor) {
-            $authorBooks = Book::where('author_id', $primaryAuthor->id)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
+            $authorBooks = Book::with('primaryAuthor')->where('author_id', $primaryAuthor->id)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
         } else {
-            $authorBooks = Book::whereHas('primaryAuthor', fn($q) => $q->where('id', $book->author_id))->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
+            $authorBooks = Book::with('primaryAuthor')->whereHas('primaryAuthor', fn($q) => $q->where('id', $book->author_id))->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
         }
 
         $bookCatIds = $book->categories->pluck('id')->toArray();
@@ -200,7 +208,7 @@ class BookController extends Controller
         $status = $request->query('status', '');
 
         // Start query
-        $query = Book::with('category');
+        $query = Book::with(['category', 'primaryAuthor', 'publishingHouse']);
 
         // Apply search filter (title, author, ISBN)
         if (!empty($search)) {
@@ -254,7 +262,7 @@ class BookController extends Controller
     public function getProductById($id)
 {
     try {
-        $product = Book::with('category')->find($id);
+        $product = Book::with(['category', 'primaryAuthor', 'publishingHouse'])->find($id);
 
         if ($product) {
             return response()->json([
@@ -483,55 +491,46 @@ public function searchResults(Request $request)
     $categories = Category::whereNull('parent_id')->with('children')->get();
     $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
 
-    // 1. Search
-    $books = $this->searchService->search($query);
-    if ($books->isNotEmpty()) {
-        $books->load('categories');
-    }
+    // 1. Build search query (no execution yet)
+    $builder = $this->searchService->searchQuery($query);
+    $builder->with(['primaryAuthor', 'publishingHouse', 'categories', 'category']);
 
-    // 2. Apply filters
-    if ($categoryId) {
-        $books = $books->filter(fn($b) => $b->categories->contains('id', (int) $categoryId));
-    }
-    if ($request->has('publishers')) {
-        $publisherIds = collect($request->input('publishers'))->map(fn($v) => (int) $v);
-        $books = $books->whereIn('publishing_house_id', $publisherIds);
-    }
-    if ($request->filled('language')) {
-        $books = $books->where('language', $request->input('language'));
-    }
-    if ($request->filled('price_min')) {
-        $books = $books->where('price', '>=', (float) $request->input('price_min'));
-    }
-    if ($request->filled('price_max')) {
-        $books = $books->where('price', '<=', (float) $request->input('price_max'));
-    }
+    // 2. Apply DB-level filters
+    $builder = $this->applySearchFilters($builder, $request);
 
-    // 3. Sort
-    $books = match ($sort) {
-        'newest'     => $books->sortByDesc('created_at')->values(),
-        'price_asc'  => $books->sortBy('price')->values(),
-        'price_desc' => $books->sortByDesc('price')->values(),
-        'title'      => $books->sortBy('title')->values(),
-        default      => $books->values(),
+    // 3. Sort at DB level
+    $builder = match ($sort) {
+        'newest'     => $builder->orderByDesc('created_at'),
+        'price_asc'  => $builder->orderBy('price'),
+        'price_desc' => $builder->orderByDesc('price'),
+        'title'      => $builder->orderBy('title'),
+        default      => $builder->orderByDesc('created_at'),
     };
 
-    // 4. Related books
-    $relatedBooks = $this->searchService->getRelatedBooks($books);
-    $totalCount = $books->count() + $relatedBooks->count();
+    // 4. Check if main query has results; if not, fall back to n-gram
+    $totalSearchCount = $builder->count();
+    if ($totalSearchCount === 0 && $query) {
+        $builder = $this->searchService->ngramSearchQuery($query);
+        $builder->with(['primaryAuthor', 'publishingHouse', 'categories', 'category']);
+        $builder = $this->applySearchFilters($builder, $request);
+        $builder = match ($sort) {
+            'newest'     => $builder->orderByDesc('created_at'),
+            'price_asc'  => $builder->orderBy('price'),
+            'price_desc' => $builder->orderByDesc('price'),
+            'title'      => $builder->orderBy('title'),
+            default      => $builder->orderByDesc('created_at'),
+        };
+        $totalSearchCount = $builder->count();
+    }
 
-    // 5. Paginate the collection
-    $perPage = 12;
-    $page = $request->input('page', 1);
-    $paginatedBooks = new \Illuminate\Pagination\LengthAwarePaginator(
-        $books->forPage($page, $perPage)->values(),
-        $books->count(),
-        $perPage,
-        $page,
-        ['path' => $request->url(), 'query' => $request->query()]
-    );
+    // 5. DB-level pagination
+    $paginatedBooks = $builder->paginate(12)->appends($request->query());
 
-    // 6. Related categories
+    // 6. Related books (from current page results)
+    $relatedBooks = $this->searchService->getRelatedBooks($paginatedBooks->getCollection());
+    $totalCount = $totalSearchCount + $relatedBooks->count();
+
+    // 7. Related categories
     $relatedCategories = collect();
     if ($categoryId) {
         $relatedCategories = $this->searchService->relatedCategories($categoryId);
@@ -540,28 +539,27 @@ public function searchResults(Request $request)
         $relatedCategories = $this->searchService->popularCategories();
     }
 
-    // 7. Detect primary category from results and reorder sidebar
-    $primaryCategoryId = $books->flatMap(fn($b) => $b->categories->pluck('id'))
+    // 8. Detect primary category from current page and reorder sidebar
+    $primaryCategoryId = $paginatedBooks->getCollection()
+        ->flatMap(fn($b) => $b->categories->pluck('id'))
         ->countBy()
         ->sortDesc()
         ->keys()
         ->first();
 
-    // Find the parent category ID (in case primaryCategoryId is a child)
     $primaryParentId = null;
     if ($primaryCategoryId) {
         $primaryCat = Category::find($primaryCategoryId);
         $primaryParentId = $primaryCat?->parent_id ?? $primaryCategoryId;
     }
 
-    // Reorder: put the primary parent category first
     if ($primaryParentId) {
         $categories = $categories->sortByDesc(fn($cat) => $cat->id == $primaryParentId)->values();
     }
 
     return view('search-results', [
         'books'              => $paginatedBooks,
-        'allBooksCount'      => $books->count(),
+        'allBooksCount'      => $totalSearchCount,
         'query'              => $query,
         'relatedBooks'       => $relatedBooks,
         'count_relatedBooks' => $totalCount,
@@ -571,6 +569,27 @@ public function searchResults(Request $request)
         'primaryParentId'    => $primaryParentId,
     ]);
 }
+
+private function applySearchFilters($builder, Request $request)
+{
+    if ($request->input('category')) {
+        $builder->whereHas('categories', fn($q) => $q->where('categories.id', (int) $request->input('category')));
+    }
+    if ($request->has('publishers')) {
+        $builder->whereIn('publishing_house_id', $request->input('publishers'));
+    }
+    if ($request->filled('language')) {
+        $builder->where('language', $request->input('language'));
+    }
+    if ($request->filled('price_min')) {
+        $builder->where('price', '>=', (float) $request->input('price_min'));
+    }
+    if ($request->filled('price_max')) {
+        $builder->where('price', '<=', (float) $request->input('price_max'));
+    }
+    return $builder;
+}
+
 public function searchBooksAjax(Request $request)
 {
     $request->validate(['query' => 'nullable|string|max:200']);
@@ -594,17 +613,19 @@ public function searchBooksAjax(Request $request)
         // Get all active publishing houses (cached 1 hour)
         $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
 
-        // Get latest books with their relationships loaded (limited for performance)
-        $books = Book::with([
-            'primaryAuthor',        // Load primary author via author_id
-            'authors',              // Load all authors via many-to-many as backup
-            'publishingHouse',      // Load publishing house
-            'category'              // Load category
-        ])->withCount('reviews')
-          ->withAvg('reviews as reviews_avg_rating', 'rating')
-          ->latest()
-          ->limit(20)
-          ->get();
+        // Get latest books with their relationships loaded (cached 5 min)
+        $books = Cache::remember('latest_books', 300, function () {
+            return Book::with([
+                'primaryAuthor',
+                'authors',
+                'publishingHouse',
+                'category'
+            ])->withCount('reviews')
+              ->withAvg('reviews as reviews_avg_rating', 'rating')
+              ->latest()
+              ->limit(20)
+              ->get();
+        });
         $popularBooks = Cache::remember('popular_books', 1800, function () {
             return Book::select(
                 'books.*',
@@ -830,7 +851,7 @@ public function searchBooksAjax(Request $request)
         $search = $request->search;
         $categoryId = $request->category;
 
-        $query = Book::with('category');
+        $query = Book::with(['category', 'primaryAuthor', 'publishingHouse']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -873,7 +894,7 @@ public function searchBooksAjax(Request $request)
         ));
     }
     public function viewProduct($id){
-        $product = Book::with('categories')->findOrFail($id);
+        $product = Book::with(['categories', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
 
         return response()->json($product);
     }

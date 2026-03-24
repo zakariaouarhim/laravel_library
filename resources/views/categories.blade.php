@@ -105,7 +105,7 @@
     @include('footer')
 
     <!-- JS -->
-    <script src="{{ asset('js/header.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
     <script>
         function toggleChildren(event, id) {
             event.preventDefault();

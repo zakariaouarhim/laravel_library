@@ -155,7 +155,7 @@
                                     <td class="text-center">
                                         @if($child->categorie_image)
                                             <img src="{{ asset('storage/' . $child->categorie_image) }}"
-                                                 alt="{{ $child->name }}" class="cat-img">
+                                                 alt="{{ $child->name }}" class="cat-img" width="40" height="40" loading="lazy">
                                         @else
                                             <span class="text-muted">—</span>
                                         @endif
@@ -341,7 +341,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 

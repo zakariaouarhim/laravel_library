@@ -278,8 +278,8 @@
                                             </div>
                                             <div class="flex-grow-1">
                                                 <div class="fw-bold">{{ $quote->book->title }}</div>
-                                                <div class="fst-italic mb-2">"{{ $quote['text'] }}"</div>
-                                                <div class="text-muted small">{{ $quote['date'] }}</div>
+                                                <div class="fst-italic mb-2">"{{ $quote->text }}"</div>
+                                                <div class="text-muted small">{{ $quote->created_at->diffForHumans() }}</div>
                                             </div>
                                         </div>
                                     @endforeach
@@ -315,22 +315,20 @@
                                         @foreach($WishlistBook as $book)
                                             <div class="col-md-6 mb-4">
                                                 <div class="book-card d-flex align-items-start">
-                                                    <img src="{{ asset($book['image'] ?? 'images/book-placeholder.png') }}"
-                                                        alt="{{ $book['title'] ?? 'صورة كتاب' }}"
+                                                    <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}"
+                                                        alt="{{ $book->title ?? 'صورة كتاب' }}"
                                                         loading="lazy" width="50" height="70"
                                                         class="book-thumb me-3">
                                                     <div class="p-2 flex-fill">
-                                                        <h6 class="fw-bold mb-1">{{ $book['title'] }}</h6>
-                                                        <p class="text-muted small mb-2">{{ $book['author_name'] ?? 'مؤلف غير معروف' }}</p>
+                                                        <h6 class="fw-bold mb-1">{{ $book->title }}</h6>
+                                                        <p class="text-muted small mb-2">{{ $book->author_name ?? 'مؤلف غير معروف' }}</p>
 
-                                                        <small class="text-muted">التقدم في القراءة</small>
-                                                        <div class="reading-progress">
-                                                            <div class="reading-progress-bar" style="width: {{ $book['progress'] ?? 0 }}%"></div>
-                                                        </div>
-                                                        <small class="text-muted">{{ $book['progress'] ?? 0 }}%</small>
+                                                        @if($book->price)
+                                                        <span class="text-primary fw-bold">{{ number_format($book->price, 2) }} د.م</span>
+                                                        @endif
 
                                                         <div class="d-flex justify-content-between align-items-center mt-2">
-                                                            <span class="badge bg-{{ $book['status_color'] ?? 'secondary' }}">{{ $book['status'] ?? 'غير محدد' }}</span>
+                                                            <small class="text-muted">{{ $book->pivot->created_at ? $book->pivot->created_at->diffForHumans() : '' }}</small>
                                                             <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
                                                         </div>
                                                     </div>
@@ -708,8 +706,8 @@
     
     <!-- Scripts -->
     
-    <script src="{{ asset('js/header.js') }}"></script>
-    <script src="{{ asset('js/account.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
+    <script src="{{ asset('js/account.js') }}" defer></script>
     
     <script>
         // Initialize tooltips

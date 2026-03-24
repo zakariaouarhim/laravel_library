@@ -27,9 +27,10 @@ class CheckoutService
     public function validateStock(array $cart): void
     {
         $outOfStock = [];
+        $books = Book::whereIn('id', array_keys($cart))->get()->keyBy('id');
 
         foreach ($cart as $id => $item) {
-            $book = Book::find($id);
+            $book = $books->get($id);
 
             if (!$book) {
                 $outOfStock[] = $item['title'] . ' (لم يعد متوفراً)';

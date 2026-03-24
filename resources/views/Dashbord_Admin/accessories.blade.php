@@ -127,7 +127,7 @@
                                     <td>
                                         <div class="product-image-cell">
                                             @if($accessory->image)
-                                                <img src="{{ asset('/' . $accessory->image) }}" alt="{{ $accessory->title }}" class="product-image">
+                                                <img src="{{ asset('/' . $accessory->image) }}" alt="{{ $accessory->title }}" class="product-image" width="60" height="60" loading="lazy">
                                             @else
                                                 <div style="width: 60px; height: 60px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-bookmark" style="color: #bdc3c7;"></i>
@@ -388,7 +388,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/admin-accessories.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="{{ asset('js/admin-accessories.js') }}" defer></script>
 </body>
 </html>

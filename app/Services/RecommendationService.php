@@ -26,21 +26,23 @@ class RecommendationService
 
         $excludeIds = array_unique(array_merge($reviewedBookIds, $wishlistBookIds));
 
-        // Categories from highly rated reviews
-        $reviewCategories = Book_Review::where('user_id', $userId)
-            ->where('rating', '>=', 4)
-            ->with('book.category')
-            ->get()
-            ->pluck('book.category.id')
-            ->filter()->unique()->values();
-
-        // Categories from wishlist
-        $wishlistCategories = DB::table('wishlists')
-            ->join('books', 'wishlists.book_id', '=', 'books.id')
-            ->where('wishlists.user_id', $userId)
+        // Categories from highly rated reviews + wishlist (single UNION query)
+        $allCategories = DB::table('reviews')
+            ->join('books', 'reviews.book_id', '=', 'books.id')
+            ->where('reviews.user_id', $userId)
+            ->where('reviews.rating', '>=', 4)
             ->whereNotNull('books.category_id')
-            ->pluck('books.category_id')
-            ->unique()->values();
+            ->select('books.category_id')
+            ->union(
+                DB::table('wishlists')
+                    ->join('books', 'wishlists.book_id', '=', 'books.id')
+                    ->where('wishlists.user_id', $userId)
+                    ->whereNotNull('books.category_id')
+                    ->select('books.category_id')
+            )
+            ->pluck('category_id')
+            ->unique()
+            ->take(5);
 
         // Followed authors and publishers
         $userFollows = Follow::where('user_id', $userId)->get();
@@ -48,9 +50,6 @@ class RecommendationService
             ->pluck('followable_id')->toArray();
         $followedPublisherIds = $userFollows->where('followable_type', 'publisher')
             ->pluck('followable_id')->toArray();
-
-        $allCategories = $reviewCategories->merge($wishlistCategories)
-            ->unique()->take(5);
 
         $recommendations = collect();
 

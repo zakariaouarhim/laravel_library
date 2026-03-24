@@ -177,8 +177,8 @@
             cartPage: "{{ route('cart.page') }}"
         };
     </script>
-    <script src="{{ asset('js/header.js') }}"></script>
-    <script src="{{ asset('js/scripts.js') }}"></script>
-    <script src="{{ asset('js/cart.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
+    <script src="{{ asset('js/scripts.js') }}" defer></script>
+    <script src="{{ asset('js/cart.js') }}" defer></script>
 </body>
 </html>

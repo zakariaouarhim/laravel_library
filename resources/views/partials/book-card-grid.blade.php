@@ -13,7 +13,9 @@
         </div>
 
         <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
-            <img src="{{ asset($book->image ?? 'images/book-placeholder.png') }}" alt="{{ $book->title }}" width="200" height="280" loading="lazy"
+            <img src="{{ asset($book->thumbnail) }}" alt="{{ $book->title }}" width="200" height="280" loading="lazy"
+                 srcset="{{ asset($book->thumbnail) }} 150w, {{ asset($book->image ?? 'images/book-placeholder.png') }} 400w"
+                 sizes="200px"
                  onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
         </a>
 

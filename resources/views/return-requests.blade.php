@@ -167,9 +167,9 @@
                                             <div class="book-row">
                                                 <div class="book-thumb">
                                                     @if($item->book)
-                                                        <img src="{{ asset($item->book->image ?? 'images/book-placeholder.png') }}" alt="{{ $item->book->title ?? '' }}">
+                                                        <img src="{{ asset($item->book->image ?? 'images/book-placeholder.png') }}" alt="{{ $item->book->title ?? '' }}" width="60" height="85" loading="lazy">
                                                     @else
-                                                        <img src="{{ asset('images/book-placeholder.png') }}" alt="">
+                                                        <img src="{{ asset('images/book-placeholder.png') }}" alt="" width="60" height="85" loading="lazy">
                                                     @endif
                                                 </div>
                                                 <div class="book-info">
@@ -294,8 +294,8 @@
     @include('footer')
 
     <!-- Scripts -->
-    <script src="{{ asset('js/header.js') }}"></script>
-    <script src="{{ asset('js/scripts.js') }}"></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
+    <script src="{{ asset('js/scripts.js') }}" defer></script>
     <script>
         // Rotate chevron icon on expand/collapse
         document.querySelectorAll('.return-card-header').forEach(function(header) {

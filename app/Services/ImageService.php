@@ -30,28 +30,26 @@ class ImageService
                 throw new \Exception('Failed to download image from URL');
             }
 
-            // Detect extension from MIME type
-            $extension = 'jpg';
-            $finfo = new \finfo(FILEINFO_MIME_TYPE);
-            $mimeType = $finfo->buffer($imageContent);
-
-            if (strpos($mimeType, 'png') !== false) {
-                $extension = 'png';
-            } elseif (strpos($mimeType, 'webp') !== false) {
-                $extension = 'webp';
-            }
-
-            $filename = $filenamePrefix . '_' . time() . '.' . $extension;
+            $filename = $filenamePrefix . '_' . time() . '.webp';
             $fullDestination = public_path($destinationDir);
+            $thumbDir = $fullDestination . '/thumbs';
 
             if (!file_exists($fullDestination)) {
                 mkdir($fullDestination, 0755, true);
             }
-
-            $fullPath = $fullDestination . '/' . $filename;
-            if (file_put_contents($fullPath, $imageContent) === false) {
-                throw new \Exception('Failed to save image to disk');
+            if (!file_exists($thumbDir)) {
+                mkdir($thumbDir, 0755, true);
             }
+
+            // Resize to 400px wide and convert to WebP
+            $image = Image::read($imageContent);
+            $image->scale(width: 400);
+            $image->toWebp(80)->save($fullDestination . '/' . $filename);
+
+            // Generate 150px thumbnail
+            $thumb = Image::read($fullDestination . '/' . $filename);
+            $thumb->scale(width: 150);
+            $thumb->toWebp(75)->save($thumbDir . '/' . $filename);
 
             return $destinationDir . '/' . $filename;
 
@@ -59,6 +57,28 @@ class ImageService
             \Log::error('Error downloading image: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Process and store a category image as WebP, resized to 300px wide.
+     * Deletes the old image if provided.
+     *
+     * @return string Relative storage path to the saved image
+     */
+    public function processCategoryImage(UploadedFile $file, ?string $oldPath = null): string
+    {
+        if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $image = Image::read($file);
+        $image->scale(width: 300);
+        $encoded = $image->toWebp(80);
+
+        $filename = 'categories/' . uniqid('cat_') . '.webp';
+        Storage::disk('public')->put($filename, (string) $encoded);
+
+        return $filename;
     }
 
     /**

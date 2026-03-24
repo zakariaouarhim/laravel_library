@@ -32,9 +32,15 @@ class AdminContactController extends Controller
 
         $messages = $query->paginate(15)->appends($request->query());
 
-        $totalCount = ContactMessage::count();
-        $unreadCount = ContactMessage::where('is_read', false)->count();
-        $todayCount = ContactMessage::whereDate('created_at', today())->count();
+        $stats = ContactMessage::selectRaw("
+            COUNT(*) as total_count,
+            SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as unread_count,
+            SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today_count
+        ")->first();
+
+        $totalCount = $stats->total_count;
+        $unreadCount = $stats->unread_count;
+        $todayCount = $stats->today_count;
 
         return view('Dashbord_Admin.ContactMessages', compact(
             'messages', 'totalCount', 'unreadCount', 'todayCount'

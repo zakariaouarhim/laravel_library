@@ -57,12 +57,10 @@ class ShipmentController extends Controller
     {
         $shipments = Shipment::with('items')->orderBy('created_at', 'desc')->paginate(10);
 
-        // Get total counts from database (not paginated)
-        $totalShipments = Shipment::count();
-        $processingCount = Shipment::where('status', 'processing')->count();
-        $completedCount = Shipment::where('status', 'completed')->count();
-
-        return view('Dashbord_Admin.Shipment_Management', compact('shipments', 'totalShipments', 'processingCount', 'completedCount'));
+        return view('Dashbord_Admin.Shipment_Management', array_merge(
+            compact('shipments'),
+            $this->getShipmentStats()
+        ));
     }
     public function searchShipment(Request $request)
     {
@@ -86,13 +84,26 @@ class ShipmentController extends Controller
 
         $shipments = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        // Get total counts from database (not paginated)
-        $totalShipments = Shipment::count();
-        $processingCount = Shipment::where('status', 'processing')->count();
-        $completedCount = Shipment::where('status', 'completed')->count();
-
-        return view('Dashbord_Admin.Shipment_Management', compact('shipments', 'totalShipments', 'processingCount', 'completedCount'));
+        return view('Dashbord_Admin.Shipment_Management', array_merge(
+            compact('shipments'),
+            $this->getShipmentStats()
+        ));
     }
+    private function getShipmentStats(): array
+    {
+        $stats = Shipment::selectRaw("
+            COUNT(*) as totalShipments,
+            SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processingCount,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completedCount
+        ")->first();
+
+        return [
+            'totalShipments' => $stats->totalShipments,
+            'processingCount' => (int) $stats->processingCount,
+            'completedCount' => (int) $stats->completedCount,
+        ];
+    }
+
     public function editShipment($id){
         $shipment = Shipment::with('items')->findOrFail($id);
         return response()->json($shipment);
@@ -161,7 +172,7 @@ class ShipmentController extends Controller
     }
     public function showmanagement()
     {
-        $books = Book::paginate(12);
+        $books = Book::with(['primaryAuthor', 'publishingHouse'])->paginate(12);
 
         // Get categories organized hierarchically
         $categories = Category::with('children')->whereNull('parent_id')->get();

@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Book;
 use App\Models\Follow;
 use App\Models\UserNotification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class BookObserver
@@ -15,6 +16,8 @@ class BookObserver
      */
     public function created(Book $book): void
     {
+        Cache::forget('latest_books');
+        Cache::forget('popular_books');
         $this->notifyFollowers($book);
     }
 
@@ -25,6 +28,8 @@ class BookObserver
      */
     public function updating(Book $book): void
     {
+        Cache::forget('latest_books');
+        Cache::forget('popular_books');
         // Back in stock: quantity changed from 0 to > 0
         if ($book->isDirty('quantity')
             && $book->getOriginal('quantity') == 0
@@ -39,6 +44,12 @@ class BookObserver
         ) {
             $this->notifyWishlistUsers($book, 'price_drop');
         }
+    }
+
+    public function deleted(Book $book): void
+    {
+        Cache::forget('latest_books');
+        Cache::forget('popular_books');
     }
 
     /**

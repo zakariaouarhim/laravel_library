@@ -276,9 +276,9 @@
 
     @include('footer')
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/header.js') }}"></script>
-    <script src="{{ asset('js/scripts.js') }}"></script>
-    <script src="{{ asset('js/card.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
+    <script src="{{ asset('js/scripts.js') }}" defer></script>
+    <script src="{{ asset('js/card.js') }}" defer></script>
 </body>
 </html>

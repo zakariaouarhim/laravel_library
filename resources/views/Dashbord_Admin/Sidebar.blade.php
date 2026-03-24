@@ -4,7 +4,7 @@
         <div class="sidebar-header-content">
             <div class="logo-container">
                 <a href="{{ route('index.page') }}" class="sidebar-logo-link">
-                    <img src="{{ asset('images/logo.svg') }}" alt="Logo" class="sidebar-logo">
+                    <img src="{{ asset('images/logo.svg') }}" alt="Logo" class="sidebar-logo" width="40" height="40">
                 </a>
                 <span class="logo-text">مكتبة الفقراء </span>
             </div>

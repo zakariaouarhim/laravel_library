@@ -183,12 +183,19 @@ class AuthorController extends Controller
 
         $authors = $query->paginate(15);
 
-        // Stats
+        // Stats — single query with conditional aggregation
+        $raw = Author::selectRaw("
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+            SUM(CASE WHEN api_id IS NOT NULL THEN 1 ELSE 0 END) as enriched,
+            SUM(CASE WHEN api_id IS NULL THEN 1 ELSE 0 END) as pending
+        ")->first();
+
         $stats = [
-            'total' => Author::count(),
-            'active' => Author::where('status', 'active')->count(),
-            'enriched' => Author::whereNotNull('api_id')->count(),
-            'pending' => Author::whereNull('api_id')->count(),
+            'total' => $raw->total,
+            'active' => (int) $raw->active,
+            'enriched' => (int) $raw->enriched,
+            'pending' => (int) $raw->pending,
         ];
 
         return response()->json([

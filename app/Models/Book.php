@@ -197,51 +197,28 @@ class Book extends Model
         return $this->authorsByType('illustrator');
     }
 
-    // Enhanced author name accessor
     public function getAuthorNameAttribute()
     {
-        // First try to get from primary author relationship
+        // Fast path: relationship already eager-loaded (zero queries)
+        if ($this->relationLoaded('primaryAuthor')) {
+            return $this->primaryAuthor?->name ?? 'Unknown Author';
+        }
+
+        // Fallback: lazy-load (for toSearchableArray, enrichment service)
         if ($this->primaryAuthor) {
             return $this->primaryAuthor->name;
         }
-        
-        // Then try to get primary author from many-to-many relationship
+
         $primaryAuthor = $this->authors()->wherePivot('author_type', 'primary')->first();
-        if ($primaryAuthor) {
-            return $primaryAuthor->name;
-        }
-        
-        return 'Unknown Author';
+        return $primaryAuthor?->name ?? 'Unknown Author';
     }
 
-    // Enhanced publishing house name accessor
     public function getPublishingHouseNameAttribute()
     {
-        if ($this->publishingHouse) {
-            return $this->publishingHouse->name;
+        if ($this->relationLoaded('publishingHouse')) {
+            return $this->publishingHouse?->name ?? 'Unknown Publisher';
         }
-        
-        return 'Unknown Publisher';
-    }
-
-    // Get all authors as a formatted string
-    public function getAllAuthorsAttribute()
-    {
-        $authors = collect();
-        
-        // Add primary author
-        if ($this->primaryAuthor) {
-            $authors->push($this->primaryAuthor->name);
-        }
-        
-        // Add other authors from many-to-many
-        $otherAuthors = $this->authors()->wherePivot('author_type', '!=', 'primary')->get();
-        foreach ($otherAuthors as $author) {
-            $type = $author->pivot->author_type;
-            $authors->push($author->name . " ({$type})");
-        }
-        
-        return $authors->join(', ');
+        return $this->publishingHouse?->name ?? 'Unknown Publisher';
     }
 
     // Scope for books with low stock
@@ -279,39 +256,47 @@ class Book extends Model
     {
         return $this->quantity <= $this->reorder_point;
     }
-    public function reviews() {
+    public function reviews()
+    {
+        return $this->hasMany(Book_Review::class, 'book_id', 'id');
+    }
+
+    public function reviewsWithUsers()
+    {
         return $this->hasMany(Book_Review::class, 'book_id', 'id')->with('user')->latest();
     }
-    // Calculate average rating
+
     public function getAverageRatingAttribute()
     {
+        if (array_key_exists('reviews_avg_rating', $this->attributes)) {
+            return $this->attributes['reviews_avg_rating'] ?? 0;
+        }
         return $this->reviews()->avg('rating') ?? 0;
     }
 
-    // Get total reviews count
     public function getReviewsCountAttribute()
     {
+        if (array_key_exists('reviews_count', $this->attributes)) {
+            return (int) $this->attributes['reviews_count'];
+        }
         return $this->reviews()->count();
     }
+
     public function wishlistedBy()
     {
         return $this->belongsToMany(UserModel::class, 'wishlists')->withTimestamps();
     }
-    /**
-     * Get all quotes for this book
-     */
+
     public function quotes()
+    {
+        return $this->hasMany(Quote::class)
+                    ->where('is_approved', true);
+    }
+
+    public function quotesWithUsers()
     {
         return $this->hasMany(Quote::class)
                     ->with('user', 'likes')
                     ->where('is_approved', true);
-    }
-
-    /**
-     * Get quotes count for this book
-     */
-    public function getQuotesCountAttribute(): int
-    {
-        return $this->quotes()->count();
     }
 }
