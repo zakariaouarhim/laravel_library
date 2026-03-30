@@ -664,10 +664,8 @@
     padding: 10px 0;
     padding-right: 5px;
     -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
 }
 
-/* Smooth scroll only on non-touch (avoids fighting with finger momentum) */
 @media (hover: hover) {
     .category-section2 .carousel-wrapper {
         scroll-behavior: smooth;
@@ -675,13 +673,6 @@
     }
     .category-section2 .carousel-wrapper:active {
         cursor: grabbing;
-    }
-}
-
-/* Snap points for touch */
-@media (hover: none) {
-    .category-section2 .category-card {
-        scroll-snap-align: start;
     }
 }
 
