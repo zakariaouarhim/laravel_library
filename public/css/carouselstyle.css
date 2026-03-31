@@ -113,7 +113,7 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    z-index: var(--z-above);
+    z-index: 5;
     width: var(--nav-size);
     height: var(--nav-size);
     font-size: var(--nav-font);
