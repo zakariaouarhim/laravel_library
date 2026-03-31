@@ -689,7 +689,6 @@
   padding: 30px;
   border-radius: var(--border-radius);
   text-align: center;
-  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   border: 2px solid transparent;
   position: relative;
@@ -731,7 +730,6 @@
   margin-bottom: 20px;
   object-fit: cover;
   border-radius: var(--radius-circle);
-  transition: transform 0.3s;
 }
 .category-section2 .category-card {
     flex: 0 0 clamp(120px, 18vw, 160px);
@@ -747,10 +745,14 @@
     border-radius: var(--radius-lg);
     background: var(--color-white);
     border: 2px solid var(--color-border);
-    transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth), background-color var(--transition-smooth);
     text-decoration: none;
     color: inherit;
     user-select: none;
+}
+@media (hover: hover) {
+    .category-section2 .category-card {
+        transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth), background-color var(--transition-smooth);
+    }
 }
 @media (hover: hover) {
     .category-section2 .category-card:hover {
@@ -771,7 +773,6 @@
     font-size: clamp(2.5rem, 8vw, 3.5rem);
     color: var(--color-secondary);
     margin-bottom: 1rem;
-    transition: transform var(--transition-smooth);
 }
 .category-section2 .category-icon img {
     max-width: 100%;
