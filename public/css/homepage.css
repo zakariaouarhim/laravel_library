@@ -623,7 +623,7 @@
     box-shadow: var(--shadow-md);
     margin: clamp(1.5rem, 5vw, 2.5rem) auto;
     max-width: 100%;
-    overflow: hidden;
+    overflow: clip;
 }
 
 .category-section2 h2 {
@@ -683,64 +683,14 @@
 /* ============================================
            Category Card
            ============================================ */
-           
-.category-section2 .category-card {
-  background: white;
-  padding: 30px;
-  border-radius: var(--border-radius);
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  border: 2px solid transparent;
-  position: relative;
-  overflow: hidden;
-}
 
-.category-section2 .category-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
-  transform: scaleX(0);
-  transition: transform 0.3s;
-  transform-origin: right;
-}
-
-@media (hover: hover) {
-    .category-section2 .category-card:hover {
-      transform: translateY(-8px);
-      box-shadow: var(--shadow-hover);
-      border-color: var(--color-secondary);
-    }
-
-    .category-section2 .category-card:hover::before {
-      transform: scaleX(1);
-    }
-
-    .category-section2 .category-card:hover .category-icon {
-      transform: scale(1.1) rotate(5deg);
-    }
-}
-
-.category-section2 .category-icon {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 20px;
-  object-fit: cover;
-  border-radius: var(--radius-circle);
-}
 .category-section2 .category-card {
     flex: 0 0 clamp(120px, 18vw, 160px);
     aspect-ratio: 1 / 1;
-    /* 👈 MAKES IT SQUARE */
-
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
     padding: clamp(1rem, 2vw, 1.5rem);
     border-radius: var(--radius-lg);
     background: var(--color-white);
@@ -748,24 +698,43 @@
     text-decoration: none;
     color: inherit;
     user-select: none;
+    position: relative;
+    will-change: auto;
 }
+
+/* Desktop-only: transitions, shadows, hover effects */
 @media (hover: hover) {
     .category-section2 .category-card {
-        transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth), background-color var(--transition-smooth);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
     }
-}
-@media (hover: hover) {
+    .category-section2 .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
+        transform: scaleX(0);
+        transition: transform 0.3s;
+        transform-origin: right;
+    }
     .category-section2 .category-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 12px 30px rgba(93, 225, 230, 0.2);
         border-color: var(--color-secondary);
         background-color: rgba(93, 225, 230, 0.05);
     }
-    .category-section2 .category-card:hover .category-icon img {
-        transform: scale(1.1);
+    .category-section2 .category-card:hover::before {
+        transform: scaleX(1);
     }
     .category-section2 .category-card:hover .category-icon {
         transform: scale(1.1) rotate(5deg);
+    }
+    .category-section2 .category-card:hover .category-icon img {
+        transform: scale(1.1);
     }
 }
 
