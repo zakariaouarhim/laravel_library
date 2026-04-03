@@ -24,7 +24,8 @@
                 if (!response.ok) throw new Error('Failed to load product');
                 return response.json();
             })
-            .then(product => {
+            .then(res => {
+                const product = res.data || res;
                 const content = `
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div>
@@ -99,7 +100,8 @@
                 if (!response.ok) throw new Error('Failed to load product');
                 return response.json();
             })
-            .then(product => {
+            .then(res => {
+                const product = res.data || res;
                 document.getElementById('productId').value = product.id;
                 document.getElementById('editProductName').value = product.title;
                 document.getElementById('editAuthor').value = product.author_name;
