@@ -57,7 +57,7 @@
                 <!-- Image Column (sticky) -->
                 <div class="v2-image-col">
                     <div class="v2-image-card">
-                        @if($book->discount ?? 0 > 0)
+                        @if(($book->discount ?? 0) > 0)
                         <span class="v2-badge-discount">خصم {{ $book->discount }}%</span>
                         @endif
                         @if($book->is_new ?? false)

@@ -165,6 +165,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/reviews', [ReviewController::class, 'adminIndex'])->name('reviews.index');
     Route::patch('/reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.update-status');
     Route::delete('/reviews/{id}', [ReviewController::class, 'adminDestroy'])->name('reviews.destroy');
+
+    // Book import review
+    Route::get('/import/review', fn() => view('admin.import.review'))->name('import.review');
 });
 
 // ==================== CART & CHECKOUT ====================

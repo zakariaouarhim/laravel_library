@@ -60,6 +60,46 @@ class ImageService
     }
 
     /**
+     * Process a local image file: resize, convert to WebP, create thumbnail.
+     *
+     * @param string $filePath       Absolute path to the source image
+     * @param string $destinationDir Relative dir under public/ (e.g., 'images/books')
+     * @param string $filenamePrefix Prefix for the generated filename
+     * @return string|null           Relative path to the saved image, or null on failure
+     */
+    public function processLocalFile(string $filePath, string $destinationDir, string $filenamePrefix): ?string
+    {
+        try {
+            $filename = $filenamePrefix . '_' . time() . '_' . mt_rand(100, 999) . '.webp';
+            $fullDestination = public_path($destinationDir);
+            $thumbDir = $fullDestination . '/thumbs';
+
+            if (!file_exists($fullDestination)) {
+                mkdir($fullDestination, 0755, true);
+            }
+            if (!file_exists($thumbDir)) {
+                mkdir($thumbDir, 0755, true);
+            }
+
+            // Resize to 400px wide and convert to WebP
+            $image = Image::read($filePath);
+            $image->scale(width: 400);
+            $image->toWebp(80)->save($fullDestination . '/' . $filename);
+
+            // Generate 150px thumbnail
+            $thumb = Image::read($fullDestination . '/' . $filename);
+            $thumb->scale(width: 150);
+            $thumb->toWebp(75)->save($thumbDir . '/' . $filename);
+
+            return $destinationDir . '/' . $filename;
+
+        } catch (\Exception $e) {
+            \Log::error('Error processing local image: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Process and store a category image as WebP, resized to 300px wide.
      * Deletes the old image if provided.
      *

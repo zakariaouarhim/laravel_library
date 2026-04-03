@@ -135,6 +135,10 @@
 
     @include('footer')
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="{{ asset('js/header.js') }}" defer></script>
+    <script src="{{ asset('js/cart.js') }}" defer></script>
+    <script src="{{ asset('js/scripts.js') }}" defer></script>
     <script>
         let searchTimer = null;
         const searchInput = document.getElementById('authorSearchInput');
