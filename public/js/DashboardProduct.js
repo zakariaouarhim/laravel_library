@@ -14,7 +14,7 @@
                 </div>
             `;
 
-            fetch(`/admin/products/${productId}`, {
+            fetch(`/admin/products/api/${productId}`, {
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
@@ -89,7 +89,7 @@
         function editProduct(productId) {
             const editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
 
-            fetch(`/admin/products/${productId}`, {
+            fetch(`/admin/products/api/${productId}`, {
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
@@ -129,7 +129,7 @@
          */
         function deleteProduct(productId) {
             if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-                fetch(`/admin/products/${productId}`, {
+                fetch(`/admin/products/api/${productId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -159,7 +159,8 @@
             const productId = document.getElementById('productId').value;
             const formData = new FormData(this);
 
-            fetch(`/admin/products/${productId}`, {
+            formData.append('_method', 'PUT');
+            fetch(`/admin/products/api/${productId}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
