@@ -463,7 +463,9 @@ function renderEnrichmentPreview(current, apiData) {
         } else {
             $('#previewCurrentImage').hide();
         }
-        $('#previewApiImage').attr('src', apiData.photo_url);
+        $('#previewApiImage').attr('src', apiData.photo_url).off('error').on('error', function() {
+            $(this).replaceWith('<p class="text-danger text-center"><i class="fas fa-image-slash"></i> تعذر تحميل الصورة من المصدر الخارجي</p>');
+        });
     } else {
         $('#previewImageSection').hide();
     }
