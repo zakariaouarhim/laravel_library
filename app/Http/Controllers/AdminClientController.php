@@ -32,6 +32,29 @@ class AdminClientController extends Controller
         return view('Dashbord_Admin.client', compact('clients', 'totalClients', 'newClientsThisMonth', 'activeClients'));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'phone' => 'nullable|string|max:20',
+        ], [
+            'name.required'  => 'اسم الزبون مطلوب',
+            'email.required' => 'البريد الإلكتروني مطلوب',
+            'email.unique'   => 'البريد الإلكتروني مستخدم بالفعل',
+        ]);
+
+        $validated['password'] = Hash::make(Str::random(12));
+
+        $user = UserModel::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إضافة الزبون بنجاح',
+            'user' => $user,
+        ]);
+    }
+
     public function showclient($id)
     {
         $user = UserModel::with([

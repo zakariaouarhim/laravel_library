@@ -64,10 +64,11 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/coupons/{coupon}/toggle',       [CouponController::class, 'toggleActive'])->name('coupons.toggle');
 
     // Client management
+    Route::get('/client', [AdminClientController::class, 'index'])->name('client.index');
+    Route::post('/client', [AdminClientController::class, 'store'])->name('client.store');
     Route::get('/client/{id}', [AdminClientController::class, 'showclient'])->name('client.show');
     Route::put('/client/{id}', [AdminClientController::class, 'update'])->name('client.update');
     Route::post('/client/{id}/reset-password', [AdminClientController::class, 'resetPasswordAdmin'])->name('client.reset-password');
-    Route::get('/client', [AdminClientController::class, 'index'])->name('client.index');
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
