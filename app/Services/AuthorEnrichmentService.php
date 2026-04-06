@@ -11,6 +11,7 @@ class AuthorEnrichmentService
 {
     protected $openLibraryUrl = 'https://openlibrary.org';
     protected $wikiArUrl = 'https://ar.wikipedia.org/w/api.php';
+    protected $wikiEnUrl = 'https://en.wikipedia.org/w/api.php';
     protected $wikidataUrl = 'https://www.wikidata.org/w/api.php';
     protected $userAgent = 'LibraryFokara/1.0 (Library Management System; contact@library-fokara.com)';
 
@@ -23,26 +24,29 @@ class AuthorEnrichmentService
     }
 
     /**
-     * Main enrichment: routes to Wikipedia Arabic or Open Library based on name script
+     * Main enrichment: Wikipedia Arabic first for ALL authors, then bridge via English Wikipedia
      */
     public function enrichAuthor(Author $author): ?array
     {
-        if ($this->isArabic($author->name)) {
-            // Arabic name → Wikipedia Arabic API
-            $result = $this->enrichFromWikipediaArabic($author);
-            if ($result) {
-                return $result;
-            }
-            // Fallback to Open Library anyway
-            return $this->enrichFromOpenLibrary($author);
-        }
-
-        // Latin name → Open Library first, then Wikipedia English
-        $result = $this->enrichFromOpenLibrary($author);
+        // Tier 1: Arabic Wikipedia (works for Arabic names directly, and Latin names via redirects)
+        Log::info("Enrichment: trying Arabic Wikipedia for '{$author->name}'");
+        $result = $this->enrichFromWikipediaArabic($author);
         if ($result) {
             return $result;
         }
-        return $this->enrichFromWikipediaArabic($author);
+
+        // Tier 2: For Latin names, try English Wikipedia → Wikidata → Arabic content
+        if (!$this->isArabic($author->name)) {
+            Log::info("Enrichment: trying English Wikipedia bridge for '{$author->name}'");
+            $result = $this->enrichFromWikipediaEnglishBridge($author);
+            if ($result) {
+                return $result;
+            }
+        }
+
+        // Tier 3: Open Library as last resort
+        Log::info("Enrichment: falling back to Open Library for '{$author->name}'");
+        return $this->enrichFromOpenLibrary($author);
     }
 
     // =================== Wikipedia Arabic API ===================
@@ -361,7 +365,302 @@ class AuthorEnrichmentService
         return $mapped;
     }
 
-    // =================== Open Library (for Latin names) ===================
+    // =================== English Wikipedia Bridge ===================
+
+    /**
+     * Bridge: Search English Wikipedia → get Wikidata ID → fetch Arabic content
+     * Used when Arabic Wikipedia search fails for Latin-named authors
+     */
+    protected function enrichFromWikipediaEnglishBridge(Author $author): ?array
+    {
+        // Step 1: Search English Wikipedia for the author
+        $pageTitle = $this->searchWikipediaEnglish($author->name);
+        if (!$pageTitle) {
+            Log::warning("English Wikipedia bridge: no results for '{$author->name}'");
+            return null;
+        }
+        Log::info("English Wikipedia bridge: found page '{$pageTitle}'");
+
+        // Step 2: Get Wikidata ID from the English page
+        $wikidataId = $this->getWikidataIdFromEnglishPage($pageTitle);
+        if (!$wikidataId) {
+            Log::warning("English Wikipedia bridge: no Wikidata ID for '{$pageTitle}'");
+            return null;
+        }
+        Log::info("English Wikipedia bridge: Wikidata ID = {$wikidataId}");
+
+        // Step 3: Get structured data from Wikidata
+        $wikidataFields = $this->getWikidataStructuredData($wikidataId);
+
+        // Step 4: Try to get Arabic Wikipedia page via Wikidata sitelinks
+        $arPageTitle = $this->getArabicPageFromWikidata($wikidataId);
+        $arabicBio = null;
+        if ($arPageTitle) {
+            Log::info("English Wikipedia bridge: found Arabic page '{$arPageTitle}' via Wikidata");
+            $arPageData = $this->getWikipediaArabicPage($arPageTitle);
+            if ($arPageData && !empty($arPageData['extract']) && mb_strlen($arPageData['extract']) > 50) {
+                $arabicBio = $arPageData['extract'];
+            }
+        }
+
+        // Step 5: If no Arabic bio, get Arabic description from Wikidata
+        if (!$arabicBio) {
+            $arabicBio = $this->getWikidataDescription($wikidataId, 'ar');
+        }
+
+        // Step 6: Get the English bio as fallback (but prefer Arabic)
+        $englishBio = null;
+        if (!$arabicBio) {
+            $enPageData = $this->getWikipediaPage($this->wikiEnUrl, $pageTitle);
+            if ($enPageData && !empty($enPageData['extract'])) {
+                $englishBio = $enPageData['extract'];
+            }
+        }
+
+        // Build the result
+        $mapped = [
+            'api_source' => 'wikipedia_bridge',
+            'api_id' => $wikidataId,
+            'api_name' => $arPageTitle ?? $pageTitle,
+            'search_match_name' => $pageTitle,
+        ];
+
+        $bio = $arabicBio ?? $englishBio;
+        if ($bio && mb_strlen($bio) > 50) {
+            $mapped['biography'] = $bio;
+            $mapped['biography_language'] = $arabicBio ? 'ar' : 'en';
+        }
+
+        if (!empty($wikidataFields['birth_date'])) {
+            $mapped['birth_date'] = $wikidataFields['birth_date'];
+            $mapped['birth_date_raw'] = $wikidataFields['birth_date'];
+        }
+        if (!empty($wikidataFields['death_date'])) {
+            $mapped['death_date'] = $wikidataFields['death_date'];
+            $mapped['death_date_raw'] = $wikidataFields['death_date'];
+        }
+        if (!empty($wikidataFields['nationality'])) {
+            $mapped['nationality'] = $wikidataFields['nationality'];
+        }
+        if (!empty($wikidataFields['website'])) {
+            $mapped['website'] = $wikidataFields['website'];
+        }
+        if (!empty($wikidataFields['photo_url'])) {
+            $mapped['photo_url'] = $wikidataFields['photo_url'];
+        }
+
+        if ($arPageTitle) {
+            $mapped['wikipedia_url'] = "https://ar.wikipedia.org/wiki/" . urlencode(str_replace(' ', '_', $arPageTitle));
+        } else {
+            $mapped['wikipedia_url'] = "https://en.wikipedia.org/wiki/" . urlencode(str_replace(' ', '_', $pageTitle));
+        }
+
+        return $mapped;
+    }
+
+    /**
+     * Search English Wikipedia for an author
+     */
+    protected function searchWikipediaEnglish(string $name): ?string
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => $this->userAgent,
+            ])->withOptions([
+                'verify' => false,
+                'timeout' => 15,
+                'connect_timeout' => 10,
+            ])->get($this->wikiEnUrl, [
+                'action' => 'query',
+                'list' => 'search',
+                'srsearch' => $name . ' writer OR author OR novelist OR poet',
+                'srnamespace' => 0,
+                'srlimit' => 5,
+                'format' => 'json',
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $results = $response->json()['query']['search'] ?? [];
+            if (empty($results)) {
+                // Retry without qualifiers
+                $response = Http::withHeaders([
+                    'User-Agent' => $this->userAgent,
+                ])->withOptions([
+                    'verify' => false,
+                    'timeout' => 15,
+                ])->get($this->wikiEnUrl, [
+                    'action' => 'query',
+                    'list' => 'search',
+                    'srsearch' => $name,
+                    'srnamespace' => 0,
+                    'srlimit' => 5,
+                    'format' => 'json',
+                ]);
+
+                $results = $response->json()['query']['search'] ?? [];
+                if (empty($results)) {
+                    return null;
+                }
+            }
+
+            // Find best match
+            $normalizedName = $this->normalizeName($name);
+            foreach ($results as $result) {
+                $resultNormalized = $this->normalizeName($result['title']);
+                similar_text($normalizedName, $resultNormalized, $percent);
+                if ($percent >= 70) {
+                    return $result['title'];
+                }
+            }
+
+            return $results[0]['title'];
+        } catch (\Exception $e) {
+            Log::error("English Wikipedia search error: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    /**
+     * Get Wikidata ID from an English Wikipedia page
+     */
+    protected function getWikidataIdFromEnglishPage(string $title): ?string
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => $this->userAgent,
+            ])->withOptions([
+                'verify' => false,
+                'timeout' => 15,
+            ])->get($this->wikiEnUrl, [
+                'action' => 'query',
+                'titles' => $title,
+                'prop' => 'pageprops',
+                'ppprop' => 'wikibase_item',
+                'format' => 'json',
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $pages = $response->json()['query']['pages'] ?? [];
+            $page = reset($pages);
+
+            return $page['pageprops']['wikibase_item'] ?? null;
+        } catch (\Exception $e) {
+            Log::error("English Wikipedia pageprops error: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    /**
+     * Get Arabic Wikipedia page title from Wikidata sitelinks
+     */
+    protected function getArabicPageFromWikidata(string $wikidataId): ?string
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => $this->userAgent,
+            ])->withOptions([
+                'verify' => false,
+                'timeout' => 15,
+            ])->get($this->wikidataUrl, [
+                'action' => 'wbgetentities',
+                'ids' => $wikidataId,
+                'props' => 'sitelinks',
+                'sitefilter' => 'arwiki',
+                'format' => 'json',
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            return $response->json()['entities'][$wikidataId]['sitelinks']['arwiki']['title'] ?? null;
+        } catch (\Exception $e) {
+            Log::error("Wikidata sitelinks error: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    /**
+     * Get Arabic description from Wikidata (short fallback when no Arabic Wikipedia page)
+     */
+    protected function getWikidataDescription(string $wikidataId, string $lang = 'ar'): ?string
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => $this->userAgent,
+            ])->withOptions([
+                'verify' => false,
+                'timeout' => 10,
+            ])->get($this->wikidataUrl, [
+                'action' => 'wbgetentities',
+                'ids' => $wikidataId,
+                'props' => 'descriptions',
+                'languages' => $lang,
+                'format' => 'json',
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            return $response->json()['entities'][$wikidataId]['descriptions'][$lang]['value'] ?? null;
+        } catch (\Exception $e) {
+            Log::error("Wikidata description error: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    /**
+     * Generic Wikipedia page fetch (works for any language wiki)
+     */
+    protected function getWikipediaPage(string $apiUrl, string $title): ?array
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => $this->userAgent,
+            ])->withOptions([
+                'verify' => false,
+                'timeout' => 15,
+            ])->get($apiUrl, [
+                'action' => 'query',
+                'titles' => $title,
+                'prop' => 'extracts|pageprops',
+                'exintro' => true,
+                'explaintext' => true,
+                'ppprop' => 'wikibase_item',
+                'format' => 'json',
+                'utf8' => 1,
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $pages = $response->json()['query']['pages'] ?? [];
+            $page = reset($pages);
+
+            if (!$page || isset($page['missing'])) {
+                return null;
+            }
+
+            return [
+                'title' => $page['title'] ?? $title,
+                'extract' => $page['extract'] ?? null,
+                'wikidata_id' => $page['pageprops']['wikibase_item'] ?? null,
+            ];
+        } catch (\Exception $e) {
+            Log::error("Wikipedia page fetch error: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    // =================== Open Library (last resort) ===================
 
     /**
      * Enrich from Open Library

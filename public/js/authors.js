@@ -470,7 +470,30 @@ function renderEnrichmentPreview(current, apiData) {
         $('#previewImageSection').hide();
     }
 
-    // Extra info
+    // Source info
+    const sourceLabels = {
+        'wikipedia_ar': 'ويكيبيديا العربية',
+        'wikipedia_bridge': 'ويكيبيديا (عبر الإنجليزية)',
+        'open_library': 'Open Library',
+    };
+    const sourceLabel = sourceLabels[apiData.api_source] || apiData.api_source || 'غير محدد';
+
+    if (apiData.wikipedia_url) {
+        const isArabic = apiData.wikipedia_url.includes('ar.wikipedia');
+        tbody.append(`
+            <tr class="table-info">
+                <td colspan="4">
+                    <i class="fab fa-wikipedia-w me-2"></i>
+                    المصدر: <strong>${sourceLabel}</strong> —
+                    <a href="${escapeHtml(apiData.wikipedia_url)}" target="_blank">
+                        ${isArabic ? 'صفحة ويكيبيديا العربية' : 'صفحة ويكيبيديا الإنجليزية'}
+                    </a>
+                    ${apiData.biography_language === 'en' ? '<span class="badge bg-warning text-dark ms-2">السيرة بالإنجليزية (لا توجد صفحة عربية)</span>' : ''}
+                </td>
+            </tr>
+        `);
+    }
+
     if (apiData.work_count) {
         tbody.append(`
             <tr class="table-info">
@@ -478,17 +501,6 @@ function renderEnrichmentPreview(current, apiData) {
                     <i class="fas fa-info-circle me-2"></i>
                     عدد الأعمال في Open Library: <strong>${apiData.work_count}</strong>
                     ${apiData.top_subjects ? ' | المواضيع: ' + apiData.top_subjects.join(', ') : ''}
-                </td>
-            </tr>
-        `);
-    }
-
-    if (apiData.wikipedia_url) {
-        tbody.append(`
-            <tr class="table-info">
-                <td colspan="4">
-                    <i class="fab fa-wikipedia-w me-2"></i>
-                    المصدر: <a href="${escapeHtml(apiData.wikipedia_url)}" target="_blank">ويكيبيديا العربية</a>
                 </td>
             </tr>
         `);

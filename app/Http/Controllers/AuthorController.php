@@ -320,6 +320,7 @@ class AuthorController extends Controller
             'api_data.website'     => 'nullable|url|max:500',
             'api_data.photo_url'   => 'nullable|url|max:500',
             'api_data.api_id'      => 'nullable|string|max:100',
+            'api_data.api_source'  => 'nullable|string|max:50',
         ]);
 
         $fields = $request->input('fields', []);
@@ -383,7 +384,7 @@ class AuthorController extends Controller
             }
         }
 
-        $author->api_source = 'open_library';
+        $author->api_source = $apiData['api_source'] ?? $author->api_source ?? 'unknown';
         $author->api_id = $apiData['api_id'] ?? $author->api_id;
         $author->api_last_updated = now();
         $author->save();
