@@ -931,12 +931,42 @@
         border-radius: var(--radius-sm);
     }
 
-    .navbar-search {
-        max-width: 200px;
+    /* Wrap search bar onto its own full-width row below logo + actions */
+    .navbar-inner {
+        flex-wrap: wrap;
+        gap: 10px 12px;
     }
 
-    .navbar-inner {
-        gap: 12px;
+    .navbar-logo {
+        order: 1;
+    }
+
+    .navbar-actions {
+        order: 2;
+        margin-inline-start: auto;
+    }
+
+    .navbar-search {
+        order: 3;
+        flex-basis: 100%;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .search-input {
+        padding: 11px 14px;
+        font-size: 0.95rem;
+    }
+
+    .search-btn {
+        padding: 11px 16px;
+        font-size: 1rem;
+    }
+
+    /* Search dropdown should never overflow viewport */
+    .search-results-header {
+        min-width: 0;
+        max-width: 100vw;
     }
 
     /* Notification dropdown — fit screen */
@@ -961,19 +991,6 @@
 }
 
 @media (max-width: 576px) {
-    .navbar-search {
-        max-width: 140px;
-    }
-
-    .search-input {
-        padding: 8px 10px;
-        font-size: 0.82rem;
-    }
-
-    .search-btn {
-        padding: 8px 10px;
-    }
-
     .nav-action-btn {
         width: 34px;
         height: 34px;
@@ -983,10 +1000,6 @@
 
     .navbar-actions {
         gap: 3px;
-    }
-
-    .navbar-inner {
-        gap: 8px;
     }
 
     .navbar-logo img {
@@ -1007,20 +1020,6 @@
 }
 
 @media (max-width: 400px) {
-    .navbar-search {
-        max-width: 110px;
-    }
-
-    .search-input {
-        padding: 7px 8px;
-        font-size: 0.8rem;
-    }
-
-    .search-btn {
-        padding: 7px 8px;
-        font-size: 0.85rem;
-    }
-
     .nav-action-btn {
         width: 32px;
         height: 32px;
@@ -1032,7 +1031,7 @@
     }
 
     .navbar-inner {
-        gap: 6px;
+        gap: 8px 6px;
     }
 }
 
