@@ -1,4 +1,26 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Mobile filter accordion: tap title to collapse/expand body (≤991px only)
+    const mobileBreakpoint = window.matchMedia('(max-width: 991.98px)');
+    const filterSections = document.querySelectorAll('.filter-section');
+
+    // Collapse all sections by default on mobile (desktop CSS ignores .collapsed)
+    if (mobileBreakpoint.matches) {
+        filterSections.forEach(s => s.classList.add('collapsed'));
+    }
+    mobileBreakpoint.addEventListener('change', e => {
+        if (e.matches) {
+            filterSections.forEach(s => s.classList.add('collapsed'));
+        }
+    });
+
+    document.querySelectorAll('.filter-section .filter-title').forEach(title => {
+        title.addEventListener('click', function (e) {
+            if (!mobileBreakpoint.matches) return;
+            const section = title.closest('.filter-section');
+            if (section) section.classList.toggle('collapsed');
+        });
+    });
+
     // Sidebar categories: show all / show less toggle
     const sidebarToggleBtn = document.querySelector('.toggle-sidebar-categories');
     if (sidebarToggleBtn) {

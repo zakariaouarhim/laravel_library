@@ -609,3 +609,121 @@ body {
     background-color: var(--color-border-light);
 }
 
+/* =========================================================
+   Filter title: chevron (used by mobile accordion only)
+   ========================================================= */
+.filter-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.filter-title > span {
+    flex: 1;
+}
+
+.filter-chevron {
+    display: none; /* hidden on desktop — accordion is mobile-only */
+    font-size: 0.75rem;
+    color: var(--color-primary);
+    transition: transform 0.3s ease;
+}
+
+/* =========================================================
+   Mobile sidebar: pill categories + accordion filters (≤991px)
+   ========================================================= */
+@media (max-width: 991.98px) {
+    /* --- Subcategories rendered as horizontal pills --- */
+    .sidebar-card .category-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .sidebar-card .category-list li {
+        flex: 0 0 auto;
+    }
+
+    .sidebar-card .category-item {
+        padding: 8px 14px;
+        border: 1px solid var(--color-border, #e5e7eb);
+        border-radius: 999px;
+        background-color: #fff;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--color-text);
+    }
+
+    .sidebar-card .category-item:hover {
+        transform: none;
+        background-color: var(--color-primary);
+        color: #fff;
+        border-color: var(--color-primary);
+    }
+
+    .sidebar-card .category-item:hover i {
+        transform: none;
+        color: #fff;
+    }
+
+    /* Hide the leading chevron icon — pills don't need it */
+    .sidebar-card .category-item > i.bi-caret-left-fill {
+        display: none;
+    }
+
+    /* Active pill: filled with primary color */
+    .sidebar-card .active-category .category-item {
+        background-color: var(--color-primary);
+        color: #fff;
+        border-color: var(--color-primary);
+    }
+
+    .sidebar-card .active-category .category-item i {
+        color: #fff;
+        margin-left: 0.4rem;
+    }
+
+    /* Hide the count badge inside pills for a cleaner look */
+    .sidebar-card .category-item .badge {
+        display: none;
+    }
+
+    /* Show-all toggle button stays usable, just tighter */
+    .toggle-sidebar-categories {
+        margin-top: 0.75rem;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    /* --- Filter sections become collapsible accordions --- */
+    .filter-chevron {
+        display: inline-block;
+    }
+
+    .filter-section .filter-title {
+        cursor: pointer;
+        margin-bottom: 0.85rem;
+        padding-block: 0.25rem;
+        user-select: none;
+    }
+
+    .filter-section.collapsed .filter-title {
+        margin-bottom: 0;
+    }
+
+    .filter-section.collapsed .filter-section-body {
+        display: none;
+    }
+
+    .filter-section.collapsed .filter-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* Tighter spacing between sections on mobile */
+    .filter-section {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
