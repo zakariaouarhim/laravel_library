@@ -840,12 +840,29 @@ public function searchBooksAjax(Request $request)
         
         // Final result with pagination
         $books = $query->with(['primaryAuthor', 'publishingHouse'])->paginate(12)->appends($request->query());
+
+        // Sidebar: sibling/child categories ordered by book count, then name
+        if ($category->children->count() > 0) {
+            // Parent category -> show its children
+            $sidebarSource = $category->children()->withCount('books');
+        } elseif ($category->parent) {
+            // Child category -> show siblings (parent's children)
+            $sidebarSource = $category->parent->children()->withCount('books');
+        } else {
+            $sidebarSource = null;
+        }
+
+        $displayCategories = $sidebarSource
+            ? $sidebarSource->orderByDesc('books_count')->orderBy('name')->get()
+            : collect();
+
         return view('by-category', compact(
             'books',
             'category',
             'categories',
             'authors',
-            'publishingHouses'
+            'publishingHouses',
+            'displayCategories'
         ));
     }
 

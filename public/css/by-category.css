@@ -68,6 +68,68 @@ body {
     color: var(--color-primary);
 }
 
+/* Book count badge inside category item */
+.category-item .badge {
+    background-color: var(--color-border-light, #f1f3f5) !important;
+    color: var(--color-text-muted, #6c757d) !important;
+    font-weight: 500;
+    font-size: 0.72rem;
+    padding: 0.28em 0.55em;
+    border-radius: 999px;
+    margin-inline-start: auto;
+    transition: all 0.3s ease;
+}
+
+.category-item:hover .badge {
+    background-color: var(--color-primary) !important;
+    color: #fff !important;
+}
+
+.active-category .category-item .badge {
+    background-color: var(--color-primary) !important;
+    color: #fff !important;
+}
+
+/* Show all / show less toggle for sidebar categories */
+.toggle-sidebar-categories {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.85rem;
+    padding: 0.65rem 0.75rem;
+    background-color: transparent;
+    border: 1px dashed var(--color-border, #e0e0e0);
+    border-radius: var(--radius-sm, 6px);
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.toggle-sidebar-categories:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.toggle-sidebar-categories i {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+}
+
+.toggle-sidebar-categories.expanded {
+    background-color: var(--color-border-light, #f8f9fa);
+    border-style: solid;
+}
+
+.toggle-sidebar-categories.expanded:hover {
+    background-color: var(--color-primary);
+}
+
 /* =================== Filter Styles =================== */
 .filter-section {
     margin-bottom: 1.5rem;

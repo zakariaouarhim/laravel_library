@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Sidebar categories: show all / show less toggle
+    const sidebarToggleBtn = document.querySelector('.toggle-sidebar-categories');
+    if (sidebarToggleBtn) {
+        const extras = document.querySelectorAll('#sidebarCategoryList .category-extra');
+        const showHtml = sidebarToggleBtn.dataset.showHtml;
+        const hideHtml = sidebarToggleBtn.dataset.hideHtml;
+        let expanded = false;
+        sidebarToggleBtn.addEventListener('click', function () {
+            expanded = !expanded;
+            extras.forEach(el => el.classList.toggle('d-none', !expanded));
+            sidebarToggleBtn.innerHTML = expanded ? hideHtml : showHtml;
+            sidebarToggleBtn.classList.toggle('expanded', expanded);
+        });
+    }
+
     const showMoreBtn = document.getElementById('showMoreBtn');
     if (showMoreBtn) {
         showMoreBtn.addEventListener('click', function () {

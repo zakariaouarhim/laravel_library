@@ -60,42 +60,50 @@
                         <h5 class="mb-0"><i class="fas fa-book-open me-2"></i>الأقسام الفرعية</h5>
                     </div>
                     <div class="sidebar-card-body">
-                        {{-- Logic to determine which list to show --}}
                         @php
-                            $displayCategories = collect();
+                            $displayCategories = $displayCategories ?? collect();
 
-                            if (isset($category) && $category) {
-                                if ($category->children->count() > 0) {
-                                    // Case 1: Use is on a Parent category -> Show Children
-                                    $displayCategories = $category->children;
-                                } elseif ($category->parent) {
-                                    // Case 2: User is on a Child category -> Show Siblings (Parent's children)
-                                    $displayCategories = $category->parent->children;
-                                }
-                            }
+                            // Ensure the currently active category is always visible (even if not in top 10).
+                            $activeIndex = isset($category) ? $displayCategories->search(fn($c) => $c->id === $category->id) : false;
+                            $forceShowActive = $activeIndex !== false && $activeIndex >= 10;
+
+                            $sidebarLimit = 10;
+                            $hasMore = $displayCategories->count() > $sidebarLimit;
                         @endphp
 
                         @if($displayCategories->count() > 0)
-                            <ul class="category-list">
-                                @foreach ($displayCategories as $item)
-                                    {{-- Add 'active' class logic if you want to highlight the current child --}}
-                                    <li class="{{ (isset($category) && $category->id == $item->id) ? 'active-category' : '' }}">
+                            <ul class="category-list" id="sidebarCategoryList">
+                                @foreach ($displayCategories as $index => $item)
+                                    @php
+                                        $isActive = isset($category) && $category->id == $item->id;
+                                        $isHidden = $index >= $sidebarLimit && !($forceShowActive && $isActive);
+                                    @endphp
+                                    <li class="{{ $isActive ? 'active-category' : '' }} {{ $isHidden ? 'category-extra d-none' : '' }}">
                                         <a href="{{ route('by-category', ['category' => $item->id]) }}" class="category-item">
-                                            
-                                            {{-- Change icon if this is the currently selected category --}}
-                                            @if(isset($category) && $category->id == $item->id)
+                                            @if($isActive)
                                                 <i class="bi bi-check-circle-fill text-primary"></i>
                                             @else
                                                 <i class="bi bi-caret-left-fill"></i>
                                             @endif
 
-                                            <span class="{{ (isset($category) && $category->id == $item->id) ? 'fw-bold text-primary' : '' }}">
+                                            <span class="{{ $isActive ? 'fw-bold text-primary' : '' }}">
                                                 {{ $item->name }}
                                             </span>
+                                            @if(isset($item->books_count))
+                                                <span class="badge">{{ $item->books_count }}</span>
+                                            @endif
                                         </a>
                                     </li>
                                 @endforeach
                             </ul>
+                            @if($hasMore)
+                                <button type="button" class="toggle-sidebar-categories"
+                                    data-show-html='<i class="fas fa-chevron-down"></i><span>عرض الكل ({{ $displayCategories->count() }})</span>'
+                                    data-hide-html='<i class="fas fa-chevron-up"></i><span>عرض أقل</span>'>
+                                    <i class="fas fa-chevron-down"></i>
+                                    <span>عرض الكل ({{ $displayCategories->count() }})</span>
+                                </button>
+                            @endif
                         @else
                             <p class="text-muted text-center py-3">لا توجد أقسام فرعية</p>
                         @endif
