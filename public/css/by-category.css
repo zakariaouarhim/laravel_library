@@ -634,11 +634,48 @@ body {
    Mobile sidebar: pill categories + accordion filters (≤991px)
    ========================================================= */
 @media (max-width: 991.98px) {
+    /* Prevent any rogue horizontal scroll on mobile */
+    body {
+        overflow-x: hidden;
+    }
+
+    /* Tighten the page container so cards aren't visually inset */
+    body .container {
+        padding-inline: 12px;
+    }
+
+    body .container.py-5 {
+        padding-top: 1.25rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    body .container > .row {
+        --bs-gutter-x: 0.75rem;
+    }
+
+    /* Compact card chrome on mobile */
+    .sidebar-card {
+        margin-bottom: 1rem;
+        border-radius: 12px;
+    }
+
+    .sidebar-card-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .sidebar-card-header h5 {
+        font-size: 1rem;
+    }
+
+    .sidebar-card-body {
+        padding: 1rem;
+    }
+
     /* --- Subcategories rendered as horizontal pills --- */
     .sidebar-card .category-list {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
     }
 
     .sidebar-card .category-list li {
@@ -646,13 +683,14 @@ body {
     }
 
     .sidebar-card .category-item {
-        padding: 8px 14px;
+        padding: 6px 12px;
         border: 1px solid var(--color-border, #e5e7eb);
         border-radius: 999px;
         background-color: #fff;
-        font-size: 0.85rem;
+        font-size: 0.78rem;
         font-weight: 500;
         color: var(--color-text);
+        line-height: 1.4;
     }
 
     .sidebar-card .category-item:hover {
