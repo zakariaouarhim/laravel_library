@@ -287,6 +287,12 @@
 
 <!-- Mobile Bottom Tab Bar -->
 <div class="mobile-bottom-bar" id="mobileBottomBar">
+    <a href="{{ route('index.page') }}" class="bottom-bar-item" data-label="الرئيسية">
+        <span class="bottom-bar-icon">
+            <i class="fas fa-home"></i>
+        </span>
+        <span class="bottom-bar-label">الرئيسية</span>
+    </a>
     <a href="{{ route('wishlist.index') }}" class="bottom-bar-item" data-label="المفضلة">
         <span class="bottom-bar-icon">
             <i class="fas fa-heart"></i>
