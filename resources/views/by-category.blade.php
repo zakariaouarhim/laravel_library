@@ -202,12 +202,12 @@
                         <ul class="pagination pagination-mobile">
                             <li class="page-item {{ $books->onFirstPage() ? 'disabled' : '' }}">
                                 <a class="page-link" href="{{ $books->previousPageUrl() ?? '#' }}" aria-label="Previous">
-                                    السابق &raquo;
+                                   &laquo; السابق 
                                 </a>
                             </li>
                             <li class="page-item {{ !$books->hasMorePages() ? 'disabled' : '' }}">
                                 <a class="page-link" href="{{ $books->nextPageUrl() ?? '#' }}" aria-label="Next">
-                                    &laquo; التالي
+                                     التالي&raquo;
                                 </a>
                             </li>
                         </ul>
