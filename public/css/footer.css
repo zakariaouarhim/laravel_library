@@ -220,6 +220,12 @@ main {
 }
 
 /* =================== Responsive =================== */
+@media (max-width: 991px) {
+    #backToTop {
+        display: none !important;
+    }
+}
+
 @media (max-width: 992px) {
     .footer-grid {
         grid-template-columns: 1fr 1fr;
