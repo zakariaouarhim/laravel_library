@@ -287,21 +287,27 @@
 
 <!-- Mobile Bottom Tab Bar -->
 <div class="mobile-bottom-bar" id="mobileBottomBar">
-    <a href="{{ route('wishlist.index') }}" class="bottom-bar-item">
-        <i class="fas fa-heart"></i>
-        <span>المفضلة</span>
-        @if($wishlistCount > 0)
-        <span class="bottom-bar-badge wishlist-bottom-badge">{{ $wishlistCount }}</span>
-        @endif
+    <a href="{{ route('wishlist.index') }}" class="bottom-bar-item" data-label="المفضلة">
+        <span class="bottom-bar-icon">
+            <i class="fas fa-heart"></i>
+            @if($wishlistCount > 0)
+            <span class="bottom-bar-badge wishlist-bottom-badge">{{ $wishlistCount }}</span>
+            @endif
+        </span>
+        <span class="bottom-bar-label">المفضلة</span>
     </a>
-    <a href="javascript:void(0);" class="bottom-bar-item" onclick="showCartModal()">
-        <i class="fas fa-shopping-cart"></i>
-        <span>السلة</span>
-        <span class="bottom-bar-badge cart-bottom-badge" id="bottomCartCount">{{ session('cart') ? count(session('cart')) : 0 }}</span>
+    <a href="javascript:void(0);" class="bottom-bar-item" onclick="showCartModal()" data-label="السلة">
+        <span class="bottom-bar-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="bottom-bar-badge cart-bottom-badge" id="bottomCartCount">{{ session('cart') ? count(session('cart')) : 0 }}</span>
+        </span>
+        <span class="bottom-bar-label">السلة</span>
     </a>
-    <a href="{{ route('categories.index') }}" class="bottom-bar-item">
-        <i class="fas fa-book-open"></i>
-        <span>الكتب</span>
+    <a href="{{ route('categories.index') }}" class="bottom-bar-item" data-label="الكتب">
+        <span class="bottom-bar-icon">
+            <i class="fas fa-book-open"></i>
+        </span>
+        <span class="bottom-bar-label">الكتب</span>
     </a>
 </div>
 
