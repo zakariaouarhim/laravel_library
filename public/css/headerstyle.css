@@ -1474,7 +1474,13 @@
 
 /* ===== Mobile Bottom Tab Bar ===== */
 .mobile-bottom-bar {
-    display: none;
+    display: none !important;
+}
+
+@media (max-width: 991px) {
+    .mobile-bottom-bar {
+        display: flex !important;
+    }
 }
 
 @media (max-width: 991px) {
