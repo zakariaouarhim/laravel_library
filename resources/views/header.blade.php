@@ -56,7 +56,7 @@
             <!-- Navbar Actions -->
             <div class="navbar-actions">
                 <!-- Wishlist -->
-                <a href="{{ route('wishlist.index') }}" class="nav-action-btn" title="قائمة الأمنيات">
+                <a href="{{ route('wishlist.index') }}" class="nav-action-btn mobile-hide-action" title="قائمة الأمنيات">
                     <i class="fas fa-heart"></i>
                     @if($wishlistCount > 0)
                     <span class="action-badge wishlist-badge">{{ $wishlistCount }}</span>
@@ -64,7 +64,7 @@
                 </a>
 
                 <!-- Cart -->
-                <a href="javascript:void(0);" class="nav-action-btn" onclick="showCartModal()" title="سلة التسوق">
+                <a href="javascript:void(0);" class="nav-action-btn mobile-hide-action" onclick="showCartModal()" title="سلة التسوق">
                     <i class="fas fa-shopping-bag"></i>
                     <span id="cartCount" class="action-badge cart-badge">
                         {{ session('cart') ? count(session('cart')) : 0 }}
@@ -73,7 +73,7 @@
 
                 <!-- Notifications Bell (logged-in users only) -->
                 @if(session('is_logged_in'))
-                <div class="nav-notif-dropdown" id="notifWrapper">
+                <div class="nav-notif-dropdown mobile-hide-action" id="notifWrapper">
                     <button class="nav-action-btn" id="notifToggle" type="button" title="الإشعارات">
                         <i class="fas fa-bell"></i>
                         <span class="action-badge notif-badge" id="notifBadge" style="display:none;"></span>
@@ -91,7 +91,7 @@
                 @endif
 
                 <!-- Account (mobile-visible dropdown) -->
-                <div class="nav-account-dropdown">
+                <div class="nav-account-dropdown mobile-hide-action">
                     <button class="nav-action-btn" id="accountToggle" type="button">
                         <i class="fas fa-user-circle"></i>
                     </button>
@@ -214,12 +214,52 @@
         <button class="mobile-menu-close" id="mobileMenuClose"><i class="fas fa-times"></i></button>
     </div>
 
-    <!-- Mobile Search -->
-    <form action="{{ route('search.results') }}" method="GET" class="mobile-search position-relative">
-        <input type="search" name="query" placeholder="ابحث عن كتاب، مؤلف، ناشر..." autocomplete="off" required>
-        <button type="submit"><i class="fas fa-search"></i></button>
-    </form>
+    {{-- Account Area --}}
+    <div class="mobile-menu-account">
+        @if(session('is_logged_in'))
+            <div class="mobile-account-info">
+                <div class="mobile-avatar">{{ mb_substr(session('user_name', '?'), 0, 1) }}</div>
+                <div>
+                    <strong>{{ session('user_name') }}</strong>
+                    <small>{{ session('user_email') }}</small>
+                </div>
+            </div>
+            <div class="mobile-account-actions">
+                <a href="{{ route('account.page') }}"><i class="fas fa-user"></i> حسابي</a>
+                <a href="{{ route('my-orders.index') }}"><i class="fas fa-box"></i> طلباتي</a>
+                <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                    @csrf
+                    <button type="submit"><i class="fas fa-sign-out-alt"></i> خروج</button>
+                </form>
+            </div>
+        @else
+            <a href="{{ route('login2.page') }}" class="mobile-login-btn">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </a>
+        @endif
+    </div>
 
+    {{-- Quick Links --}}
+    <div class="mobile-menu-quicklinks">
+        <a href="{{ route('wishlist.index') }}">
+            <i class="fas fa-heart"></i>
+            <span>قائمة الأمنيات</span>
+            @if($wishlistCount > 0)
+                <span class="mobile-ql-badge wishlist-ql-badge">{{ $wishlistCount }}</span>
+            @endif
+        </a>
+        <a href="javascript:void(0);" onclick="window.closeMobile(); showCartModal();">
+            <i class="fas fa-shopping-bag"></i>
+            <span>سلة التسوق</span>
+            <span class="mobile-ql-badge cart-ql-badge" id="mobileCartCount">{{ session('cart') ? count(session('cart')) : 0 }}</span>
+        </a>
+        <a href="{{ route('return-requests.index') }}">
+            <i class="fas fa-undo"></i>
+            <span>طلبات الإسترجاع</span>
+        </a>
+    </div>
+
+    {{-- Navigation Links --}}
     <nav class="mobile-nav">
         <a href="{{ route('index.page') }}"><i class="fas fa-home"></i> الرئيسية</a>
         <a href="{{ route('categories.index') }}"><i class="fas fa-th-large"></i> التصنيفات</a>
@@ -230,6 +270,33 @@
         <a href="{{ route('about.page') }}"><i class="fas fa-info-circle"></i> من نحن</a>
         <a href="{{ route('contact.page') }}"><i class="fas fa-envelope"></i> اتصل بنا</a>
     </nav>
+
+    {{-- Contact Info --}}
+    <div class="mobile-menu-contact">
+        <a href="tel:+212691218840" dir="ltr"><i class="fas fa-phone-alt"></i> +212 69 121 8840</a>
+        <a href="https://wa.me/212691218840" target="_blank" rel="noopener" dir="ltr"><i class="fab fa-whatsapp"></i> واتساب</a>
+        <a href="mailto:info@maktaba-fukara.com"><i class="fas fa-envelope"></i> info@maktaba-fukara.com</a>
+    </div>
+</div>
+
+<!-- Mobile Bottom Tab Bar -->
+<div class="mobile-bottom-bar" id="mobileBottomBar">
+    <a href="{{ route('wishlist.index') }}" class="bottom-bar-item">
+        <i class="fas fa-heart"></i>
+        <span>المفضلة</span>
+        @if($wishlistCount > 0)
+        <span class="bottom-bar-badge wishlist-bottom-badge">{{ $wishlistCount }}</span>
+        @endif
+    </a>
+    <a href="javascript:void(0);" class="bottom-bar-item" onclick="showCartModal()">
+        <i class="fas fa-shopping-cart"></i>
+        <span>السلة</span>
+        <span class="bottom-bar-badge cart-bottom-badge" id="bottomCartCount">{{ session('cart') ? count(session('cart')) : 0 }}</span>
+    </a>
+    <a href="{{ route('categories.index') }}" class="bottom-bar-item">
+        <i class="fas fa-book-open"></i>
+        <span>الكتب</span>
+    </a>
 </div>
 
 @include('cartmodals')

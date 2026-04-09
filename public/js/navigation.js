@@ -51,6 +51,32 @@
     if (mobileClose) mobileClose.addEventListener('click', closeMobile);
     if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobile);
 
+    // Expose closeMobile so the slide-menu cart link can call it
+    window.closeMobile = closeMobile;
+
+    // Sync cart badge to bottom bar + mobile menu whenever #cartCount changes
+    var headerCartBadge = document.getElementById('cartCount');
+    if (headerCartBadge) {
+        var badgeObserver = new MutationObserver(function() {
+            var count = headerCartBadge.textContent.trim();
+            var bottomBadge = document.getElementById('bottomCartCount');
+            var mobileBadge = document.getElementById('mobileCartCount');
+            if (bottomBadge) bottomBadge.textContent = count;
+            if (mobileBadge) mobileBadge.textContent = count;
+        });
+        badgeObserver.observe(headerCartBadge, { childList: true, characterData: true, subtree: true });
+    }
+
+    // Bottom bar: highlight active item based on current path
+    var bottomItems = document.querySelectorAll('.bottom-bar-item');
+    var currentPath = window.location.pathname;
+    bottomItems.forEach(function(item) {
+        var href = item.getAttribute('href');
+        if (href && href !== 'javascript:void(0);' && currentPath.indexOf(href) === 0) {
+            item.classList.add('active');
+        }
+    });
+
     // Sticky navbar — hide top bar on scroll, navbar + nav links stick together
     var topBar = document.getElementById('topBar');
     var mainNavbar = document.getElementById('mainNavbar');
