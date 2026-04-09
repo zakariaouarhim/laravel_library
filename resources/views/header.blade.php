@@ -253,10 +253,16 @@
             <span>سلة التسوق</span>
             <span class="mobile-ql-badge cart-ql-badge" id="mobileCartCount">{{ session('cart') ? count(session('cart')) : 0 }}</span>
         </a>
-        <a href="{{ route('return-requests.index') }}">
-            <i class="fas fa-undo"></i>
-            <span>طلبات الإسترجاع</span>
-        </a>
+        <div class="mobile-track-order">
+            <label><i class="fas fa-truck"></i> تعقب طلباتي</label>
+            <form action="{{ route('trackmyorder') }}" method="POST">
+                @csrf
+                <div class="track-input-group">
+                    <input type="text" name="trackOrderInput" placeholder="رقم التتبع أو البريد" required>
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+        </div>
     </div>
 
     {{-- Navigation Links --}}
