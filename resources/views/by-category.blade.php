@@ -193,8 +193,24 @@
                 </div>
                     <!-- Pagination -->
                     @if($books instanceof \Illuminate\Pagination\Paginator || $books instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                    <nav>
+                    {{-- Desktop: full numbered pagination --}}
+                    <nav class="d-none d-lg-block">
                         {{ $books->links('pagination::bootstrap-4') }}
+                    </nav>
+                    {{-- Mobile: prev / next only --}}
+                    <nav class="d-lg-none">
+                        <ul class="pagination pagination-mobile">
+                            <li class="page-item {{ $books->onFirstPage() ? 'disabled' : '' }}">
+                                <a class="page-link" href="{{ $books->previousPageUrl() ?? '#' }}" aria-label="Previous">
+                                    السابق &raquo;
+                                </a>
+                            </li>
+                            <li class="page-item {{ !$books->hasMorePages() ? 'disabled' : '' }}">
+                                <a class="page-link" href="{{ $books->nextPageUrl() ?? '#' }}" aria-label="Next">
+                                    &laquo; التالي
+                                </a>
+                            </li>
+                        </ul>
                     </nav>
                     @endif
                 

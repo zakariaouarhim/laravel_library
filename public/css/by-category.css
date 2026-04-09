@@ -764,24 +764,43 @@ body {
         padding-bottom: 1rem;
     }
 
-    /* --- Pagination: wrap on mobile so it can't push the layout wider --- */
-    .pagination {
-        flex-wrap: wrap;
-        gap: 4px;
-        max-width: 100%;
-        padding-inline: 0;
-        margin-inline: 0;
+    /* --- Mobile pagination: prev/next buttons --- */
+    .pagination-mobile {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0;
+        margin-top: 1.5rem;
     }
 
-    .pagination .page-item {
+    .pagination-mobile .page-item {
+        flex: 1;
         margin: 0;
     }
 
-    .pagination .page-link {
-        padding: 0.35rem 0.6rem;
-        font-size: 0.82rem;
-        min-width: 32px;
+    .pagination-mobile .page-link {
+        display: block;
         text-align: center;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: var(--radius-sm, 8px);
+        border: 1.5px solid var(--color-border, #e0e6ed);
+        color: var(--color-text);
+        background-color: #fff;
+        transition: all 0.2s ease;
+    }
+
+    .pagination-mobile .page-link:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        background-color: var(--color-accent-bg, #f0f4ff);
+    }
+
+    .pagination-mobile .page-item.disabled .page-link {
+        opacity: 0.4;
+        pointer-events: none;
+        background-color: var(--color-bg-light, #f8f9fa);
     }
 }
 
