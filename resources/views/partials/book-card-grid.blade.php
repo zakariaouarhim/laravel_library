@@ -26,7 +26,7 @@
                 @if($book->is_new ?? false)
                     <span class="badge bg-success">جديد</span>
                 @endif
-                @if($book->discount ?? 0 > 0)
+                @if(($book->discount ?? 0) > 0)
                     <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
                 @endif
             @endif

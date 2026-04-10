@@ -34,6 +34,8 @@ class Book extends Model
         'page_num',
         'language',
         'publishing_house_id',
+        'series_id',
+        'volume_number',
         'isbn',
         'quantity',
         'api_data_status',
@@ -164,6 +166,17 @@ class Book extends Model
     public function publishingHouse()
     {
         return $this->belongsTo(PublishingHouse::class, 'publishing_house_id');
+    }
+
+    // Relationship to series
+    public function series()
+    {
+        return $this->belongsTo(Series::class);
+    }
+
+    public function isPartOfSeries(): bool
+    {
+        return !is_null($this->series_id);
     }
 
     // Get authors by type

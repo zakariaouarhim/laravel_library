@@ -122,6 +122,28 @@ class ImageService
     }
 
     /**
+     * Process and store a series cover image as WebP, resized to 400px wide.
+     * Deletes the old image if provided.
+     *
+     * @return string Relative storage path to the saved image
+     */
+    public function processSeriesImage(UploadedFile $file, ?string $oldPath = null): string
+    {
+        if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $image = Image::read($file);
+        $image->scale(width: 400);
+        $encoded = $image->toWebp(80);
+
+        $filename = 'series/' . uniqid('series_') . '.webp';
+        Storage::disk('public')->put($filename, (string) $encoded);
+
+        return $filename;
+    }
+
+    /**
      * Process an uploaded avatar image: resize to 300px wide WebP.
      * Deletes the old avatar if provided.
      *

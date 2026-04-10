@@ -13,6 +13,7 @@ use App\Services\BookAdminService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Follow;
+use App\Models\Series;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Auth;
 
@@ -262,7 +263,7 @@ class BookController extends Controller
     public function getProductById($id)
 {
     try {
-        $product = Book::with(['category', 'primaryAuthor', 'publishingHouse'])->find($id);
+        $product = Book::with(['category', 'primaryAuthor', 'publishingHouse', 'series'])->find($id);
 
         if ($product) {
             return response()->json([
@@ -302,7 +303,9 @@ public function addProduct(Request $request)
         'primary_category_id' => 'required|in_array:categories.*',
         'productQuantity' => 'required|integer|min:0',
         'productImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
-        'auto_enrich' => 'nullable|boolean'
+        'auto_enrich' => 'nullable|boolean',
+        'series_id' => 'nullable|exists:series,id',
+        'volume_number' => 'nullable|integer|min:1',
     ]);
 
     $imagePath = null;
@@ -332,6 +335,8 @@ public function addProduct(Request $request)
         $product->publishing_house_id = $publishingHouseId;
         $product->isbn = $validated['productIsbn'] ?? null;
         $product->quantity = $validated['productQuantity'];
+        $product->series_id = $validated['series_id'] ?? null;
+        $product->volume_number = $validated['volume_number'] ?? null;
         $product->api_data_status = 'pending';
 
         // Handle Algolia/Scout crash gracefully
@@ -905,16 +910,19 @@ public function searchBooksAjax(Request $request)
         $availableProducts = Book::where('quantity', '>', 0)->count();
         $totalCategories = DB::table('book_category')->distinct('category_id')->count('category_id');
 
+        $allSeries = Series::orderBy('name')->get(['id', 'name']);
+
         return view('Dashbord_Admin.product', compact(
             'products',
             'totalProducts',
             'availableProducts',
             'totalCategories',
-            'categories'
+            'categories',
+            'allSeries'
         ));
     }
     public function viewProduct($id){
-        $product = Book::with(['categories', 'primaryAuthor', 'publishingHouse'])->findOrFail($id);
+        $product = Book::with(['categories', 'primaryAuthor', 'publishingHouse', 'series'])->findOrFail($id);
 
         return response()->json($product);
     }
@@ -937,7 +945,9 @@ public function searchBooksAjax(Request $request)
                 'categories.*' => 'exists:categories,id',
                 'primary_category_id' => 'nullable|in_array:categories.*',
                 'category_id' => 'nullable|integer|exists:categories,id',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048'
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
+                'series_id' => 'nullable|exists:series,id',
+                'volume_number' => 'nullable|integer|min:1',
             ]);
 
             $author = $this->adminService->findOrCreateAuthor($validated['author']);
@@ -954,6 +964,8 @@ public function searchBooksAjax(Request $request)
             $product->publishing_house_id = $publishingHouseId;
             $product->isbn = $validated['isbn'] ?? null;
             $product->quantity = $validated['quantity'];
+            $product->series_id = $validated['series_id'] ?? null;
+            $product->volume_number = $validated['volume_number'] ?? null;
 
             // Handle categories
             if (!empty($validated['categories'])) {

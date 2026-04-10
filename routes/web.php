@@ -32,6 +32,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ReadingShelfController;
 use App\Http\Controllers\AdminReportsController;
+use App\Http\Controllers\AdminSeriesController;
 
 
 
@@ -155,6 +156,13 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/categories',                  [AdminCategoryController::class, 'store'])->name('categories.store');
     Route::put('/categories/{category}',        [AdminCategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}',     [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+
+    // Series management
+    Route::get('/series',                [AdminSeriesController::class, 'index'])->name('series.index');
+    Route::post('/series',               [AdminSeriesController::class, 'store'])->name('series.store');
+    Route::put('/series/{series}',       [AdminSeriesController::class, 'update'])->name('series.update');
+    Route::delete('/series/{series}',    [AdminSeriesController::class, 'destroy'])->name('series.destroy');
+    Route::get('/search-series',         [AdminSeriesController::class, 'search'])->name('search.series');
 
     // Contact messages
     Route::get('/contact-messages', [AdminContactController::class, 'index'])->name('contact-messages.index');

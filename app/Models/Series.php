@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Series extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'author_id',
+        'total_volumes',
+        'cover_image',
+        'is_complete',
+    ];
+
+    protected $casts = [
+        'is_complete' => 'boolean',
+        'total_volumes' => 'integer',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Series $series) {
+            if (empty($series->slug)) {
+                $base = trim($series->name);
+                // Keep Arabic characters, letters, and numbers; replace everything else with hyphens
+                $slug = preg_replace('/[^\p{Arabic}\p{L}\p{N}]+/u', '-', $base);
+                $slug = trim($slug, '-');
+                if (empty($slug)) {
+                    $slug = uniqid('series-');
+                }
+                // Ensure uniqueness (check soft-deleted records too)
+                $original = $slug;
+                $i = 1;
+                while (static::withTrashed()->where('slug', $slug)->exists()) {
+                    $slug = $original . '-' . $i++;
+                }
+                $series->slug = $slug;
+            }
+        });
+    }
+
+    public function books()
+    {
+        return $this->hasMany(Book::class)->orderBy('volume_number');
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(Author::class);
+    }
+
+    public function scopeComplete($query)
+    {
+        return $query->where('is_complete', true);
+    }
+
+    public function scopeOngoing($query)
+    {
+        return $query->where('is_complete', false);
+    }
+}

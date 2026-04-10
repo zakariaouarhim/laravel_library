@@ -295,6 +295,29 @@
                                     <input type="text" class="form-control" id="productQuantity" name="productQuantity" required>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">السلسلة <small class="text-muted">(اختياري)</small></label>
+                                    <select name="series_id" id="productSeriesId" class="form-select">
+                                        <option value="">— بدون سلسلة —</option>
+                                        @foreach($allSeries ?? [] as $s)
+                                            <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">رقم الجزء</label>
+                                    <input type="number" class="form-control" name="volume_number" id="productVolumeNumber" min="1" placeholder="مثال: 1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الفئات <small class="text-muted">(اختر واحدة أو أكثر)</small></label>
@@ -446,6 +469,29 @@
                                     <input type="text" class="form-control" id="editProductQuantity" name="quantity" required>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">السلسلة <small class="text-muted">(اختياري)</small></label>
+                                    <select name="series_id" id="editSeriesId" class="form-select">
+                                        <option value="">— بدون سلسلة —</option>
+                                        @foreach($allSeries ?? [] as $s)
+                                            <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">رقم الجزء</label>
+                                    <input type="number" class="form-control" name="volume_number" id="editVolumeNumber" min="1" placeholder="مثال: 1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الفئات <small class="text-muted">(اختر واحدة أو أكثر)</small></label>
@@ -559,6 +605,8 @@
             document.getElementById('editProductISBN').value = product.isbn;
             document.getElementById('editProductPublishingHouse').value = product.publishing_house_name;
             document.getElementById('editProductQuantity').value = product.quantity;
+            document.getElementById('editSeriesId').value = product.series_id || '';
+            document.getElementById('editVolumeNumber').value = product.volume_number || '';
 
             if (product.image) {
                 const preview = document.getElementById('editProductImagePreview');

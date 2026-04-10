@@ -52,6 +52,12 @@ class Author extends Model
                     ->withTimestamps();
     }
 
+    // Series by this author
+    public function series()
+    {
+        return $this->hasMany(Series::class);
+    }
+
     // Scope for active authors
     public function scopeActive($query)
     {
