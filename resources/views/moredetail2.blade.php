@@ -150,7 +150,7 @@
                         @if(($book->original_price ?? 0) > $book->price)
                         <span class="v2-original-price">{{ $book->original_price }} د.م</span>
                         @endif
-                        @if($book->discount ?? 0 > 0)
+                        @if(($book->discount ?? 0) > 0)
                         <span class="v2-discount-pill">وفّر {{ $book->discount }}%</span>
                         @endif
                     </div>
