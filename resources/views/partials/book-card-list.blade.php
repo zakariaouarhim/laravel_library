@@ -5,6 +5,9 @@
     <div>
         <h5><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h5>
         <p><i class="fas fa-user-edit me-1"></i>{{ $book->author_name }}</p>
+        @if($book->relationLoaded('series') && $book->series)
+            <p class="book-series"><i class="fas fa-layer-group me-1"></i>{{ $book->series->name }}@if($book->volume_number) — الجزء {{ $book->volume_number }}@endif</p>
+        @endif
         @if(($book->reviews_count ?? 0) > 0)
         <div class="book-card-rating">
             @php $avgRating = round($book->reviews_avg_rating ?? 0, 1); @endphp

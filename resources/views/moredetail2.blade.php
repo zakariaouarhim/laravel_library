@@ -120,6 +120,17 @@
                         @endif
                     </div>
 
+                    <!-- Series info -->
+                    @if($book->series)
+                    <div class="v2-series-badge">
+                        <i class="fas fa-layer-group"></i>
+                        <span>{{ $book->series->name }}</span>
+                        @if($book->volume_number)
+                            <span class="v2-volume-num">الجزء {{ $book->volume_number }}@if($book->series->total_volumes) من {{ $book->series->total_volumes }}@endif</span>
+                        @endif
+                    </div>
+                    @endif
+
                     <!-- Rating summary -->
                     @if($book->reviews_count > 0)
                     <div class="v2-rating">
@@ -236,6 +247,15 @@
                             </div>
                         </div>
                         @endif
+                        @if($book->series)
+                        <div class="v2-stat">
+                            <i class="fas fa-layer-group"></i>
+                            <div>
+                                <span class="v2-stat-label">السلسلة</span>
+                                <span class="v2-stat-value">{{ $book->series->name }}</span>
+                            </div>
+                        </div>
+                        @endif
                         @if($book->isbn)
                         <div class="v2-stat">
                             <i class="fas fa-barcode"></i>
@@ -280,6 +300,12 @@
                             <div class="v2-detail-row"><span>عدد الصفحات</span><span>{{ $book->page_num }}</span></div>
                             @if($book->publishingHouse)
                             <div class="v2-detail-row"><span>دار النشر</span><a href="{{ route('publisher.show', $book->publishing_house_id) }}" class="v2-stat-link">{{ $book->publishingHouse->name }}</a></div>
+                            @endif
+                            @if($book->series)
+                            <div class="v2-detail-row"><span>السلسلة</span><span>{{ $book->series->name }}</span></div>
+                            @if($book->volume_number)
+                            <div class="v2-detail-row"><span>رقم الجزء</span><span>{{ $book->volume_number }}@if($book->series->total_volumes) من {{ $book->series->total_volumes }}@endif</span></div>
+                            @endif
                             @endif
                         </div>
                     </div>
@@ -549,6 +575,9 @@
         </div>
 
         <!-- Carousels -->
+        @if(isset($seriesBooks) && $seriesBooks->isNotEmpty())
+            <x-book-carousel :books="$seriesBooks" title="باقي أجزاء {{ $book->series->name }}" />
+        @endif
         <x-book-carousel :books="$relatedBooks" title="كتب ذات صلة" />
         @if($publisherBooks->count() > 0)
             <x-book-carousel :books="$publisherBooks" title="المزيد من {{ $book->publishingHouse->name ?? 'دار النشر' }}" />

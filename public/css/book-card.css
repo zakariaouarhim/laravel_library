@@ -160,6 +160,17 @@
     color: var(--color-secondary);
 }
 
+.book-card .book-series {
+    color: var(--color-text-grey);
+    font-size: 12px;
+    margin-top: -10px;
+    margin-bottom: 8px;
+}
+.book-card .book-series i {
+    color: var(--color-primary, #2563eb);
+    font-size: 11px;
+}
+
 /* Star Rating on Cards */
 .book-card-rating {
     display: flex;

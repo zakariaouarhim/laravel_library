@@ -133,7 +133,7 @@ class BookController extends Controller
 
     private function getBookPageData($id)
     {
-        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse', 'reviewsWithUsers', 'quotesWithUsers'])
+        $book = Book::with(['category.parent', 'categories', 'primaryAuthor', 'publishingHouse', 'series', 'reviewsWithUsers', 'quotesWithUsers'])
             ->withCount('reviews')
             ->withAvg('reviews as reviews_avg_rating', 'rating')
             ->findOrFail($id);
@@ -194,12 +194,24 @@ class BookController extends Controller
             $shelfStatus = $shelf?->status;
         }
 
+        // Other books in the same series
+        $seriesBooks = collect();
+        if ($book->series_id) {
+            $seriesBooks = Book::with('primaryAuthor')
+                ->where('series_id', $book->series_id)
+                ->where('id', '!=', $book->id)
+                ->orderBy('volume_number')
+                ->withCount('reviews')
+                ->withAvg('reviews as reviews_avg_rating', 'rating')
+                ->get();
+        }
+
         $recentlyViewed = session()->get('recently_viewed', []);
         $recentlyViewed = array_diff($recentlyViewed, [$id]);
         array_unshift($recentlyViewed, (int) $id);
         session()->put('recently_viewed', array_slice($recentlyViewed, 0, 10));
 
-        return compact('book', 'relatedBooks', 'authors', 'publishingHouses', 'primaryAuthor', 'authorBooks', 'publisherBooks', 'alsoBoughtBooks', 'shelfStatus');
+        return compact('book', 'relatedBooks', 'authors', 'publishingHouses', 'primaryAuthor', 'authorBooks', 'publisherBooks', 'alsoBoughtBooks', 'seriesBooks', 'shelfStatus');
     }
 
     public function getProductsApi(Request $request)
@@ -624,7 +636,8 @@ public function searchBooksAjax(Request $request)
                 'primaryAuthor',
                 'authors',
                 'publishingHouse',
-                'category'
+                'category',
+                'series'
             ])->withCount('reviews')
               ->withAvg('reviews as reviews_avg_rating', 'rating')
               ->where('type', 'book')

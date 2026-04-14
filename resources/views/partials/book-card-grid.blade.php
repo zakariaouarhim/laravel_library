@@ -44,6 +44,9 @@
         @elseif($book->author_name)
             <p class="book-author"><i class="fas fa-user-edit"></i> {{ $book->author_name }}</p>
         @endif
+        @if($book->relationLoaded('series') && $book->series)
+            <p class="book-series"><i class="fas fa-layer-group"></i> {{ $book->series->name }}@if($book->volume_number) — الجزء {{ $book->volume_number }}@endif</p>
+        @endif
 
         @if(($book->reviews_count ?? 0) > 0)
         <div class="book-card-rating">
