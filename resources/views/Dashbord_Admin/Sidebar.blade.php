@@ -1,3 +1,13 @@
+<!-- Mobile sidebar toggle (hamburger) -->
+<button class="sidebar-mobile-toggle" id="sidebarMobileToggle" aria-label="فتح القائمة">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+</button>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
 <nav id="sidebarMenu" class="sidebar">
     <!-- Sidebar Header -->
     <div class="sidebar-header">
@@ -247,14 +257,49 @@
     });
 
     /**
+     * Mobile sidebar toggle (hamburger + backdrop)
+     */
+    const mobileToggle = document.getElementById('sidebarMobileToggle');
+    const backdrop = document.getElementById('sidebarBackdrop');
+
+    function openMobileSidebar() {
+        sidebar.classList.add('open');
+        backdrop?.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobileSidebar() {
+        sidebar.classList.remove('open');
+        backdrop?.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    mobileToggle?.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (sidebar.classList.contains('open')) {
+            closeMobileSidebar();
+        } else {
+            openMobileSidebar();
+        }
+    });
+
+    backdrop?.addEventListener('click', closeMobileSidebar);
+
+    /**
      * Close sidebar when clicking on a nav link (mobile)
      */
     document.querySelectorAll('.sidebar-nav-item').forEach(link => {
         link.addEventListener('click', function() {
             if (window.innerWidth <= 768) {
-                sidebar.classList.remove('open');
+                closeMobileSidebar();
             }
         });
+    });
+
+    // Reset state when resizing above mobile breakpoint
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
     });
 
 </script>
