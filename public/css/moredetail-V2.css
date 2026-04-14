@@ -344,6 +344,13 @@
     font-size: 0.88rem;
     color: var(--color-text, #333);
     margin-bottom: 12px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+.v2-series-badge:hover {
+    background: var(--color-primary-light, #eef2ff);
+    border-color: var(--color-primary, #2563eb);
+    color: var(--color-primary, #2563eb);
 }
 .v2-series-badge i {
     color: var(--color-primary);

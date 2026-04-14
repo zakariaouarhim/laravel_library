@@ -263,6 +263,8 @@ Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('autho
 Route::get('/publishers', [PublisherController::class, 'publicIndex'])->name('publishers.index');
 Route::get('/publisher/{id}', [PublisherController::class, 'publicShow'])->name('publisher.show');
 
+Route::get('/series/{id}', [AdminSeriesController::class, 'publicShow'])->name('series.show');
+
 // ==================== NOTIFICATIONS & FOLLOWS ====================
 
 Route::middleware('auth')->group(function () {

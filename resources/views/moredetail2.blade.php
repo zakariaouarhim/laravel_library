@@ -122,13 +122,13 @@
 
                     <!-- Series info -->
                     @if($book->series)
-                    <div class="v2-series-badge">
+                    <a href="{{ route('series.show', $book->series->id) }}" class="v2-series-badge">
                         <i class="fas fa-layer-group"></i>
                         <span>{{ $book->series->name }}</span>
                         @if($book->volume_number)
                             <span class="v2-volume-num">الجزء {{ $book->volume_number }}@if($book->series->total_volumes) من {{ $book->series->total_volumes }}@endif</span>
                         @endif
-                    </div>
+                    </a>
                     @endif
 
                     <!-- Rating summary -->
@@ -252,7 +252,7 @@
                             <i class="fas fa-layer-group"></i>
                             <div>
                                 <span class="v2-stat-label">السلسلة</span>
-                                <span class="v2-stat-value">{{ $book->series->name }}</span>
+                                <a href="{{ route('series.show', $book->series->id) }}" class="v2-stat-value v2-stat-link">{{ $book->series->name }}</a>
                             </div>
                         </div>
                         @endif
@@ -302,7 +302,7 @@
                             <div class="v2-detail-row"><span>دار النشر</span><a href="{{ route('publisher.show', $book->publishing_house_id) }}" class="v2-stat-link">{{ $book->publishingHouse->name }}</a></div>
                             @endif
                             @if($book->series)
-                            <div class="v2-detail-row"><span>السلسلة</span><span>{{ $book->series->name }}</span></div>
+                            <div class="v2-detail-row"><span>السلسلة</span><a href="{{ route('series.show', $book->series->id) }}" class="v2-stat-link">{{ $book->series->name }}</a></div>
                             @if($book->volume_number)
                             <div class="v2-detail-row"><span>رقم الجزء</span><span>{{ $book->volume_number }}@if($book->series->total_volumes) من {{ $book->series->total_volumes }}@endif</span></div>
                             @endif

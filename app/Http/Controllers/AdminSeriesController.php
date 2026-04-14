@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\Series;
 use App\Models\Author;
 use App\Services\ImageService;
@@ -102,6 +103,20 @@ class AdminSeriesController extends Controller
         $series->delete();
 
         return response()->json(['success' => true, 'message' => 'تم حذف السلسلة بنجاح.']);
+    }
+
+    public function publicShow($id)
+    {
+        $series = Series::with('author')->withCount('books')->findOrFail($id);
+
+        $books = Book::with('primaryAuthor')
+            ->where('series_id', $series->id)
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
+            ->orderBy('volume_number')
+            ->paginate(24);
+
+        return view('series', compact('series', 'books'));
     }
 
     public function search(Request $request)
