@@ -574,3 +574,21 @@
     margin-top: 2px;
     font-weight: 500;
 }
+
+/* Series carousel card */
+.series-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s ease;
+}
+.series-card:hover {
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: inherit;
+}
+.series-card .series-meta {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 4px;
+}

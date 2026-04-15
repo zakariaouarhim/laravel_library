@@ -52,12 +52,20 @@
             <x-book-carousel :books="$popularBooks" title="الأكثر مبيعا" />
         </div>
 
+        <div id="arabic-series">
+            <x-series-carousel :series="$arabicSeries" title="سلاسل عربية" />
+        </div>
+
         <div id="Accessories">
             <x-book-carousel :books="$accessories" title="إكسسوارات القراءة" />
         </div>
 
         <div id="english-books">
             <x-book-carousel :books="$englishBooks" title="كتب بالإنجليزية" />
+        </div>
+
+        <div id="english-series">
+            <x-series-carousel :series="$englishSeries" title="سلاسل إنجليزية" />
         </div>
 
         @if($recentlyViewed->count() > 0)

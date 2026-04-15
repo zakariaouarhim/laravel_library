@@ -751,7 +751,25 @@ public function searchBooksAjax(Request $request)
             }
         }
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows'));
+        $arabicSeries = Cache::remember('arabic_series_home', 1800, function () {
+            return Series::inLanguage('Arabic')
+                ->with('author')
+                ->withCount('books')
+                ->orderByDesc('books_count')
+                ->limit(10)
+                ->get();
+        });
+
+        $englishSeries = Cache::remember('english_series_home', 1800, function () {
+            return Series::inLanguage('English')
+                ->with('author')
+                ->withCount('books')
+                ->orderByDesc('books_count')
+                ->limit(10)
+                ->get();
+        });
+
+        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries'));
     }
     // Additional method to handle book creation with author assignment
     public function store(Request $request)

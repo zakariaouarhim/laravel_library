@@ -67,6 +67,14 @@ class Series extends Model
         return $query->where('is_complete', false);
     }
 
+    // Series whose volumes include at least one book in the given language.
+    // A mixed-language series will appear in both language-specific carousels,
+    // which is acceptable since it is genuinely relevant to both audiences.
+    public function scopeInLanguage($query, string $language)
+    {
+        return $query->whereHas('books', fn($q) => $q->where('language', $language));
+    }
+
     // Series language is derived from its volumes (most common language wins).
     // Returns null when the series has no books or no languages set.
     public function getLanguageAttribute(): ?string
