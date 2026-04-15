@@ -169,9 +169,15 @@ class AdminBundleController extends Controller
         $primaryAuthorId   = $firstItem->author_id;
         $primaryCategoryId = $firstItem->category_id;
 
+        $languages = $items->pluck('language')->filter();
+        $language  = $languages->isNotEmpty()
+            ? $languages->countBy()->sortDesc()->keys()->first()
+            : $firstItem->language;
+
         $bundle->update([
             'author_id'   => $primaryAuthorId,
             'category_id' => $primaryCategoryId,
+            'language'    => $language,
         ]);
 
         // Union of authors across items — keep the chosen primary as 'primary',

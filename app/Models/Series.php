@@ -66,4 +66,24 @@ class Series extends Model
     {
         return $query->where('is_complete', false);
     }
+
+    // Series language is derived from its volumes (most common language wins).
+    // Returns null when the series has no books or no languages set.
+    public function getLanguageAttribute(): ?string
+    {
+        $books = $this->relationLoaded('books')
+            ? $this->books
+            : $this->books()->get(['id', 'series_id', 'language']);
+
+        $languages = $books->pluck('language')->filter();
+        if ($languages->isEmpty()) return null;
+
+        return $languages->countBy()->sortDesc()->keys()->first();
+    }
+
+    public function getLanguageLabelAttribute(): ?string
+    {
+        $lang = $this->language;
+        return $lang ? (Book::LANGUAGE_LABELS[$lang] ?? $lang) : null;
+    }
 }
