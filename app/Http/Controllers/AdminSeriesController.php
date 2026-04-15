@@ -110,13 +110,19 @@ class AdminSeriesController extends Controller
         $series = Series::with('author')->withCount('books')->findOrFail($id);
 
         $books = Book::with('primaryAuthor')
+            ->standardOnly()
             ->where('series_id', $series->id)
             ->withCount('reviews')
             ->withAvg('reviews as reviews_avg_rating', 'rating')
             ->orderBy('volume_number')
             ->paginate(24);
 
-        return view('series', compact('series', 'books'));
+        $bundles = Book::onlyBundles()
+            ->where('series_id', $series->id)
+            ->with(['items' => fn($q) => $q->orderBy('volume_number')])
+            ->get();
+
+        return view('series', compact('series', 'books', 'bundles'));
     }
 
     public function search(Request $request)

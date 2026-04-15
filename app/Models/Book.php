@@ -25,6 +25,7 @@ class Book extends Model
     protected $fillable = [
         'title',
         'type',
+        'product_type',
         'author_id',
         'description',
         'price',
@@ -177,6 +178,71 @@ class Book extends Model
     public function isPartOfSeries(): bool
     {
         return !is_null($this->series_id);
+    }
+
+    // Bundle: books included in this bundle (only meaningful when product_type = 'bundle')
+    public function items()
+    {
+        return $this->belongsToMany(Book::class, 'bundle_items', 'bundle_id', 'book_id')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
+    }
+
+    // Bundle: bundles that include this (standard) book
+    public function bundles()
+    {
+        return $this->belongsToMany(Book::class, 'bundle_items', 'book_id', 'bundle_id')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
+    }
+
+    public function isBundle(): bool
+    {
+        return $this->product_type === 'bundle';
+    }
+
+    public function isStandard(): bool
+    {
+        return $this->product_type !== 'bundle';
+    }
+
+    // A standard volume is sold individually unless it's part of at least one bundle.
+    public function isOnlySoldInBundle(): bool
+    {
+        if ($this->isBundle()) return false;
+        if ($this->relationLoaded('bundles')) {
+            return $this->bundles->isNotEmpty();
+        }
+        return $this->bundles()->exists();
+    }
+
+    // Sum of the member volumes' individual prices (used for "you save X").
+    public function getItemsTotalPriceAttribute(): float
+    {
+        if (!$this->isBundle() || !$this->relationLoaded('items')) return 0;
+        return (float) $this->items->sum(function ($item) {
+            $qty = $item->pivot->quantity ?? 1;
+            return ((float) $item->price) * $qty;
+        });
+    }
+
+    public function getBundleSavingsAttribute(): float
+    {
+        if (!$this->isBundle()) return 0;
+        $total = $this->items_total_price;
+        $diff = $total - (float) $this->price;
+        return $diff > 0 ? $diff : 0;
+    }
+
+    // Exclude bundles from listings by default; opt-in via ->withBundles() or ->onlyBundles().
+    public function scopeStandardOnly($query)
+    {
+        return $query->where('product_type', 'standard');
+    }
+
+    public function scopeOnlyBundles($query)
+    {
+        return $query->where('product_type', 'bundle');
     }
 
     // Get authors by type

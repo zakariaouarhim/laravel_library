@@ -33,6 +33,7 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ReadingShelfController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminSeriesController;
+use App\Http\Controllers\AdminBundleController;
 
 
 
@@ -163,6 +164,14 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/series/{series}',       [AdminSeriesController::class, 'update'])->name('series.update');
     Route::delete('/series/{series}',    [AdminSeriesController::class, 'destroy'])->name('series.destroy');
     Route::get('/search-series',         [AdminSeriesController::class, 'search'])->name('search.series');
+
+    // Bundles management
+    Route::get('/bundles',                       [AdminBundleController::class, 'index'])->name('bundles.index');
+    Route::get('/bundles/{bundle}',              [AdminBundleController::class, 'show'])->name('bundles.show');
+    Route::post('/bundles',                      [AdminBundleController::class, 'store'])->name('bundles.store');
+    Route::post('/bundles/{bundle}',             [AdminBundleController::class, 'update'])->name('bundles.update');
+    Route::delete('/bundles/{bundle}',           [AdminBundleController::class, 'destroy'])->name('bundles.destroy');
+    Route::get('/bundles-series/{series}/books', [AdminBundleController::class, 'seriesBooks'])->name('bundles.series-books');
 
     // Contact messages
     Route::get('/contact-messages', [AdminContactController::class, 'index'])->name('contact-messages.index');

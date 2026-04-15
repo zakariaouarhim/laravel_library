@@ -104,6 +104,7 @@ class AuthorController extends Controller
             ->merge($illustratedBooks->pluck('id'));
 
         $primaryBooksViaFk = $author->primaryBooks()
+            ->standardOnly()
             ->whereNotIn('id', $pivotBookIds)
             ->get();
 

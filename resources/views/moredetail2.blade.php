@@ -157,7 +157,22 @@
 
                     <!-- Actions -->
                     <div class="v2-actions">
-                        @if($book->quantity > 0)
+                        @php
+                            $isBundledOnly = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
+                            $firstBundle = $isBundledOnly ? $book->bundles->first() : null;
+                        @endphp
+                        @if($isBundledOnly)
+                        <div class="v2-bundled-notice">
+                            <i class="fas fa-box"></i>
+                            <div>
+                                <strong>هذا الجزء يُباع ضمن باقة "{{ $firstBundle->title }}"</strong>
+                                <div class="small text-muted">لا يمكن شراء هذا الجزء منفرداً</div>
+                            </div>
+                        </div>
+                        <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="v2-btn-cart" style="flex:1;">
+                            <i class="fas fa-shopping-bag"></i> اشترِ الباقة كاملة
+                        </a>
+                        @elseif($book->quantity > 0)
                         <div class="v2-qty-wrap">
                             <button class="v2-qty-btn" onclick="this.nextElementSibling.stepDown()">−</button>
                             <input type="number" class="v2-qty-input" value="1" min="1" aria-label="عدد النسخ">
@@ -170,7 +185,7 @@
                                 data-price="{{ $book->price }}"
                                 data-image="{{ $book->image }}"
                                 onclick="addToCartM({{ $book->id }})">
-                            <i class="fas fa-shopping-cart"></i> أضف إلى السلة
+                            <i class="fas fa-shopping-cart"></i> {{ $book->isBundle() ? 'أضف الباقة إلى السلة' : 'أضف إلى السلة' }}
                         </button>
                         @else
                         <button class="notify-btn" onclick="notifyStock({{ $book->id }}, this)" style="flex: 1;">
@@ -219,6 +234,47 @@
                             <span>يصلك خلال 2-3 أيام عمل</span>
                         </div>
                     </div>
+
+                    @if($book->isBundle() && $book->relationLoaded('items') && $book->items->isNotEmpty())
+                    @php
+                        $itemsTotal = $book->items->sum(fn($i) => ((float)$i->price) * ($i->pivot->quantity ?? 1));
+                        $savings = $itemsTotal - (float) $book->price;
+                    @endphp
+                    <div class="v2-bundle-contents">
+                        <div class="v2-bundle-header">
+                            <i class="fas fa-box"></i>
+                            <strong>محتويات الباقة ({{ $book->items->count() }} أجزاء)</strong>
+                            @if($savings > 0)
+                                <span class="v2-bundle-savings-pill">توفير {{ number_format($savings, 2) }} د.م</span>
+                            @endif
+                        </div>
+                        <ul class="v2-bundle-items">
+                            @foreach($book->items as $item)
+                                <li>
+                                    <a href="{{ route('moredetail2.page', $item->id) }}">
+                                        @if($item->volume_number)
+                                            <span class="vol">الجزء {{ $item->volume_number }}:</span>
+                                        @endif
+                                        {{ $item->title }}
+                                    </a>
+                                    @if(($item->pivot->quantity ?? 1) > 1)
+                                        <span class="qty">×{{ $item->pivot->quantity }}</span>
+                                    @endif
+                                    <span class="price">{{ number_format((float)$item->price, 2) }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        @if($savings > 0)
+                        <div class="v2-bundle-savings-row">
+                            <span>مجموع الأجزاء منفصلة:</span>
+                            <span class="strike">{{ number_format($itemsTotal, 2) }} د.م</span>
+                            <span class="sep">→</span>
+                            <span>سعر الباقة:</span>
+                            <span class="bundle-final">{{ number_format((float)$book->price, 2) }} د.م</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
 
                     <hr class="v2-divider">
 

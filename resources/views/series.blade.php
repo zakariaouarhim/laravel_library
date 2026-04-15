@@ -121,6 +121,70 @@
         </div>
     </div>
 
+    <!-- Bundles Section -->
+    @if(isset($bundles) && $bundles->count() > 0)
+    <section class="publisher-books">
+        <div class="container">
+            <div class="books-section">
+                <h2 class="section-title">
+                    <i class="fas fa-box"></i>
+                    اشترِ السلسلة كاملة — باقات متوفرة
+                </h2>
+                <div class="series-bundles-grid">
+                    @foreach($bundles as $bundle)
+                        @php
+                            $itemsTotal = $bundle->items->sum(fn($i) => ((float)$i->price) * ($i->pivot->quantity ?? 1));
+                            $savings = $itemsTotal - (float) $bundle->price;
+                        @endphp
+                        <div class="bundle-card">
+                            <a href="{{ route('moredetail2.page', $bundle->id) }}" class="bundle-cover">
+                                @if($bundle->image)
+                                    <img src="{{ asset($bundle->image) }}" alt="{{ $bundle->title }}" loading="lazy">
+                                @else
+                                    <div class="bundle-cover-placeholder"><i class="fas fa-box"></i></div>
+                                @endif
+                            </a>
+                            <div class="bundle-info">
+                                <h3 class="bundle-title">
+                                    <a href="{{ route('moredetail2.page', $bundle->id) }}">{{ $bundle->title }}</a>
+                                </h3>
+                                <p class="bundle-meta">{{ $bundle->items->count() }} أجزاء مشمولة</p>
+                                <div class="bundle-price-row">
+                                    <span class="bundle-price">{{ number_format((float)$bundle->price, 2) }}</span>
+                                    @if($savings > 0)
+                                        <span class="bundle-old-price">{{ number_format($itemsTotal, 2) }}</span>
+                                        <span class="bundle-savings">توفير {{ number_format($savings, 2) }}</span>
+                                    @endif
+                                </div>
+                                <a href="{{ route('moredetail2.page', $bundle->id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-shopping-bag me-1"></i>عرض الباقة
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+    <style>
+        .series-bundles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .bundle-card { display: flex; gap: 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; transition: box-shadow 0.2s; }
+        .bundle-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+        .bundle-cover { flex-shrink: 0; width: 90px; height: 130px; border-radius: 6px; overflow: hidden; background: #f3f4f6; display:flex; align-items:center; justify-content:center; }
+        .bundle-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .bundle-cover-placeholder { font-size: 2rem; color: #9ca3af; }
+        .bundle-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+        .bundle-title { font-size: 1rem; font-weight: 700; margin: 0; line-height: 1.3; }
+        .bundle-title a { color: inherit; text-decoration: none; }
+        .bundle-title a:hover { color: var(--color-primary, #2563eb); }
+        .bundle-meta { margin: 0; font-size: 0.85rem; color: #6b7280; }
+        .bundle-price-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .bundle-price { font-size: 1.15rem; font-weight: 700; color: var(--color-primary, #2563eb); }
+        .bundle-old-price { text-decoration: line-through; color: #9ca3af; font-size: 0.9rem; }
+        .bundle-savings { background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    </style>
+    @endif
+
     <!-- Books Section -->
     <section class="publisher-books">
         <div class="container">
