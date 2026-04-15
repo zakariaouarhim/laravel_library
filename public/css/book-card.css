@@ -561,3 +561,16 @@
         font-size: 11px;
     }
 }
+/* Bundled-only state: standard volume sold only as part of a bundle */
+.badge.badge-bundle-only {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+.bundle-price-label {
+    display: block;
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 2px;
+    font-weight: 500;
+}

@@ -90,11 +90,11 @@ class AuthorController extends Controller
         $author = Author::active()->findOrFail($id);
 
         // Group books by author role (from pivot table)
-        $primaryBooks = $author->booksByType('primary')->paginate(12, ['*'], 'page');
-        $coAuthorBooks = $author->booksByType('co-author')->get();
-        $translatedBooks = $author->booksByType('translator')->get();
-        $editedBooks = $author->booksByType('editor')->get();
-        $illustratedBooks = $author->booksByType('illustrator')->get();
+        $primaryBooks = $author->booksByType('primary')->with('bundles:id,title,price,image')->paginate(12, ['*'], 'page');
+        $coAuthorBooks = $author->booksByType('co-author')->with('bundles:id,title,price,image')->get();
+        $translatedBooks = $author->booksByType('translator')->with('bundles:id,title,price,image')->get();
+        $editedBooks = $author->booksByType('editor')->with('bundles:id,title,price,image')->get();
+        $illustratedBooks = $author->booksByType('illustrator')->with('bundles:id,title,price,image')->get();
 
         // Also include books linked via author_id FK that may not be in the pivot table
         $pivotBookIds = $primaryBooks->pluck('id')
@@ -105,6 +105,7 @@ class AuthorController extends Controller
 
         $primaryBooksViaFk = $author->primaryBooks()
             ->standardOnly()
+            ->with('bundles:id,title,price,image')
             ->whereNotIn('id', $pivotBookIds)
             ->get();
 

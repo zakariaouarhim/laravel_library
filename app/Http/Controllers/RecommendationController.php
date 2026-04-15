@@ -26,7 +26,7 @@ class RecommendationController extends Controller
             ->pluck('book_id')
             ->toArray();
 
-        $query = Book::query()->standardOnly()->with(['category', 'primaryAuthor']);
+        $query = Book::query()->standardOnly()->with(['category', 'primaryAuthor', 'bundles:id,title,price,image']);
 
         if ($request->filled('category')) {
             $query->where('category_id', $request->input('category'));

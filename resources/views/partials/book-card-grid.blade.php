@@ -1,14 +1,22 @@
-@php $outOfStock = ($book->quantity ?? 0) <= 0; @endphp
+@php
+    $outOfStock = ($book->quantity ?? 0) <= 0;
+    $bundledOnly = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
+    $firstBundle = $bundledOnly ? $book->bundles->first() : null;
+@endphp
 <div class="book-item">
-    <div class="book-card {{ $outOfStock ? 'out-of-stock' : '' }}">
+    <div class="book-card {{ ($outOfStock && !$bundledOnly) ? 'out-of-stock' : '' }}">
         <div class="quick-actions">
             <button class="action-btn wishlist-btn" title="إضافة للمفضلة" onclick="toggleWishlist({{ $book->id }}, this)" data-book-id="{{ $book->id }}">
                 <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
             </button>
-            @if(!$outOfStock)
-            <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
-                <i class="fas fa-shopping-cart"></i>
-            </button>
+            @if($bundledOnly)
+                <a class="action-btn" href="{{ route('moredetail2.page', $book->id) }}" title="عرض الباقة">
+                    <i class="fas fa-box"></i>
+                </a>
+            @elseif(!$outOfStock)
+                <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
             @endif
         </div>
 
@@ -20,7 +28,9 @@
         </a>
 
         <div class="card-badges">
-            @if($outOfStock)
+            @if($bundledOnly)
+                <span class="badge badge-bundle-only"><i class="fas fa-box"></i> متوفر كباقة</span>
+            @elseif($outOfStock)
                 <span class="badge out-of-stock-badge">نفذ المخزون</span>
             @else
                 @if($book->is_new ?? false)
@@ -65,18 +75,28 @@
         @endif
 
         <div class="price-section">
-            <span class="price">{{ $book->price }} <span class="currency">د.م</span></span>
-            @if($book->original_price ?? 0 > $book->price)
-                <span class="original-price">{{ $book->original_price }} <span class="currency">د.م</span></span>
-            @endif
-            @if($outOfStock)
-                <button class="notify-btn" onclick="notifyStock({{ $book->id }}, this)">
-                    <i class="fas fa-bell"></i> أبلغني عند التوفر
-                </button>
+            @if($bundledOnly && $firstBundle)
+                <span class="price">
+                    {{ number_format((float) $firstBundle->price, 2) }} <span class="currency">د.م</span>
+                    <small class="bundle-price-label">السلسلة كاملة</small>
+                </span>
+                <a class="add-btn" href="{{ route('moredetail2.page', $book->id) }}" title="عرض الباقة">
+                    <i class="fas fa-box"></i>
+                </a>
             @else
-                <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
-                    <i class="fas fa-shopping-cart"></i>
-                </button>
+                <span class="price">{{ $book->price }} <span class="currency">د.م</span></span>
+                @if($book->original_price ?? 0 > $book->price)
+                    <span class="original-price">{{ $book->original_price }} <span class="currency">د.م</span></span>
+                @endif
+                @if($outOfStock)
+                    <button class="notify-btn" onclick="notifyStock({{ $book->id }}, this)">
+                        <i class="fas fa-bell"></i> أبلغني عند التوفر
+                    </button>
+                @else
+                    <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                @endif
             @endif
         </div>
     </div>

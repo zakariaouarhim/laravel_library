@@ -109,7 +109,7 @@ class AdminSeriesController extends Controller
     {
         $series = Series::with('author')->withCount('books')->findOrFail($id);
 
-        $books = Book::with('primaryAuthor')
+        $books = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])
             ->standardOnly()
             ->where('series_id', $series->id)
             ->withCount('reviews')
