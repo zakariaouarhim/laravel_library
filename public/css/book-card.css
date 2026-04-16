@@ -562,10 +562,18 @@
     }
 }
 /* Bundled-only state: standard volume sold only as part of a bundle */
+.card-badges .badge.badge-bundle-only,
 .badge.badge-bundle-only {
-    background: #ecfdf5;
+    background-color: #ecfdf5 !important;
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border: 2px solid #a7f3d0 !important;
+    font-weight: 600;
+}
+.card-badges .badge.badge-bundle-only i,
+.badge.badge-bundle-only i {
     color: #065f46;
-    border: 1px solid #a7f3d0;
+    margin-left: 4px;
 }
 .bundle-price-label {
     display: block;
