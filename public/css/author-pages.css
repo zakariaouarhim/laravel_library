@@ -286,30 +286,6 @@ a.author-card-avatar {
     font-weight: 600;
 }
 
-/* =================== Pagination =================== */
-/* Pagination */
-.pagination {
-    justify-content: center;
-    margin-top: 2rem;
-}
-
-.page-link {
-    border-radius: var(--radius-sm);
-    color: var(--color-secondary) ;
-    border-color: #e0e6ed;
-}
-
-.page-link:hover {
-    background-color: var(--color-secondary) ;
-    color: white;
-    border-color: var(--color-secondary) ;
-}
-
-.page-item.active .page-link {
-    background-color: var(--color-secondary) ;
-    border-color: var(--color-secondary) ;
-}
-
 /* =================== Empty State =================== */
 .empty-state {
     text-align: center;
@@ -671,24 +647,92 @@ body {
 .pagination-wrapper {
     display: flex;
     justify-content: center;
-    margin-top: 30px;
+    margin-top: 40px;
+    margin-bottom: 10px;
+}
+
+.pagination-wrapper .pagination {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    margin: 0;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(44, 75, 121, 0.08);
+    list-style: none;
+}
+
+.pagination-wrapper .page-item {
+    margin: 0;
 }
 
 .pagination-wrapper .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 14px;
     color: var(--color-secondary);
-    border-color: #e0e6ed;
-    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
 .pagination-wrapper .page-link:hover {
-    background-color: var(--color-secondary);
-    color: white;
-    border-color: var(--color-secondary);
+    background-color: #eef2ff;
+    color: var(--color-secondary);
+    border-color: transparent;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.pagination-wrapper .page-link:focus {
+    box-shadow: 0 0 0 3px rgba(44, 75, 121, 0.15);
+    outline: none;
 }
 
 .pagination-wrapper .page-item.active .page-link {
     background-color: var(--color-secondary);
     border-color: var(--color-secondary);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(44, 75, 121, 0.25);
+}
+
+.pagination-wrapper .page-item.active .page-link:hover {
+    background-color: var(--color-secondary);
+    color: #fff;
+    transform: none;
+}
+
+.pagination-wrapper .page-item.disabled .page-link {
+    color: #c5ccd6;
+    background: transparent;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* RTL: flip the default prev/next SVG chevrons so they point with the flow */
+html[dir="rtl"] .pagination-wrapper .page-link svg {
+    transform: scaleX(-1);
+}
+
+@media (max-width: 576px) {
+    .pagination-wrapper .page-link {
+        min-width: 34px;
+        height: 34px;
+        padding: 0 10px;
+        font-size: 0.85rem;
+    }
+    .pagination-wrapper .pagination {
+        gap: 4px;
+        padding: 6px;
+    }
 }
 
 /* =================== Empty State =================== */
