@@ -30,7 +30,7 @@
 
                     <p class="series-meta">
                         <i class="fas fa-layer-group"></i>
-                        {{ $s->books_count }} {{ $s->books_count == 1 ? 'جزء' : 'أجزاء' }}
+                        {{ $s->total_volumes }} {{ $s->total_volumes == 1 ? 'جزء' : 'أجزاء' }}
                     </p>
                 </a>
             @endforeach
