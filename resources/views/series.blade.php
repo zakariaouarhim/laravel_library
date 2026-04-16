@@ -65,6 +65,9 @@
                         @if($series->total_volumes)
                             <span><i class="fas fa-list-ol"></i> {{ $series->total_volumes }} جزء</span>
                         @endif
+                        @if($series->language_label)
+                            <span><i class="fas fa-language"></i> {{ $series->language_label }}</span>
+                        @endif
                         <span>
                             <i class="fas {{ $series->is_complete ? 'fa-check-circle' : 'fa-spinner' }}"></i>
                             {{ $series->is_complete ? 'مكتملة' : 'مستمرة' }}
@@ -115,11 +118,41 @@
                             <span class="info-label"><i class="fas fa-info-circle"></i> الحالة</span>
                             <span class="info-value">{{ $series->is_complete ? 'مكتملة' : 'مستمرة' }}</span>
                         </li>
+                        @if($series->language_label)
+                            <li>
+                                <span class="info-label"><i class="fas fa-language"></i> اللغة</span>
+                                <span class="info-value">{{ $series->language_label }}</span>
+                            </li>
+                        @endif
+                        @if($categories->count() > 0)
+                            <li>
+                                <span class="info-label"><i class="fas fa-tags"></i> التصنيفات</span>
+                                <span class="info-value series-category-chips">
+                                    @foreach($categories as $cat)
+                                        <a href="{{ route('by-category', $cat->id) }}" class="series-cat-chip">{{ $cat->name }}</a>
+                                    @endforeach
+                                </span>
+                            </li>
+                        @endif
                     </ul>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .series-category-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+        .series-cat-chip {
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+        .series-cat-chip:hover { background: #c7d2fe; color: #3730a3; text-decoration: none; }
+    </style>
 
     <!-- Bundles Section -->
     @if(isset($bundles) && $bundles->count() > 0)

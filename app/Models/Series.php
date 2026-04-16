@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Book;
+use App\Models\Category;
 
 class Series extends Model
 {
@@ -93,5 +95,21 @@ class Series extends Model
     {
         $lang = $this->language;
         return $lang ? (Book::LANGUAGE_LABELS[$lang] ?? $lang) : null;
+    }
+
+    // Categories derived from the series' volumes — de-duplicated, ordered by
+    // how often they appear across books (most common first). Returned as a
+    // Collection, not a relation, since categories live on Book, not Series.
+    public function derivedCategories()
+    {
+        return Category::query()
+            ->whereIn('categories.id', function ($q) {
+                $q->select('book_category.category_id')
+                  ->from('book_category')
+                  ->join('books', 'books.id', '=', 'book_category.book_id')
+                  ->where('books.series_id', $this->id)
+                  ->whereNull('books.deleted_at');
+            })
+            ->get();
     }
 }

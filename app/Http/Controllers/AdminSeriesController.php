@@ -122,7 +122,11 @@ class AdminSeriesController extends Controller
             ->with(['items' => fn($q) => $q->orderBy('volume_number')])
             ->get();
 
-        return view('series', compact('series', 'books', 'bundles'));
+        // Categories + language derived from the series' volumes so the series
+        // page surfaces this context without admins re-entering it.
+        $categories = $series->derivedCategories();
+
+        return view('series', compact('series', 'books', 'bundles', 'categories'));
     }
 
     public function search(Request $request)
