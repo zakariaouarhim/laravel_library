@@ -147,7 +147,8 @@
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 10px;">
                                             @if($book->image)
-                                            <img src="{{ asset('storage/' . $book->image) }}" alt="" width="35" height="45" style="object-fit: cover; border-radius: 4px;" loading="lazy">
+                                            <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" width="35" height="45" style="object-fit: cover; border-radius: 4px;" loading="lazy"
+                                 onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
                                             @endif
                                             <span>{{ $book->title }}</span>
                                         </div>
@@ -257,160 +258,144 @@
 </div>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <script src="{{ asset('js/dashboard.js') }}" defer></script> 
     <script>
-        // Revenue Chart - Weekly
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        
-        const weeklyRevenue = @json($weeklyRevenue);
-        const monthlyRevenue = @json($monthlyRevenue);
-        const yearlyRevenue = @json($yearlyRevenue);
-        const revenueData = new Array(7).fill(0);
-        const dateSelect = document.getElementById('date');
-        const weeklabels = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-        const monthLabels = [
-            'يناير', 'فبراير', 'مارس', 'أبريل',
-            'ماي', 'يونيو', 'يوليو', 'غشت',
-            'شتنبر', 'أكتوبر', 'نونبر', 'دجنبر'
-        ];
-        const yearLabels = yearlyRevenue.map(item => item.year);
+        // Chart data from PHP
+        var chartData = {
+            weekly: @json($weeklyRevenue),
+            monthly: @json($monthlyRevenue),
+            yearly: @json($yearlyRevenue),
+            status: [
+                {{ $pendingOrders ?? 0 }},
+                {{ $processingOrders ?? 0 }},
+                {{ $deliveredOrders ?? 0 }},
+                {{ $cancelledOrders ?? 0 }}
+            ]
+        };
 
-        const monthlyData = new Array(12).fill(0);
-        const yearlyData = yearlyRevenue.map(item => item.total);
-
-        monthlyRevenue.forEach(item => {
-            monthlyData[item.month - 1] = item.total;
-        });
-
-        weeklyRevenue.forEach(item => {
-            revenueData[item.day - 1] = item.total;
-        });
-                    dateSelect.addEventListener('change', function () {
-                        
-
-                    switch (this.value) {
-
-                    case 'weeklyRevenue':
-                        revenueChart.data.labels = weeklabels;
-                        revenueChart.data.datasets[0].data = revenueData;
-                        break;
-
-                    case 'monthlyRevenue':
-                        revenueChart.data.labels = monthLabels;
-                        revenueChart.data.datasets[0].data = monthlyData;
-                        break;
-
-                    case 'yearlyRevenue':
-                        revenueChart.data.labels = yearLabels;
-                        revenueChart.data.datasets[0].data = yearlyData;
-                        break;
-                }
-
-                revenueChart.update();
-            });
-            
-        const revenueChart = new Chart(revenueCtx, {
-            
-            type: 'line',
-            data: {
-                labels:weeklabels,
-                datasets: [{
-                    label: 'الإيرادات',
-                    data: revenueData,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#3498db',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: {
-                            font: { family: "'Cairo', sans-serif", size: 12 },
-                            padding: 20,
-                            color: '#2c3e50'
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        ticks: {
-                            font: { family: "'Cairo', sans-serif" },
-                            color: '#7f8c8d'
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: { family: "'Cairo', sans-serif" },
-                            color: '#7f8c8d'
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-
-        // Status Distribution Chart - Pie
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        const statusChart = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['قيد الانتظار', 'قيد المعالجة', 'مكتمل', 'ملغي'],
-                datasets: [{
-                    data: [
-                        {{ $pendingOrders ?? 0 }},
-                        {{ $processingOrders ?? 0 }},
-                        {{ $deliveredOrders ?? 0 }},
-                        {{ $cancelledOrders ?? 0 }}
-                    ],
-                    backgroundColor: [
-                        '#f39c12',
-                        '#3498db',
-                        '#27ae60',
-                        '#e74c3c'
-                    ],
-                    borderColor: '#fff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: { family: "'Cairo', sans-serif", size: 12 },
-                            padding: 20,
-                            color: '#2c3e50'
-                        }
-                    }
-                }
-            }
-        });
-
-        
         function exportData() {
             alert('سيتم تصدير البيانات قريباً');
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof Chart === 'undefined') return;
+
+            var weeklabels = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            var monthLabels = ['يناير', 'فبراير', 'مارس', 'أبريل', 'ماي', 'يونيو', 'يوليو', 'غشت', 'شتنبر', 'أكتوبر', 'نونبر', 'دجنبر'];
+            var yearLabels = chartData.yearly.map(function(i) { return i.year; });
+
+            var revenueData = new Array(7).fill(0);
+            var monthlyData = new Array(12).fill(0);
+            var yearlyData  = chartData.yearly.map(function(i) { return parseFloat(i.total); });
+
+            chartData.monthly.forEach(function(i) { monthlyData[i.month - 1] = parseFloat(i.total); });
+            chartData.weekly.forEach(function(i)  { revenueData[i.day - 1]   = parseFloat(i.total); });
+
+            // Revenue Chart
+            var revenueCtx = document.getElementById('revenueChart');
+            if (!revenueCtx) return;
+
+            var revenueChart = new Chart(revenueCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: weeklabels,
+                    datasets: [{
+                        label: 'الإيرادات',
+                        data: revenueData,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { family: "'Cairo', sans-serif", size: 12 },
+                                padding: 20,
+                                color: '#2c3e50'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { font: { family: "'Cairo', sans-serif" }, color: '#7f8c8d' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            ticks: { font: { family: "'Cairo', sans-serif" }, color: '#7f8c8d' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Period switcher
+            var dateSelect = document.getElementById('date');
+            if (dateSelect) {
+                dateSelect.addEventListener('change', function () {
+                    switch (this.value) {
+                        case 'weeklyRevenue':
+                            revenueChart.data.labels = weeklabels;
+                            revenueChart.data.datasets[0].data = revenueData;
+                            break;
+                        case 'monthlyRevenue':
+                            revenueChart.data.labels = monthLabels;
+                            revenueChart.data.datasets[0].data = monthlyData;
+                            break;
+                        case 'yearlyRevenue':
+                            revenueChart.data.labels = yearLabels;
+                            revenueChart.data.datasets[0].data = yearlyData;
+                            break;
+                    }
+                    revenueChart.update();
+                });
+            }
+
+            // Status Distribution Chart
+            var statusCtx = document.getElementById('statusChart');
+            if (!statusCtx) return;
+
+            new Chart(statusCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['قيد الانتظار', 'قيد المعالجة', 'مكتمل', 'ملغي'],
+                    datasets: [{
+                        data: chartData.status,
+                        backgroundColor: ['#f39c12', '#3498db', '#27ae60', '#e74c3c'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: "'Cairo', sans-serif", size: 12 },
+                                padding: 20,
+                                color: '#2c3e50'
+                            }
+                        }
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
