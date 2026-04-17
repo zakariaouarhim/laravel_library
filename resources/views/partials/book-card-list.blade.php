@@ -1,7 +1,8 @@
 @php
-    $outOfStock = ($book->quantity ?? 0) <= 0;
-    $bundledOnly = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
-    $firstBundle = $bundledOnly ? $book->bundles->first() : null;
+    $outOfStock  = ($book->quantity ?? 0) <= 0;
+    $inBundle    = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
+    $bundledOnly = $inBundle && $outOfStock;
+    $firstBundle = $inBundle ? $book->bundles->first() : null;
 @endphp
 <div class="book-item list-style d-flex mb-3 p-3 border rounded {{ ($outOfStock && !$bundledOnly) ? 'out-of-stock' : '' }}">
     <img src="{{ asset($book->thumbnail) }}" alt="{{ $book->title }}" width="120" height="170" class="me-3" loading="lazy"
@@ -14,6 +15,10 @@
         @endif
         @if($bundledOnly)
             <span class="badge badge-bundle-only mb-2"><i class="fas fa-box"></i> متوفر كباقة</span>
+        @elseif($inBundle && $firstBundle)
+            <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="badge badge-bundle-hint mb-2">
+                <i class="fas fa-box"></i> متوفر أيضاً كباقة
+            </a>
         @endif
         @if(($book->reviews_count ?? 0) > 0)
         <div class="book-card-rating">

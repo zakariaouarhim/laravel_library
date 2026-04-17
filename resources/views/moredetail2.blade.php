@@ -158,8 +158,9 @@
                     <!-- Actions -->
                     <div class="v2-actions">
                         @php
-                            $isBundledOnly = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
-                            $firstBundle = $isBundledOnly ? $book->bundles->first() : null;
+                            $isInBundle    = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
+                            $isBundledOnly = $isInBundle && ($book->quantity ?? 0) <= 0;
+                            $firstBundle   = $isInBundle ? $book->bundles->first() : null;
                         @endphp
                         @if($isBundledOnly)
                         <div class="v2-bundled-notice">
@@ -173,6 +174,14 @@
                             <i class="fas fa-shopping-bag"></i> اشترِ الباقة كاملة
                         </a>
                         @elseif($book->quantity > 0)
+                        @if($isInBundle && $firstBundle)
+                        <div class="v2-bundle-hint">
+                            <i class="fas fa-box"></i>
+                            <span>متوفر أيضاً ضمن باقة
+                                <a href="{{ route('moredetail2.page', $firstBundle->id) }}">"{{ $firstBundle->title }}"</a>
+                            </span>
+                        </div>
+                        @endif
                         <div class="v2-qty-wrap">
                             <button class="v2-qty-btn" onclick="this.nextElementSibling.stepDown()">−</button>
                             <input type="number" class="v2-qty-input" value="1" min="1" aria-label="عدد النسخ">

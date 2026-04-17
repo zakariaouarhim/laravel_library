@@ -1310,6 +1310,23 @@
     font-size: 1.25rem;
     margin-top: 2px;
 }
+/* "Also available as bundle" hint on detail page */
+.v2-bundle-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    width: 100%;
+    font-size: 0.9rem;
+}
+.v2-bundle-hint i { font-size: 1rem; flex-shrink: 0; }
+.v2-bundle-hint a { color: #1e40af; font-weight: 600; text-decoration: underline; }
+.v2-bundle-hint a:hover { color: #1e3a8a; }
 .v2-bundle-contents {
     background: #fafafa;
     border: 1px solid #e5e7eb;

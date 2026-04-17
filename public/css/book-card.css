@@ -549,6 +549,11 @@
         border-width: 1.5px;
     }
 
+    .card-badges .badge.badge-bundle-hint {
+        font-size: 8px;
+        padding: 2px 6px;
+    }
+
     /* Quick actions always visible on touch */
     .quick-actions {
         opacity: 1;
@@ -574,6 +579,33 @@
 .badge.badge-bundle-only i {
     color: #065f46;
     margin-left: 4px;
+}
+/* "Also available as bundle" hint badge */
+.card-badges .badge.badge-bundle-hint,
+.badge.badge-bundle-hint {
+    background-color: #eff6ff !important;
+    background: #eff6ff !important;
+    color: #1e40af !important;
+    border: 1.5px solid #bfdbfe !important;
+    font-weight: 500;
+    font-size: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.card-badges .badge.badge-bundle-hint:hover,
+.badge.badge-bundle-hint:hover {
+    background-color: #dbeafe !important;
+    background: #dbeafe !important;
+    border-color: #93c5fd !important;
+    text-decoration: none;
+    color: #1e40af !important;
+}
+.card-badges .badge.badge-bundle-hint i,
+.badge.badge-bundle-hint i {
+    color: #1e40af;
+    margin-left: 3px;
+    font-size: 9px;
 }
 .bundle-price-label {
     display: block;

@@ -1,7 +1,8 @@
 @php
-    $outOfStock = ($book->quantity ?? 0) <= 0;
-    $bundledOnly = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
-    $firstBundle = $bundledOnly ? $book->bundles->first() : null;
+    $outOfStock  = ($book->quantity ?? 0) <= 0;
+    $inBundle    = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
+    $bundledOnly = $inBundle && $outOfStock;
+    $firstBundle = $inBundle ? $book->bundles->first() : null;
 @endphp
 <div class="book-item">
     <div class="book-card {{ ($outOfStock && !$bundledOnly) ? 'out-of-stock' : '' }}">
@@ -38,6 +39,11 @@
                 @endif
                 @if(($book->discount ?? 0) > 0)
                     <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
+                @endif
+                @if($inBundle && $firstBundle)
+                    <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="badge badge-bundle-hint">
+                        <i class="fas fa-box"></i> متوفر أيضاً كباقة
+                    </a>
                 @endif
             @endif
             @if(($book->author_id && in_array($book->author_id, $followedAuthorIds ?? [])) || ($book->publishing_house_id && in_array($book->publishing_house_id, $followedPublisherIds ?? [])))
