@@ -203,7 +203,7 @@ class BookController extends Controller
         // Other books in the same series
         $seriesBooks = collect();
         if ($book->series_id) {
-            $seriesBooks = Book::with('primaryAuthor')
+            $seriesBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])
                 ->where('series_id', $book->series_id)
                 ->where('id', '!=', $book->id)
                 ->orderBy('volume_number')
