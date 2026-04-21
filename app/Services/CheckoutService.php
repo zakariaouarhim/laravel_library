@@ -75,6 +75,27 @@ class CheckoutService
     public function createOrder(array $cart, array $validated, float $total, float $subtotal, float $shipping, float $discount, ?string $couponCode): Order
     {
         return DB::transaction(function () use ($cart, $validated, $total, $subtotal, $shipping, $discount, $couponCode) {
+            // Lock all cart rows in deterministic order (by id) to prevent deadlocks
+            // between concurrent carts that overlap on the same books.
+            $lockedBooks = Book::whereIn('id', array_keys($cart))
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            $outOfStock = [];
+            foreach ($cart as $id => $item) {
+                $book = $lockedBooks->get($id);
+                if (!$book) {
+                    $outOfStock[] = $item['title'] . ' (لم يعد متوفراً)';
+                } elseif ($book->quantity < $item['quantity']) {
+                    $outOfStock[] = $item['title'] . ' (المتوفر: ' . $book->quantity . ')';
+                }
+            }
+            if (!empty($outOfStock)) {
+                throw new \Exception('بعض المنتجات غير متوفرة بالكمية المطلوبة: ' . implode('، ', $outOfStock));
+            }
+
             $order = Order::create([
                 'user_id'          => auth()->check() ? auth()->id() : null,
                 'status'           => 'pending',
@@ -126,7 +147,15 @@ class CheckoutService
             }
 
             if ($couponCode) {
-                Coupon::where('code', $couponCode)->increment('used_count');
+                $coupon = Coupon::where('code', $couponCode)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$coupon || !$coupon->isValidFor($subtotal)) {
+                    throw new \Exception('انتهت صلاحية كود الخصم أو تم استخدامه. يرجى المحاولة بدون كوبون.');
+                }
+
+                $coupon->increment('used_count');
             }
 
             return $order;

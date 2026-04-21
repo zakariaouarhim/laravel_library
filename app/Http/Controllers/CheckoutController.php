@@ -56,8 +56,6 @@ class CheckoutController extends Controller
                 return redirect()->back()->with('error', 'السلة فارغة');
             }
 
-            $this->checkoutService->validateStock($cart);
-
             // Calculate totals
             $subtotal = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
             ['shipping' => $shipping] = \App\Models\SystemSetting::calculateShipping($subtotal);
@@ -84,7 +82,8 @@ class CheckoutController extends Controller
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Checkout submission failed', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return redirect()->back()->with('error', 'حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.');
+            $userMessage = $e->getMessage() ?: 'حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.';
+            return redirect()->back()->with('error', $userMessage);
         }
     }
 
