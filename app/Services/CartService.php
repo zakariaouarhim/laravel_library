@@ -207,6 +207,54 @@ class CartService
     }
 
     /**
+     * Merge the guest session cart into the given user's DB cart.
+     *
+     * Called from the Login event listener so a guest who added books
+     * before authenticating doesn't lose them. Sums quantities where
+     * a book exists in both carts, capped at current stock. Clears
+     * session('cart') after merging.
+     */
+    public function mergeGuestCartIntoDb(int $userId): void
+    {
+        $sessionCart = session()->get('cart', []);
+
+        if (empty($sessionCart)) {
+            return;
+        }
+
+        $userCart = Cart::firstOrCreate(['user_id' => $userId]);
+
+        foreach ($sessionCart as $bookId => $item) {
+            $book = Book::find($bookId);
+            if (!$book) {
+                continue;
+            }
+
+            $sessionQty = max(1, (int) ($item['quantity'] ?? 1));
+            $stock      = (int) ($book->quantity ?? 0);
+
+            $existingItem = CartItem::where('cart_id', $userCart->id)
+                                    ->where('book_id', $book->id)
+                                    ->first();
+
+            if ($existingItem) {
+                $merged = $existingItem->quantity + $sessionQty;
+                $existingItem->update([
+                    'quantity' => $stock > 0 ? min($merged, $stock) : $merged,
+                ]);
+            } else {
+                CartItem::create([
+                    'cart_id'  => $userCart->id,
+                    'book_id'  => $book->id,
+                    'quantity' => $stock > 0 ? min($sessionQty, $stock) : $sessionQty,
+                ]);
+            }
+        }
+
+        session()->forget('cart');
+    }
+
+    /**
      * Clear the entire cart (session + DB).
      */
     public function clearCart(): void
