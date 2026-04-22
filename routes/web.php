@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminClientController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\AdminBookController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CategoryController;
@@ -85,18 +86,18 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/return-requests/{id}', [ReturnRequestController::class, 'adminUpdate'])->name('return-requests.update');
 
     // Product management
-    Route::get('/Dashbord_Admin/Product', [BookController::class, 'showproduct'])->name('Dashbord_Admin.product');
-    Route::post('/Dashbord_Admin/Product/add', [BookController::class, 'addProduct'])->name('product.add');
-    Route::get('/products', [BookController::class, 'showproduct'])->name('products.index');
+    Route::get('/Dashbord_Admin/Product', [AdminBookController::class, 'showproduct'])->name('Dashbord_Admin.product');
+    Route::post('/Dashbord_Admin/Product/add', [AdminBookController::class, 'addProduct'])->name('product.add');
+    Route::get('/products', [AdminBookController::class, 'showproduct'])->name('products.index');
 
     // Product API (admin-only AJAX) — must be before /products/{id} wildcard
-    Route::get('/products/api', [BookController::class, 'getProductsApi'])->name('products.api');
-    Route::get('/products/api/stats', [BookController::class, 'getProductsApiStats'])->name('products.api.stats');
-    Route::get('/products/api/{id}', [BookController::class, 'getProductById'])->name('products.api.show');
-    Route::put('/products/api/{id}', [BookController::class, 'updateProduct'])->name('products.api.update');
+    Route::get('/products/api', [AdminBookController::class, 'getProductsApi'])->name('products.api');
+    Route::get('/products/api/stats', [AdminBookController::class, 'getProductsApiStats'])->name('products.api.stats');
+    Route::get('/products/api/{id}', [AdminBookController::class, 'getProductById'])->name('products.api.show');
+    Route::put('/products/api/{id}', [AdminBookController::class, 'updateProduct'])->name('products.api.update');
 
     // Search helpers
-    Route::get('/search-book', [BookController::class, 'searchBook'])->name('search.book');
+    Route::get('/search-book', [AdminBookController::class, 'searchBook'])->name('search.book');
     Route::get('/search-authors', [AuthorController::class, 'search'])->name('search.authors');
     Route::get('/search-publishers', [PublisherController::class, 'search'])->name('search.publishers');
 
@@ -118,11 +119,11 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/shipment-items/{item}/enrich', [ShipmentController::class, 'enrichItem'])->name('shipment-items.enrich');
 
     // Book enrichment (admin-only)
-    Route::post('/books/{book}/enrich', [BookController::class, 'enrichBook'])->name('books.enrich');
-    Route::get('/books/{book}/preview-enrich', [BookController::class, 'previewEnrichment'])->name('books.preview-enrich');
-    Route::post('/books/{book}/enrich-selected', [BookController::class, 'applySelectedEnrichment'])->name('books.enrich-selected');
-    Route::get('/books/pending-enrichment', [BookController::class, 'getPendingEnrichment'])->name('books.pending-enrichment');
-    Route::post('/books/bulk-enrich', [BookController::class, 'bulkEnrichBooks'])->name('books.bulk-enrich');
+    Route::post('/books/{book}/enrich', [AdminBookController::class, 'enrichBook'])->name('books.enrich');
+    Route::get('/books/{book}/preview-enrich', [AdminBookController::class, 'previewEnrichment'])->name('books.preview-enrich');
+    Route::post('/books/{book}/enrich-selected', [AdminBookController::class, 'applySelectedEnrichment'])->name('books.enrich-selected');
+    Route::get('/books/pending-enrichment', [AdminBookController::class, 'getPendingEnrichment'])->name('books.pending-enrichment');
+    Route::post('/books/bulk-enrich', [AdminBookController::class, 'bulkEnrichBooks'])->name('books.bulk-enrich');
 
     // Management system
     Route::get('/Dashbord_Admin/ManagementSystem', [ShipmentController::class, 'showmanagement'])->name('Dashbord_Admin.ManagementSystem');
