@@ -3,10 +3,11 @@
 namespace App\Mail;
 
 use App\Models\Order;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderConfirmationMail extends Mailable
+class OrderConfirmationMail extends Mailable implements ShouldQueue
 {
     use SerializesModels;
 
