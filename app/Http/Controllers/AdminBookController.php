@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\StoreBookProductRequest;
+use App\Http\Requests\Admin\UpdateBookRequest;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
@@ -104,26 +106,9 @@ class AdminBookController extends Controller
         }
     }
 
-    public function addProduct(Request $request)
+    public function addProduct(StoreBookProductRequest $request)
     {
-        $validated = $request->validate([
-            'productName' => 'required|string|max:255',
-            'productauthor' => 'required|string|max:255',
-            'productDescription' => 'required|string',
-            'productPrice' => 'required|numeric|min:0',
-            'productNumPages' => 'nullable|integer|min:1',
-            'productLanguage' => 'nullable|string|max:100',
-            'ProductPublishingHouse' => 'nullable|string|max:255',
-            'productIsbn' => 'nullable|string|max:50',
-            'categories' => 'required|array|min:1',
-            'categories.*' => 'exists:categories,id',
-            'primary_category_id' => 'required|in_array:categories.*',
-            'productQuantity' => 'required|integer|min:0',
-            'productImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
-            'auto_enrich' => 'nullable|boolean',
-            'series_id' => 'nullable|exists:series,id',
-            'volume_number' => 'nullable|integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         $imagePath = null;
 
@@ -404,29 +389,12 @@ class AdminBookController extends Controller
         return response()->json($product);
     }
 
-    public function updateProduct(Request $request, $id)
+    public function updateProduct(UpdateBookRequest $request, $id)
     {
         try {
             $product = Book::findOrFail($id);
 
-            $validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'required|string',
-                'price' => 'required|numeric|min:0',
-                'author' => 'required|string|max:255',
-                'page_num' => 'nullable|integer|min:1',
-                'language' => 'nullable|string|max:100',
-                'publishing_house' => 'nullable|string|max:255',
-                'isbn' => 'nullable|string|max:50',
-                'quantity' => 'required|integer|min:0',
-                'categories' => 'nullable|array|min:1',
-                'categories.*' => 'exists:categories,id',
-                'primary_category_id' => 'nullable|in_array:categories.*',
-                'category_id' => 'nullable|integer|exists:categories,id',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
-                'series_id' => 'nullable|exists:series,id',
-                'volume_number' => 'nullable|integer|min:1',
-            ]);
+            $validated = $request->validated();
 
             $author = $this->adminService->findOrCreateAuthor($validated['author']);
             $publishingHouseId = $this->adminService->findOrCreatePublishingHouse($validated['publishing_house'] ?? null);

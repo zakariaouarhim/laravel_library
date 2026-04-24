@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\StoreAccessoryRequest;
+use App\Http\Requests\Admin\UpdateAccessoryRequest;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -118,17 +120,9 @@ class AccessoryController extends Controller
     /**
      * Store new accessory
      */
-    public function adminStore(Request $request)
+    public function adminStore(StoreAccessoryRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'discount' => 'nullable|numeric|min:0',
-            'category_id' => 'required|integer|exists:categories,id',
-            'quantity' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
-        ]);
+        $validated = $request->validated();
 
         $imagePath = null;
 
@@ -179,19 +173,11 @@ class AccessoryController extends Controller
     /**
      * Update accessory
      */
-    public function adminUpdate(Request $request, $id)
+    public function adminUpdate(UpdateAccessoryRequest $request, $id)
     {
         $accessory = Book::accessories()->findOrFail($id);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'discount' => 'nullable|numeric|min:0',
-            'category_id' => 'required|integer|exists:categories,id',
-            'quantity' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('image')) {
             try {

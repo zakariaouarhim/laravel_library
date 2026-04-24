@@ -10,12 +10,12 @@ class ContactAutoReply extends Mailable
     use SerializesModels;
 
     public string $customerName;
-    public string $subject;
+    public string $messageSubject;
 
     public function __construct(string $customerName, string $subject)
     {
         $this->customerName = $customerName;
-        $this->subject = $subject;
+        $this->messageSubject = $subject;
     }
 
     public function build(): self

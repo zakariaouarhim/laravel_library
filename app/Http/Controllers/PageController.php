@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\Shop\StoreContactRequest;
 use App\Models\Book;
 use App\Models\Author;
 use App\Models\Category;
@@ -32,14 +32,9 @@ class PageController extends Controller
         return view('contact');
     }
 
-    public function storeContact(Request $request)
+    public function storeContact(StoreContactRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string|max:5000',
-        ]);
+        $validated = $request->validated();
 
         ContactMessage::create($validated);
 

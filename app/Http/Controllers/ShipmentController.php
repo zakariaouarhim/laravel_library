@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\StoreShipmentRequest;
+use App\Http\Requests\Admin\UpdateShipmentRequest;
 use Illuminate\Http\Request;
 use App\Models\Shipment;
 use App\Models\ShipmentItem;
@@ -108,19 +110,10 @@ class ShipmentController extends Controller
         $shipment = Shipment::with('items')->findOrFail($id);
         return response()->json($shipment);
     }
-    public function updateShipment(Request $request, Shipment $shipment)
+    public function updateShipment(UpdateShipmentRequest $request, Shipment $shipment)
     {
-        $validated = $request->validate([
-            'supplier_name' => 'nullable|string|max:255',
-            'arrival_date' => 'required|date',
-            'status' => 'required|in:pending,processing,completed,cancelled',
-            'notes' => 'nullable|string',
-            'total_books' => 'nullable|integer|min:0',
-            'processed_books' => 'nullable|integer|min:0',
-        ]);
-
         try {
-            $shipment->update($validated);
+            $shipment->update($request->validated());
 
             return redirect()->route('admin.Dashbord_Admin.Shipment_Management')
                 ->with('success', 'تم تحديث الشحنة بنجاح!');
@@ -184,24 +177,9 @@ class ShipmentController extends Controller
         return view('Dashbord_Admin.shipments.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreShipmentRequest $request)
 {
-    $validated = $request->validate([
-        'shipment_reference' => 'required|unique:shipments',
-        'supplier_name' => 'nullable|string|max:255',
-        'arrival_date' => 'required|date',
-        'notes' => 'nullable|string',
-        'items' => 'required|array|min:1',
-        'items.*.book_id' => 'nullable|exists:books,id',
-        'items.*.isbn' => 'required|string',
-        'items.*.title' => 'required|string',
-        'items.*.author_id' => 'nullable|exists:authors,id',
-        'items.*.publishing_house_id' => 'nullable|exists:publishing_houses,id',
-        'items.*.language' => 'nullable|string|in:arabic,english,french,spanish,german',
-        'items.*.quantity_received' => 'required|integer|min:1',
-        'items.*.cost_price' => 'nullable|numeric|min:0',
-        'items.*.selling_price' => 'required|numeric|min:0',
-    ]);
+    $validated = $request->validated();
 
     $shipment = Shipment::create([
         'shipment_reference' => $validated['shipment_reference'],

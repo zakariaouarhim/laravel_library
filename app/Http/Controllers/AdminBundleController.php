@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\StoreBundleRequest;
+use App\Http\Requests\Admin\UpdateBundleRequest;
 use App\Models\Book;
 use App\Models\Series;
 use App\Services\BookAdminService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AdminBundleController extends Controller
@@ -40,26 +41,9 @@ class AdminBundleController extends Controller
         return response()->json($books);
     }
 
-    public function store(Request $request)
+    public function store(StoreBundleRequest $request)
     {
-        $validated = $request->validate([
-            'series_id'   => 'required|exists:series,id',
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string|max:5000',
-            'price'       => 'required|numeric|min:0',
-            'quantity'    => 'required|integer|min:0',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'items'       => 'required|array|min:1',
-            'items.*.book_id'  => 'required|exists:books,id',
-            'items.*.quantity' => 'required|integer|min:1|max:50',
-        ], [
-            'series_id.required' => 'يجب اختيار السلسلة',
-            'title.required'     => 'اسم الباقة مطلوب',
-            'price.required'     => 'السعر مطلوب',
-            'quantity.required'  => 'الكمية مطلوبة',
-            'items.required'     => 'يجب اختيار جزء واحد على الأقل',
-            'items.min'          => 'يجب اختيار جزء واحد على الأقل',
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $request) {
             $imagePath = null;
@@ -91,21 +75,11 @@ class AdminBundleController extends Controller
         return back()->with('success', 'تم إنشاء الباقة بنجاح.');
     }
 
-    public function update(Request $request, Book $bundle)
+    public function update(UpdateBundleRequest $request, Book $bundle)
     {
         abort_unless($bundle->isBundle(), 404);
 
-        $validated = $request->validate([
-            'series_id'   => 'required|exists:series,id',
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string|max:5000',
-            'price'       => 'required|numeric|min:0',
-            'quantity'    => 'required|integer|min:0',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'items'       => 'required|array|min:1',
-            'items.*.book_id'  => 'required|exists:books,id',
-            'items.*.quantity' => 'required|integer|min:1|max:50',
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $request, $bundle) {
             $data = [

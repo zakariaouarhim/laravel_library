@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\UploadAvatarRequest;
 use Illuminate\Http\Request;
 use App\Models\Author;
 use App\Models\PublishingHouse;
@@ -103,18 +104,8 @@ class ProfileController extends Controller
         return back()->with('success', 'تم تحديث هدف القراءة بنجاح');
     }
 
-    public function uploadAvatar(Request $request)
+    public function uploadAvatar(UploadAvatarRequest $request)
     {
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,jpg,png,webp|mimetypes:image/jpeg,image/png,image/webp|max:2048|dimensions:max_width=2000,max_height=2000',
-        ], [
-            'avatar.required' => 'يرجى اختيار صورة',
-            'avatar.image' => 'الملف يجب أن يكون صورة',
-            'avatar.mimes' => 'الصورة يجب أن تكون بصيغة jpeg, jpg, png أو webp',
-            'avatar.max' => 'حجم الصورة يجب ألا يتجاوز 2 ميغابايت',
-            'avatar.dimensions' => 'أبعاد الصورة يجب ألا تتجاوز 2000x2000 بكسل',
-        ]);
-
         $user = Auth::user();
 
         $user->avatar = $this->imageService->processAvatar(

@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\Auth\LoginUserRequest;
+use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Models\UserModel;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -12,16 +13,10 @@ use App\Mail\WelcomeMail;
 
 class AuthController extends Controller
 {
-    public function adduser(Request $request)
+    public function adduser(RegisterUserRequest $request)
     {
         try {
-            $validateData = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:user,email',
-                'password' => 'required|min:8|confirmed|regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/',
-            ], [
-                'password.regex' => 'كلمة المرور يجب أن تحتوي على أحرف وأرقام على الأقل',
-            ]);
+            $validateData = $request->validated();
 
             $user = UserModel::create([
                 'name' => $validateData['name'],
@@ -67,13 +62,10 @@ class AuthController extends Controller
         }
     }
 
-    public function userlogin(Request $requestlogin)
+    public function userlogin(LoginUserRequest $requestlogin)
     {
         try {
-            $validatedData = $requestlogin->validate([
-                'email' => 'required|email',
-                'password' => 'required|min:8',
-            ]);
+            $validatedData = $requestlogin->validated();
 
             $credentials = [
                 'email' => $validatedData['email'],

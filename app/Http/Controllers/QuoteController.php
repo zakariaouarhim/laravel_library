@@ -2,40 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Shop\StoreQuoteRequest;
 use App\Models\Quote;
 use App\Models\Book;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class QuoteController extends Controller
 {
     /**
      * Store a new quote
      */
-    public function store(Request $request)
+    public function store(StoreQuoteRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'book_id' => 'required|exists:books,id',
-            'text' => 'required|string|min:10|max:1000',
-        ], [
-            'book_id.required' => 'معرف الكتاب مطلوب',
-            'book_id.exists' => 'الكتاب غير موجود',
-            'text.required' => 'نص الاقتباس مطلوب',
-            'text.min' => 'الاقتباس يجب أن يكون على الأقل 10 أحرف',
-            'text.max' => 'الاقتباس يجب أن لا يزيد عن 1000 حرف',
-            'page_number.integer' => 'رقم الصفحة يجب أن يكون رقماً صحيحاً',
-            'page_number.min' => 'رقم الصفحة يجب أن يكون أكبر من 0',
-            'page_number.max' => 'رقم الصفحة يجب أن لا يزيد عن 9999'
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                           ->withErrors($validator)
-                           ->withInput()
-                           ->with('quote_error', 'يرجى تصحيح الأخطاء والمحاولة مرة أخرى');
-        }
-
         try {
             // Check if user already has a quote for this book (optional limit)
             $existingQuotesCount = Quote::where('user_id', Auth::id())

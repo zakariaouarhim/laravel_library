@@ -2,21 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Shop\StoreReviewRequest;
+use App\Http\Requests\Shop\UpdateReviewRequest;
 use Illuminate\Http\Request;
 use App\Models\Book_Review;
 use App\Models\Book;
 
 class ReviewController extends Controller
 {
-    public function store(Request $request)
+    public function store(StoreReviewRequest $request)
     {
-        $request->validate([
-            'book_id' => 'required|exists:books,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|max:1000',
-            'is_read' => 'nullable|boolean',
-        ]);
-
         // Check if user already reviewed this book
         $existingReview = Book_Review::where('user_id', auth()->id())
                                    ->where('book_id', $request->book_id)
@@ -61,14 +56,9 @@ class ReviewController extends Controller
         return back()->with('success', 'تم إرسال تقييمك بنجاح وسيظهر بعد المراجعة.');
     }
 
-    public function update(Request $request, Book_Review $review)
+    public function update(UpdateReviewRequest $request, Book_Review $review)
     {
         $this->authorizeReviewOwner($request, $review);
-
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|max:1000',
-        ]);
 
         $review->update([
             'rating' => $request->rating,

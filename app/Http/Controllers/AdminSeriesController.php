@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\StoreSeriesRequest;
+use App\Http\Requests\Admin\UpdateSeriesRequest;
 use App\Models\Book;
 use App\Models\Series;
 use App\Models\Author;
@@ -29,25 +31,9 @@ class AdminSeriesController extends Controller
         return view('Dashbord_Admin.series', compact('series', 'stats', 'authors'));
     }
 
-    public function store(Request $request)
+    public function store(StoreSeriesRequest $request)
     {
-        $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'description'   => 'nullable|string|max:2000',
-            'author_id'     => 'nullable|exists:authors,id',
-            'total_volumes' => 'nullable|integer|min:1|max:9999',
-            'is_complete'   => 'nullable|boolean',
-            'cover_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ], [
-            'name.required'      => 'اسم السلسلة مطلوب',
-            'name.max'           => 'اسم السلسلة طويل جداً (الحد 255 حرف)',
-            'author_id.exists'   => 'المؤلف المختار غير موجود',
-            'total_volumes.min'  => 'عدد الأجزاء يجب أن يكون 1 على الأقل',
-            'cover_image.image'  => 'الملف يجب أن يكون صورة',
-            'cover_image.max'    => 'حجم الصورة يجب ألا يتجاوز 2MB',
-        ]);
-
-        $validated['is_complete'] = $request->boolean('is_complete');
+        $validated = $request->validated();
 
         if ($request->hasFile('cover_image')) {
             $validated['cover_image'] = app(ImageService::class)
@@ -59,21 +45,9 @@ class AdminSeriesController extends Controller
         return back()->with('success', 'تم إنشاء السلسلة بنجاح.');
     }
 
-    public function update(Request $request, Series $series)
+    public function update(UpdateSeriesRequest $request, Series $series)
     {
-        $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'description'   => 'nullable|string|max:2000',
-            'author_id'     => 'nullable|exists:authors,id',
-            'total_volumes' => 'nullable|integer|min:1|max:9999',
-            'is_complete'   => 'nullable|boolean',
-            'cover_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ], [
-            'name.required'    => 'اسم السلسلة مطلوب',
-            'author_id.exists' => 'المؤلف المختار غير موجود',
-        ]);
-
-        $validated['is_complete'] = $request->boolean('is_complete');
+        $validated = $request->validated();
 
         if ($request->hasFile('cover_image')) {
             $validated['cover_image'] = app(ImageService::class)

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\UpdateReturnRequestRequest;
+use App\Http\Requests\Shop\StoreReturnRequestRequest;
 use Illuminate\Http\Request;
 use App\Models\ReturnRequest;
 use App\Models\Order;
@@ -63,17 +65,9 @@ class ReturnRequestController extends Controller
     /**
      * Store a new return request
      */
-    public function store(Request $request)
+    public function store(StoreReturnRequestRequest $request)
     {
-        $validated = $request->validate([
-            'order_id' => 'required|exists:orders,id',
-            'reason'   => 'required|string|max:1000',
-        ], [
-            'order_id.required' => 'يرجى اختيار الطلب',
-            'order_id.exists'   => 'الطلب غير موجود',
-            'reason.required'   => 'يرجى كتابة سبب الإرجاع',
-            'reason.max'        => 'سبب الإرجاع يجب ألا يتجاوز 1000 حرف',
-        ]);
+        $validated = $request->validated();
 
         $userId = Auth::id();
 
@@ -172,13 +166,8 @@ class ReturnRequestController extends Controller
     /**
      * Admin: update return request status and notes
      */
-    public function adminUpdate(Request $request, $id)
+    public function adminUpdate(UpdateReturnRequestRequest $request, $id)
     {
-        $request->validate([
-            'status'      => 'required|in:pending,approved,rejected,refunded',
-            'admin_notes' => 'nullable|string|max:2000',
-        ]);
-
         $returnRequest = ReturnRequest::findOrFail($id);
 
         $oldStatus = $returnRequest->status;

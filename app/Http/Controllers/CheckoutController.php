@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Checkout\SubmitCheckoutRequest;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Services\CartService;
@@ -16,7 +17,7 @@ class CheckoutController extends Controller
         private CheckoutService $checkoutService,
     ) {}
 
-    public function submit(Request $request)
+    public function submit(SubmitCheckoutRequest $request)
     {
         // Double-submit protection
         $sessionToken = session()->pull('checkout_token');
@@ -28,27 +29,7 @@ class CheckoutController extends Controller
         }
 
         try {
-            $validated = $request->validate([
-                'full_name'      => 'required|string|max:255',
-                'email'          => 'nullable|email|max:255',
-                'phone'          => 'required|string|regex:/^[0-9]{10}$/',
-                'address'        => 'required|string',
-                'city'           => 'required|string',
-                'notes'          => 'nullable|string|max:500',
-                'payment_method' => 'required|in:cod,bank_transfer',
-            ], [
-                'full_name.required'      => 'الاسم الكامل مطلوب',
-                'email.email'             => 'يرجى إدخال بريد إلكتروني صحيح',
-                'phone.required'          => 'رقم الهاتف مطلوب',
-                'phone.regex'             => 'يرجى إدخال رقم هاتف صحيح (10 أرقام)',
-                'address.required'        => 'العنوان مطلوب',
-                'city.required'           => 'المدينة مطلوبة',
-                'payment_method.required' => 'طريقة الدفع مطلوبة',
-            ]);
-
-            if (empty($validated['email']) && Auth::check()) {
-                $validated['email'] = Auth::user()->email;
-            }
+            $validated = $request->validated();
 
             $cart = $this->cartService->loadCartForCheckout();
             if (empty($cart)) {
