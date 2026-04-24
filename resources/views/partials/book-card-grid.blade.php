@@ -15,7 +15,7 @@
                     <i class="fas fa-box"></i>
                 </a>
             @elseif(!$outOfStock)
-                <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
                     <i class="fas fa-shopping-cart"></i>
                 </button>
             @endif
@@ -28,57 +28,37 @@
                  onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
         </a>
 
-        <div class="card-badges">
-            @if($bundledOnly)
-                <span class="badge badge-bundle-only"><i class="fas fa-box"></i> متوفر كباقة</span>
-            @elseif($outOfStock)
-                <span class="badge out-of-stock-badge">نفذ المخزون</span>
-            @else
-                @if($book->is_new ?? false)
-                    <span class="badge bg-success">جديد</span>
-                @endif
-                @if(($book->discount ?? 0) > 0)
-                    <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
-                @endif
-                @if($inBundle && $firstBundle)
-                    <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="badge badge-bundle-hint">
-                        <i class="fas fa-box"></i> متوفر أيضاً كباقة
-                    </a>
-                @endif
-            @endif
-            @if(($book->author_id && in_array($book->author_id, $followedAuthorIds ?? [])) || ($book->publishing_house_id && in_array($book->publishing_house_id, $followedPublisherIds ?? [])))
-                <span class="badge badge-followed"><i class="fas fa-user-check"></i> متابَع</span>
-            @endif
-        </div>
+        @include('partials._book-card-badges')
 
         <h6><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h6>
-        @if ($book->primaryAuthor)
-            <p class="book-author">
-                <i class="fas fa-user-edit"></i>
+
+        <p class="book-author">
+            <i class="fas fa-user-edit me-1"></i>
+            @if($book->primaryAuthor)
                 <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
-            </p>
-        @elseif($book->author_name)
-            <p class="book-author"><i class="fas fa-user-edit"></i> {{ $book->author_name }}</p>
-        @endif
+                @if($book->primaryAuthor->nationality)
+                    <small class="text-muted">({{ $book->primaryAuthor->nationality }})</small>
+                @endif
+            @elseif($book->relationLoaded('authors') && $book->authors->where('pivot.author_type', 'primary')->first())
+                @php $pivotAuthor = $book->authors->where('pivot.author_type', 'primary')->first(); @endphp
+                <a href="{{ route('author.show', $pivotAuthor->id) }}">{{ $pivotAuthor->name }}</a>
+            @elseif($book->relationLoaded('authors') && $book->authors->isNotEmpty())
+                <a href="{{ route('author.show', $book->authors->first()->id) }}">{{ $book->authors->first()->name }}</a>
+                @if($book->authors->count() > 1)
+                    <small class="text-muted">+{{ $book->authors->count() - 1 }} مؤلف آخر</small>
+                @endif
+            @elseif($book->author_name)
+                {{ $book->author_name }}
+            @else
+                <span class="text-muted">مؤلف غير محدد</span>
+            @endif
+        </p>
+
         @if($book->relationLoaded('series') && $book->series)
             <p class="book-series"><i class="fas fa-layer-group"></i> {{ $book->series->name }}@if($book->volume_number) — الجزء {{ $book->volume_number }}@endif</p>
         @endif
 
-        @if(($book->reviews_count ?? 0) > 0)
-        <div class="book-card-rating">
-            @php $avgRating = round($book->reviews_avg_rating ?? 0, 1); @endphp
-            @for($i = 1; $i <= 5; $i++)
-                @if($i <= floor($avgRating))
-                    <i class="fas fa-star"></i>
-                @elseif($i - $avgRating < 1 && $i - $avgRating > 0)
-                    <i class="fas fa-star-half-alt"></i>
-                @else
-                    <i class="far fa-star"></i>
-                @endif
-            @endfor
-            <span class="rating-count">({{ $book->reviews_count }})</span>
-        </div>
-        @endif
+        @include('partials._book-card-rating')
 
         <div class="price-section">
             @if($bundledOnly && $firstBundle)
@@ -91,15 +71,15 @@
                 </a>
             @else
                 <span class="price">{{ $book->price }} <span class="currency">د.م</span></span>
-                @if($book->original_price ?? 0 > $book->price)
-                    <span class="original-price">{{ $book->original_price }} <span class="currency">د.م</span></span>
+                @if(($book->discount ?? 0) > 0)
+                    <span class="original-price">{{ round($book->price / (1 - $book->discount / 100)) }} <span class="currency">د.م</span></span>
                 @endif
                 @if($outOfStock)
                     <button class="notify-btn" onclick="notifyStock({{ $book->id }}, this)">
                         <i class="fas fa-bell"></i> أبلغني عند التوفر
                     </button>
                 @else
-                    <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                    <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
                         <i class="fas fa-shopping-cart"></i>
                     </button>
                 @endif

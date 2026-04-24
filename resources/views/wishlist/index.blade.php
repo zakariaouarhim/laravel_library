@@ -92,8 +92,8 @@
                         @endif
                         <div class="wl-card-price">
                             {{ $book->price }} <span>د.م</span>
-                            @if($book->original_price ?? 0 > $book->price)
-                            <span class="wl-original-price">{{ $book->original_price }} د.م</span>
+                            @if(($book->discount ?? 0) > 0)
+                            <span class="wl-original-price">{{ round($book->price / (1 - $book->discount / 100)) }} د.م</span>
                             @endif
                         </div>
                         <div class="wl-card-actions">

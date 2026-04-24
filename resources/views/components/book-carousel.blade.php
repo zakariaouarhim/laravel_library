@@ -5,126 +5,7 @@
         <div class="carousel-container">
             <div class="carousel-wrapper" data-carousel-wrapper>
                 @foreach($books as $book)
-                @php
-                    $outOfStock  = ($book->quantity ?? 0) <= 0;
-                    $inBundle    = $book->isStandard() && $book->relationLoaded('bundles') && $book->bundles->isNotEmpty();
-                    $bundledOnly = $inBundle && $outOfStock;
-                    $firstBundle = $inBundle ? $book->bundles->first() : null;
-                @endphp
-                <div class="book-card {{ ($outOfStock && !$bundledOnly) ? 'out-of-stock' : '' }}">
-                    <!-- Image wrapper with link - FULL WIDTH -->
-                    <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
-                        <img src="{{ asset($book->thumbnail) }}" alt="{{ $book->title }}" width="200" height="280" loading="lazy"
-                             srcset="{{ asset($book->thumbnail) }} 150w, {{ asset($book->image ?? 'images/book-placeholder.png') }} 400w"
-                             sizes="200px"
-                             onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
-                    </a>
-
-                    <!-- Quick Actions on top of image -->
-                    <div class="quick-actions">
-                        <button class="action-btn wishlist-btn" title="إضافة للمفضلة" onclick="toggleWishlist({{ $book->id }}, this)" data-book-id="{{ $book->id }}">
-                            <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
-                        </button>
-                        @if($bundledOnly)
-                            <a class="action-btn" href="{{ route('moredetail2.page', $book->id) }}" title="عرض الباقة">
-                                <i class="fas fa-box"></i>
-                            </a>
-                        @elseif(!$outOfStock)
-                            <button class="action-btn" title="إضافة للسلة" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
-                                <i class="fas fa-shopping-cart"></i>
-                            </button>
-                        @endif
-                    </div>
-
-                    <!-- Badges positioned over image -->
-                    <div class="card-badges">
-                        @if($bundledOnly)
-                            <span class="badge badge-bundle-only"><i class="fas fa-box"></i> متوفر كباقة</span>
-                        @elseif($outOfStock)
-                            <span class="badge out-of-stock-badge">نفذ المخزون</span>
-                        @else
-                            @if($book->is_new ?? false)
-                                <span class="badge bg-success">جديد</span>
-                            @endif
-                            @if(($book->discount ?? 0) > 0)
-                                <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
-                            @endif
-                            @if($inBundle && $firstBundle)
-                                <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="badge badge-bundle-hint">
-                                    <i class="fas fa-box"></i> متوفر أيضاً كباقة
-                                </a>
-                            @endif
-                        @endif
-                        @if(($book->author_id && in_array($book->author_id, $followedAuthorIds ?? [])) || ($book->publishing_house_id && in_array($book->publishing_house_id, $followedPublisherIds ?? [])))
-                            <span class="badge badge-followed"><i class="fas fa-user-check"></i> متابَع</span>
-                        @endif
-                    </div>
-
-                    <!-- Card Content -->
-                    <h6>{{ $book->title }}</h6>
-                    
-                    <p class="book-author">
-                        <i class="fas fa-user-edit me-1"></i>
-                        @if($book->primaryAuthor)
-                            <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
-                            @if($book->primaryAuthor->nationality)
-                                <small class="text-muted">({{ $book->primaryAuthor->nationality }})</small>
-                            @endif
-                        @elseif($book->authors->where('pivot.author_type', 'primary')->first())
-                            @php $pivotAuthor = $book->authors->where('pivot.author_type', 'primary')->first(); @endphp
-                            <a href="{{ route('author.show', $pivotAuthor->id) }}">{{ $pivotAuthor->name }}</a>
-                        @elseif($book->authors->isNotEmpty())
-                            <a href="{{ route('author.show', $book->authors->first()->id) }}">{{ $book->authors->first()->name }}</a>
-                            @if($book->authors->count() > 1)
-                                <small class="text-muted">+{{ $book->authors->count() - 1 }} مؤلف آخر</small>
-                            @endif
-                        @else
-                            <span class="text-muted">مؤلف غير محدد</span>
-                        @endif
-                    </p>
-                    
-                    @if(($book->reviews_count ?? 0) > 0)
-                    <div class="book-card-rating">
-                        @php $avgRating = round($book->reviews_avg_rating ?? 0, 1); @endphp
-                        @for($i = 1; $i <= 5; $i++)
-                            @if($i <= floor($avgRating))
-                                <i class="fas fa-star"></i>
-                            @elseif($i - $avgRating < 1 && $i - $avgRating > 0)
-                                <i class="fas fa-star-half-alt"></i>
-                            @else
-                                <i class="far fa-star"></i>
-                            @endif
-                        @endfor
-                        <span class="rating-count">({{ $book->reviews_count }})</span>
-                    </div>
-                    @endif
-
-                    <div class="price-section">
-                        @if($bundledOnly && $firstBundle)
-                            <span class="price">
-                                {{ number_format((float) $firstBundle->price, 2) }} <span class="currency">د.م</span>
-                                <small class="bundle-price-label">السلسلة كاملة</small>
-                            </span>
-                            <a class="add-btn" href="{{ route('moredetail2.page', $book->id) }}" title="عرض الباقة">
-                                <i class="fas fa-box"></i>
-                            </a>
-                        @else
-                            <span class="price">{{ $book->price }} <span class="currency">د.م</span></span>
-                            @if(($book->discount ?? 0) > 0)
-                                <span class="original-price">{{ round($book->price / (1 - $book->discount / 100)) }} <span class="currency">د.م</span></span>
-                            @endif
-                            @if($outOfStock)
-                                <button class="notify-btn" onclick="notifyStock({{ $book->id }}, this)">
-                                    <i class="fas fa-bell"></i> أبلغني عند التوفر
-                                </button>
-                            @else
-                                <button class="add-btn" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
-                                    <i class="fas fa-shopping-cart"></i>
-                                </button>
-                            @endif
-                        @endif
-                    </div>
-                </div>
+                    @include('partials.book-card-grid', ['book' => $book])
                 @endforeach
             </div>
             <button class="carousel-nav prev" data-carousel-prev>
@@ -141,7 +22,7 @@
         <div class="empty-carousel-message">
             <div class="empty-state-card text-center p-5 border rounded bg-light">
                 <div class="empty-state-icon mb-4">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" 
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle"
                         style="width: 80px; height: 80px;">
                         <i class="fas fa-books text-primary" style="font-size: 2.5rem;"></i>
                     </div>

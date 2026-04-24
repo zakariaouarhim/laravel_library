@@ -20,21 +20,7 @@
                 <i class="fas fa-box"></i> متوفر أيضاً كباقة
             </a>
         @endif
-        @if(($book->reviews_count ?? 0) > 0)
-        <div class="book-card-rating">
-            @php $avgRating = round($book->reviews_avg_rating ?? 0, 1); @endphp
-            @for($i = 1; $i <= 5; $i++)
-                @if($i <= floor($avgRating))
-                    <i class="fas fa-star"></i>
-                @elseif($i - $avgRating < 1 && $i - $avgRating > 0)
-                    <i class="fas fa-star-half-alt"></i>
-                @else
-                    <i class="far fa-star"></i>
-                @endif
-            @endfor
-            <span class="rating-count">({{ $book->reviews_count }})</span>
-        </div>
-        @endif
+        @include('partials._book-card-rating')
         <p class="text-muted">{{ Str::limit($book->description, 100) }}</p>
         <div class="d-flex align-items-center mt-2">
             @if($bundledOnly && $firstBundle)
@@ -47,8 +33,8 @@
                 </a>
             @else
                 <span class="fw-bold text-primary me-3">{{ $book->price }} د.م</span>
-                @if($book->original_price ?? 0 > $book->price)
-                    <del class="text-muted">{{ $book->original_price }} د.م</del>
+                @if(($book->discount ?? 0) > 0)
+                    <del class="text-muted">{{ round($book->price / (1 - $book->discount / 100)) }} د.م</del>
                 @endif
                 @if($outOfStock)
                     <span class="badge out-of-stock-badge ms-2 me-2">نفذ المخزون</span>
@@ -56,7 +42,7 @@
                         <i class="fas fa-bell me-1"></i> أبلغني عند التوفر
                     </button>
                 @else
-                    <button class="btn btn-sm btn-outline-primary ms-auto" onclick="addToCart({{ $book->id }},'{{ $book->title }}', {{ $book->price }}, '{{ $book->image }}')">
+                    <button class="btn btn-sm btn-outline-primary ms-auto" onclick="addToCart({{ $book->id }},'{{ addslashes($book->title) }}', {{ $book->price }}, '{{ addslashes($book->image) }}')">
                         <i class="fas fa-shopping-cart me-1"></i> أضف للسلة
                     </button>
                 @endif
