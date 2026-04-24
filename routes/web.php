@@ -36,6 +36,7 @@ use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminSeriesController;
 use App\Http\Controllers\AdminBundleController;
 use App\Http\Controllers\AdminPublishingHouseController;
+use App\Http\Controllers\AdminQuoteController;
 
 
 
@@ -192,6 +193,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/reviews', [ReviewController::class, 'adminIndex'])->name('reviews.index');
     Route::patch('/reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.update-status');
     Route::delete('/reviews/{id}', [ReviewController::class, 'adminDestroy'])->name('reviews.destroy');
+
+    // Quotes moderation
+    Route::get('/quotes',                  [AdminQuoteController::class, 'index'])->name('quotes.index');
+    Route::get('/quotes/{id}',             [AdminQuoteController::class, 'show'])->name('quotes.show');
+    Route::patch('/quotes/{id}/toggle',    [AdminQuoteController::class, 'toggleApproval'])->name('quotes.toggle');
+    Route::delete('/quotes/{id}',          [AdminQuoteController::class, 'destroy'])->name('quotes.destroy');
 
     // Book import review
     Route::get('/import/review', fn() => view('admin.import.review'))->name('import.review');

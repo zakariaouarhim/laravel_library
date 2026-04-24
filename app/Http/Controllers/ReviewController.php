@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Shop\StoreReviewRequest;
 use App\Http\Requests\Shop\UpdateReviewRequest;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use App\Models\Book_Review;
 use App\Models\Book;
 
 class ReviewController extends Controller
 {
+    use AuthorizesRequests;
+
     public function store(StoreReviewRequest $request)
     {
         // Check if user already reviewed this book
@@ -30,7 +33,7 @@ class ReviewController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
             'is_read' => $request->has('is_read') ? 1 : 0,
-            'status' => 'pending',
+            'status' => 'approved',
         ]);
 
         if ($request->ajax()) {
@@ -38,7 +41,7 @@ class ReviewController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم إرسال تقييمك بنجاح وسيظهر بعد المراجعة.',
+                'message' => 'تم إرسال تقييمك بنجاح.',
                 'review' => [
                     'id' => $review->id,
                     'rating' => $review->rating,
@@ -53,12 +56,12 @@ class ReviewController extends Controller
             ]);
         }
 
-        return back()->with('success', 'تم إرسال تقييمك بنجاح وسيظهر بعد المراجعة.');
+        return back()->with('success', 'تم إرسال تقييمك بنجاح.');
     }
 
     public function update(UpdateReviewRequest $request, Book_Review $review)
     {
-        $this->authorizeReviewOwner($request, $review);
+        $this->authorize('update', $review);
 
         $review->update([
             'rating' => $request->rating,
@@ -83,7 +86,7 @@ class ReviewController extends Controller
 
     public function destroy(Request $request, Book_Review $review)
     {
-        $this->authorizeReviewOwner($request, $review);
+        $this->authorize('delete', $review);
 
         $bookId = $review->book_id;
         $review->delete();
@@ -137,16 +140,6 @@ class ReviewController extends Controller
             'avg_rating' => round(Book_Review::where('book_id', $bookId)->where('status', 'approved')->avg('rating') ?? 0, 1),
             'reviews_count' => Book_Review::where('book_id', $bookId)->where('status', 'approved')->count(),
         ];
-    }
-
-    private function authorizeReviewOwner(Request $request, Book_Review $review): void
-    {
-        if (auth()->id() !== $review->user_id) {
-            if ($request->ajax()) {
-                abort(response()->json(['success' => false, 'message' => 'غير مصرح'], 403));
-            }
-            abort(403);
-        }
     }
 
     // ==================== ADMIN METHODS ====================

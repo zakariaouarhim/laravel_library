@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Shop\StoreQuoteRequest;
 use App\Models\Quote;
 use App\Models\Book;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 
 class QuoteController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Store a new quote
      */
@@ -94,11 +97,7 @@ class QuoteController extends Controller
             return redirect()->route('login2.page');
         }
 
-        // Check if user owns the quote or is admin
-        if ($quote->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-            return redirect()->back()
-                           ->with('quote_error', 'غير مسموح لك بحذف هذا الاقتباس');
-        }
+        $this->authorize('delete', $quote);
 
         try {
             $quote->delete();

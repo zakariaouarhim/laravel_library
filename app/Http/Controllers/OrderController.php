@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Services\OrderService;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(
         private OrderService $orderService,
     ) {}
@@ -128,10 +131,8 @@ class OrderController extends Controller
 
     public function cancelOrder(Request $request, $id)
     {
-        $order = Order::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->whereIn('status', ['pending', 'processing'])
-            ->firstOrFail();
+        $order = Order::findOrFail($id);
+        $this->authorize('cancel', $order);
 
         $order->update(['status' => 'cancelled']);
 

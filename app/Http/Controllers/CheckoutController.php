@@ -96,9 +96,7 @@ class CheckoutController extends Controller
             return redirect()->route('index.page')->with('error', 'الطلب غير موجود');
         }
 
-        $ownsOrder = Auth::check()
-            && $order->user_id !== null
-            && $order->user_id === Auth::id();
+        $ownsOrder = Auth::check() && Auth::user()->can('view', $order);
 
         $hasValidToken = request('token') !== null
             && request('token') === $order->management_token;
