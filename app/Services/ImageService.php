@@ -144,6 +144,28 @@ class ImageService
     }
 
     /**
+     * Process and store a publisher logo as WebP, resized to 300px wide.
+     * Deletes the old logo if provided.
+     *
+     * @return string Relative storage path to the saved image
+     */
+    public function processPublisherLogo(UploadedFile $file, ?string $oldPath = null): string
+    {
+        if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $image = Image::read($file);
+        $image->scale(width: 300);
+        $encoded = $image->toWebp(80);
+
+        $filename = 'publishers/' . uniqid('pub_') . '.webp';
+        Storage::disk('public')->put($filename, (string) $encoded);
+
+        return $filename;
+    }
+
+    /**
      * Process an uploaded avatar image: resize to 300px wide WebP.
      * Deletes the old avatar if provided.
      *

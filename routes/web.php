@@ -35,6 +35,7 @@ use App\Http\Controllers\ReadingShelfController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminSeriesController;
 use App\Http\Controllers\AdminBundleController;
+use App\Http\Controllers\AdminPublishingHouseController;
 
 
 
@@ -173,6 +174,13 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/bundles/{bundle}',             [AdminBundleController::class, 'update'])->name('bundles.update');
     Route::delete('/bundles/{bundle}',           [AdminBundleController::class, 'destroy'])->name('bundles.destroy');
     Route::get('/bundles-series/{series}/books', [AdminBundleController::class, 'seriesBooks'])->name('bundles.series-books');
+
+    // Publishing houses management
+    Route::get('/Dashbord_Admin/publishing-houses',    [AdminPublishingHouseController::class, 'index'])->name('publishing_houses.index');
+    Route::post('/publishing-houses',                  [AdminPublishingHouseController::class, 'store'])->name('publishing_houses.store');
+    Route::get('/publishing-houses/api/{id}',          [AdminPublishingHouseController::class, 'show'])->name('publishing_houses.show');
+    Route::put('/publishing-houses/api/{id}',          [AdminPublishingHouseController::class, 'update'])->name('publishing_houses.update');
+    Route::delete('/publishing-houses/{id}',           [AdminPublishingHouseController::class, 'destroy'])->name('publishing_houses.destroy');
 
     // Contact messages
     Route::get('/contact-messages', [AdminContactController::class, 'index'])->name('contact-messages.index');
