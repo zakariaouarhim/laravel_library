@@ -235,8 +235,8 @@ Route::get('/moredetail-v2/{id}', [BookController::class, 'showV2'])->name('more
 // ==================== REVIEWS ====================
 
 Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store')->middleware(['auth', 'throttle:10,1']);
-Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update')->middleware('auth');
-Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy')->middleware('auth');
+Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update')->middleware(['auth', 'throttle:10,1']);
+Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy')->middleware(['auth', 'throttle:10,1']);
 Route::post('/reviews/{review}/helpful', [ReviewController::class, 'toggleHelpful'])->name('reviews.helpful')->middleware(['auth', 'throttle:30,1']);
 
 // ==================== WISHLIST ====================
@@ -314,9 +314,9 @@ Route::post('/notify-stock/{bookId}', [StockNotificationController::class, 'stor
 // ==================== QUOTES ====================
 
 Route::middleware('auth')->group(function () {
-    Route::post('/quotes', [QuoteController::class, 'store'])->name('quotes.store');
-    Route::post('/quotes/{quote}/toggle-like', [QuoteController::class, 'toggleLike'])->name('quotes.toggle-like');
-    Route::delete('/quotes/{quote}', [QuoteController::class, 'destroy'])->name('quotes.destroy');
+    Route::post('/quotes', [QuoteController::class, 'store'])->name('quotes.store')->middleware('throttle:10,1');
+    Route::post('/quotes/{quote}/toggle-like', [QuoteController::class, 'toggleLike'])->name('quotes.toggle-like')->middleware('throttle:30,1');
+    Route::delete('/quotes/{quote}', [QuoteController::class, 'destroy'])->name('quotes.destroy')->middleware('throttle:10,1');
     Route::get('/my-quotes', [QuoteController::class, 'getUserQuotes'])->name('quotes.my-quotes');
 });
 
