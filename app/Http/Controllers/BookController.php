@@ -267,21 +267,7 @@ class BookController extends Controller
             default      => $builder->orderByDesc('created_at'),
         };
 
-        // 4. Check if main query has results; if not, fall back to n-gram
         $totalSearchCount = $builder->count();
-        if ($totalSearchCount === 0 && $query) {
-            $builder = $this->searchService->ngramSearchQuery($query);
-            $builder->with(['primaryAuthor', 'publishingHouse', 'categories', 'category', 'bundles:id,title,price,image']);
-            $builder = $this->applySearchFilters($builder, $request);
-            $builder = match ($sort) {
-                'newest'     => $builder->orderByDesc('created_at'),
-                'price_asc'  => $builder->orderBy('price'),
-                'price_desc' => $builder->orderByDesc('price'),
-                'title'      => $builder->orderBy('title'),
-                default      => $builder->orderByDesc('created_at'),
-            };
-            $totalSearchCount = $builder->count();
-        }
 
         // 5. DB-level pagination
         $paginatedBooks = $builder->paginate(12)->appends($request->query());

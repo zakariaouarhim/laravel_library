@@ -124,7 +124,7 @@ class Book extends Model
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'author' => $this->getAuthorNameAttribute(), // Use the accessor
+            'author' => $this->getAuthorNameAttribute(),
             'description' => $this->description,
         ];
     }
