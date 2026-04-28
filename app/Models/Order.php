@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,7 +21,10 @@ class Order extends Model
         'estimated_delivery_date',
     ];
 
-    protected $dates = ['estimated_delivery_date'];
+    protected $casts = [
+        'status' => OrderStatus::class,
+        'estimated_delivery_date' => 'datetime',
+    ];
 
     public function orderDetails()
     {
@@ -65,25 +69,6 @@ class Order extends Model
     public function isGuestOrder()
     {
         return is_null($this->user_id);
-    }
-
-    /**
-     * Status labels (Arabic) — single source of truth
-     */
-    public const STATUS_LABELS = [
-        'pending'    => 'قيد الانتظار',
-        'processing' => 'قيد المعالجة',
-        'shipped'    => 'مشحون',
-        'delivered'  => 'تم التسليم',
-        'cancelled'  => 'ملغي',
-        'failed'     => 'فشل',
-        'refunded'   => 'مسترجع',
-        'returned'   => 'مرتجع',
-    ];
-
-    public function getStatusLabelAttribute(): string
-    {
-        return self::STATUS_LABELS[$this->status] ?? $this->status;
     }
 
     /**

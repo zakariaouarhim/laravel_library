@@ -80,7 +80,7 @@
                                     'refunded' => ['class' => 'status-refunded', 'text' => 'تم الاسترداد'],
                                     'returned' => ['class' => 'status-returned', 'text' => 'مسترجع'],
                                 ];
-                                $s = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];
+                                $s = $statusMap[$order->status->value] ?? ['class' => 'status-pending', 'text' => $order->status->label()];
                             @endphp
                             <span class="status-badge {{ $s['class'] }}">{{ $s['text'] }}</span>
                         </span>
@@ -144,12 +144,12 @@
             <div class="manage-card actions-card">
                 <h2 class="card-title"><i class="fas fa-tools"></i> إجراءات الطلب</h2>
 
-                @if(in_array($order->status, ['pending', 'processing']))
+                @if($order->status->isCancellable())
                 <!-- Cancel Order -->
                 <div class="action-section">
                     <div class="action-info">
                         <h3><i class="fas fa-times-circle text-danger"></i> إلغاء الطلب</h3>
-                        <p>يمكنك إلغاء الطلب لأنه لا يزال {{ $order->status == 'pending' ? 'قيد المعالجة' : 'جاري التجهيز' }}.</p>
+                        <p>يمكنك إلغاء الطلب لأنه لا يزال {{ $order->status === \App\Enums\OrderStatus::Pending ? 'قيد المعالجة' : 'جاري التجهيز' }}.</p>
                     </div>
                     <form action="{{ route('order.manage.cancel') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')">
                         @csrf
@@ -161,7 +161,7 @@
                 </div>
                 @endif
 
-                @if($order->status === 'delivered' && !$hasActiveReturn)
+                @if($order->status === \App\Enums\OrderStatus::Delivered && !$hasActiveReturn)
                 <!-- Return Request -->
                 <div class="action-section">
                     <div class="action-info">
@@ -194,7 +194,7 @@
                 </div>
                 @endif
 
-                @if(in_array($order->status, ['cancelled', 'failed', 'refunded', 'returned']))
+                @if(in_array($order->status->value, ['cancelled', 'failed', 'refunded', 'returned']))
                 <div class="action-section">
                     <div class="no-actions-notice">
                         <i class="fas fa-info-circle"></i>
@@ -203,7 +203,7 @@
                 </div>
                 @endif
 
-                @if($order->status === 'shipped')
+                @if($order->status === \App\Enums\OrderStatus::Shipped)
                 <div class="action-section">
                     <div class="no-actions-notice">
                         <i class="fas fa-truck"></i>

@@ -134,7 +134,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $this->authorize('cancel', $order);
 
-        $order->update(['status' => 'cancelled']);
+        $this->orderService->updateStatus($order, \App\Enums\OrderStatus::Cancelled);
 
         return redirect()->route('my-orders.index')->with('success', 'تم إلغاء الطلب بنجاح');
     }

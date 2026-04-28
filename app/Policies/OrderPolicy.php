@@ -20,6 +20,6 @@ class OrderPolicy
     public function cancel(UserModel $user, Order $order): bool
     {
         return $order->user_id === $user->id
-            && in_array($order->status, ['pending', 'processing'], true);
+            && $order->status->isCancellable();
     }
 }

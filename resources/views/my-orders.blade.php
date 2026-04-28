@@ -99,7 +99,7 @@
                                             'refunded'   => ['class' => 'status-refunded',   'text' => 'مسترجع'],
                                             'returned'   => ['class' => 'status-returned',   'text' => 'مرتجع'],
                                         ];
-                                        $s = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];
+                                        $s = $statusMap[$order->status->value] ?? ['class' => 'status-pending', 'text' => $order->status->label()];
                                     @endphp
                                     <span class="status-badge {{ $s['class'] }}">{{ $s['text'] }}</span>
                                 </div>
@@ -130,8 +130,8 @@
                                         'delivered'  => ['icon' => 'fas fa-check-circle',     'label' => 'تم التسليم'],
                                     ];
                                     $statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
-                                    $currentIndex = array_search($order->status, $statusOrder);
-                                    $isCancelled = in_array($order->status, ['cancelled', 'failed', 'refunded', 'returned']);
+                                    $currentIndex = array_search($order->status->value, $statusOrder);
+                                    $isCancelled = in_array($order->status->value, ['cancelled', 'failed', 'refunded', 'returned']);
                                 @endphp
                                 <div class="order-timeline">
                                     @foreach($steps as $stepKey => $step)
@@ -179,12 +179,12 @@
                                     @endphp
                                     <div class="timeline-cancelled-notice">
                                         <i class="fas fa-exclamation-triangle me-1"></i>
-                                        {{ $cancelLabels[$order->status] ?? $order->status }}
+                                        {{ $cancelLabels[$order->status->value] ?? $order->status->label() }}
                                         <span class="text-muted ms-2">{{ $order->updated_at->format('d/m/Y') }}</span>
                                     </div>
                                 @endif
 
-                                @if($order->estimated_delivery_date && $order->status === 'shipped')
+                                @if($order->estimated_delivery_date && $order->status === \App\Enums\OrderStatus::Shipped)
                                     <div class="estimated-delivery-badge">
                                         <i class="fas fa-calendar-check me-1"></i>
                                         التسليم المتوقع: {{ \Carbon\Carbon::parse($order->estimated_delivery_date)->format('d/m/Y') }}
@@ -297,7 +297,7 @@
                                         </form>
                                     @endif
 
-                                    @if(in_array($order->status, ['pending', 'processing']))
+                                    @if($order->status->isCancellable())
                                         <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="d-inline"
                                               onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')">
                                             @csrf
@@ -307,7 +307,7 @@
                                         </form>
                                     @endif
 
-                                    @if($order->status === 'delivered')
+                                    @if($order->status === \App\Enums\OrderStatus::Delivered)
                                         <a href="{{ route('return-requests.index') }}" class="btn btn-return-request">
                                             <i class="fas fa-undo me-1"></i>طلب إسترجاع
                                         </a>

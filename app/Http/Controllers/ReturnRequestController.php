@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Http\Requests\Admin\UpdateReturnRequestRequest;
 use App\Http\Requests\Shop\StoreReturnRequestRequest;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use App\Models\ReturnRequest;
 use App\Models\Order;
@@ -14,6 +16,10 @@ use App\Mail\ReturnRequestStatusMail;
 
 class ReturnRequestController extends Controller
 {
+    public function __construct(
+        private OrderService $orderService,
+    ) {}
+
     /**
      * Display authenticated user's return requests
      */
@@ -173,6 +179,17 @@ class ReturnRequestController extends Controller
         $oldStatus = $returnRequest->status;
         $newStatus = $request->status;
 
+        // Pre-flight: if the admin is refunding, ensure the order can transition
+        // before we save the return request so the two stay in sync.
+        if ($newStatus === 'refunded' && $returnRequest->order) {
+            if (!$returnRequest->order->status->canTransitionTo(OrderStatus::Refunded)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "لا يمكن استرجاع المبلغ لأن الطلب في حالة \"{$returnRequest->order->status->label()}\"",
+                ], 422);
+            }
+        }
+
         $returnRequest->status = $newStatus;
         $returnRequest->admin_notes = $request->admin_notes;
 
@@ -183,7 +200,7 @@ class ReturnRequestController extends Controller
         $returnRequest->save();
 
         if ($newStatus === 'refunded' && $returnRequest->order) {
-            $returnRequest->order->update(['status' => 'refunded']);
+            $this->orderService->updateStatus($returnRequest->order, OrderStatus::Refunded);
         }
 
         // Send status change email if status actually changed

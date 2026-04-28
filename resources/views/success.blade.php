@@ -71,7 +71,7 @@
                             <div class="detail-item">
                                 <span class="detail-label">حالة الطلب</span>
                                 <div class="detail-value">
-                                    <span class="status-badge">{{ $order->status == 'pending' ? 'قيد المعالجة' : 'مكتمل' }}</span>
+                                    <span class="status-badge">{{ $order->status === \App\Enums\OrderStatus::Pending ? 'قيد المعالجة' : 'مكتمل' }}</span>
                                 </div>
                             </div>
                             <div class="detail-item">

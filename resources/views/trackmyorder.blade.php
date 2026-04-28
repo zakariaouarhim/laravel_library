@@ -56,9 +56,9 @@
                     @php
                         $history = $order->statusHistory ?? collect();
                         $historyByStatus = $history->keyBy('status');
-                        $isCancelled = in_array($order->status, ['cancelled', 'failed', 'refunded', 'returned']);
+                        $isCancelled = in_array($order->status->value, ['cancelled', 'failed', 'refunded', 'returned']);
                         $statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
-                        $currentIndex = array_search($order->status, $statusOrder);
+                        $currentIndex = array_search($order->status->value, $statusOrder);
                     @endphp
 
                     <div class="timeline-section">
@@ -86,7 +86,7 @@
                                 $processingClass = 'pending';
                                 if ($isCancelled) $processingClass = $processingHistory ? 'completed' : 'failed';
                                 elseif ($currentIndex !== false && $currentIndex >= 1) $processingClass = 'completed';
-                                elseif ($order->status === 'processing') $processingClass = 'active';
+                                elseif ($order->status->value === 'processing') $processingClass = 'active';
                             @endphp
                             <div class="timeline-item {{ $processingClass }}">
                                 <div class="timeline-dot-icon">
@@ -99,7 +99,7 @@
                                     @if($processingHistory)
                                         <div class="timeline-date">{{ \Carbon\Carbon::parse($processingHistory->created_at)->format('d-m-Y H:i') }}</div>
                                         <div class="timeline-description">تم تجهيز طلبك بنجاح</div>
-                                    @elseif($order->status === 'processing')
+                                    @elseif($order->status->value === 'processing')
                                         <div class="timeline-date">حالياً</div>
                                         <div class="timeline-description">جاري تجهيز طلبك وتحضيره للشحن</div>
                                     @elseif($processingClass === 'failed')
@@ -118,7 +118,7 @@
                                 $shippedClass = 'pending';
                                 if ($isCancelled) $shippedClass = $shippedHistory ? 'completed' : 'failed';
                                 elseif ($currentIndex !== false && $currentIndex >= 2) $shippedClass = 'completed';
-                                elseif ($order->status === 'shipped') $shippedClass = 'active';
+                                elseif ($order->status->value === 'shipped') $shippedClass = 'active';
                             @endphp
                             <div class="timeline-item {{ $shippedClass }}">
                                 <div class="timeline-dot-icon">
@@ -136,7 +136,7 @@
                                             @else
                                                 طلبك في الطريق إليك
                                             @endif
-                                            @if($order->estimated_delivery_date && in_array($order->status, ['shipped']))
+                                            @if($order->estimated_delivery_date && in_array($order->status->value, ['shipped']))
                                                 <br>التسليم المتوقع: <strong>{{ \Carbon\Carbon::parse($order->estimated_delivery_date)->format('d/m/Y') }}</strong>
                                             @endif
                                         </div>
@@ -159,7 +159,7 @@
                             @php
                                 $deliveredHistory = $historyByStatus->get('delivered');
                                 $deliveredClass = 'pending';
-                                if ($order->status === 'delivered') $deliveredClass = 'completed';
+                                if ($order->status->value === 'delivered') $deliveredClass = 'completed';
                                 elseif ($isCancelled) $deliveredClass = 'failed';
                             @endphp
                             <div class="timeline-item {{ $deliveredClass }}">
@@ -170,11 +170,11 @@
                                 </div>
                                 <div class="timeline-content">
                                     <div class="timeline-status">
-                                        @if($order->status == 'delivered') تم التسليم
-                                        @elseif($order->status == 'returned') تم الإرجاع
-                                        @elseif($order->status == 'refunded') تم استرجاع المبلغ
-                                        @elseif($order->status == 'cancelled') تم إلغاء الطلب
-                                        @elseif($order->status == 'failed') فشل الطلب
+                                        @if($order->status->value == 'delivered') تم التسليم
+                                        @elseif($order->status->value == 'returned') تم الإرجاع
+                                        @elseif($order->status->value == 'refunded') تم استرجاع المبلغ
+                                        @elseif($order->status->value == 'cancelled') تم إلغاء الطلب
+                                        @elseif($order->status->value == 'failed') فشل الطلب
                                         @else في انتظار التسليم @endif
                                     </div>
                                     @if($deliveredHistory)
@@ -183,9 +183,9 @@
                                     @elseif($isCancelled)
                                         <div class="timeline-date">{{ $order->updated_at->format('d-m-Y') }}</div>
                                         <div class="timeline-description">
-                                            @if($order->status == 'returned') تم إرجاع الطلب بنجاح
-                                            @elseif($order->status == 'refunded') تم استرجاع المبلغ إلى حسابك
-                                            @elseif($order->status == 'cancelled') تم إلغاء الطلب من قبلك
+                                            @if($order->status->value == 'returned') تم إرجاع الطلب بنجاح
+                                            @elseif($order->status->value == 'refunded') تم استرجاع المبلغ إلى حسابك
+                                            @elseif($order->status->value == 'cancelled') تم إلغاء الطلب من قبلك
                                             @else حدث خطأ في معالجة الطلب @endif
                                         </div>
                                     @else
@@ -234,34 +234,7 @@
                             <div class="detail-box">
                                 <span class="detail-label">حالة الطلب</span>
                                 <div class="detail-value">
-                                    @switch($order->status)
-                                        @case('pending')
-                                            قيد الانتظار
-                                            @break
-                                        @case('processing')
-                                            قيد المعالجة
-                                            @break
-                                        @case('shipped')
-                                            مشحون
-                                            @break
-                                        @case('delivered')
-                                            تم التسليم
-                                            @break
-                                        @case('cancelled')
-                                            ملغى
-                                            @break
-                                        @case('failed')
-                                            فشل
-                                            @break
-                                        @case('refunded')
-                                            مسترجع
-                                            @break
-                                        @case('returned')
-                                            مرتجع
-                                            @break
-                                        @default
-                                            {{ $order->status }}
-                                    @endswitch
+                                    {{ $order->status->label() }}
                                 </div>
                             </div>
                         </div>

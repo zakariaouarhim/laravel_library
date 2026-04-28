@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Mail\OrderStatusUpdateMail;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
@@ -11,52 +12,33 @@ use Illuminate\Support\Facades\Mail;
 class OrderService
 {
     /**
-     * Valid status transitions to prevent invalid state jumps.
-     */
-    private const ALLOWED_TRANSITIONS = [
-        'pending'    => ['processing', 'cancelled', 'failed'],
-        'processing' => ['shipped', 'cancelled', 'failed'],
-        'shipped'    => ['delivered', 'returned'],
-        'delivered'  => ['returned', 'refunded'],
-        'cancelled'  => [],
-        'failed'     => ['pending'],
-        'refunded'   => [],
-        'returned'   => ['refunded'],
-    ];
-
-    /**
-     * Validate whether a status transition is allowed.
+     * Update an order's status, log the change, and send email notification.
      *
-     * @throws \InvalidArgumentException if transition is invalid
+     * @throws \InvalidArgumentException if the transition is not allowed
      */
-    public function validateTransition(string $from, string $to): void
+    public function updateStatus(Order $order, OrderStatus|string $newStatus, ?string $note = null): Order
     {
-        if ($from === $to) {
-            return;
-        }
+        $newStatus = $newStatus instanceof OrderStatus
+            ? $newStatus
+            : OrderStatus::from($newStatus);
 
-        $allowed = self::ALLOWED_TRANSITIONS[$from] ?? [];
+        $oldStatus = $order->status;
 
-        if (!in_array($to, $allowed)) {
+        if (!$oldStatus->canTransitionTo($newStatus)) {
             throw new \InvalidArgumentException(
-                "لا يمكن تغيير الحالة من \"{$from}\" إلى \"{$to}\""
+                "لا يمكن تغيير الحالة من \"{$oldStatus->label()}\" إلى \"{$newStatus->label()}\""
             );
         }
-    }
 
-    /**
-     * Update an order's status, log the change, and send email notification.
-     */
-    public function updateStatus(Order $order, string $newStatus, ?string $note = null): Order
-    {
-        $oldStatus = $order->status;
-        $this->validateTransition($oldStatus, $newStatus);
+        if ($oldStatus === $newStatus) {
+            return $order;
+        }
 
         $updateData = ['status' => $newStatus];
 
-        if ($newStatus === 'shipped') {
+        if ($newStatus === OrderStatus::Shipped) {
             $updateData['estimated_delivery_date'] = Carbon::now()->addWeekdays(3)->toDateString();
-        } elseif ($newStatus === 'delivered') {
+        } elseif ($newStatus === OrderStatus::Delivered) {
             $updateData['estimated_delivery_date'] = null;
         }
 
@@ -64,7 +46,7 @@ class OrderService
 
         OrderStatusHistory::create([
             'order_id' => $order->id,
-            'status'   => $newStatus,
+            'status'   => $newStatus->value,
             'note'     => $note,
         ]);
 
@@ -89,10 +71,7 @@ class OrderService
         return $query->pluck('total', 'status');
     }
 
-    /**
-     * Send a status-update email to the customer.
-     */
-    private function sendStatusEmail(Order $order, string $oldStatus, string $newStatus, ?string $note): void
+    private function sendStatusEmail(Order $order, OrderStatus $oldStatus, OrderStatus $newStatus, ?string $note): void
     {
         $order->loadMissing('checkoutDetail');
 
@@ -102,7 +81,6 @@ class OrderService
             return;
         }
 
-        $statusLabels = Order::STATUS_LABELS;
         $manageUrl = $order->management_token
             ? route('order.manage', ['token' => $order->management_token])
             : null;
@@ -113,8 +91,8 @@ class OrderService
             Mail::to($customerEmail)->send(new OrderStatusUpdateMail(
                 $order,
                 $customerName,
-                $statusLabels[$oldStatus] ?? $oldStatus,
-                $statusLabels[$newStatus] ?? $newStatus,
+                $oldStatus->label(),
+                $newStatus->label(),
                 $note,
                 $manageUrl
             ));

@@ -139,7 +139,7 @@
                                                 'refunded' => ['class' => 'status-refunded', 'text' => 'مسترجع'],
                                                 'returned' => ['class' => 'status-returned', 'text' => 'مرتجع'],
                                             ];
-                                            $status = $statusMap[$order->status] ?? ['class' => 'status-pending', 'text' => $order->status];
+                                            $status = $statusMap[$order->status->value] ?? ['class' => 'status-pending', 'text' => $order->status->label()];
                                         @endphp
                                         <span class="status-badge {{ $status['class'] }}">{{ $status['text'] }}</span>
                                     </td>

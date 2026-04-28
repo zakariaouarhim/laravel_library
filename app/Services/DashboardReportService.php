@@ -200,7 +200,7 @@ class DashboardReportService
                             $order->created_at->format('Y-m-d'),
                             $order->checkoutDetail->full_name ?? '',
                             $order->checkoutDetail->city ?? '',
-                            Order::STATUS_LABELS[$order->status] ?? $order->status,
+                            $order->status->label(),
                             Order::PAYMENT_LABELS[$order->payment_method] ?? $order->payment_method,
                             $order->total_price,
                         ]);

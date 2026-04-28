@@ -324,14 +324,14 @@
                             <label class="form-label">حالة الطلب</label>
                             <select name="status" class="form-select" required>
                                 <option value="">اختر حالة</option>
-                                <option value="pending" @if($order->status == 'pending') selected @endif>قيد الانتظار</option>
-                                <option value="processing" @if($order->status == 'processing') selected @endif>قيد المعالجة</option>
-                                <option value="shipped" @if($order->status == 'shipped') selected @endif>مشحون</option>
-                                <option value="delivered" @if($order->status == 'delivered') selected @endif>تم التسليم</option>
-                                <option value="cancelled" @if($order->status == 'cancelled') selected @endif>ملغى</option>
-                                <option value="failed" @if($order->status == 'failed') selected @endif>فشل</option>
-                                <option value="refunded" @if($order->status == 'refunded') selected @endif>مسترجع</option>
-                                <option value="returned" @if($order->status == 'returned') selected @endif>مرتجع</option>
+                                <option value="pending" @if($order->status->value == 'pending') selected @endif>قيد الانتظار</option>
+                                <option value="processing" @if($order->status->value == 'processing') selected @endif>قيد المعالجة</option>
+                                <option value="shipped" @if($order->status->value == 'shipped') selected @endif>مشحون</option>
+                                <option value="delivered" @if($order->status->value == 'delivered') selected @endif>تم التسليم</option>
+                                <option value="cancelled" @if($order->status->value == 'cancelled') selected @endif>ملغى</option>
+                                <option value="failed" @if($order->status->value == 'failed') selected @endif>فشل</option>
+                                <option value="refunded" @if($order->status->value == 'refunded') selected @endif>مسترجع</option>
+                                <option value="returned" @if($order->status->value == 'returned') selected @endif>مرتجع</option>
                             </select>
                         </div>
                     </div>

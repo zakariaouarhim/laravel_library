@@ -119,12 +119,14 @@ class CheckoutController extends Controller
 
         if ($order) {
             $progress = match ($order->status) {
-                'pending'    => 25,
-                'processing' => 50,
-                'shipped'    => 75,
-                'delivered'  => 100,
-                'cancelled', 'failed', 'refunded', 'returned' => 0,
-                default      => 25,
+                \App\Enums\OrderStatus::Pending    => 25,
+                \App\Enums\OrderStatus::Processing => 50,
+                \App\Enums\OrderStatus::Shipped    => 75,
+                \App\Enums\OrderStatus::Delivered  => 100,
+                \App\Enums\OrderStatus::Cancelled,
+                \App\Enums\OrderStatus::Failed,
+                \App\Enums\OrderStatus::Refunded,
+                \App\Enums\OrderStatus::Returned   => 0,
             };
 
             return view('trackmyorder', compact('order', 'progress'));
