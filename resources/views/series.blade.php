@@ -61,7 +61,7 @@
                         @if($series->author)
                             <span><i class="fas fa-pen-fancy"></i> <a href="{{ route('author.show', $series->author->id) }}" style="color:inherit;text-decoration:none;">{{ $series->author->name }}</a></span>
                         @endif
-                        <span><i class="fas fa-book"></i> {{ $series->books_count }} كتاب</span>
+                        <span><i class="fas fa-book"></i> {{ $series->total_volumes }} كتاب</span>
                         @if($series->total_volumes)
                             <span><i class="fas fa-list-ol"></i> {{ $series->total_volumes }} جزء</span>
                         @endif

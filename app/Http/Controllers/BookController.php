@@ -475,7 +475,7 @@ class BookController extends Controller
 
         $arabicSeries = Cache::remember('arabic_series_home', 1800, function () {
             return Series::inLanguage('Arabic')
-                ->with('author')
+                ->with(['author', 'bundle'])
                 ->withCount('books')
                 ->orderByDesc('books_count')
                 ->limit(10)
@@ -484,7 +484,7 @@ class BookController extends Controller
 
         $englishSeries = Cache::remember('english_series_home', 1800, function () {
             return Series::inLanguage('English')
-                ->with('author')
+                ->with(['author', 'bundle'])
                 ->withCount('books')
                 ->orderByDesc('books_count')
                 ->limit(10)

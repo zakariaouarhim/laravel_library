@@ -7,12 +7,16 @@
     <div class="carousel-container">
         <div class="carousel-wrapper" data-carousel-wrapper>
             @foreach($series as $s)
-                <a class="book-card series-card" href="{{ route('series.show', $s->id) }}">
-                    <div class="book-image-wrapper">
+                @php
+                    $bundle = $s->bundle;
+                    $bundleAvailable = $bundle && ($bundle->quantity ?? 0) > 0;
+                @endphp
+                <div class="book-card series-card">
+                    <a class="book-image-wrapper" href="{{ route('series.show', $s->id) }}">
                         <img src="{{ $s->cover_image ? asset('storage/' . $s->cover_image) : asset('images/book-placeholder.png') }}"
                              alt="{{ $s->name }}" width="200" height="280" loading="lazy"
                              onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
-                    </div>
+                    </a>
 
                     <div class="card-badges">
                         @if($s->is_complete)
@@ -22,7 +26,7 @@
                         @endif
                     </div>
 
-                    <h6>{{ $s->name }}</h6>
+                    <h6><a href="{{ route('series.show', $s->id) }}">{{ $s->name }}</a></h6>
 
                     @if($s->author)
                         <p class="book-author"><i class="fas fa-user-edit"></i> {{ $s->author->name }}</p>
@@ -32,7 +36,30 @@
                         <i class="fas fa-layer-group"></i>
                         {{ $s->total_volumes }} {{ $s->total_volumes == 1 ? 'جزء' : 'أجزاء' }}
                     </p>
-                </a>
+
+                    @if($bundleAvailable)
+                        <div class="price-section">
+                            <span class="price">
+                                {{ number_format((float) $bundle->price, 2) }} <span class="currency">د.م</span>
+                                <small class="bundle-price-label">السلسلة كاملة</small>
+                            </span>
+                            <button class="add-btn" title="إضافة الباقة للسلة"
+                                    onclick="addToCart({{ $bundle->id }},'{{ addslashes($bundle->title) }}', {{ $bundle->price }}, '{{ addslashes($bundle->image) }}')">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                    @elseif($bundle)
+                        <div class="price-section">
+                            <span class="price">
+                                {{ number_format((float) $bundle->price, 2) }} <span class="currency">د.م</span>
+                                <small class="bundle-price-label">السلسلة كاملة</small>
+                            </span>
+                            <a class="add-btn" href="{{ route('moredetail2.page', $bundle->id) }}" title="عرض الباقة">
+                                <i class="fas fa-box"></i>
+                            </a>
+                        </div>
+                    @endif
+                </div>
             @endforeach
         </div>
 

@@ -54,6 +54,11 @@ class Series extends Model
         return $this->hasMany(Book::class)->orderBy('volume_number');
     }
 
+    public function bundle()
+    {
+        return $this->hasOne(Book::class)->where('product_type', 'bundle');
+    }
+
     public function author()
     {
         return $this->belongsTo(Author::class);
