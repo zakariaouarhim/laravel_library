@@ -11,26 +11,33 @@ class EnhancedCarousel {
             return;
         }
         
-        this.cardWidth = 240; // 220px card + 20px gap
+        this.cardWidth = this.computeCardWidth();
         this.isRTL = document.documentElement.dir === 'rtl';
-        
+
         this.init();
+    }
+
+    computeCardWidth() {
+        const cardW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-width')) || 220;
+        const gap = parseFloat(getComputedStyle(this.wrapper).gap) || 20;
+        return cardW + gap;
     }
 
     init() {
         this.createIndicators();
         this.updateNavButtons();
-        
+
         // Event listeners
         this.prevBtn.addEventListener('click', () => this.move(-1));
         this.nextBtn.addEventListener('click', () => this.move(1));
-        
+
         this.wrapper.addEventListener('scroll', () => {
             this.updateIndicators();
             this.updateNavButtons();
         });
-        
+
         window.addEventListener('resize', () => {
+            this.cardWidth = this.computeCardWidth();
             this.createIndicators();
             this.updateNavButtons();
         });

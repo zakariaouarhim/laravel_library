@@ -319,12 +319,11 @@
         display: none;
     }
 
-    .carousel-nav.prev {
-        inset-inline-start: -10px;
-    }
-
-    .carousel-nav.next {
-        inset-inline-end: -10px;
+    /* Touch viewports — swipe is the natural interaction. Hiding the
+       click-arrows also avoids overlap on narrow cards. */
+    .carousel-nav,
+    .carousel-indicators {
+        display: none;
     }
 }
 
@@ -421,17 +420,7 @@
         gap: 3px;
     }
 
-    .carousel-nav {
-        font-size: 14px;
-    }
-
-    .carousel-nav.prev {
-        inset-inline-start: -5px;
-    }
-
-    .carousel-nav.next {
-        inset-inline-end: -5px;
-    }
+    /* Nav buttons + indicators stay hidden (inherited from 768px). */
 }
 
 /* Tiny Screens */
