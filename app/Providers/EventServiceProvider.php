@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Events\BookViewed;
 use App\Listeners\MergeGuestCartOnLogin;
+use App\Listeners\UpdateInterestOnBookView;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -22,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         Login::class => [
             MergeGuestCartOnLogin::class,
+        ],
+        BookViewed::class => [
+            UpdateInterestOnBookView::class,
         ],
     ];
 

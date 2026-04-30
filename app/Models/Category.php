@@ -49,6 +49,11 @@ class Category extends Model
         return $this->children()->with('descendants');
     }
 
+    public function interestedUsers()
+    {
+        return $this->hasMany(UserCategoryInterest::class);
+    }
+
     // Get all books including from child categories (via pivot)
     public function allBooks()
     {

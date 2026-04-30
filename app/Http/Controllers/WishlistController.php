@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Book;
+use App\Services\UserInterestService;
 
 class WishlistController extends Controller
 {
@@ -30,19 +31,22 @@ class WishlistController extends Controller
                 ], 401);
             }
 
-            $this->findBookOrFail($bookId);
+            $book = $this->findBookOrFail($bookId);
 
             // Check if book is already in wishlist
             $existsInWishlist = $user->wishlist()->where('book_id', $bookId)->exists();
             if ($existsInWishlist) {
                 return response()->json([
-                    'success' => false, 
+                    'success' => false,
                     'message' => 'الكتاب موجود بالفعل في المفضلة'
                 ], 409);
             }
 
             // Add to wishlist
-            $result = $user->wishlist()->syncWithoutDetaching([$bookId]);
+            $user->wishlist()->syncWithoutDetaching([$bookId]);
+
+            app(UserInterestService::class)->recordWishlist($user->id, $book);
+
             return response()->json([
                 'success' => true, 
                 'message' => 'تم إضافة الكتاب للمفضلة',

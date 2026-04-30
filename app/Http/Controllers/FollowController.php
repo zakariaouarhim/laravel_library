@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use App\Models\Follow;
+use App\Services\UserInterestService;
 use Illuminate\Support\Facades\Auth;
 
 class FollowController extends Controller
@@ -43,6 +45,13 @@ class FollowController extends Controller
             'followable_type' => $type,
             'followable_id'  => $id,
         ]);
+
+        if ($type === 'author') {
+            $author = Author::find($id);
+            if ($author) {
+                app(UserInterestService::class)->recordFollow(Auth::id(), $author);
+            }
+        }
 
         return response()->json([
             'success'   => true,

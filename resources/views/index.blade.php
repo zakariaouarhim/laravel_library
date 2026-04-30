@@ -36,6 +36,12 @@
     @include('Index-searchbar')
 
     <div class="layout-indexpage">
+        @if($recommendedForYou->count() > 0)
+        <div id="recommended-for-you">
+            <x-book-carousel :books="$recommendedForYou" title="موصى لك" />
+        </div>
+        @endif
+
         @if($fromFollows->count() > 0)
         <div id="from-follows">
             <x-book-carousel :books="$fromFollows" title="جديد من متابعاتك" />

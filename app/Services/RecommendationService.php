@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\Book;
 use App\Models\Book_Review;
 use App\Models\Follow;
+use App\Models\UserCategoryInterest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class RecommendationService
@@ -125,5 +127,69 @@ class RecommendationService
                 'category' => $book->category->name ?? ''
             ];
         });
+    }
+
+    /**
+     * Interest-score-weighted recommendations. Falls back to the rules-based
+     * getRecommendations() when the user has no interest data yet.
+     *
+     * Returns a Book Collection (not the DTO array) so callers can render with
+     * the standard book-card partials.
+     */
+    public function getScoredRecommendations(int $userId, int $limit = 12): Collection
+    {
+        return Cache::remember("user:{$userId}:recs", 1800, function () use ($userId, $limit) {
+            $topCats = UserCategoryInterest::where('user_id', $userId)
+                ->where('score', '>', 0)
+                ->orderByDesc('score')
+                ->limit(8)
+                ->pluck('score', 'category_id');
+
+            if ($topCats->isEmpty()) {
+                // No signal yet — caller is responsible for the rules-based fallback.
+                return collect();
+            }
+
+            $excludeIds = $this->collectExcludedBookIds($userId);
+
+            $candidates = Book::query()
+                ->standardOnly()
+                ->where('status', 'active')
+                ->whereHas('categories', fn($q) => $q->whereIn('categories.id', $topCats->keys()))
+                ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds))
+                ->with(['primaryAuthor', 'category', 'categories:id'])
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->limit($limit * 5)
+                ->get();
+
+            return $candidates
+                ->map(function ($book) use ($topCats) {
+                    $score = $book->categories->sum(fn($c) => (float) ($topCats[$c->id] ?? 0));
+                    // Tie-break with average rating so a 5★ book beats an unrated one at the same score.
+                    $book->setAttribute(
+                        '_interest_score',
+                        $score + (((float) ($book->reviews_avg_rating ?? 0)) / 5)
+                    );
+                    return $book;
+                })
+                ->sortByDesc('_interest_score')
+                ->take($limit)
+                ->values();
+        });
+    }
+
+    private function collectExcludedBookIds(int $userId): array
+    {
+        return DB::table('order_details')
+            ->join('orders', 'orders.id', '=', 'order_details.order_id')
+            ->where('orders.user_id', $userId)
+            ->pluck('order_details.book_id')
+            ->merge(DB::table('wishlists')->where('user_id', $userId)->pluck('book_id'))
+            ->merge(DB::table('hidden_recommendations')->where('user_id', $userId)->pluck('book_id'))
+            ->merge(Book_Review::where('user_id', $userId)->pluck('book_id'))
+            ->unique()
+            ->values()
+            ->all();
     }
 }

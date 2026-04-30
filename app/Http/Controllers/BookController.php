@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Events\BookViewed;
 use App\Models\Book;
 use App\Models\Author;
 use App\Models\PublishingHouse;
 use App\Models\Category;
 use App\Services\BookSearchService;
+use App\Services\RecommendationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Follow;
@@ -18,6 +20,7 @@ class BookController extends Controller
 {
     public function __construct(
         private BookSearchService $searchService,
+        private RecommendationService $recommendations,
     ) {}
 
     public function show($id)
@@ -108,6 +111,10 @@ class BookController extends Controller
         array_unshift($recentlyViewed, (int) $id);
         $recentlyViewed = array_slice($recentlyViewed, 0, 10);
         session()->put('recently_viewed', $recentlyViewed);
+
+        if (Auth::check()) {
+            BookViewed::dispatch($book, Auth::id());
+        }
 
         return view('moredetail', compact(
             'book',
@@ -491,7 +498,13 @@ class BookController extends Controller
                 ->get();
         });
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries'));
+        // Interest-score-weighted recommendations for authenticated users.
+        // Returns an empty Collection for guests or users with no signal yet.
+        $recommendedForYou = Auth::check()
+            ? $this->recommendations->getScoredRecommendations(Auth::id(), 12)
+            : collect();
+
+        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou'));
     }
 
     public function byCategory(Request $request, Category $category)

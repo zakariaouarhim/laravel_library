@@ -105,6 +105,11 @@ class UserModel extends Authenticatable
         return $this->hasMany(Follow::class, 'user_id');
     }
 
+    public function categoryInterests()
+    {
+        return $this->hasMany(UserCategoryInterest::class, 'user_id');
+    }
+
     public function isAdmin(): bool
     {
         return in_array($this->role, ['admin', 'super_admin'], true);

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\UpdateInterestScoresJob;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Book;
 use App\Models\CheckoutDetail;
@@ -74,7 +75,7 @@ class CheckoutService
      */
     public function createOrder(array $cart, array $validated, float $total, float $subtotal, float $shipping, float $discount, ?string $couponCode): Order
     {
-        return DB::transaction(function () use ($cart, $validated, $total, $subtotal, $shipping, $discount, $couponCode) {
+        $order = DB::transaction(function () use ($cart, $validated, $total, $subtotal, $shipping, $discount, $couponCode) {
             // Lock all cart rows in deterministic order (by id) to prevent deadlocks
             // between concurrent carts that overlap on the same books.
             $lockedBooks = Book::whereIn('id', array_keys($cart))
@@ -160,6 +161,14 @@ class CheckoutService
 
             return $order;
         });
+
+        // Score purchase signals async — only for authenticated users.
+        // Dispatched outside the transaction so the job sees a committed order.
+        if ($order->user_id) {
+            UpdateInterestScoresJob::dispatch($order->id);
+        }
+
+        return $order;
     }
 
     /**
