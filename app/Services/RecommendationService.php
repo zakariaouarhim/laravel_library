@@ -155,9 +155,15 @@ class RecommendationService
             $candidates = Book::query()
                 ->standardOnly()
                 ->where('status', 'active')
+                // Available individually OR via at least one bundle —
+                // matches the badge logic in partials/book-card-grid.blade.php.
+                ->where(function ($q) {
+                    $q->where('quantity', '>', 0)
+                      ->orWhereHas('bundles');
+                })
                 ->whereHas('categories', fn($q) => $q->whereIn('categories.id', $topCats->keys()))
                 ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds))
-                ->with(['primaryAuthor', 'category', 'categories:id'])
+                ->with(['primaryAuthor', 'category', 'categories:id', 'bundles:id,title,price,image'])
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
                 ->limit($limit * 5)
