@@ -81,13 +81,17 @@
 /* 3. BOOK CARD - Carousel-specific overrides (base styles in book-card.css) */
 
 /* Book carousels wrap each card in `.book-item > .book-card`; series carousels
-   render `.book-card` directly. Pin width on whichever is the direct flex child
-   so iOS Safari doesn't collapse them to `flex: 0 1 auto`. Setting both
-   `flex-basis` (via `flex`) AND `width` works around iOS Safari quirks where
-   `flex-basis` alone is sometimes ignored when the child has its own
-   `display: flex`. */
-.carousel-wrapper > .book-item,
-.carousel-wrapper > .book-card {
+   render `.book-card` directly. Make `.book-item` transparent to layout
+   (display: contents) so `.book-card` becomes the effective flex child of the
+   wrapper in both cases — series and book carousels then render identically,
+   gaps and scroll-snap apply to the cards themselves rather than to a hidden
+   wrapper. Supported in iOS Safari since iOS 11. */
+.carousel-wrapper > .book-item {
+    display: contents;
+}
+
+.carousel-wrapper > .book-card,
+.carousel-wrapper > .book-item > .book-card {
     flex: 0 0 var(--card-width);
     width: var(--card-width);
     min-width: var(--card-width);
