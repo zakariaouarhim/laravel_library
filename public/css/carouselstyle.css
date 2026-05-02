@@ -82,10 +82,15 @@
 
 /* Book carousels wrap each card in `.book-item > .book-card`; series carousels
    render `.book-card` directly. Pin width on whichever is the direct flex child
-   so iOS Safari doesn't collapse them to `flex: 0 1 auto`. */
+   so iOS Safari doesn't collapse them to `flex: 0 1 auto`. Setting both
+   `flex-basis` (via `flex`) AND `width` works around iOS Safari quirks where
+   `flex-basis` alone is sometimes ignored when the child has its own
+   `display: flex`. */
 .carousel-wrapper > .book-item,
 .carousel-wrapper > .book-card {
     flex: 0 0 var(--card-width);
+    width: var(--card-width);
+    min-width: var(--card-width);
     scroll-snap-align: start;
 }
 

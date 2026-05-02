@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
     <link rel="stylesheet" href="{{ asset('css/moredetail-V2.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}?v={{ filemtime(public_path('css/carouselstyle.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
