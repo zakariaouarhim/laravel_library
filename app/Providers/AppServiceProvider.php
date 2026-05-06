@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -32,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
        Schema::defaultStringLength(191);
+
+       // Site loads Bootstrap 5 RTL — render paginator with Bootstrap markup
+       // instead of Laravel's Tailwind default (which renders raw SVG chevrons
+       // that look like giant arrows on a non-Tailwind page). Bootstrap 4 markup
+       // (.pagination > .page-item > .page-link) works fine with Bootstrap 5 CSS.
+       Paginator::useBootstrap();
 
         Book::observe(BookObserver::class);
 
