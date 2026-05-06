@@ -89,30 +89,36 @@ class AuthorController extends Controller
     {
         $author = Author::active()->findOrFail($id);
 
-        // Group books by author role (from pivot table)
-        $primaryBooks = $author->booksByType('primary')->with('bundles:id,title,price,image')->paginate(12, ['*'], 'page');
-        $coAuthorBooks = $author->booksByType('co-author')->with('bundles:id,title,price,image')->get();
-        $translatedBooks = $author->booksByType('translator')->with('bundles:id,title,price,image')->get();
-        $editedBooks = $author->booksByType('editor')->with('bundles:id,title,price,image')->get();
+        // Non-primary roles come from the pivot only (these are tagged in book_authors).
+        $coAuthorBooks    = $author->booksByType('co-author')->with('bundles:id,title,price,image')->get();
+        $translatedBooks  = $author->booksByType('translator')->with('bundles:id,title,price,image')->get();
+        $editedBooks      = $author->booksByType('editor')->with('bundles:id,title,price,image')->get();
         $illustratedBooks = $author->booksByType('illustrator')->with('bundles:id,title,price,image')->get();
 
-        // Also include books linked via author_id FK that may not be in the pivot table
-        $pivotBookIds = $primaryBooks->pluck('id')
-            ->merge($coAuthorBooks->pluck('id'))
-            ->merge($translatedBooks->pluck('id'))
-            ->merge($editedBooks->pluck('id'))
-            ->merge($illustratedBooks->pluck('id'));
-
-        $primaryBooksViaFk = $author->primaryBooks()
+        // "Primary" books come from BOTH the pivot (book_authors with author_type='primary')
+        // AND the books.author_id foreign key. Union the IDs and paginate the combined set
+        // — paginating only the pivot side and tacking the FK books on top of every page
+        // would make pagination meaningless.
+        $primaryBookIds = \App\Models\Book::query()
             ->standardOnly()
-            ->with('bundles:id,title,price,image')
-            ->whereNotIn('id', $pivotBookIds)
-            ->get();
+            ->where(function ($q) use ($author) {
+                $q->where('author_id', $author->id)
+                  ->orWhereHas('authors', fn($qq) => $qq
+                      ->where('authors.id', $author->id)
+                      ->wherePivot('author_type', 'primary'));
+            })
+            ->pluck('id');
+
+        $primaryBooks = \App\Models\Book::query()
+            ->whereIn('id', $primaryBookIds)
+            ->with(['primaryAuthor', 'bundles:id,title,price,image'])
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
+            ->paginate(12, ['*'], 'page');
 
         return view('author', compact(
             'author',
             'primaryBooks',
-            'primaryBooksViaFk',
             'coAuthorBooks',
             'translatedBooks',
             'editedBooks',

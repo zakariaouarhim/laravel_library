@@ -37,7 +37,7 @@
     @include('header')
 
     @php
-        $totalBooks = $primaryBooks->total() + $primaryBooksViaFk->count() + $coAuthorBooks->count() + $translatedBooks->count() + $editedBooks->count() + $illustratedBooks->count();
+        $totalBooks = $primaryBooks->total() + $coAuthorBooks->count() + $translatedBooks->count() + $editedBooks->count() + $illustratedBooks->count();
     @endphp
 
     <!-- Hero Section -->
@@ -151,9 +151,9 @@
 
                     {{-- Role Stats --}}
                     <div class="role-stats">
-                        @if($primaryBooks->total() + $primaryBooksViaFk->count() > 0)
+                        @if($primaryBooks->total() > 0)
                             <span class="role-badge role-primary">
-                                <i class="fas fa-pen-fancy"></i> تأليف: {{ $primaryBooks->total() + $primaryBooksViaFk->count() }}
+                                <i class="fas fa-pen-fancy"></i> تأليف: {{ $primaryBooks->total() }}
                             </span>
                         @endif
                         @if($coAuthorBooks->count() > 0)
@@ -187,7 +187,7 @@
         <div class="container">
 
             {{-- Primary Author Books --}}
-            @if($primaryBooks->count() > 0 || $primaryBooksViaFk->count() > 0)
+            @if($primaryBooks->total() > 0)
                 <div class="books-section">
                     <h2 class="section-title">
                         <i class="fas fa-pen-fancy"></i>
@@ -195,9 +195,6 @@
                     </h2>
                     <div class="books-grid">
                         @foreach($primaryBooks as $book)
-                            @include('partials.book-card-grid', ['book' => $book])
-                        @endforeach
-                        @foreach($primaryBooksViaFk as $book)
                             @include('partials.book-card-grid', ['book' => $book])
                         @endforeach
                     </div>
