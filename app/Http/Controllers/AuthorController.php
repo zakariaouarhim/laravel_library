@@ -95,19 +95,21 @@ class AuthorController extends Controller
         $editedBooks      = $author->booksByType('editor')->with('bundles:id,title,price,image')->get();
         $illustratedBooks = $author->booksByType('illustrator')->with('bundles:id,title,price,image')->get();
 
-        // "Primary" books come from BOTH the pivot (book_authors with author_type='primary')
-        // AND the books.author_id foreign key. Union the IDs and paginate the combined set
-        // — paginating only the pivot side and tacking the FK books on top of every page
-        // would make pagination meaningless.
-        $primaryBookIds = \App\Models\Book::query()
+        // "Primary" books come from BOTH the pivot (book_authors with
+        // author_type='primary') AND the books.author_id foreign key. Union the IDs
+        // and paginate the combined set — paginating only the pivot side and tacking
+        // the FK books on top of every page would make pagination meaningless.
+        $pivotPrimaryIds = \Illuminate\Support\Facades\DB::table('book_authors')
+            ->where('author_id', $author->id)
+            ->where('author_type', 'primary')
+            ->pluck('book_id');
+
+        $fkPrimaryIds = \App\Models\Book::query()
             ->standardOnly()
-            ->where(function ($q) use ($author) {
-                $q->where('author_id', $author->id)
-                  ->orWhereHas('authors', fn($qq) => $qq
-                      ->where('authors.id', $author->id)
-                      ->wherePivot('author_type', 'primary'));
-            })
+            ->where('author_id', $author->id)
             ->pluck('id');
+
+        $primaryBookIds = $pivotPrimaryIds->merge($fkPrimaryIds)->unique()->values();
 
         $primaryBooks = \App\Models\Book::query()
             ->whereIn('id', $primaryBookIds)
