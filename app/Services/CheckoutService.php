@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\NotifyAdminOrderJob;
 use App\Jobs\UpdateInterestScoresJob;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Book;
@@ -167,6 +168,9 @@ class CheckoutService
         if ($order->user_id) {
             UpdateInterestScoresJob::dispatch($order->id);
         }
+
+        // Notify the shop owner via Telegram on every new order (guests included).
+        NotifyAdminOrderJob::dispatch($order->id);
 
         return $order;
     }
