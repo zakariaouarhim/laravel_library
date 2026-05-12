@@ -14,6 +14,35 @@ class ImageService
      *
      * @return string|null Relative path to the saved image, or null on failure
      */
+    /**
+     * Process raw image bytes (already fetched) into WebP + thumbnail. Used by
+     * BookIngestionService after Http::pool downloads covers concurrently.
+     */
+    public function processFromBytes(string $bytes, string $destinationDir, string $filenamePrefix): ?string
+    {
+        try {
+            $filename = $filenamePrefix . '_' . time() . mt_rand(100, 999) . '.webp';
+            $fullDestination = public_path($destinationDir);
+            $thumbDir = $fullDestination . '/thumbs';
+
+            if (!file_exists($fullDestination)) mkdir($fullDestination, 0755, true);
+            if (!file_exists($thumbDir)) mkdir($thumbDir, 0755, true);
+
+            $image = Image::read($bytes);
+            $image->scale(width: 400);
+            $image->toWebp(80)->save($fullDestination . '/' . $filename);
+
+            $thumb = Image::read($fullDestination . '/' . $filename);
+            $thumb->scale(width: 150);
+            $thumb->toWebp(75)->save($thumbDir . '/' . $filename);
+
+            return $destinationDir . '/' . $filename;
+        } catch (\Exception $e) {
+            \Log::error('ImageService::processFromBytes failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
     public function downloadFromUrl(string $url, string $destinationDir, string $filenamePrefix): ?string
     {
         try {

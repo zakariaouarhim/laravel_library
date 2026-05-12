@@ -16,6 +16,7 @@ class UpdateCategoryRequest extends FormRequest
         return [
             'name'            => 'required|string|max:100',
             'parent_id'       => 'nullable|exists:categories,id',
+            'language'        => 'nullable|in:arabic,english,french,spanish,german',
             'categorie_icon'  => 'nullable|string|max:100',
             'categorie_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];

@@ -125,7 +125,7 @@
                                 <td class="text-center">
                                     <div class="action-buttons">
                                         <button class="btn-icon text-primary" title="تعديل"
-                                                onclick="openEditModal({{ $parent->id }}, '{{ addslashes($parent->name) }}', null, '{{ addslashes($parent->categorie_icon ?? '') }}', '{{ $parent->categorie_image ? asset('storage/'.$parent->categorie_image) : '' }}')">
+                                                onclick="openEditModal({{ $parent->id }}, '{{ addslashes($parent->name) }}', null, '{{ addslashes($parent->categorie_icon ?? '') }}', '{{ $parent->categorie_image ? asset('storage/'.$parent->categorie_image) : '' }}', '{{ $parent->language ?? '' }}')">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="btn-icon text-danger" title="حذف"
@@ -166,7 +166,7 @@
                                     <td class="text-center">
                                         <div class="action-buttons">
                                             <button class="btn-icon text-primary" title="تعديل"
-                                                    onclick="openEditModal({{ $child->id }}, '{{ addslashes($child->name) }}', {{ $child->parent_id }}, '{{ addslashes($child->categorie_icon ?? '') }}', '{{ $child->categorie_image ? asset('storage/'.$child->categorie_image) : '' }}')">
+                                                    onclick="openEditModal({{ $child->id }}, '{{ addslashes($child->name) }}', {{ $child->parent_id }}, '{{ addslashes($child->categorie_icon ?? '') }}', '{{ $child->categorie_image ? asset('storage/'.$child->categorie_image) : '' }}', '{{ $child->language ?? '' }}')">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button class="btn-icon text-danger" title="حذف"
@@ -238,6 +238,17 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">اللغة</label>
+                        <select name="language" class="form-select">
+                            <option value="">— جميع اللغات —</option>
+                            @foreach(['arabic' => 'العربية', 'english' => 'الإنجليزية', 'french' => 'الفرنسية', 'spanish' => 'الإسبانية', 'german' => 'الألمانية'] as $val => $label)
+                                <option value="{{ $val }}" {{ old('language') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <div class="form-text">إذا اخترت لغة، ستظهر هذه الفئة فقط للكتب من نفس اللغة</div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">أيقونة Font Awesome</label>
                         <div class="input-group">
                             <input type="text" name="categorie_icon" id="create_icon_input"
@@ -293,6 +304,16 @@
                         @endforeach
                     </select>
                     <div class="form-text">اتركه فارغاً لإبقاء الفئة رئيسية</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">اللغة</label>
+                    <select id="edit_language" class="form-select">
+                        <option value="">— جميع اللغات —</option>
+                        @foreach(['arabic' => 'العربية', 'english' => 'الإنجليزية', 'french' => 'الفرنسية', 'spanish' => 'الإسبانية', 'german' => 'الألمانية'] as $val => $label)
+                            <option value="{{ $val }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="mb-3">
@@ -403,7 +424,7 @@ document.getElementById('edit_icon_input').addEventListener('input', function ()
 // ── Edit modal ───────────────────────────────────────────────
 var editCategoryId = null;
 
-function openEditModal(id, name, parentId, icon, imageUrl) {
+function openEditModal(id, name, parentId, icon, imageUrl, language) {
     editCategoryId = id;
     document.getElementById('edit_name').value       = name;
     document.getElementById('edit_icon_input').value = icon;
@@ -411,6 +432,7 @@ function openEditModal(id, name, parentId, icon, imageUrl) {
         '<i class="' + (icon || 'fas fa-folder') + '"></i>';
 
     document.getElementById('edit_parent_id').value = parentId || '';
+    document.getElementById('edit_language').value  = language || '';
 
     var imgDiv = document.getElementById('edit_current_image');
     if (imageUrl) {
@@ -432,6 +454,7 @@ document.getElementById('saveEditBtn').addEventListener('click', function () {
     formData.append('_token', csrfToken);
     formData.append('name',           document.getElementById('edit_name').value);
     formData.append('parent_id',      document.getElementById('edit_parent_id').value);
+    formData.append('language',       document.getElementById('edit_language').value);
     formData.append('categorie_icon', document.getElementById('edit_icon_input').value);
     var fileInput = document.getElementById('edit_image_file');
     if (fileInput.files.length > 0) {

@@ -27,6 +27,12 @@ class APIService
         throw new \Exception('Google Books API key is not configured. Please set GOOGLE_BOOKS_API_KEY in .env or add to system_settings table.');
     }
 }
+
+    public function getApiKey(): string
+    {
+        return $this->apiKey;
+    }
+
     public function fetchBookDataByISBN($isbn)
     {
         // Add debug logging
@@ -238,18 +244,20 @@ class APIService
     }
 
     /**
-     * Fetch book data by title and author (fallback when ISBN is not available)
+     * Fetch book data by title and author (fallback when ISBN is not available).
+     * Optional $language ('arabic', 'english', 'french', 'spanish', 'german') sends
+     * `langRestrict=<iso>` to Google Books — relevant results bias toward that language.
      */
-    public function fetchBookDataByTitle($title, $author = null)
+    public function fetchBookDataByTitle($title, $author = null, $language = null)
     {
         if (empty($title)) {
             throw new \Exception('Title is required for API fetch by title');
         }
 
-        \Log::info('APIService fetching by title: ' . $title . ', author: ' . ($author ?? 'N/A'));
+        \Log::info('APIService fetching by title: ' . $title . ', author: ' . ($author ?? 'N/A') . ', lang: ' . ($language ?? 'N/A'));
 
-        // Create cache key from title+author
-        $cacheKey = 'title_' . md5($title . '_' . ($author ?? ''));
+        // Cache key includes language so different-language queries don't collide.
+        $cacheKey = 'title_' . md5($title . '_' . ($author ?? '') . '_' . ($language ?? ''));
 
         // Check cache first
         $cachedData = $this->getCachedData($cacheKey);
@@ -261,7 +269,7 @@ class APIService
         try {
             // For Arabic/non-Latin titles, use simple query format (works better)
             // Don't use intitle:/inauthor: prefixes as they don't work well with Arabic
-            $responseData = $this->fetchFromAPIWithTitleAuthor($title, $author);
+            $responseData = $this->fetchFromAPIWithTitleAuthor($title, $author, 3, $language);
 
             // Cache the response
             $this->cacheResponse($cacheKey, $responseData);
@@ -275,10 +283,25 @@ class APIService
     }
 
     /**
+     * Map our internal language strings to Google Books ISO 639-1 codes.
+     */
+    public static function isoLanguageCode(?string $language): ?string
+    {
+        if (!$language) return null;
+        return [
+            'arabic'  => 'ar',
+            'english' => 'en',
+            'french'  => 'fr',
+            'spanish' => 'es',
+            'german'  => 'de',
+        ][$language] ?? null;
+    }
+
+    /**
      * Fetch from API using title and author as separate parameters
      * This method works better with Arabic and non-Latin text
      */
-    protected function fetchFromAPIWithTitleAuthor($title, $author = null, $maxRetries = 3)
+    protected function fetchFromAPIWithTitleAuthor($title, $author = null, $maxRetries = 3, $language = null)
     {
         $attempt = 0;
         $lastException = null;
@@ -296,17 +319,22 @@ class APIService
                     $query .= ' ' . $author;
                 }
 
+                $queryParams = [
+                    'q'          => $query,
+                    'key'        => $this->apiKey,
+                    'maxResults' => 10,
+                    'printType'  => 'books',
+                ];
+                if ($iso = self::isoLanguageCode($language)) {
+                    $queryParams['langRestrict'] = $iso;
+                }
+
                 $response = Http::withOptions([
                     'verify' => false,
                     'timeout' => 30,
                     'connect_timeout' => 10
                 ])->retry(2, 1000)
-                ->get("https://www.googleapis.com/books/v1/volumes", [
-                    'q' => $query,
-                    'key' => $this->apiKey,
-                    'maxResults' => 10,
-                    'printType' => 'books'
-                ]);
+                ->get("https://www.googleapis.com/books/v1/volumes", $queryParams);
 
                 if (!$response->successful()) {
                     throw new \Exception('API request failed with status: ' . $response->status() . ' - ' . $response->body());

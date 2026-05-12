@@ -75,6 +75,15 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/client/{id}', [AdminClientController::class, 'update'])->name('client.update');
     Route::post('/client/{id}/reset-password', [AdminClientController::class, 'resetPasswordAdmin'])->name('client.reset-password');
 
+    // Book ingestion (title+author → API enrichment → review queue → approved Book)
+    Route::get('/books/ingest',                          [\App\Http\Controllers\AdminBookIngestionController::class, 'create'])->name('books.ingest.create');
+    Route::post('/books/ingest',                         [\App\Http\Controllers\AdminBookIngestionController::class, 'store'])->name('books.ingest.store');
+    Route::post('/books/ingest-isbn',                    [\App\Http\Controllers\AdminBookIngestionController::class, 'storeFromIsbn'])->name('books.ingest.isbn');
+    Route::get('/books/pending',                         [\App\Http\Controllers\AdminBookIngestionController::class, 'index'])->name('books.pending.index');
+    Route::get('/books/pending/{pendingBook}',           [\App\Http\Controllers\AdminBookIngestionController::class, 'show'])->name('books.pending.show');
+    Route::post('/books/pending/{pendingBook}/approve',  [\App\Http\Controllers\AdminBookIngestionController::class, 'approve'])->name('books.pending.approve');
+    Route::delete('/books/pending/{pendingBook}',        [\App\Http\Controllers\AdminBookIngestionController::class, 'discard'])->name('books.pending.discard');
+
     // Orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');

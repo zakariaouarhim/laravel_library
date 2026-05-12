@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('interests:decay')->dailyAt('03:30');
+        $schedule->command('staging:prune-images')->dailyAt('04:00');
     }
 
     /**
