@@ -16,11 +16,13 @@ class StoreBookProductRequest extends FormRequest
         return [
             'productName'            => 'required|string|max:255',
             'productauthor'          => 'required|string|max:255',
+            'productauthor_id'              => 'nullable|integer|exists:authors,id',
             'productDescription'     => 'required|string',
             'productPrice'           => 'required|numeric|min:0',
             'productNumPages'        => 'nullable|integer|min:1',
             'productLanguage'        => 'nullable|string|max:100',
             'ProductPublishingHouse' => 'nullable|string|max:255',
+            'ProductPublishingHouse_id'     => 'nullable|integer|exists:publishing_houses,id',
             'productIsbn'            => 'nullable|string|max:50|unique:books,isbn',
             'categories'             => 'required|array|min:1',
             'categories.*'           => 'exists:categories,id',

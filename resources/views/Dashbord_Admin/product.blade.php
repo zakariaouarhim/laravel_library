@@ -238,7 +238,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">المؤلف</label>
-                                    <input type="text" class="form-control" name="productauthor" id="productauthor" required>
+                                    <input type="text" class="form-control" name="productauthor" id="productauthor" required autocomplete="off">
+                                    <input type="hidden" name="productauthor_id" id="productauthor_id">
+                                    <small class="text-muted small d-block" id="productauthor_hint"></small>
                                 </div>
                             </div>
                         </div>
@@ -286,7 +288,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">دار النشر</label>
-                                    <input type="text" class="form-control" name="ProductPublishingHouse" id="ProductPublishingHouse" required>
+                                    <input type="text" class="form-control" name="ProductPublishingHouse" id="ProductPublishingHouse" required autocomplete="off">
+                                    <input type="hidden" name="ProductPublishingHouse_id" id="ProductPublishingHouse_id">
+                                    <small class="text-muted small d-block" id="ProductPublishingHouse_hint"></small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -411,7 +415,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">المؤلف</label>
-                                    <input type="text" class="form-control" id="editAuthor" name="author" required>
+                                    <input type="text" class="form-control" id="editAuthor" name="author" required autocomplete="off">
+                                    <input type="hidden" name="author_id" id="editAuthor_id">
+                                    <small class="text-muted small d-block" id="editAuthor_hint"></small>
                                 </div>
                             </div>
                         </div>
@@ -460,7 +466,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">دار النشر</label>
-                                    <input type="text" class="form-control" id="editProductPublishingHouse" name="publishing_house" required>
+                                    <input type="text" class="form-control" id="editProductPublishingHouse" name="publishing_house" required autocomplete="off">
+                                    <input type="hidden" name="publishing_house_id" id="editProductPublishingHouse_id">
+                                    <small class="text-muted small d-block" id="editProductPublishingHouse_hint"></small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -589,24 +597,32 @@
         document.querySelectorAll('.edit-category-cb').forEach(cb => { cb.checked = false; });
         document.querySelectorAll('.edit-primary-radio').forEach(r => { r.checked = false; r.style.display = 'none'; });
 
-        // Fetch product with categories and populate
-        fetch(`/admin/products/${productId}`, {
+        // Fetch product with categories and populate. The API returns {success, data: {...}}
+        // so we unwrap data before reading fields.
+        fetch(`/admin/products/api/${productId}`, {
             headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
         })
         .then(r => r.json())
-        .then(product => {
+        .then(res => {
+            const product = res.data || res;
             document.getElementById('productId').value = product.id;
             document.getElementById('editProductName').value = product.title;
             document.getElementById('editAuthor').value = product.author_name;
+            document.getElementById('editAuthor_id').value = product.author_id || '';
             document.getElementById('editProductDescription').value = product.description;
             document.getElementById('editProductPrice').value = product.price;
             document.getElementById('editProductPageNum').value = product.page_num;
             document.getElementById('editProductLanguage').value = product.language;
             document.getElementById('editProductISBN').value = product.isbn;
             document.getElementById('editProductPublishingHouse').value = product.publishing_house_name;
+            document.getElementById('editProductPublishingHouse_id').value = product.publishing_house_id || '';
             document.getElementById('editProductQuantity').value = product.quantity;
             document.getElementById('editSeriesId').value = product.series_id || '';
             document.getElementById('editVolumeNumber').value = product.volume_number || '';
+
+            // Refresh autocomplete hints to reflect the just-populated bound IDs.
+            if (window._editAuthorAC) window._editAuthorAC.refreshHint();
+            if (window._editPubAC)    window._editPubAC.refreshHint();
 
             if (product.image) {
                 const preview = document.getElementById('editProductImagePreview');
@@ -647,6 +663,75 @@
         })
         .catch(err => { console.error('Error:', err); alert('فشل في تحميل بيانات المنتج'); });
     };
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Author + Publisher autocomplete with hidden ID binding.
+    // Prevents duplicate Author / PublishingHouse rows when admin types a
+    // name that matches an existing row with different casing/spacing.
+    // ─────────────────────────────────────────────────────────────────────
+    function setupAutocomplete({ inputId, idInputId, hintId, endpoint, subKey }) {
+        var input = document.getElementById(inputId);
+        var idInput = document.getElementById(idInputId);
+        var hint  = hintId ? document.getElementById(hintId) : null;
+        if (!input || !idInput) return null;
+
+        var wrapper = input.parentElement;
+        if (getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
+        var list = document.createElement('ul');
+        list.className = 'list-group position-absolute w-100 shadow-sm';
+        list.style.cssText = 'display:none;z-index:1050;top:100%;max-height:260px;overflow-y:auto;';
+        wrapper.appendChild(list);
+
+        var debounceTimer, currentAbort;
+        function hideList() { list.style.display = 'none'; list.innerHTML = ''; }
+        function render(items) {
+            if (!items.length) return hideList();
+            list.innerHTML = items.map(function (a) {
+                var sub = subKey && a[subKey] ? ' <span class="text-muted small">(' + a[subKey] + ')</span>' : '';
+                return '<li class="list-group-item list-group-item-action" style="cursor:pointer" data-name="' + a.name.replace(/"/g, '&quot;') + '" data-id="' + a.id + '">' + a.name + sub + '</li>';
+            }).join('');
+            list.style.display = '';
+        }
+        function updateHint() {
+            if (!hint) return;
+            hint.innerHTML = idInput.value
+                ? '<i class="fas fa-link text-success"></i> مرتبط بـ #' + idInput.value
+                : '';
+        }
+        updateHint();
+        input.addEventListener('input', function () {
+            idInput.value = '';
+            updateHint();
+            var q = input.value.trim();
+            clearTimeout(debounceTimer);
+            if (q.length < 2) return hideList();
+            debounceTimer = setTimeout(function () {
+                if (currentAbort) currentAbort.abort();
+                currentAbort = new AbortController();
+                fetch(endpoint + '?q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' }, signal: currentAbort.signal })
+                    .then(function (r) { return r.ok ? r.json() : []; })
+                    .then(render).catch(function () {});
+            }, 200);
+        });
+        list.addEventListener('mousedown', function (e) {
+            var li = e.target.closest('li[data-name]');
+            if (!li) return;
+            e.preventDefault();
+            input.value = li.dataset.name;
+            idInput.value = li.dataset.id;
+            updateHint();
+            hideList();
+        });
+        input.addEventListener('blur',    function () { setTimeout(hideList, 150); });
+        input.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideList(); });
+
+        return { refreshHint: updateHint };
+    }
+
+    setupAutocomplete({ inputId: 'productauthor',           idInputId: 'productauthor_id',           hintId: 'productauthor_hint',           endpoint: '{{ route('admin.search.authors') }}',     subKey: 'nationality' });
+    setupAutocomplete({ inputId: 'ProductPublishingHouse',  idInputId: 'ProductPublishingHouse_id',  hintId: 'ProductPublishingHouse_hint',  endpoint: '{{ route('admin.search.publishers') }}',  subKey: 'country' });
+    window._editAuthorAC = setupAutocomplete({ inputId: 'editAuthor',              idInputId: 'editAuthor_id',              hintId: 'editAuthor_hint',              endpoint: '{{ route('admin.search.authors') }}',     subKey: 'nationality' });
+    window._editPubAC    = setupAutocomplete({ inputId: 'editProductPublishingHouse', idInputId: 'editProductPublishingHouse_id', hintId: 'editProductPublishingHouse_hint', endpoint: '{{ route('admin.search.publishers') }}',  subKey: 'country' });
     </script>
 </body>
 </html>

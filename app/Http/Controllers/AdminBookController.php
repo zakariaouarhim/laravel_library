@@ -122,8 +122,20 @@ class AdminBookController extends Controller
         }
 
         try {
-            $author = $this->adminService->findOrCreateAuthor($validated['productauthor']);
-            $publishingHouseId = $this->adminService->findOrCreatePublishingHouse($validated['ProductPublishingHouse'] ?? null);
+            // Honor the bound author/publisher IDs from the autocomplete picker.
+            // When the admin picked from the dropdown, we bind to that exact row
+            // instead of firstOrCreate-ing on the name string (which would create
+            // duplicates like "Albert Camus" vs "albert camus").
+            $author = !empty($validated['productauthor_id'])
+                ? \App\Models\Author::find($validated['productauthor_id'])
+                : $this->adminService->findOrCreateAuthor($validated['productauthor']);
+            if (!$author) {
+                $author = $this->adminService->findOrCreateAuthor($validated['productauthor']);
+            }
+
+            $publishingHouseId = !empty($validated['ProductPublishingHouse_id'])
+                ? (int) $validated['ProductPublishingHouse_id']
+                : $this->adminService->findOrCreatePublishingHouse($validated['ProductPublishingHouse'] ?? null);
 
             $product = new Book();
             $product->title = $validated['productName'];
@@ -396,8 +408,19 @@ class AdminBookController extends Controller
 
             $validated = $request->validated();
 
-            $author = $this->adminService->findOrCreateAuthor($validated['author']);
-            $publishingHouseId = $this->adminService->findOrCreatePublishingHouse($validated['publishing_house'] ?? null);
+            // Honor optional bound IDs from the autocomplete picker; fall back to
+            // firstOrCreate on the name string when no binding was sent (admin
+            // typed manually or kept the existing untouched value).
+            $author = !empty($validated['author_id'])
+                ? \App\Models\Author::find($validated['author_id'])
+                : null;
+            if (!$author) {
+                $author = $this->adminService->findOrCreateAuthor($validated['author']);
+            }
+
+            $publishingHouseId = !empty($validated['publishing_house_id'])
+                ? (int) $validated['publishing_house_id']
+                : $this->adminService->findOrCreatePublishingHouse($validated['publishing_house'] ?? null);
             $wasOutOfStock = ($product->quantity == 0);
 
             // Update fields
