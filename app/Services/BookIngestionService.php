@@ -38,7 +38,7 @@ class BookIngestionService
      * Idempotent: if a non-finalized pending row already exists for the same
      * (title, author, language), returns it without re-querying any API.
      */
-    public function stageFromTitleAuthor(string $title, string $author, string $language = 'french', bool $force = false): PendingBook
+    public function stageFromTitleAuthor(string $title, string $author, string $language = 'french', bool $force = false, ?int $authorId = null): PendingBook
     {
         $title  = trim($title);
         $author = trim($author);
@@ -96,7 +96,7 @@ class BookIngestionService
         }
 
         $t1 = microtime(true);
-        Log::info(sprintf(
+        Log::debug(sprintf(
             "BookIngestion timing — phase1 API pool: %.2fs (cache hits: %s | fetched: %s)",
             $t1 - $t0,
             $cacheHits ? implode(',', $cacheHits) : 'none',
@@ -123,16 +123,16 @@ class BookIngestionService
         }
 
         $t2 = microtime(true);
-        Log::info(sprintf("BookIngestion timing — phase1 parse: %.2fs (sources hit: %s)", $t2 - $t1, implode(',', array_keys($apiResults))));
+        Log::debug(sprintf("BookIngestion timing — phase1 parse: %.2fs (sources hit: %s)", $t2 - $t1, implode(',', array_keys($apiResults))));
 
         // Per-source HTTP transfer times — surfaces which API is the slowest.
         foreach ($responses as $key => $resp) {
             if ($resp instanceof \Illuminate\Http\Client\Response) {
                 $stats = $resp->transferStats;
                 $time  = $stats ? $stats->getTransferTime() : null;
-                Log::info(sprintf("BookIngestion timing —   %s: HTTP %d in %.2fs", $key, $resp->status(), $time ?? 0));
+                Log::debug(sprintf("BookIngestion timing —   %s: HTTP %d in %.2fs", $key, $resp->status(), $time ?? 0));
             } else {
-                Log::info(sprintf("BookIngestion timing —   %s: connection failed (%s)", $key, get_class($resp)));
+                Log::debug(sprintf("BookIngestion timing —   %s: connection failed (%s)", $key, get_class($resp)));
             }
         }
 
@@ -154,7 +154,7 @@ class BookIngestionService
         }
 
         $t3 = microtime(true);
-        Log::info(sprintf("BookIngestion timing — phase2 wikipedia: %.2fs", $t3 - $t2));
+        Log::debug(sprintf("BookIngestion timing — phase2 wikipedia: %.2fs", $t3 - $t2));
 
         // Phase 3: stage cover images. Network fetches are pooled (concurrent);
         // WebP encoding + thumbnail generation happens sequentially after.
@@ -163,7 +163,7 @@ class BookIngestionService
         $stagingImages = $this->poolStageImages($apiResults, $title, $author);
 
         $t4 = microtime(true);
-        Log::info(sprintf(
+        Log::debug(sprintf(
             "BookIngestion timing — phase3 images: %.2fs (covers saved: %d) | TOTAL: %.2fs for '%s'",
             $t4 - $t3, count($stagingImages), $t4 - $t0, $title
         ));
@@ -190,6 +190,7 @@ class BookIngestionService
         return PendingBook::create([
             'title'            => $title,
             'author_name'      => $author,
+            'author_id'        => $authorId,
             'language'         => $language,
             'status'           => $status,
             'api_results'      => $apiResults,
@@ -248,7 +249,7 @@ class BookIngestionService
             $responses = $this->poolIsbnRequests($sourcesToFetch, $cleanIsbn);
         }
 
-        Log::info(sprintf(
+        Log::debug(sprintf(
             "BookIngestion ISBN '%s' — phase1 API pool: %.2fs (cache: %s | fetched: %s)",
             $cleanIsbn,
             microtime(true) - $t0,
@@ -286,7 +287,7 @@ class BookIngestionService
 
         $stagingImages = $this->poolStageImages($apiResults, $title ?: $cleanIsbn, $author ?: 'isbn');
 
-        Log::info(sprintf(
+        Log::debug(sprintf(
             "BookIngestion ISBN '%s' — TOTAL: %.2fs (sources: %s, covers: %d)",
             $cleanIsbn, microtime(true) - $t0, implode(',', array_keys($apiResults)), count($stagingImages)
         ));
@@ -344,17 +345,29 @@ class BookIngestionService
             $imageSource    = $overrides['image_source']   ?? null;
             $uploadedCover  = $overrides['uploaded_cover'] ?? null;   // \Illuminate\Http\UploadedFile|null
 
-            // Author — firstOrCreate by name. If the row is new, run author enrichment
-            // so the admin doesn't have to fill bio/dates/photo manually after.
-            $author = Author::firstOrCreate(
-                ['name' => $authorName],
-                ['status' => 'active']
-            );
-            if ($author->wasRecentlyCreated) {
-                try {
-                    app(AuthorEnrichmentService::class)->enrichAuthor($author);
-                } catch (\Throwable $e) {
-                    Log::info("Author enrichment skipped for '{$author->name}': " . $e->getMessage());
+            // Author — if the admin picked one from autocomplete at stage time AND
+            // didn't override the name to something different, bind to that exact row.
+            // Otherwise firstOrCreate by name (with enrichment for newly created rows).
+            $author = null;
+            if ($pending->author_id) {
+                $bound = Author::find($pending->author_id);
+                if ($bound && mb_strtolower(trim($bound->name)) === mb_strtolower(trim($authorName))) {
+                    $author = $bound;
+                } else {
+                    Log::info("Author binding dropped for pending #{$pending->id}: admin edited name from '" . ($bound?->name ?? 'missing') . "' to '{$authorName}'");
+                }
+            }
+            if (!$author) {
+                $author = Author::firstOrCreate(
+                    ['name' => $authorName],
+                    ['status' => 'active']
+                );
+                if ($author->wasRecentlyCreated) {
+                    try {
+                        app(AuthorEnrichmentService::class)->enrichAuthor($author);
+                    } catch (\Throwable $e) {
+                        Log::info("Author enrichment skipped for '{$author->name}': " . $e->getMessage());
+                    }
                 }
             }
 
@@ -746,35 +759,96 @@ class BookIngestionService
 
         if (empty($urls)) return [];
 
-        $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($urls) {
-            $reqs = [];
-            foreach ($urls as $source => $url) {
-                $reqs[] = $pool->as($source)
-                    ->withOptions(['verify' => false, 'timeout' => 5, 'connect_timeout' => 3])
-                    ->get($url);
-            }
-            return $reqs;
-        });
-
+        // Cache pass — for each URL, if a previously-processed staging file still
+        // exists on disk, COPY it to a unique new staging filename. Copying (instead
+        // of sharing the same path across pending rows) keeps each pending row's
+        // discard/approve independent.
         $stagingImages = [];
+        $urlsToFetch   = [];
+        $cacheHits     = [];
         foreach ($urls as $source => $url) {
-            try {
-                $r = $responses[$source] ?? null;
-                if (!$this->isOkResponse($r)) continue;
-                $bytes = $r->body();
-                if ($bytes === '') continue;
-                $path = $this->images->processFromBytes(
-                    $bytes,
-                    'images/books/staging',
-                    'staging_' . $source . '_' . substr(md5($title . $author), 0, 8)
-                );
-                if ($path) $stagingImages[$source] = $path;
-            } catch (\Throwable $e) {
-                Log::info("BookIngestion {$source} cover process failed for '{$title}': " . $e->getMessage());
+            $cached = Cache::get($this->coverCacheKey($url));
+            if ($cached && file_exists(public_path($cached))) {
+                $copied = $this->copyCachedStagingFile($cached, $source, $title, $author);
+                if ($copied) {
+                    $stagingImages[$source] = $copied;
+                    $cacheHits[] = $source;
+                    continue;
+                }
+            }
+            $urlsToFetch[$source] = $url;
+        }
+
+        if (!empty($urlsToFetch)) {
+            $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($urlsToFetch) {
+                $reqs = [];
+                foreach ($urlsToFetch as $source => $url) {
+                    $reqs[] = $pool->as($source)
+                        ->withOptions(['verify' => false, 'timeout' => 5, 'connect_timeout' => 3])
+                        ->get($url);
+                }
+                return $reqs;
+            });
+
+            foreach ($urlsToFetch as $source => $url) {
+                try {
+                    $r = $responses[$source] ?? null;
+                    if (!$this->isOkResponse($r)) continue;
+                    $bytes = $r->body();
+                    if ($bytes === '') continue;
+                    $path = $this->images->processFromBytes(
+                        $bytes,
+                        'images/books/staging',
+                        'staging_' . $source . '_' . substr(md5($title . $author), 0, 8)
+                    );
+                    if ($path) {
+                        $stagingImages[$source] = $path;
+                        Cache::put($this->coverCacheKey($url), $path, now()->addHours(24));
+                    }
+                } catch (\Throwable $e) {
+                    Log::info("BookIngestion {$source} cover process failed for '{$title}': " . $e->getMessage());
+                }
             }
         }
 
+        Log::debug(sprintf(
+            "BookIngestion cover cache — hits: %s | fetched: %s",
+            $cacheHits ? implode(',', $cacheHits) : 'none',
+            $urlsToFetch ? implode(',', array_keys($urlsToFetch)) : 'none'
+        ));
+
         return $stagingImages;
+    }
+
+    private function coverCacheKey(string $url): string
+    {
+        return "ingest_cover:" . md5($url);
+    }
+
+    /**
+     * Copy a previously-cached staging file (and its thumbnail) to a new unique
+     * staging filename. Each pending row gets its own physical file so one row's
+     * discard/approve can't invalidate another row's staging image.
+     * Returns the new relative path, or null on failure.
+     */
+    private function copyCachedStagingFile(string $cachedRelative, string $source, string $title, string $author): ?string
+    {
+        $newFilename = 'staging_' . $source . '_' . substr(md5($title . $author . uniqid('', true)), 0, 12) . '.webp';
+        $newRelative = 'images/books/staging/' . $newFilename;
+
+        if (!@copy(public_path($cachedRelative), public_path($newRelative))) {
+            return null;
+        }
+
+        $cachedThumb = str_replace('staging/', 'staging/thumbs/', $cachedRelative);
+        $newThumb    = 'images/books/staging/thumbs/' . $newFilename;
+        if (file_exists(public_path($cachedThumb))) {
+            $thumbDir = public_path('images/books/staging/thumbs');
+            if (!file_exists($thumbDir)) mkdir($thumbDir, 0755, true);
+            @copy(public_path($cachedThumb), public_path($newThumb));
+        }
+
+        return $newRelative;
     }
 
     /**

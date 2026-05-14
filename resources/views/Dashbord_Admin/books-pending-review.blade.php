@@ -165,12 +165,24 @@
 
                     $fields = [
                         ['key' => 'title',          'label' => 'العنوان',     'type' => 'text',     'fetchKey' => 'title'],
+                        ['key' => 'author_name',    'label' => 'المؤلف',      'type' => 'text',     'fetchKey' => 'author'],
                         ['key' => 'isbn',           'label' => 'ISBN',        'type' => 'text',     'fetchKey' => 'isbn'],
                         ['key' => 'page_num',       'label' => 'عدد الصفحات', 'type' => 'number',   'fetchKey' => 'page_num'],
                         ['key' => 'publisher_name', 'label' => 'دار النشر',   'type' => 'text',     'fetchKey' => 'publisher'],
                         ['key' => 'description',    'label' => 'الوصف',       'type' => 'textarea', 'fetchKey' => 'description'],
                     ];
                 @endphp
+
+                @php $boundAuthor = $pendingBook->author_id ? $pendingBook->author : null; @endphp
+                @if($boundAuthor)
+                    <div class="alert alert-info py-2 mb-3">
+                        <i class="fas fa-link me-1"></i>
+                        مرتبط بالمؤلف:
+                        <strong>{{ $boundAuthor->name }}</strong>
+                        <span class="text-muted">(#{{ $boundAuthor->id }})</span>
+                        — سيتم استخدام هذا المؤلف عند الاعتماد ما لم يتم تعديل الاسم.
+                    </div>
+                @endif
 
                 <form method="POST" action="{{ route('admin.books.pending.approve', $pendingBook->id) }}" enctype="multipart/form-data">
                     @csrf
@@ -234,6 +246,15 @@
                                     $fetchKey   = $field['fetchKey'];
                                     $defaultSrc = $pendingBook->getDefaultSourceForField($fetchKey);
 
+                                    // Fallback when no source returned this field (e.g. older PendingBooks
+                                    // staged before parsers added 'author'). Lets the admin see what was
+                                    // typed at stage time and skip having to retype it.
+                                    $customFallback = '';
+                                    if (!$defaultSrc) {
+                                        if ($fieldKey === 'author_name') $customFallback = $pendingBook->author_name;
+                                        elseif ($fieldKey === 'title')   $customFallback = $pendingBook->title;
+                                    }
+
                                     // Cross-source agreement classification. Skipped for description
                                     // (long-form text won't ever match across sources).
                                     $skipAgreement = ($field['type'] === 'textarea');
@@ -266,7 +287,7 @@
 
                                     {{-- Hidden input that actually gets submitted. JS keeps it in sync. --}}
                                     <input type="hidden" name="{{ $fieldKey }}" id="hidden-{{ $fieldKey }}"
-                                           value="{{ $defaultSrc ? ($apiResults[$defaultSrc][$fetchKey] ?? '') : '' }}">
+                                           value="{{ $defaultSrc ? ($apiResults[$defaultSrc][$fetchKey] ?? '') : $customFallback }}">
 
                                     <div class="compare-grid" style="grid-template-columns: repeat({{ count($sources) + 1 }}, minmax(0, 1fr));">
 
@@ -292,9 +313,9 @@
                                                 <span class="source-label source-custom">مخصص</span>
                                             </label>
                                             @if($field['type'] === 'textarea')
-                                                <textarea class="form-control custom-input" rows="4" data-target="{{ $fieldKey }}">{{ !$defaultSrc ? old($fieldKey, '') : '' }}</textarea>
+                                                <textarea class="form-control custom-input" rows="4" data-target="{{ $fieldKey }}">{{ !$defaultSrc ? old($fieldKey, $customFallback) : '' }}</textarea>
                                             @else
-                                                <input type="{{ $field['type'] }}" class="form-control custom-input" data-target="{{ $fieldKey }}" value="{{ !$defaultSrc ? old($fieldKey, '') : '' }}">
+                                                <input type="{{ $field['type'] }}" class="form-control custom-input" data-target="{{ $fieldKey }}" value="{{ !$defaultSrc ? old($fieldKey, $customFallback) : '' }}">
                                             @endif
                                         </div>
 

@@ -23,6 +23,7 @@ class PendingBook extends Model
     protected $fillable = [
         'title',
         'author_name',
+        'author_id',
         'language',
         'status',
         'api_results',
@@ -43,6 +44,11 @@ class PendingBook extends Model
     public function existingBook()
     {
         return $this->belongsTo(Book::class, 'existing_book_id');
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(Author::class, 'author_id');
     }
 
     public function approvedBook()

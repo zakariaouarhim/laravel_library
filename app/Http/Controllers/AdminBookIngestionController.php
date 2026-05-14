@@ -28,17 +28,19 @@ class AdminBookIngestionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'    => 'required|string|max:191',
-            'author'   => 'required|string|max:191',
-            'language' => 'required|string|in:arabic,english,french,spanish,german',
-            'force'    => 'nullable',
+            'title'     => 'required|string|max:191',
+            'author'    => 'required|string|max:191',
+            'author_id' => 'nullable|integer|exists:authors,id',
+            'language'  => 'required|string|in:arabic,english,french,spanish,german',
+            'force'     => 'nullable',
         ]);
 
         $pending = $this->ingestion->stageFromTitleAuthor(
             $validated['title'],
             $validated['author'],
             $validated['language'],
-            (bool) ($validated['force'] ?? false)
+            (bool) ($validated['force'] ?? false),
+            $validated['author_id'] ?? null
         );
 
         return redirect()

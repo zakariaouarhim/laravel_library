@@ -89,9 +89,10 @@
                                         <label class="form-label">المؤلف</label>
                                         <div class="position-relative">
                                             <input type="text" name="author" id="authorInput" value="{{ old('author') }}" class="form-control" required dir="auto" placeholder="Albert Camus" autocomplete="off">
+                                            <input type="hidden" name="author_id" id="authorIdInput" value="{{ old('author_id') }}">
                                             <ul id="authorSuggestions" class="list-group position-absolute w-100 shadow-sm" style="display:none; z-index:1050; top:100%; max-height:260px; overflow-y:auto;"></ul>
                                         </div>
-                                        <small class="text-muted">ابدأ بالكتابة للبحث في المؤلفين الموجودين — يمنع إنشاء نسخ مكررة</small>
+                                        <small class="text-muted" id="authorHint">ابدأ بالكتابة للبحث في المؤلفين الموجودين — يمنع إنشاء نسخ مكررة</small>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">اللغة</label>
@@ -219,12 +220,28 @@
             if (!authors.length) { hideSuggestions(); return; }
             suggestionsList.innerHTML = authors.map(function (a) {
                 var sub = a.nationality ? ' <span class="text-muted small">(' + a.nationality + ')</span>' : '';
-                return '<li class="list-group-item list-group-item-action" style="cursor:pointer;" data-name="' + a.name.replace(/"/g, '&quot;') + '">' + a.name + sub + '</li>';
+                return '<li class="list-group-item list-group-item-action" style="cursor:pointer;" data-name="' + a.name.replace(/"/g, '&quot;') + '" data-author-id="' + a.id + '">' + a.name + sub + '</li>';
             }).join('');
             suggestionsList.style.display = '';
         }
 
+        var authorIdInput = document.getElementById('authorIdInput');
+        var authorHint    = document.getElementById('authorHint');
+
+        function updateHint() {
+            if (!authorHint) return;
+            if (authorIdInput && authorIdInput.value) {
+                authorHint.innerHTML = '<i class="fas fa-link text-success"></i> مرتبط بالمؤلف #' + authorIdInput.value + ' — لن يتم إنشاء مؤلف جديد';
+            } else {
+                authorHint.textContent = 'ابدأ بالكتابة للبحث في المؤلفين الموجودين — يمنع إنشاء نسخ مكررة';
+            }
+        }
+        updateHint();
+
         authorInput.addEventListener('input', function () {
+            // Typing breaks the binding — the typed string may not match the picked author anymore.
+            if (authorIdInput) authorIdInput.value = '';
+            updateHint();
             var q = authorInput.value.trim();
             clearTimeout(debounceTimer);
             if (q.length < 2) { hideSuggestions(); return; }
@@ -248,6 +265,8 @@
             if (!li) return;
             e.preventDefault();
             authorInput.value = li.dataset.name;
+            if (authorIdInput) authorIdInput.value = li.dataset.authorId || '';
+            updateHint();
             hideSuggestions();
         });
 
