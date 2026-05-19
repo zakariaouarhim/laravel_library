@@ -51,7 +51,7 @@
             @if($categorie->count() > 0)
                 @foreach ($categorie as $category)
                     <div class="category-card" data-name="{{ $category->name }}">
-                        <a href="{{ route('by-category', ['category' => $category->id]) }}" class="category-link">
+                        <a href="{{ route('by-category', $category) }}" class="category-link">
                             <div class="category-header">
                                 <div class="category-icon">
                                     @if($category->categorie_icon)
@@ -75,7 +75,7 @@
 
                             <div id="children-{{ $category->id }}" class="children-container">
                                 @foreach ($category->children as $child)
-                                    <a href="{{ route('by-category', ['category' => $child->id]) }}" class="child-item">
+                                    <a href="{{ route('by-category', $child) }}" class="child-item">
                                         <i class="fas fa-angle-left"></i>
                                         <span>{{ $child->name }}</span>
                                         <span class="child-count">{{ $child->books_count }}</span>

@@ -77,11 +77,13 @@ class PublisherController extends Controller
         return view('publishers', compact('publishers', 'countries'));
     }
 
-    public function publicShow($id)
+    public function publicShow(PublishingHouse $publisher)
     {
-        $publisher = PublishingHouse::active()->withCount(['books' => function ($q) {
-            $q->where('type', 'book');
-        }])->findOrFail($id);
+        // Re-fetch with active() scope + book count.
+        $publisher = PublishingHouse::active()
+            ->withCount(['books' => fn($q) => $q->where('type', 'book')])
+            ->whereKey($publisher->id)
+            ->firstOrFail();
 
         $books = $publisher->books()->where('type', 'book')->standardOnly()->with(['primaryAuthor', 'bundles:id,title,price,image'])->paginate(12);
 

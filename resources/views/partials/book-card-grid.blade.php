@@ -11,7 +11,7 @@
                 <i class="@if(in_array($book->id, $wishlistBookIds)) fas @else far @endif fa-heart"></i>
             </button>
             @if($bundledOnly)
-                <a class="action-btn" href="{{ route('moredetail2.page', $book->id) }}" title="عرض الباقة">
+                <a class="action-btn" href="{{ route('moredetail2.page', $book) }}" title="عرض الباقة">
                     <i class="fas fa-box"></i>
                 </a>
             @elseif(!$outOfStock)
@@ -21,7 +21,7 @@
             @endif
         </div>
 
-        <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="book-image-wrapper">
+        <a href="{{ route('moredetail2.page', $book) }}" class="book-image-wrapper">
             <img src="{{ asset($book->thumbnail) }}" alt="{{ $book->title }}" width="200" height="280" loading="lazy"
                  srcset="{{ asset($book->thumbnail) }} 150w, {{ asset($book->image ?? 'images/book-placeholder.png') }} 400w"
                  sizes="200px"
@@ -30,18 +30,18 @@
 
         @include('partials._book-card-badges')
 
-        <h6><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h6>
+        <h6><a href="{{ route('moredetail2.page', $book) }}">{{ $book->title }}</a></h6>
 
         <p class="book-author">
             <i class="fas fa-user-edit me-1"></i>
             @if($book->primaryAuthor)
-                <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
+                <a href="{{ route('author.show', $book->primaryAuthor) }}">{{ $book->primaryAuthor->name }}</a>
                 @if($book->primaryAuthor->nationality)
                     <small class="text-muted">({{ $book->primaryAuthor->nationality }})</small>
                 @endif
             @elseif($book->relationLoaded('authors') && $book->authors->where('pivot.author_type', 'primary')->first())
                 @php $pivotAuthor = $book->authors->where('pivot.author_type', 'primary')->first(); @endphp
-                <a href="{{ route('author.show', $pivotAuthor->id) }}">{{ $pivotAuthor->name }}</a>
+                <a href="{{ route('author.show', $pivotAuthor) }}">{{ $pivotAuthor->name }}</a>
             @elseif($book->relationLoaded('authors') && $book->authors->isNotEmpty())
                 <a href="{{ route('author.show', $book->authors->first()->id) }}">{{ $book->authors->first()->name }}</a>
                 @if($book->authors->count() > 1)
@@ -66,7 +66,7 @@
                     {{ number_format((float) $firstBundle->price, 2) }} <span class="currency">د.م</span>
                     <small class="bundle-price-label">السلسلة كاملة</small>
                 </span>
-                <a class="add-btn" href="{{ route('moredetail2.page', $book->id) }}" title="عرض الباقة">
+                <a class="add-btn" href="{{ route('moredetail2.page', $book) }}" title="عرض الباقة">
                     <i class="fas fa-box"></i>
                 </a>
             @else

@@ -31,7 +31,7 @@
             <div class="category-rows">
                 <div class="category-row">
                     @foreach ($categorie as $category)
-                    <button class="category-btn small" onclick="window.location.href='{{ route('by-category', ['category' => $category->id]) }}'">{{ $category->name }}</button>
+                    <button class="category-btn small" onclick="window.location.href='{{ route('by-category', $category) }}'">{{ $category->name }}</button>
                     @endforeach
                     <button class="category-btn small" onclick="window.location.href='{{ route('categories.index') }}'">المزيد</button>
                 </div>

@@ -49,6 +49,11 @@ class Series extends Model
         });
     }
 
+    public function getRouteKey()
+    {
+        return $this->slug ?: $this->getKey();
+    }
+
     public function books()
     {
         return $this->hasMany(Book::class)->orderBy('volume_number');

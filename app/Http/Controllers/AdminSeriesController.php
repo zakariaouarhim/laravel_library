@@ -79,9 +79,10 @@ class AdminSeriesController extends Controller
         return response()->json(['success' => true, 'message' => 'تم حذف السلسلة بنجاح.']);
     }
 
-    public function publicShow($id)
+    public function publicShow(Series $series)
     {
-        $series = Series::with('author')->withCount('books')->findOrFail($id);
+        // Re-fetch with eager loading.
+        $series = Series::with('author')->withCount('books')->whereKey($series->id)->firstOrFail();
 
         $books = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])
             ->standardOnly()

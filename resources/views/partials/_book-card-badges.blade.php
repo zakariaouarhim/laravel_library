@@ -11,7 +11,7 @@
             <span class="badge bg-danger">خصم {{ $book->discount }}%</span>
         @endif
         @if($inBundle && $firstBundle)
-            <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="badge badge-bundle-hint">
+            <a href="{{ route('moredetail2.page', $firstBundle) }}" class="badge badge-bundle-hint">
                 <i class="fas fa-box"></i> متوفر أيضاً كباقة
             </a>
         @endif

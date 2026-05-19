@@ -97,7 +97,7 @@ class BookAdminService
                     'type'    => 'stock_available',
                     'title'   => 'الكتاب متوفر الآن',
                     'body'    => '«' . $product->title . '» أصبح متوفراً. أضفه للسلة قبل نفاد الكمية!',
-                    'url'     => route('moredetail2.page', $product->id),
+                    'url'     => route('moredetail2.page', $product),
                 ]);
             }
         }

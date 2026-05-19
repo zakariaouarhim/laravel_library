@@ -9,7 +9,7 @@
         'metaDescription' => Str::limit($book->description ?? $book->title . ' - اشترِ الآن من مكتبة الفقراء بأفضل سعر', 160),
         'metaImage' => $book->image ? asset($book->image) : asset('images/logo.svg'),
         'metaType' => 'product',
-        'metaUrl' => route('moredetail2.page', $book->id),
+        'metaUrl' => route('moredetail2.page', $book),
     ])
     @include('partials.jsonld-book')
     <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
@@ -39,9 +39,9 @@
                     <li class="breadcrumb-item"><a href="{{ url('/') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
                     @if($book->category)
                         @if($book->category->parent)
-                            <li class="breadcrumb-item"><a href="{{ route('by-category', $book->category->parent->id) }}">{{ $book->category->parent->name }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('by-category', $book->category->parent) }}">{{ $book->category->parent->name }}</a></li>
                         @endif
-                        <li class="breadcrumb-item"><a href="{{ route('by-category', $book->category->id) }}">{{ $book->category->name }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('by-category', $book->category) }}">{{ $book->category->name }}</a></li>
                     @endif
                     <li class="breadcrumb-item active">{{ Str::limit($book->title, 40) }}</li>
                 </ol>
@@ -69,9 +69,9 @@
                     <!-- Share buttons under image -->
                     <div class="v2-share">
                         <span class="v2-share-label"><i class="fas fa-share-alt"></i> مشاركة</span>
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('moredetail2.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-fb" title="فيسبوك"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('moredetail2.page', $book)) }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-fb" title="فيسبوك"><i class="fab fa-facebook-f"></i></a>
                         <a href="{{ \App\Models\SystemSetting::getSetting('tiktok_url', 'https://www.tiktok.com/@maktabatalfokara') }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-tw" title="تيك توك"><i class="fab fa-tiktok"></i></a>
-                        <a href="https://api.whatsapp.com/send?text={{ urlencode($book->title . ' ' . route('moredetail2.page', $book->id)) }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-wa" title="واتساب"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://api.whatsapp.com/send?text={{ urlencode($book->title . ' ' . route('moredetail2.page', $book)) }}" target="_blank" rel="noopener noreferrer" class="v2-share-btn v2-wa" title="واتساب"><i class="fab fa-whatsapp"></i></a>
                         <button class="v2-share-btn v2-copy" title="نسخ الرابط" onclick="copyBookLink()"><i class="fas fa-link"></i></button>
                     </div>
                 </div>
@@ -83,13 +83,13 @@
                     <div class="v2-categories">
                         @if($book->categories->isNotEmpty())
                             @foreach($book->categories as $cat)
-                                <a href="{{ route('by-category', $cat->id) }}" class="v2-cat-pill {{ $cat->pivot->is_primary ? 'v2-cat-sub' : '' }}">{{ $cat->name }}</a>
+                                <a href="{{ route('by-category', $cat) }}" class="v2-cat-pill {{ $cat->pivot->is_primary ? 'v2-cat-sub' : '' }}">{{ $cat->name }}</a>
                             @endforeach
                         @elseif($book->category)
                             @if($book->category->parent)
-                                <a href="{{ route('by-category', $book->category->parent->id) }}" class="v2-cat-pill">{{ $book->category->parent->name }}</a>
+                                <a href="{{ route('by-category', $book->category->parent) }}" class="v2-cat-pill">{{ $book->category->parent->name }}</a>
                             @endif
-                            <a href="{{ route('by-category', $book->category->id) }}" class="v2-cat-pill v2-cat-sub">{{ $book->category->name }}</a>
+                            <a href="{{ route('by-category', $book->category) }}" class="v2-cat-pill v2-cat-sub">{{ $book->category->name }}</a>
                         @else
                             <span class="v2-cat-pill">غير مصنف</span>
                         @endif
@@ -103,7 +103,7 @@
                         <p class="mb-0">
                             <i class="fas fa-pen-fancy" style="color: var(--site-secondary)"></i>
                             @if($book->primaryAuthor)
-                                <a href="{{ route('author.show', $book->primaryAuthor->id) }}">{{ $book->primaryAuthor->name }}</a>
+                                <a href="{{ route('author.show', $book->primaryAuthor) }}">{{ $book->primaryAuthor->name }}</a>
                             @else
                                 {{ $book->author_name }}
                             @endif
@@ -122,7 +122,7 @@
 
                     <!-- Series info -->
                     @if($book->series)
-                    <a href="{{ route('series.show', $book->series->id) }}" class="v2-series-badge">
+                    <a href="{{ route('series.show', $book->series) }}" class="v2-series-badge">
                         <i class="fas fa-layer-group"></i>
                         <span>{{ $book->series->name }}</span>
                         @if($book->volume_number)
@@ -170,7 +170,7 @@
                                 <div class="small text-muted">لا يمكن شراء هذا الجزء منفرداً</div>
                             </div>
                         </div>
-                        <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="v2-btn-cart" style="flex:1;">
+                        <a href="{{ route('moredetail2.page', $firstBundle) }}" class="v2-btn-cart" style="flex:1;">
                             <i class="fas fa-shopping-bag"></i> اشترِ الباقة كاملة
                         </a>
                         @elseif($book->quantity > 0)
@@ -178,7 +178,7 @@
                         <div class="v2-bundle-hint">
                             <i class="fas fa-box"></i>
                             <span>متوفر أيضاً ضمن باقة
-                                <a href="{{ route('moredetail2.page', $firstBundle->id) }}">"{{ $firstBundle->title }}"</a>
+                                <a href="{{ route('moredetail2.page', $firstBundle) }}">"{{ $firstBundle->title }}"</a>
                             </span>
                         </div>
                         @endif
@@ -260,7 +260,7 @@
                         <ul class="v2-bundle-items">
                             @foreach($book->items as $item)
                                 <li>
-                                    <a href="{{ route('moredetail2.page', $item->id) }}">
+                                    <a href="{{ route('moredetail2.page', $item) }}">
                                         @if($item->volume_number)
                                             <span class="vol">الجزء {{ $item->volume_number }}:</span>
                                         @endif
@@ -308,7 +308,7 @@
                             <i class="fas fa-building"></i>
                             <div>
                                 <span class="v2-stat-label">دار النشر</span>
-                                <a href="{{ route('publisher.show', $book->publishing_house_id) }}" class="v2-stat-value v2-stat-link">{{ $book->publishingHouse->name }}</a>
+                                <a href="{{ route('publisher.show', $book->publishingHouse) }}" class="v2-stat-value v2-stat-link">{{ $book->publishingHouse->name }}</a>
                             </div>
                         </div>
                         @endif
@@ -317,7 +317,7 @@
                             <i class="fas fa-layer-group"></i>
                             <div>
                                 <span class="v2-stat-label">السلسلة</span>
-                                <a href="{{ route('series.show', $book->series->id) }}" class="v2-stat-value v2-stat-link">{{ $book->series->name }}</a>
+                                <a href="{{ route('series.show', $book->series) }}" class="v2-stat-value v2-stat-link">{{ $book->series->name }}</a>
                             </div>
                         </div>
                         @endif
@@ -364,10 +364,10 @@
                             <div class="v2-detail-row"><span>اللغة</span><span>{{ $book->language }}</span></div>
                             <div class="v2-detail-row"><span>عدد الصفحات</span><span>{{ $book->page_num }}</span></div>
                             @if($book->publishingHouse)
-                            <div class="v2-detail-row"><span>دار النشر</span><a href="{{ route('publisher.show', $book->publishing_house_id) }}" class="v2-stat-link">{{ $book->publishingHouse->name }}</a></div>
+                            <div class="v2-detail-row"><span>دار النشر</span><a href="{{ route('publisher.show', $book->publishingHouse) }}" class="v2-stat-link">{{ $book->publishingHouse->name }}</a></div>
                             @endif
                             @if($book->series)
-                            <div class="v2-detail-row"><span>السلسلة</span><a href="{{ route('series.show', $book->series->id) }}" class="v2-stat-link">{{ $book->series->name }}</a></div>
+                            <div class="v2-detail-row"><span>السلسلة</span><a href="{{ route('series.show', $book->series) }}" class="v2-stat-link">{{ $book->series->name }}</a></div>
                             @if($book->volume_number)
                             <div class="v2-detail-row"><span>رقم الجزء</span><span>{{ $book->volume_number }}@if($book->series->total_volumes) من {{ $book->series->total_volumes }}@endif</span></div>
                             @endif
@@ -613,7 +613,7 @@
                             <h6>كتب أخرى للمؤلف</h6>
                             <div class="v2-other-books-list">
                                 @foreach($authorBooks->take(6) as $otherBook)
-                                <a href="{{ route('moredetail2.page', $otherBook->id) }}" class="v2-other-book">
+                                <a href="{{ route('moredetail2.page', $otherBook) }}" class="v2-other-book">
                                     <img src="{{ asset($otherBook->image) }}" alt="{{ $otherBook->title }}" width="80" height="112" loading="lazy">
                                     <span>{{ Str::limit($otherBook->title, 30) }}</span>
                                 </a>

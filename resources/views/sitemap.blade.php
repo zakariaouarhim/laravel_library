@@ -40,7 +40,7 @@
     {{-- Books --}}
     @foreach($books as $book)
     <url>
-        <loc>{{ route('moredetail2.page', $book->id) }}</loc>
+        <loc>{{ route('moredetail2.page', $book) }}</loc>
         @if($book->updated_at)
         <lastmod>{{ $book->updated_at->toW3cString() }}</lastmod>
         @endif
@@ -52,7 +52,7 @@
     {{-- Accessories --}}
     @foreach($accessories as $accessory)
     <url>
-        <loc>{{ route('moredetail2.page', $accessory->id) }}</loc>
+        <loc>{{ route('moredetail2.page', $accessory) }}</loc>
         @if($accessory->updated_at)
         <lastmod>{{ $accessory->updated_at->toW3cString() }}</lastmod>
         @endif
@@ -64,7 +64,7 @@
     {{-- Authors --}}
     @foreach($authors as $author)
     <url>
-        <loc>{{ route('author.show', $author->id) }}</loc>
+        <loc>{{ route('author.show', $author) }}</loc>
         @if($author->updated_at)
         <lastmod>{{ $author->updated_at->toW3cString() }}</lastmod>
         @endif
@@ -76,7 +76,7 @@
     {{-- Categories --}}
     @foreach($categories as $category)
     <url>
-        <loc>{{ route('by-category', $category->id) }}</loc>
+        <loc>{{ route('by-category', $category) }}</loc>
         @if($category->updated_at)
         <lastmod>{{ $category->updated_at->toW3cString() }}</lastmod>
         @endif
@@ -88,7 +88,7 @@
     {{-- Publishers --}}
     @foreach($publishers as $publisher)
     <url>
-        <loc>{{ route('publisher.show', $publisher->id) }}</loc>
+        <loc>{{ route('publisher.show', $publisher) }}</loc>
         @if($publisher->updated_at)
         <lastmod>{{ $publisher->updated_at->toW3cString() }}</lastmod>
         @endif

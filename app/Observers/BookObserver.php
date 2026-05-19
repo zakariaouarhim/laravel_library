@@ -95,7 +95,7 @@ class BookObserver
                     'type'    => 'back_in_stock',
                     'title'   => 'كتاب متوفر مجدداً',
                     'body'    => 'الكتاب «' . $book->title . '» أصبح متوفراً مجدداً في المكتبة',
-                    'url'     => route('moredetail2.page', $book->id),
+                    'url'     => route('moredetail2.page', $book),
                 ]);
             } elseif ($type === 'price_drop') {
                 $oldPrice = $book->getOriginal('price');
@@ -105,7 +105,7 @@ class BookObserver
                     'type'    => 'price_drop',
                     'title'   => 'انخفاض سعر كتاب',
                     'body'    => 'انخفض سعر «' . $book->title . '» من ' . $oldPrice . ' إلى ' . $newPrice . ' د.م',
-                    'url'     => route('moredetail2.page', $book->id),
+                    'url'     => route('moredetail2.page', $book),
                 ]);
             }
         }

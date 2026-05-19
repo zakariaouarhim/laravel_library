@@ -127,9 +127,9 @@ class BookController extends Controller
         ));
     }
 
-    public function showV2($id)
+    public function showV2(Book $book)
     {
-        $data = $this->getBookPageData($id);
+        $data = $this->getBookPageData($book->id);
         return view('moredetail2', $data);
     }
 

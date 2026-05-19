@@ -39,7 +39,7 @@
         ];
         if (isset($category) && $category) {
             if ($category->parent) {
-                $crumbs[] = ['label' => $category->parent->name, 'url' => route('by-category', ['category' => $category->parent->id])];
+                $crumbs[] = ['label' => $category->parent->name, 'url' => route('by-category', $category->parent)];
             }
             $crumbs[] = ['label' => $category->name];
         }
@@ -79,7 +79,7 @@
                                         $isHidden = $index >= $sidebarLimit && !($forceShowActive && $isActive);
                                     @endphp
                                     <li class="{{ $isActive ? 'active-category' : '' }} {{ $isHidden ? 'category-extra d-none' : '' }}">
-                                        <a href="{{ route('by-category', ['category' => $item->id]) }}" class="category-item">
+                                        <a href="{{ route('by-category', $item) }}" class="category-item">
                                             @if($isActive)
                                                 <i class="bi bi-check-circle-fill text-primary"></i>
                                             @else
@@ -111,7 +111,7 @@
                 </div>
                 
                 @include('partials.book-filters', [
-                    'filterAction' => route('by-category', ['category' => $category->id]),
+                    'filterAction' => route('by-category', $category),
                     'publishingHouses' => $publishingHouses,
                 ])
             </div>

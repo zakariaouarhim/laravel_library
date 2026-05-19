@@ -329,7 +329,7 @@
 
                                                         <div class="d-flex justify-content-between align-items-center mt-2">
                                                             <small class="text-muted">{{ $book->pivot->created_at ? $book->pivot->created_at->diffForHumans() : '' }}</small>
-                                                            <a href="{{ route('moredetail2.page', ['id' => $book->id]) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
+                                                            <a href="{{ route('moredetail2.page', $book) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -399,7 +399,7 @@
                                                                 <small class="text-success d-block"><i class="bi bi-check2"></i> أنهيت: {{ $entry->finished_at->format('d/m/Y') }}</small>
                                                             @endif
                                                             <div class="mt-2">
-                                                                <a href="{{ route('moredetail2.page', $entry->book->id) }}" class="btn btn-sm btn-outline-primary">عرض</a>
+                                                                <a href="{{ route('moredetail2.page', $entry->book) }}" class="btn btn-sm btn-outline-primary">عرض</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -645,7 +645,7 @@
                                         </div>
                                     @endif
                                     <div class="flex-grow-1 follow-name">
-                                        <a href="{{ route('author.show', $author->id) }}"
+                                        <a href="{{ route('author.show', $author) }}"
                                            class="fw-semibold text-decoration-none text-dark small d-block text-truncate">
                                             {{ $author->name }}
                                         </a>
@@ -679,7 +679,7 @@
                                         </div>
                                     @endif
                                     <div class="flex-grow-1 follow-name">
-                                        <a href="{{ route('publisher.show', $publisher->id) }}"
+                                        <a href="{{ route('publisher.show', $publisher) }}"
                                            class="fw-semibold text-decoration-none text-dark small d-block text-truncate">
                                             {{ $publisher->name }}
                                         </a>

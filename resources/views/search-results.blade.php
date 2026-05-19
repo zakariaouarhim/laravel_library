@@ -240,7 +240,7 @@
                                 </h4>
                                 <div class="suggestion-tags d-flex flex-wrap gap-2 justify-content-center mt-3">
                                     @foreach ($relatedCategories as $cat)
-                                        <a href="{{ route('by-category', ['category' => $cat->id]) }}" class="btn btn-outline-primary btn-sm rounded-pill">
+                                        <a href="{{ route('by-category', $cat) }}" class="btn btn-outline-primary btn-sm rounded-pill">
                                             {{ $cat->name }}
                                         </a>
                                     @endforeach

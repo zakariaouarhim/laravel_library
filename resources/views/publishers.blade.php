@@ -80,7 +80,7 @@
         <div class="publishers-grid" id="publishersGrid">
             @foreach($publishers as $publisher)
                 <div class="publisher-card">
-                    <a href="{{ route('publisher.show', $publisher->id) }}" class="publisher-card-logo">
+                    <a href="{{ route('publisher.show', $publisher) }}" class="publisher-card-logo">
                         @if($publisher->logo)
                             <img src="{{ asset('storage/' . $publisher->logo) }}" alt="{{ $publisher->name }}" width="120" height="120" loading="lazy">
                         @else
@@ -90,7 +90,7 @@
                         @endif
                     </a>
                     <div class="publisher-card-info">
-                        <a href="{{ route('publisher.show', $publisher->id) }}" class="publisher-card-name-link">
+                        <a href="{{ route('publisher.show', $publisher) }}" class="publisher-card-name-link">
                             <h3 class="publisher-card-name">{{ $publisher->name }}</h3>
                         </a>
                         @if($publisher->country)

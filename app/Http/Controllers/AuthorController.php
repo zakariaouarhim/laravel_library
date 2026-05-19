@@ -85,9 +85,10 @@ class AuthorController extends Controller
     /**
      * Public: Show author profile page
      */
-    public function publicShow($id)
+    public function publicShow(\App\Models\Author $author)
     {
-        $author = Author::active()->findOrFail($id);
+        // Route-model binding already loaded by slug — re-fetch with active() scope to 404 inactive.
+        $author = \App\Models\Author::active()->whereKey($author->id)->firstOrFail();
 
         // Non-primary roles come from the pivot only (these are tagged in book_authors).
         $coAuthorBooks    = $author->booksByType('co-author')->with('bundles:id,title,price,image')->get();

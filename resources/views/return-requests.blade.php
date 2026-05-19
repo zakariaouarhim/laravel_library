@@ -174,7 +174,7 @@
                                                 </div>
                                                 <div class="book-info">
                                                     @if($item->book)
-                                                        <a href="{{ route('moredetail2.page', ['id' => $item->book->id]) }}" class="book-title-link">{{ $item->book->title }}</a>
+                                                        <a href="{{ route('moredetail2.page', $item->book) }}" class="book-title-link">{{ $item->book->title }}</a>
                                                     @else
                                                         <span class="text-muted">كتاب محذوف</span>
                                                     @endif

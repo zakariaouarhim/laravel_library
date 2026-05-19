@@ -9,7 +9,7 @@
         'metaDescription' => Str::limit($publisher->description ?? 'اكتشف كتب ' . $publisher->name . ' المتوفرة في مكتبة الفقراء', 160),
         'metaImage' => $publisher->logo ? asset('storage/' . $publisher->logo) : asset('images/logo.svg'),
         'metaType' => 'profile',
-        'metaUrl' => route('publisher.show', $publisher->id),
+        'metaUrl' => route('publisher.show', $publisher),
     ])
 
     <!-- Stylesheets -->

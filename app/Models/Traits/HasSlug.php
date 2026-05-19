@@ -49,4 +49,17 @@ trait HasSlug
     // Note: route-model binding by slug is opt-in per route via {book:slug}.
     // Don't override getRouteKeyName() globally — would break existing routes
     // that use implicit ID binding.
+
+    /**
+     * URL-generation key. When views do route('book.show', $book), Laravel
+     * substitutes this value into the URL. Returning slug here means every
+     * existing route() call automatically produces a slug URL without view edits.
+     *
+     * Routes that bind by ID (legacy /moredetail-v2/{id}) still work because
+     * binding uses getRouteKeyName() (left at default 'id'), independent of this.
+     */
+    public function getRouteKey()
+    {
+        return $this->slug ?: $this->getKey();
+    }
 }

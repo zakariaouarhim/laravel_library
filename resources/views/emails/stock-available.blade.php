@@ -18,7 +18,7 @@
     الكميات محدودة وقد تنفد بسرعة!</p>
 
     <div class="btn-center">
-        <a href="{{ route('moredetail2.page', $book->id) }}" class="btn">عرض الكتاب والشراء الآن</a>
+        <a href="{{ route('moredetail2.page', $book) }}" class="btn">عرض الكتاب والشراء الآن</a>
     </div>
 @endsection
 

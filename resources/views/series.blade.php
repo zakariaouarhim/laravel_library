@@ -9,7 +9,7 @@
         'metaDescription' => Str::limit($series->description ?? 'اكتشف كتب سلسلة ' . $series->name . ' المتوفرة في مكتبة الفقراء', 160),
         'metaImage' => $series->cover_image ? asset('storage/' . $series->cover_image) : asset('images/logo.svg'),
         'metaType' => 'website',
-        'metaUrl' => route('series.show', $series->id),
+        'metaUrl' => route('series.show', $series),
     ])
 
     <!-- Stylesheets -->
@@ -59,7 +59,7 @@
                     <h1>{{ $series->name }}</h1>
                     <div class="hero-meta">
                         @if($series->author)
-                            <span><i class="fas fa-pen-fancy"></i> <a href="{{ route('author.show', $series->author->id) }}" style="color:inherit;text-decoration:none;">{{ $series->author->name }}</a></span>
+                            <span><i class="fas fa-pen-fancy"></i> <a href="{{ route('author.show', $series->author) }}" style="color:inherit;text-decoration:none;">{{ $series->author->name }}</a></span>
                         @endif
                         <span><i class="fas fa-book"></i> {{ $series->total_volumes }} كتاب</span>
                         @if($series->total_volumes)
@@ -101,7 +101,7 @@
                         @if($series->author)
                             <li>
                                 <span class="info-label"><i class="fas fa-pen-fancy"></i> المؤلف</span>
-                                <a href="{{ route('author.show', $series->author->id) }}" class="info-value info-link">{{ $series->author->name }}</a>
+                                <a href="{{ route('author.show', $series->author) }}" class="info-value info-link">{{ $series->author->name }}</a>
                             </li>
                         @endif
                         @if($series->total_volumes)
@@ -129,7 +129,7 @@
                                 <span class="info-label"><i class="fas fa-tags"></i> التصنيفات</span>
                                 <span class="info-value series-category-chips">
                                     @foreach($categories as $cat)
-                                        <a href="{{ route('by-category', $cat->id) }}" class="series-cat-chip">{{ $cat->name }}</a>
+                                        <a href="{{ route('by-category', $cat) }}" class="series-cat-chip">{{ $cat->name }}</a>
                                     @endforeach
                                 </span>
                             </li>
@@ -170,7 +170,7 @@
                             $savings = $itemsTotal - (float) $bundle->price;
                         @endphp
                         <div class="bundle-card">
-                            <a href="{{ route('moredetail2.page', $bundle->id) }}" class="bundle-cover">
+                            <a href="{{ route('moredetail2.page', $bundle) }}" class="bundle-cover">
                                 @if($bundle->image)
                                     <img src="{{ asset($bundle->image) }}" alt="{{ $bundle->title }}" loading="lazy">
                                 @else
@@ -179,7 +179,7 @@
                             </a>
                             <div class="bundle-info">
                                 <h3 class="bundle-title">
-                                    <a href="{{ route('moredetail2.page', $bundle->id) }}">{{ $bundle->title }}</a>
+                                    <a href="{{ route('moredetail2.page', $bundle) }}">{{ $bundle->title }}</a>
                                 </h3>
                                 <p class="bundle-meta">{{ $bundle->items->count() }} أجزاء مشمولة</p>
                                 <div class="bundle-price-row">
@@ -189,7 +189,7 @@
                                         <span class="bundle-savings">توفير {{ number_format($savings, 2) }}</span>
                                     @endif
                                 </div>
-                                <a href="{{ route('moredetail2.page', $bundle->id) }}" class="btn btn-primary btn-sm">
+                                <a href="{{ route('moredetail2.page', $bundle) }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-shopping-bag me-1"></i>عرض الباقة
                                 </a>
                             </div>

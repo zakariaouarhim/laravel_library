@@ -38,7 +38,31 @@ use App\Http\Controllers\AdminBundleController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
 
-
+/*
+| Custom route-model bindings — accept BOTH slug (preferred, for SEO) and
+| numeric id (legacy callers still passing $model->id to route() helpers).
+| This lets the slug migration roll out without breaking any existing call sites.
+*/
+Route::bind('book', fn ($v) => is_numeric($v)
+    ? \App\Models\Book::findOrFail($v)
+    : \App\Models\Book::where('slug', $v)->firstOrFail()
+);
+Route::bind('author', fn ($v) => is_numeric($v)
+    ? \App\Models\Author::findOrFail($v)
+    : \App\Models\Author::where('slug', $v)->firstOrFail()
+);
+Route::bind('category', fn ($v) => is_numeric($v)
+    ? \App\Models\Category::findOrFail($v)
+    : \App\Models\Category::where('slug', $v)->firstOrFail()
+);
+Route::bind('publisher', fn ($v) => is_numeric($v)
+    ? \App\Models\PublishingHouse::findOrFail($v)
+    : \App\Models\PublishingHouse::where('slug', $v)->firstOrFail()
+);
+Route::bind('series', fn ($v) => is_numeric($v)
+    ? \App\Models\Series::findOrFail($v)
+    : \App\Models\Series::where('slug', $v)->firstOrFail()
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -239,7 +263,16 @@ Route::post('/order/manage/return', [OrderManageController::class, 'returnReques
 
 // ==================== BOOK PAGES ====================
 
-Route::get('/moredetail-v2/{id}', [BookController::class, 'showV2'])->name('moredetail2.page');
+// Detail-page routes use a custom binding (defined below) that accepts both
+// the slug (preferred, for SEO) and the numeric id (transition safety net for
+// older internal callers that still pass $model->id). URL generation always
+// produces slug URLs because HasSlug::getRouteKey() returns the slug.
+Route::get('/كتاب/{book}', [BookController::class, 'showV2'])->name('moredetail2.page');
+// Legacy ID URL — 301 to the slug URL so Google-indexed links don't break.
+Route::get('/moredetail-v2/{id}', function ($id) {
+    $book = \App\Models\Book::findOrFail($id);
+    return redirect()->route('moredetail2.page', $book, 301);
+})->where('id', '[0-9]+');
 
 // ==================== REVIEWS ====================
 
@@ -287,17 +320,37 @@ Route::middleware('auth')->group(function () {
 // ==================== CATEGORIES / BROWSE ====================
 
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-Route::get('/categories/{category}', [BookController::class, 'byCategory'])->name('by-category');
+Route::get('/تصنيف/{category}', [BookController::class, 'byCategory'])->name('by-category');
+// Legacy /categories/{id} → 301
+Route::get('/categories/{id}', function ($id) {
+    $category = \App\Models\Category::findOrFail($id);
+    return redirect()->route('by-category', $category, 301);
+})->where('id', '[0-9]+');
 
 Route::get('/accessories', [AccessoryController::class, 'index'])->name('accessories.index');
 
 Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.index');
-Route::get('/author/{id}', [AuthorController::class, 'publicShow'])->name('author.show');
+Route::get('/مؤلف/{author}', [AuthorController::class, 'publicShow'])->name('author.show');
+// Legacy /author/{id} → 301
+Route::get('/author/{id}', function ($id) {
+    $author = \App\Models\Author::findOrFail($id);
+    return redirect()->route('author.show', $author, 301);
+})->where('id', '[0-9]+');
 
 Route::get('/publishers', [PublisherController::class, 'publicIndex'])->name('publishers.index');
-Route::get('/publisher/{id}', [PublisherController::class, 'publicShow'])->name('publisher.show');
+Route::get('/ناشر/{publisher}', [PublisherController::class, 'publicShow'])->name('publisher.show');
+// Legacy /publisher/{id} → 301
+Route::get('/publisher/{id}', function ($id) {
+    $publisher = \App\Models\PublishingHouse::findOrFail($id);
+    return redirect()->route('publisher.show', $publisher, 301);
+})->where('id', '[0-9]+');
 
-Route::get('/series/{id}', [AdminSeriesController::class, 'publicShow'])->name('series.show');
+Route::get('/سلسلة/{series}', [AdminSeriesController::class, 'publicShow'])->name('series.show');
+// Legacy /series/{id} → 301
+Route::get('/series/{id}', function ($id) {
+    $series = \App\Models\Series::findOrFail($id);
+    return redirect()->route('series.show', $series, 301);
+})->where('id', '[0-9]+');
 
 // ==================== NOTIFICATIONS & FOLLOWS ====================
 

@@ -12,7 +12,7 @@
                     $bundleAvailable = $bundle && ($bundle->quantity ?? 0) > 0;
                 @endphp
                 <div class="book-card series-card">
-                    <a class="book-image-wrapper" href="{{ route('series.show', $s->id) }}">
+                    <a class="book-image-wrapper" href="{{ route('series.show', $s) }}">
                         <img src="{{ $s->cover_image ? asset('storage/' . $s->cover_image) : asset('images/book-placeholder.png') }}"
                              alt="{{ $s->name }}" width="200" height="280" loading="lazy"
                              onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
@@ -26,7 +26,7 @@
                         @endif
                     </div>
 
-                    <h6><a href="{{ route('series.show', $s->id) }}">{{ $s->name }}</a></h6>
+                    <h6><a href="{{ route('series.show', $s) }}">{{ $s->name }}</a></h6>
 
                     @if($s->author)
                         <p class="book-author"><i class="fas fa-user-edit"></i> {{ $s->author->name }}</p>
@@ -54,7 +54,7 @@
                                 {{ number_format((float) $bundle->price, 2) }} <span class="currency">د.م</span>
                                 <small class="bundle-price-label">السلسلة كاملة</small>
                             </span>
-                            <a class="add-btn" href="{{ route('moredetail2.page', $bundle->id) }}" title="عرض الباقة">
+                            <a class="add-btn" href="{{ route('moredetail2.page', $bundle) }}" title="عرض الباقة">
                                 <i class="fas fa-box"></i>
                             </a>
                         </div>

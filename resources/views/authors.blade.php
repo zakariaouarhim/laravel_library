@@ -80,7 +80,7 @@
         <div class="authors-grid" id="authorsGrid">
             @foreach($authors as $author)
                 <div class="author-card">
-                    <a href="{{ route('author.show', $author->id) }}" class="author-card-avatar">
+                    <a href="{{ route('author.show', $author) }}" class="author-card-avatar">
                         @if($author->profile_image)
                             <img src="{{ asset('storage/' . $author->profile_image) }}" alt="{{ $author->name }}" width="120" height="120" loading="lazy">
                         @else
@@ -90,7 +90,7 @@
                         @endif
                     </a>
                     <div class="author-card-info">
-                        <a href="{{ route('author.show', $author->id) }}" class="author-card-name-link">
+                        <a href="{{ route('author.show', $author) }}" class="author-card-name-link">
                             <h3 class="author-card-name">{{ $author->name }}</h3>
                         </a>
                         @if($author->nationality)

@@ -8,7 +8,7 @@
     <img src="{{ asset($book->thumbnail) }}" alt="{{ $book->title }}" width="120" height="170" class="me-3" loading="lazy"
          onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
     <div>
-        <h5><a href="{{ route('moredetail2.page', ['id' => $book->id]) }}">{{ $book->title }}</a></h5>
+        <h5><a href="{{ route('moredetail2.page', $book) }}">{{ $book->title }}</a></h5>
         <p><i class="fas fa-user-edit me-1"></i>{{ $book->author_name }}</p>
         @if($book->relationLoaded('series') && $book->series)
             <p class="book-series"><i class="fas fa-layer-group me-1"></i>{{ $book->series->name }}@if($book->volume_number) — الجزء {{ $book->volume_number }}@endif</p>
@@ -16,7 +16,7 @@
         @if($bundledOnly)
             <span class="badge badge-bundle-only mb-2"><i class="fas fa-box"></i> متوفر كباقة</span>
         @elseif($inBundle && $firstBundle)
-            <a href="{{ route('moredetail2.page', $firstBundle->id) }}" class="badge badge-bundle-hint mb-2">
+            <a href="{{ route('moredetail2.page', $firstBundle) }}" class="badge badge-bundle-hint mb-2">
                 <i class="fas fa-box"></i> متوفر أيضاً كباقة
             </a>
         @endif
@@ -28,7 +28,7 @@
                     {{ number_format((float) $firstBundle->price, 2) }} د.م
                     <small class="bundle-price-label d-block">السلسلة كاملة</small>
                 </span>
-                <a class="btn btn-sm btn-outline-success ms-auto" href="{{ route('moredetail2.page', $book->id) }}">
+                <a class="btn btn-sm btn-outline-success ms-auto" href="{{ route('moredetail2.page', $book) }}">
                     <i class="fas fa-box me-1"></i> عرض الباقة
                 </a>
             @else

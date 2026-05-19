@@ -43,7 +43,7 @@ class UserNotification extends Model
             'type'    => 'new_book',
             'title'   => 'كتاب جديد متوفر',
             'body'    => 'أُضيف كتاب جديد: «' . $book->title . '»',
-            'url'     => route('moredetail2.page', $book->id),
+            'url'     => route('moredetail2.page', $book),
         ]);
     }
 }
