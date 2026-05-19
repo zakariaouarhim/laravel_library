@@ -2,16 +2,25 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Author extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasSlug, SoftDeletes;
+
+    protected function getSlugSource(): string
+    {
+        return (string) $this->name;
+    }
 
     protected $fillable = [
         'name',
+        'slug',
+        'meta_title',
+        'meta_description',
         'biography',
         'birth_date',
         'death_date',

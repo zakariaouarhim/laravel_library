@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,13 @@ use Laravel\Scout\Searchable;
 
 class Book extends Model
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, HasSlug, Searchable, SoftDeletes;
+
+    protected function getSlugSource(): string
+    {
+        return (string) $this->title;
+    }
+
      protected $table = 'books';
      const LANGUAGES = ['arabic', 'english', 'french', 'spanish', 'german'];
      const LANGUAGE_LABELS = [
@@ -24,6 +31,9 @@ class Book extends Model
 
     protected $fillable = [
         'title',
+        'slug',
+        'meta_title',
+        'meta_description',
         'type',
         'product_type',
         'author_id',

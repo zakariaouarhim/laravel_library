@@ -2,14 +2,21 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
+
+    protected function getSlugSource(): string
+    {
+        return (string) $this->name;
+    }
+
     protected $fillable = [
-        'name', 'parent_id', 'language', 'categorie_icon', 'categorie_image',
+        'name', 'slug', 'meta_title', 'meta_description', 'parent_id', 'language', 'categorie_icon', 'categorie_image',
     ];
      // Parent category has many children
     public function children()
