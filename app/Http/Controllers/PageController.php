@@ -61,24 +61,25 @@ class PageController extends Controller
     public function sitemap()
     {
         $sitemapData = Cache::remember('sitemap_data', 3600, function () {
+            // slug is required — getRouteKey() returns slug; without it the URLs fall back to ID.
             return [
                 'books' => Book::where('type', 'book')
-                    ->select('id', 'updated_at')
+                    ->select('id', 'slug', 'updated_at')
                     ->orderBy('updated_at', 'desc')
                     ->get(),
                 'accessories' => Book::where('type', 'accessory')
-                    ->select('id', 'updated_at')
+                    ->select('id', 'slug', 'updated_at')
                     ->orderBy('updated_at', 'desc')
                     ->get(),
                 'authors' => Author::active()
-                    ->select('id', 'updated_at')
+                    ->select('id', 'slug', 'updated_at')
                     ->orderBy('updated_at', 'desc')
                     ->get(),
-                'categories' => Category::select('id', 'updated_at')
+                'categories' => Category::select('id', 'slug', 'updated_at')
                     ->orderBy('updated_at', 'desc')
                     ->get(),
                 'publishers' => PublishingHouse::active()
-                    ->select('id', 'updated_at')
+                    ->select('id', 'slug', 'updated_at')
                     ->orderBy('updated_at', 'desc')
                     ->get(),
             ];
