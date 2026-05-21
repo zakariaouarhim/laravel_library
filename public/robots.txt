@@ -12,5 +12,15 @@ Disallow: /notifications/
 Disallow: /wishlist-session/
 Disallow: /login2
 Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /search-results
+Disallow: /search-books
+Disallow: /trackmyorder
+Disallow: /*?sort=
+Disallow: /*?filter=
+Disallow: /*?publishers=
+Disallow: /*?price_min=
+Disallow: /*?price_max=
+Disallow: /*?view=
 
 Sitemap: https://maktabat-elfokara.com/sitemap.xml

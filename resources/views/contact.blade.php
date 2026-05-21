@@ -1,34 +1,11 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اتصل بنا - مكتبة الفقراء</title>
-    @include('partials.meta-tags', [
-        'metaTitle' => 'اتصل بنا - مكتبة الفقراء',
-        'metaDescription' => 'تواصل مع مكتبة الفقراء. نحن هنا لمساعدتك والإجابة على جميع استفساراتك.',
-    ])
+@extends('layouts.public')
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/contact.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-    <!-- Bootstrap RTL CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts - Tajawal -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+@endpush
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-</head>
-<body>
-    @include('header')
-
+@section('content')
     @include('partials.page-hero', [
         'title'       => 'اتصل بنا',
         'icon'        => 'fas fa-headset',
@@ -38,7 +15,6 @@
             ['label' => 'اتصل بنا'],
         ],
     ])
-    </div>
 
     <div class="container py-5">
         <div class="contact-grid">
@@ -156,7 +132,4 @@
 
         </div>
     </div>
-
-    @include('footer')
-</body>
-</html>
+@endsection

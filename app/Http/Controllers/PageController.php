@@ -9,11 +9,14 @@ use App\Models\Category;
 use App\Models\PublishingHouse;
 use App\Models\ContactMessage;
 use App\Mail\ContactAutoReply;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class PageController extends Controller
 {
+    public function __construct(private MetaBuilder $meta) {}
+
     public function about()
     {
         $stats = Cache::remember('about_stats', 3600, function () {
@@ -24,12 +27,24 @@ class PageController extends Controller
             ];
         });
 
-        return view('about', compact('stats'));
+        $seo = $this->meta->forStatic(
+            'من نحن - مكتبة الفقراء',
+            'تعرف على مكتبة الفقراء، رسالتنا وقيمنا في نشر المعرفة وتوفير الكتب بأسعار مناسبة للجميع.',
+            route('about.page')
+        );
+
+        return view('about', compact('stats', 'seo'));
     }
 
     public function contact()
     {
-        return view('contact');
+        $seo = $this->meta->forStatic(
+            'اتصل بنا - مكتبة الفقراء',
+            'تواصل مع مكتبة الفقراء. نحن هنا لمساعدتك والإجابة على جميع استفساراتك.',
+            route('contact.page')
+        );
+
+        return view('contact', compact('seo'));
     }
 
     public function storeContact(StoreContactRequest $request)
@@ -50,12 +65,24 @@ class PageController extends Controller
 
     public function privacy()
     {
-        return view('privacy');
+        $seo = $this->meta->forStatic(
+            'سياسة الخصوصية - مكتبة الفقراء',
+            'سياسة الخصوصية لمكتبة الفقراء — كيف نجمع بياناتك ونحميها ونستخدمها.',
+            route('privacy.page')
+        );
+
+        return view('privacy', compact('seo'));
     }
 
     public function terms()
     {
-        return view('terms');
+        $seo = $this->meta->forStatic(
+            'الشروط والأحكام - مكتبة الفقراء',
+            'الشروط والأحكام لاستخدام متجر مكتبة الفقراء — الطلبات، الشحن، الإرجاع، وحقوقك.',
+            route('terms.page')
+        );
+
+        return view('terms', compact('seo'));
     }
 
     public function sitemap()

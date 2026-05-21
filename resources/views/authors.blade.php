@@ -1,34 +1,11 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المؤلفون - مكتبة الفقراء</title>
-    @include('partials.meta-tags', [
-        'metaTitle' => 'المؤلفون - مكتبة الفقراء',
-        'metaDescription' => 'تصفح جميع المؤلفين المتوفرين في مكتبة الفقراء. اكتشف كتبهم وسيرهم الذاتية.',
-    ])
+@extends('layouts.public')
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/author-pages.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-    <!-- Bootstrap RTL CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts - Tajawal -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+@endpush
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-</head>
-<body>
-    @include('header')
-
+@section('content')
     @include('partials.page-hero', [
         'title'       => 'المؤلفون',
         'icon'        => 'fas fa-pen-fancy',
@@ -132,9 +109,9 @@
         </div>
 
     </div>
+@endsection
 
-    @include('footer')
-
+@push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script src="{{ asset('js/cart.js') }}" defer></script>
@@ -215,11 +192,14 @@
                        </button>`
                     : '';
 
+                // Use slug for SEO-friendly URLs; legacy /author/{id} 301-redirects to slug.
+                const authorUrl = author.slug ? `${authorShowUrl}/${encodeURIComponent(author.slug)}` : `${authorShowUrl}/${author.id}`;
+
                 html += `
                     <div class="author-card">
-                        <a href="${authorShowUrl}/${author.id}" class="author-card-avatar">${avatarHtml}</a>
+                        <a href="${authorUrl}" class="author-card-avatar">${avatarHtml}</a>
                         <div class="author-card-info">
-                            <a href="${authorShowUrl}/${author.id}" class="author-card-name-link">
+                            <a href="${authorUrl}" class="author-card-name-link">
                                 <h3 class="author-card-name">${author.name}</h3>
                             </a>
                             ${nationalityHtml}
@@ -260,5 +240,4 @@
             .catch(function() { btn.disabled = false; });
         }
     </script>
-</body>
-</html>
+@endpush

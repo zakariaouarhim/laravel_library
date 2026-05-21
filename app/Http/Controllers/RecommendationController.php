@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Book_Review;
 use App\Models\Category;
+use App\Services\Seo\MetaBuilder;
 
 class RecommendationController extends Controller
 {
@@ -78,12 +79,15 @@ class RecommendationController extends Controller
 
         $wishlistBookIds = auth()->user()->wishlist()->pluck('books.id')->toArray();
 
+        $seo = app(MetaBuilder::class)->forNoIndex('ترشيحات لك - مكتبة الفقراء', 'كتب مختارة بناءً على تقييماتك واهتماماتك.');
+
         return view('recommendations', compact(
             'books',
             'categories',
             'favoriteCategories',
             'wishlistBookIds',
-            'hideReviewed'
+            'hideReviewed',
+            'seo'
         ));
     }
 }

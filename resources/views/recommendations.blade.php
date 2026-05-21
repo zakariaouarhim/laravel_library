@@ -1,29 +1,14 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>ترشيحات لك - مكتبة الفقراء</title>
+@extends('layouts.public')
 
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/recommendations.css') }}"> 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/recommendations.css') }}">
     <link rel="stylesheet" href="{{ asset('css/listview.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+@endpush
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-</head>
-<body>
-    @include('header')
-
+@section('content')
     @include('partials.page-hero', [
         'title'       => 'ترشيحات لك',
         'subtitle'    => 'كتب مختارة بناءً على تقييماتك واهتماماتك',
@@ -273,12 +258,11 @@
             </div>
         </div>
     </div>
+@endsection
 
-    @include('footer')
-
+@push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script src="{{ asset('js/scripts.js') }}" defer></script>
     <script src="{{ asset('js/card.js') }}" defer></script>
-</body>
-</html>
+@endpush

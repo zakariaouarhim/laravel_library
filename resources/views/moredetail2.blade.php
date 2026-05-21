@@ -1,36 +1,16 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $book->title }} - مكتبة الفقراء</title>
-    @include('partials.meta-tags', [
-        'metaTitle' => $book->title . ' - مكتبة الفقراء',
-        'metaDescription' => Str::limit($book->description ?? $book->title . ' - اشترِ الآن من مكتبة الفقراء بأفضل سعر', 160),
-        'metaImage' => $book->image ? asset($book->image) : asset('images/logo.svg'),
-        'metaType' => 'product',
-        'metaUrl' => route('moredetail2.page', $book),
-    ])
-    @include('partials.jsonld-book')
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+@extends('layouts.public')
+
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
     <link rel="stylesheet" href="{{ asset('css/moredetail-V2.css') }}">
     <link rel="stylesheet" href="{{ asset('css/carouselstyle.css') }}?v={{ filemtime(public_path('css/carouselstyle.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    @auth
-        <meta name="auth-user" content="true">
-    @endauth
-    
-</head>
-<body>
-    @include('header')
+@endpush
 
+@push('head')
+    @include('partials.jsonld-book')
+@endpush
+
+@section('content')
     <!-- Breadcrumb Strip -->
     <div class="v2-breadcrumb">
         <div class="container">
@@ -651,11 +631,9 @@
             <x-book-carousel :books="$alsoBoughtBooks" title="عملاء آخرون اشتروا أيضاً" />
         @endif
     </div>
+@endsection
 
-    <footer>
-        @include('footer')
-    </footer>
-
+@push('scripts')
     <script src="{{ asset('js/moredetail.js') }}" defer></script>
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script src="{{ asset('js/carousel.js') }}" defer></script>
@@ -1041,5 +1019,4 @@
     })();
     </script>
     @endif
-</body>
-</html>
+@endpush

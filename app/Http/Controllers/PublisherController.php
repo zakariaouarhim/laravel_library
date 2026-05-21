@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Author;
 use App\Models\PublishingHouse;
+use App\Services\Seo\MetaBuilder;
 
 class PublisherController extends Controller
 {
@@ -74,7 +75,17 @@ class PublisherController extends Controller
             ]);
         }
 
-        return view('publishers', compact('publishers', 'countries'));
+        $seo = app(MetaBuilder::class)->forStatic(
+            'دور النشر - مكتبة الفقراء',
+            'تصفح جميع دور النشر المتوفرة في مكتبة الفقراء. اكتشف كتبهم ومنشوراتهم.',
+            route('publishers.index')
+        );
+        if ($publishers->currentPage() > 1) {
+            $seo['robots']    = 'noindex,follow';
+            $seo['canonical'] = route('publishers.index');
+        }
+
+        return view('publishers', compact('publishers', 'countries', 'seo'));
     }
 
     public function publicShow(PublishingHouse $publisher)
@@ -87,6 +98,12 @@ class PublisherController extends Controller
 
         $books = $publisher->books()->where('type', 'book')->standardOnly()->with(['primaryAuthor', 'bundles:id,title,price,image'])->paginate(12);
 
-        return view('publisher', compact('publisher', 'books'));
+        $seo = app(MetaBuilder::class)->forPublisher($publisher);
+        if ($books->currentPage() > 1) {
+            $seo['robots']    = 'noindex,follow';
+            $seo['canonical'] = route('publisher.show', $publisher);
+        }
+
+        return view('publisher', compact('publisher', 'books', 'seo'));
     }
 }

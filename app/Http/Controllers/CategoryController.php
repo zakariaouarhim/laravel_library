@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
+use App\Services\Seo\MetaBuilder;
 
 
 class CategoryController extends Controller
 {
-    
+
     public function index()
     {
         $categorie = Category::whereNull('parent_id')
@@ -34,7 +35,13 @@ class CategoryController extends Controller
         $totalBooks = Book::where('type', 'book')->count();
         $totalCategories = Category::count();
 
-        return view('categories', compact('categorie', 'totalBooks', 'totalCategories'));
+        $seo = app(MetaBuilder::class)->forStatic(
+            'الأقسام - مكتبة الفقراء',
+            "تصفح جميع أقسام وتصنيفات الكتب المتوفرة في مكتبة الفقراء — {$totalCategories} قسم يضم {$totalBooks} كتاب.",
+            route('categories.index')
+        );
+
+        return view('categories', compact('categorie', 'totalBooks', 'totalCategories', 'seo'));
     }
     
 }

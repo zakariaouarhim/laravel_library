@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{-- Search result pages are infinite low-value combinations — keep out of the index. --}}
+    <meta name="robots" content="noindex,follow">
     <title>نتائج البحث - مكتبة الفقراء</title>
     @include('partials.meta-tags', [
         'metaTitle' => 'نتائج البحث - مكتبة الفقراء',

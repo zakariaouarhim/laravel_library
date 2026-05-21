@@ -9,6 +9,7 @@ use App\Models\BookAuthor;
 use App\Models\PublishingHouse;
 use App\Models\Category;
 use App\Services\AuthorEnrichmentService;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -79,7 +80,17 @@ class AuthorController extends Controller
             ]);
         }
 
-        return view('authors', compact('authors', 'nationalities'));
+        $seo = app(MetaBuilder::class)->forStatic(
+            'المؤلفون - مكتبة الفقراء',
+            'تصفح جميع المؤلفين المتوفرين في مكتبة الفقراء. اكتشف كتبهم وسيرهم الذاتية.',
+            route('authors.index')
+        );
+        if ($authors->currentPage() > 1) {
+            $seo['robots']    = 'noindex,follow';
+            $seo['canonical'] = route('authors.index');
+        }
+
+        return view('authors', compact('authors', 'nationalities', 'seo'));
     }
 
     /**
@@ -119,13 +130,16 @@ class AuthorController extends Controller
             ->withAvg('reviews as reviews_avg_rating', 'rating')
             ->paginate(12, ['*'], 'page');
 
+        $seo = app(MetaBuilder::class)->forAuthor($author);
+
         return view('author', compact(
             'author',
             'primaryBooks',
             'coAuthorBooks',
             'translatedBooks',
             'editedBooks',
-            'illustratedBooks'
+            'illustratedBooks',
+            'seo'
         ));
     }
 

@@ -1,37 +1,14 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إكسسوارات القراءة - مكتبة الفقراء</title>
-    @include('partials.meta-tags', [
-        'metaTitle' => 'إكسسوارات القراءة - مكتبة الفقراء',
-        'metaDescription' => 'تسوق إكسسوارات القراءة من مكتبة الفقراء. فواصل كتب، حوامل، أضواء قراءة والمزيد.',
-    ])
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+@extends('layouts.public')
+
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
     <link rel="stylesheet" href="{{ asset('css/listview.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-    <!-- Bootstrap RTL CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts - Tajawal -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+@endpush
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-</head>
-<body>
-    @include('header')
-
+@section('content')
     @include('partials.page-hero', [
         'title'       => 'إكسسوارات القراءة',
         'icon'        => 'fas fa-bookmark',
@@ -40,7 +17,6 @@
             ['label' => 'إكسسوارات القراءة'],
         ],
     ])
-    </div>
 
     <div class="container py-5">
         <div class="row">
@@ -219,13 +195,10 @@
             </div>
         </div>
     </div>
+@endsection
 
-    @include('footer')
-
-    <!-- Scripts -->
-    
+@push('scripts')
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script src="{{ asset('js/scripts.js') }}" defer></script>
     <script src="{{ asset('js/card.js') }}" defer></script>
-</body>
-</html>
+@endpush

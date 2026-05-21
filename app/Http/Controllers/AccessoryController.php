@@ -6,6 +6,7 @@ use App\Http\Requests\Admin\StoreAccessoryRequest;
 use App\Http\Requests\Admin\UpdateAccessoryRequest;
 use App\Models\Book;
 use App\Models\Category;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Http\Request;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -69,7 +70,18 @@ class AccessoryController extends Controller
             $q->where('type', 'accessory');
         })->get();
 
-        return view('accessories', compact('accessories', 'categories'));
+        $seo = app(MetaBuilder::class)->forStatic(
+            'إكسسوارات القراءة - مكتبة الفقراء',
+            'تسوق إكسسوارات القراءة من مكتبة الفقراء. فواصل كتب، حوامل، أضواء قراءة والمزيد.',
+            route('accessories.index')
+        );
+        // Paginated/filtered combos can produce thin near-duplicate pages — noindex them.
+        if ($accessories->currentPage() > 1 || $request->hasAny(['category', 'price_min', 'price_max', 'sort'])) {
+            $seo['robots']    = 'noindex,follow';
+            $seo['canonical'] = route('accessories.index');
+        }
+
+        return view('accessories', compact('accessories', 'categories', 'seo'));
     }
 
     /**

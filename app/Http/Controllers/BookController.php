@@ -130,6 +130,7 @@ class BookController extends Controller
     public function showV2(Book $book)
     {
         $data = $this->getBookPageData($book->id);
+        $data['seo'] = app(\App\Services\Seo\MetaBuilder::class)->forBook($data['book']);
         return view('moredetail2', $data);
     }
 
@@ -504,7 +505,9 @@ class BookController extends Controller
             ? $this->recommendations->getScoredRecommendations(Auth::id(), 12)
             : collect();
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou'));
+        $seo = app(\App\Services\Seo\MetaBuilder::class)->forHomepage();
+
+        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo'));
     }
 
     public function byCategory(Request $request, Category $category)
@@ -574,13 +577,20 @@ class BookController extends Controller
             ? $sidebarSource->orderByDesc('books_count')->orderBy('name')->get()
             : collect();
 
+        $seo = app(\App\Services\Seo\MetaBuilder::class)->forCategory($category, $books->total());
+        if ($books->currentPage() > 1 || $request->hasAny(['publishers', 'language', 'price_min', 'price_max', 'sort'])) {
+            $seo['robots']    = 'noindex,follow';
+            $seo['canonical'] = route('by-category', $category);
+        }
+
         return view('by-category', compact(
             'books',
             'category',
             'categories',
             'authors',
             'publishingHouses',
-            'displayCategories'
+            'displayCategories',
+            'seo'
         ));
     }
 }

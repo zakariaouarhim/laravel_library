@@ -8,6 +8,7 @@ use App\Models\Book;
 use App\Models\Series;
 use App\Models\Author;
 use App\Services\ImageService;
+use App\Services\Seo\MetaBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -101,7 +102,13 @@ class AdminSeriesController extends Controller
         // page surfaces this context without admins re-entering it.
         $categories = $series->derivedCategories();
 
-        return view('series', compact('series', 'books', 'bundles', 'categories'));
+        $seo = app(MetaBuilder::class)->forSeries($series);
+        if ($books->currentPage() > 1) {
+            $seo['robots']    = 'noindex,follow';
+            $seo['canonical'] = route('series.show', $series);
+        }
+
+        return view('series', compact('series', 'books', 'bundles', 'categories', 'seo'));
     }
 
     public function search(Request $request)

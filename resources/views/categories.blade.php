@@ -1,34 +1,11 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الأقسام - مكتبة الفقراء</title>
-    @include('partials.meta-tags', [
-        'metaTitle' => 'الأقسام - مكتبة الفقراء',
-        'metaDescription' => 'تصفح جميع أقسام وتصنيفات الكتب المتوفرة في مكتبة الفقراء.',
-    ])
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
+@extends('layouts.public')
+
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/categories.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
-
-    <!-- Bootstrap RTL CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
-    <!-- Google Fonts - Tajawal -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    @include('header')
+@endpush
 
+@section('content')
     @include('partials.page-hero', [
         'title'       => 'الأقسام',
         'icon'        => 'fas fa-th-large',
@@ -101,10 +78,9 @@
             <p>لم يتم العثور على أقسام تطابق بحثك</p>
         </div>
     </div>
+@endsection
 
-    @include('footer')
-
-    <!-- JS -->
+@push('scripts')
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script>
         function toggleChildren(event, id) {
@@ -142,5 +118,4 @@
             noResults.style.display = found === 0 ? '' : 'none';
         });
     </script>
-</body>
-</html>
+@endpush
