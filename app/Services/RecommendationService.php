@@ -120,6 +120,7 @@ class RecommendationService
         return $recommendations->map(function ($book) {
             return [
                 'id' => $book->id,
+                'slug' => $book->slug,
                 'title' => $book->title,
                 'author_name' => $book->primaryAuthor->name ?? 'مؤلف غير محدد',
                 'image' => $book->image ? asset($book->image) : asset('images/default-book.jpg'),

@@ -531,14 +531,15 @@
                         @foreach($recommendations as $rec)
                         <div class="recommendation-item d-flex mb-3 p-2 rounded">
                             
+                            @php $recKey = $rec['slug'] ?? $rec['id']; @endphp
                             <img src="{{ $rec['image'] }}"
                                 alt="{{ $rec['title'] }}"
                                 class="rounded me-3 rec-thumb" width="60" height="85" loading="lazy"
-                                onclick="window.location.href='{{ route('moredetail2.page', ['id' => $rec['id']]) }}'">
-                            
+                                onclick="window.location.href='{{ route('moredetail2.page', $recKey) }}'">
+
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">
-                                    <a href="{{ route('moredetail2.page', ['id' => $rec['id']]) }}"
+                                    <a href="{{ route('moredetail2.page', $recKey) }}"
                                     class="text-decoration-none text-dark">
                                         {{ $rec['title'] }}
                                     </a>

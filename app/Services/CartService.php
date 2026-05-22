@@ -44,6 +44,7 @@ class CartService
         foreach ($sessionCart as $id => $item) {
             $cart[$id] = [
                 'id'       => $item['id'] ?? $id,
+                'slug'     => $item['slug'] ?? null,
                 'title'    => $item['title'],
                 'price'    => $item['price'],
                 'image'    => asset($item['image']),
@@ -70,6 +71,7 @@ class CartService
             if ($book) {
                 $cart[$bookId] = [
                     'id'       => $book->id,
+                    'slug'     => $book->slug,
                     'title'    => $book->title,
                     'price'    => $book->price,
                     'image'    => $book->image,
@@ -91,6 +93,7 @@ class CartService
 
         $itemData = [
             'id'       => $book->id,
+            'slug'     => $book->slug,
             'title'    => $book->title,
             'price'    => $book->price,
             'image'    => $book->image,
@@ -287,6 +290,7 @@ class CartService
         foreach ($userCart->items as $item) {
             $cart[$item->book_id] = [
                 'id'       => $item->book_id,
+                'slug'     => $item->book->slug,
                 'title'    => $item->book->title,
                 'price'    => $item->book->price,
                 'image'    => $item->book->image,
