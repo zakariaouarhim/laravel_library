@@ -7,6 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Scheherazade+New&display=swap" rel="stylesheet">
 @endpush
 
+@push('head')
+    <x-seo.json-ld :schema="$schemas['website']" />
+@endpush
+
 @section('content')
     @include('Index-searchbar')
 

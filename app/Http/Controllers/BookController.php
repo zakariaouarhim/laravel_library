@@ -130,7 +130,27 @@ class BookController extends Controller
     public function showV2(Book $book)
     {
         $data = $this->getBookPageData($book->id);
-        $data['seo'] = app(\App\Services\Seo\MetaBuilder::class)->forBook($data['book']);
+        $loaded = $data['book'];
+
+        $data['seo'] = app(\App\Services\Seo\MetaBuilder::class)->forBook($loaded);
+
+        $schemaBuilder = app(\App\Services\Seo\SchemaBuilder::class);
+
+        // Mirror the visible Bootstrap breadcrumb at the top of moredetail2.blade.php.
+        $trail = [['label' => 'الرئيسية', 'url' => url('/')]];
+        if ($loaded->category) {
+            if ($loaded->category->parent) {
+                $trail[] = ['label' => $loaded->category->parent->name, 'url' => route('by-category', $loaded->category->parent)];
+            }
+            $trail[] = ['label' => $loaded->category->name, 'url' => route('by-category', $loaded->category)];
+        }
+        $trail[] = ['label' => $loaded->title];
+
+        $data['schemas'] = [
+            'book'        => $schemaBuilder->forBook($loaded),
+            'breadcrumbs' => $schemaBuilder->forBreadcrumbs($trail),
+        ];
+
         return view('moredetail2', $data);
     }
 
@@ -507,7 +527,11 @@ class BookController extends Controller
 
         $seo = app(\App\Services\Seo\MetaBuilder::class)->forHomepage();
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo'));
+        $schemas = [
+            'website' => app(\App\Services\Seo\SchemaBuilder::class)->forWebsite(),
+        ];
+
+        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo', 'schemas'));
     }
 
     public function byCategory(Request $request, Category $category)
@@ -583,6 +607,21 @@ class BookController extends Controller
             $seo['canonical'] = route('by-category', $category);
         }
 
+        $schemaBuilder = app(\App\Services\Seo\SchemaBuilder::class);
+        $trail = [
+            ['label' => 'الرئيسية', 'url' => url('/')],
+            ['label' => 'الأقسام',  'url' => route('categories.index')],
+        ];
+        if ($category->parent) {
+            $trail[] = ['label' => $category->parent->name, 'url' => route('by-category', $category->parent)];
+        }
+        $trail[] = ['label' => $category->name];
+
+        $schemas = [
+            'collection'  => $schemaBuilder->forCategory($category, collect($books->items())),
+            'breadcrumbs' => $schemaBuilder->forBreadcrumbs($trail),
+        ];
+
         return view('by-category', compact(
             'books',
             'category',
@@ -590,7 +629,8 @@ class BookController extends Controller
             'authors',
             'publishingHouses',
             'displayCategories',
-            'seo'
+            'seo',
+            'schemas'
         ));
     }
 }

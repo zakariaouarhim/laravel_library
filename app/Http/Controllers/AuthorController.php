@@ -10,6 +10,7 @@ use App\Models\PublishingHouse;
 use App\Models\Category;
 use App\Services\AuthorEnrichmentService;
 use App\Services\Seo\MetaBuilder;
+use App\Services\Seo\SchemaBuilder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -132,6 +133,21 @@ class AuthorController extends Controller
 
         $seo = app(MetaBuilder::class)->forAuthor($author);
 
+        $schemaBuilder = app(SchemaBuilder::class);
+        $trail = [
+            ['label' => 'الرئيسية',  'url' => url('/')],
+            ['label' => 'المؤلفون', 'url' => route('authors.index')],
+            ['label' => $author->name],
+        ];
+        $schemas = [
+            'person'      => $schemaBuilder->forAuthor($author),
+            'breadcrumbs' => $schemaBuilder->forBreadcrumbs($trail),
+            // Only emit ItemList when there are primary books on the current page.
+            'itemList'    => $primaryBooks->count() > 0
+                ? $schemaBuilder->forItemList(collect($primaryBooks->items()), ($primaryBooks->currentPage() - 1) * $primaryBooks->perPage() + 1)
+                : null,
+        ];
+
         return view('author', compact(
             'author',
             'primaryBooks',
@@ -139,7 +155,8 @@ class AuthorController extends Controller
             'translatedBooks',
             'editedBooks',
             'illustratedBooks',
-            'seo'
+            'seo',
+            'schemas'
         ));
     }
 

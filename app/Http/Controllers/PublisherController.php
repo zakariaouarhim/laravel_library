@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Author;
 use App\Models\PublishingHouse;
 use App\Services\Seo\MetaBuilder;
+use App\Services\Seo\SchemaBuilder;
 
 class PublisherController extends Controller
 {
@@ -104,6 +105,20 @@ class PublisherController extends Controller
             $seo['canonical'] = route('publisher.show', $publisher);
         }
 
-        return view('publisher', compact('publisher', 'books', 'seo'));
+        $schemaBuilder = app(SchemaBuilder::class);
+        $trail = [
+            ['label' => 'الرئيسية', 'url' => url('/')],
+            ['label' => 'دور النشر', 'url' => route('publishers.index')],
+            ['label' => $publisher->name],
+        ];
+        $schemas = [
+            'organization' => $schemaBuilder->forPublisher($publisher),
+            'breadcrumbs'  => $schemaBuilder->forBreadcrumbs($trail),
+            'itemList'     => $books->count() > 0
+                ? $schemaBuilder->forItemList(collect($books->items()), ($books->currentPage() - 1) * $books->perPage() + 1)
+                : null,
+        ];
+
+        return view('publisher', compact('publisher', 'books', 'seo', 'schemas'));
     }
 }

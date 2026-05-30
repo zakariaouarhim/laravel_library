@@ -34,6 +34,9 @@
         <meta name="auth-user" content="true">
     @endauth
 
+    {{-- Sitewide Organization schema — emitted on every public page. --}}
+    <x-seo.json-ld :schema="app(\App\Services\Seo\SchemaBuilder::class)->forOrganization()" />
+
     {{-- Per-page extra <head> content (schema, analytics, preloads) --}}
     @stack('head')
 

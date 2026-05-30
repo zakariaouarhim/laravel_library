@@ -6,6 +6,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 @endpush
 
+@push('head')
+    <x-seo.json-ld :schema="$schemas['series']" />
+    <x-seo.json-ld :schema="$schemas['breadcrumbs']" />
+@endpush
+
 @section('content')
     <!-- Hero Section -->
     <div class="publisher-hero">

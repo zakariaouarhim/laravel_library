@@ -7,7 +7,8 @@
 @endpush
 
 @push('head')
-    @include('partials.jsonld-book')
+    <x-seo.json-ld :schema="$schemas['book']" />
+    <x-seo.json-ld :schema="$schemas['breadcrumbs']" />
 @endpush
 
 @section('content')

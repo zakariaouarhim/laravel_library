@@ -6,6 +6,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 @endpush
 
+@push('head')
+    <x-seo.json-ld :schema="$schemas['person']" />
+    <x-seo.json-ld :schema="$schemas['breadcrumbs']" />
+    @if($schemas['itemList'])
+        <x-seo.json-ld :schema="$schemas['itemList']" />
+    @endif
+@endpush
+
 @section('content')
     @php
         $totalBooks = $primaryBooks->total() + $coAuthorBooks->count() + $translatedBooks->count() + $editedBooks->count() + $illustratedBooks->count();

@@ -9,6 +9,7 @@ use App\Models\Series;
 use App\Models\Author;
 use App\Services\ImageService;
 use App\Services\Seo\MetaBuilder;
+use App\Services\Seo\SchemaBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -108,7 +109,17 @@ class AdminSeriesController extends Controller
             $seo['canonical'] = route('series.show', $series);
         }
 
-        return view('series', compact('series', 'books', 'bundles', 'categories', 'seo'));
+        $schemaBuilder = app(SchemaBuilder::class);
+        $trail = [
+            ['label' => 'الرئيسية', 'url' => url('/')],
+            ['label' => $series->name],
+        ];
+        $schemas = [
+            'series'      => $schemaBuilder->forSeries($series, collect($books->items())),
+            'breadcrumbs' => $schemaBuilder->forBreadcrumbs($trail),
+        ];
+
+        return view('series', compact('series', 'books', 'bundles', 'categories', 'seo', 'schemas'));
     }
 
     public function search(Request $request)

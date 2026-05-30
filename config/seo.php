@@ -16,4 +16,17 @@ return [
 
     'meta_title_max'       => 70,
     'meta_description_max' => 160,
+
+    // Sitewide Organization schema (emitted on every public page via layouts/public.blade.php).
+    // sameAs links help Google connect the brand to its social profiles for Knowledge Panel eligibility.
+    'organization' => [
+        'name'   => env('SEO_ORG_NAME', 'مكتبة الفقراء'),
+        'logo'   => env('SEO_ORG_LOGO', 'images/logo.svg'),
+        'social' => array_values(array_filter([
+            'https://www.facebook.com/maktabatalfokara',
+            'https://www.instagram.com/maktabat_lfokara',
+            'https://www.tiktok.com/@maktabatalfokara',
+            'https://wa.me/212691218840',
+        ])),
+    ],
 ];
