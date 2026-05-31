@@ -38,31 +38,9 @@ use App\Http\Controllers\AdminBundleController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
 
-/*
-| Custom route-model bindings — accept BOTH slug (preferred, for SEO) and
-| numeric id (legacy callers still passing $model->id to route() helpers).
-| This lets the slug migration roll out without breaking any existing call sites.
-*/
-Route::bind('book', fn ($v) => is_numeric($v)
-    ? \App\Models\Book::findOrFail($v)
-    : \App\Models\Book::where('slug', $v)->firstOrFail()
-);
-Route::bind('author', fn ($v) => is_numeric($v)
-    ? \App\Models\Author::findOrFail($v)
-    : \App\Models\Author::where('slug', $v)->firstOrFail()
-);
-Route::bind('category', fn ($v) => is_numeric($v)
-    ? \App\Models\Category::findOrFail($v)
-    : \App\Models\Category::where('slug', $v)->firstOrFail()
-);
-Route::bind('publisher', fn ($v) => is_numeric($v)
-    ? \App\Models\PublishingHouse::findOrFail($v)
-    : \App\Models\PublishingHouse::where('slug', $v)->firstOrFail()
-);
-Route::bind('series', fn ($v) => is_numeric($v)
-    ? \App\Models\Series::findOrFail($v)
-    : \App\Models\Series::where('slug', $v)->firstOrFail()
-);
+// Dual route-model bindings for book/author/category/publisher/series live in
+// app/Providers/RouteServiceProvider::boot() — registering them here breaks
+// route:cache because the closures aren't reachable from the cached file.
 
 /*
 |--------------------------------------------------------------------------
