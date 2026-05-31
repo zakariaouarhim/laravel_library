@@ -392,7 +392,11 @@ Route::get('/search-results', [BookController::class, 'searchResults'])->name('s
 
 // ==================== AUTH ROUTES ====================
 
-Auth::routes();
+// reset: false disables Laravel's default /password/* routes — the project
+// has its own PasswordResetController routes below that own `password.request`,
+// `password.email`, `password.reset`, `password.update`. Without this flag,
+// route:cache fails with "Another route has already been assigned name [password.request]".
+Auth::routes(['reset' => false]);
 
 Route::get('/login2', [AuthController::class, 'showLogin2'])->name('login2.page');
 
