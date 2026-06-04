@@ -18,6 +18,7 @@ class BookObserver
     {
         Cache::forget('latest_books');
         Cache::forget('popular_books');
+        $this->forgetRelatedCaches($book);
         $this->notifyFollowers($book);
     }
 
@@ -30,6 +31,7 @@ class BookObserver
     {
         Cache::forget('latest_books');
         Cache::forget('popular_books');
+        $this->forgetRelatedCaches($book);
         // Back in stock: quantity changed from 0 to > 0
         if ($book->isDirty('quantity')
             && $book->getOriginal('quantity') == 0
@@ -50,6 +52,33 @@ class BookObserver
     {
         Cache::forget('latest_books');
         Cache::forget('popular_books');
+        $this->forgetRelatedCaches($book);
+    }
+
+    /**
+     * Bust the book:{id}:related_ids cache for this book and every peer book
+     * referenced in its cached related sets — so that newly-changed data
+     * propagates into peers that may have cached lists pointing at this book.
+     */
+    private function forgetRelatedCaches(Book $book): void
+    {
+        $ownKey = "book:{$book->id}:related_ids";
+        $cached = Cache::get($ownKey);
+
+        Cache::forget($ownKey);
+
+        if (is_array($cached)) {
+            $peerIds = array_unique(array_merge(
+                $cached['relatedBooks']    ?? [],
+                $cached['authorBooks']     ?? [],
+                $cached['publisherBooks']  ?? [],
+                $cached['alsoBoughtBooks'] ?? [],
+                $cached['seriesBooks']     ?? [],
+            ));
+            foreach ($peerIds as $peerId) {
+                Cache::forget("book:{$peerId}:related_ids");
+            }
+        }
     }
 
     /**

@@ -151,6 +151,28 @@ class BookController extends Controller
             'breadcrumbs' => $schemaBuilder->forBreadcrumbs($trail),
         ];
 
+        // ItemList schemas for each visible carousel (only when non-empty).
+        if ($data['relatedBooks']->isNotEmpty()) {
+            $data['schemas']['itemlist_related'] = $schemaBuilder->forItemList($data['relatedBooks'], 1, 'كتب ذات صلة');
+        }
+        if ($data['seriesBooks']->isNotEmpty()) {
+            $seriesName = $loaded->series?->name ?? '';
+            $data['schemas']['itemlist_series'] = $schemaBuilder->forItemList(
+                $data['seriesBooks'], 1, trim("باقي أجزاء {$seriesName}")
+            );
+        }
+        if ($data['publisherBooks']->isNotEmpty()) {
+            $pubName = $loaded->publishingHouse?->name ?? 'دار النشر';
+            $data['schemas']['itemlist_publisher'] = $schemaBuilder->forItemList(
+                $data['publisherBooks'], 1, "المزيد من {$pubName}"
+            );
+        }
+        if ($data['alsoBoughtBooks']->isNotEmpty()) {
+            $data['schemas']['itemlist_also_bought'] = $schemaBuilder->forItemList(
+                $data['alsoBoughtBooks'], 1, 'عملاء آخرون اشتروا أيضاً'
+            );
+        }
+
         return view('moredetail2', $data);
     }
 
@@ -169,50 +191,12 @@ class BookController extends Controller
         $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
         $primaryAuthor = $book->primaryAuthor;
 
-        $authorBooks = collect();
-        if ($primaryAuthor) {
-            $authorBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])->standardOnly()->where('author_id', $primaryAuthor->id)->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
-        } else {
-            $authorBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])->standardOnly()->whereHas('primaryAuthor', fn($q) => $q->where('id', $book->author_id))->where('id', '!=', $book->id)->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->take(10)->get();
-        }
-
-        $bookCatIds = $book->categories->pluck('id')->toArray();
-        $relatedBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])->standardOnly()->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $bookCatIds))->where('id', '!=', $book->id)->take(10)->get();
-        if ($relatedBooks->isEmpty() && $book->category && $book->category->parent_id) {
-            $relatedBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])->standardOnly()->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->whereHas('categories', fn($q) => $q->where('book_category.category_id', $book->category->parent_id))->where('id', '!=', $book->id)->take(10)->get();
-        }
-        if ($relatedBooks->isEmpty()) $relatedBooks = $authorBooks->take(10);
-        if ($relatedBooks->isEmpty()) {
-            $relatedBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])->standardOnly()->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('id', '!=', $book->id)->latest()->take(10)->get();
-        }
-
-        $publisherBooks = collect();
-        if ($book->publishing_house_id) {
-            $publisherBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])->standardOnly()->withCount('reviews')->withAvg('reviews as reviews_avg_rating', 'rating')->where('publishing_house_id', $book->publishing_house_id)->where('id', '!=', $book->id)->where('type', 'book')->take(10)->get();
-        }
-
-        // "Customers also bought" — books co-purchased with this one
-        $alsoBoughtBooks = collect();
-        $orderIds = DB::table('order_details')->where('book_id', $id)->pluck('order_id');
-        if ($orderIds->isNotEmpty()) {
-            // Fetch IDs first to avoid MySQL 5.x "LIMIT in IN-subquery" error
-            $alsoBoughtIds = DB::table('order_details')
-                ->whereIn('order_id', $orderIds)
-                ->where('book_id', '!=', $id)
-                ->groupBy('book_id')
-                ->orderByRaw('COUNT(*) DESC')
-                ->limit(10)
-                ->pluck('book_id');
-
-            if ($alsoBoughtIds->isNotEmpty()) {
-                $alsoBoughtBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])
-                    ->standardOnly()
-                    ->withCount('reviews')
-                    ->withAvg('reviews as reviews_avg_rating', 'rating')
-                    ->whereIn('id', $alsoBoughtIds)
-                    ->get();
-            }
-        }
+        $related = $this->loadRelatedBooks($book);
+        $relatedBooks    = $related['relatedBooks'];
+        $authorBooks     = $related['authorBooks'];
+        $publisherBooks  = $related['publisherBooks'];
+        $alsoBoughtBooks = $related['alsoBoughtBooks'];
+        $seriesBooks     = $related['seriesBooks'];
 
         // Current user's shelf status for this book
         $shelfStatus = null;
@@ -223,24 +207,192 @@ class BookController extends Controller
             $shelfStatus = $shelf?->status;
         }
 
-        // Other books in the same series
-        $seriesBooks = collect();
-        if ($book->series_id) {
-            $seriesBooks = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])
-                ->where('series_id', $book->series_id)
-                ->where('id', '!=', $book->id)
-                ->orderBy('volume_number')
-                ->withCount('reviews')
-                ->withAvg('reviews as reviews_avg_rating', 'rating')
-                ->get();
-        }
-
         $recentlyViewed = session()->get('recently_viewed', []);
         $recentlyViewed = array_diff($recentlyViewed, [$id]);
         array_unshift($recentlyViewed, (int) $id);
         session()->put('recently_viewed', array_slice($recentlyViewed, 0, 10));
 
         return compact('book', 'relatedBooks', 'authors', 'publishingHouses', 'primaryAuthor', 'authorBooks', 'publisherBooks', 'alsoBoughtBooks', 'seriesBooks', 'shelfStatus');
+    }
+
+    /**
+     * Returns the 5 related-book collections for a book detail page, scored,
+     * deduplicated across carousels, and in-stock-first.
+     *
+     * Cached as ID arrays under `book:{id}:related_ids` (1h TTL) and hydrated
+     * in a single query — cuts ~4-7 expensive queries down to 1.
+     */
+    private function loadRelatedBooks(Book $book): array
+    {
+        $cacheKey = "book:{$book->id}:related_ids";
+        $ids = Cache::remember($cacheKey, 3600, fn() => $this->computeRelatedIds($book));
+
+        $allIds = array_unique(array_merge(
+            $ids['relatedBooks'], $ids['authorBooks'], $ids['publisherBooks'],
+            $ids['alsoBoughtBooks'], $ids['seriesBooks']
+        ));
+
+        if (empty($allIds)) {
+            $empty = collect();
+            return [
+                'relatedBooks'    => $empty, 'authorBooks' => $empty,
+                'publisherBooks'  => $empty, 'alsoBoughtBooks' => $empty,
+                'seriesBooks'     => $empty,
+            ];
+        }
+
+        $byId = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
+            ->whereIn('id', $allIds)
+            ->get()
+            ->keyBy('id');
+
+        $resolve = fn(array $idList) => collect($idList)
+            ->map(fn($id) => $byId->get($id))
+            ->filter()
+            ->values();
+
+        return [
+            'relatedBooks'    => $resolve($ids['relatedBooks']),
+            'authorBooks'     => $resolve($ids['authorBooks']),
+            'publisherBooks'  => $resolve($ids['publisherBooks']),
+            'alsoBoughtBooks' => $resolve($ids['alsoBoughtBooks']),
+            'seriesBooks'     => $resolve($ids['seriesBooks']),
+        ];
+    }
+
+    /**
+     * Compute the 5 deduplicated, in-stock-first ID arrays. Only runs on cache miss.
+     */
+    private function computeRelatedIds(Book $book): array
+    {
+        $stockSort = 'CASE WHEN quantity > 0 AND status = "active" THEN 0 ELSE 1 END';
+        $bookCatIds = $book->categories->pluck('id')->toArray();
+        $primaryCatId = $book->category_id;
+        $usedIds = [$book->id];
+
+        // Build candidate pool (~50): any shared category, same author, or same publisher.
+        $candidates = Book::standardOnly()
+            ->with('categories:id')
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
+            ->where('id', '!=', $book->id)
+            ->where(function ($q) use ($bookCatIds, $book) {
+                if (!empty($bookCatIds)) {
+                    $q->orWhereHas('categories', fn($c) => $c->whereIn('book_category.category_id', $bookCatIds));
+                }
+                if ($book->author_id) {
+                    $q->orWhere('author_id', $book->author_id);
+                }
+                if ($book->publishing_house_id) {
+                    $q->orWhere('publishing_house_id', $book->publishing_house_id);
+                }
+            })
+            ->orderByRaw($stockSort)
+            ->limit(60)
+            ->get();
+
+        // Score each candidate; pick top 10 for $relatedBooks.
+        $scored = $candidates->map(function ($cand) use ($primaryCatId, $bookCatIds, $book) {
+            $score = 0;
+            $candCatIds = $cand->categories->pluck('id')->toArray();
+            if ($primaryCatId && in_array($primaryCatId, $candCatIds)) $score += 3;
+            $shared = array_intersect($bookCatIds, $candCatIds);
+            $score += max(0, count($shared) - ($primaryCatId && in_array($primaryCatId, $shared) ? 1 : 0));
+            if ($book->author_id && $cand->author_id === $book->author_id) $score += 1;
+            if ($book->publishing_house_id && $cand->publishing_house_id === $book->publishing_house_id) $score += 1;
+            $inStock = ($cand->quantity ?? 0) > 0 && $cand->status === 'active';
+            return [
+                'id'      => $cand->id,
+                'score'   => $score,
+                'rating'  => (float) ($cand->reviews_avg_rating ?? 0),
+                'created' => $cand->created_at?->timestamp ?? 0,
+                'in_stock' => $inStock ? 1 : 0,
+            ];
+        });
+
+        $relatedIds = $scored
+            ->sortBy([
+                ['in_stock', 'desc'],
+                ['score', 'desc'],
+                ['rating', 'desc'],
+                ['created', 'desc'],
+            ])
+            ->take(10)
+            ->pluck('id')
+            ->all();
+
+        $usedIds = array_merge($usedIds, $relatedIds);
+
+        // Author books — exclude what's already in $relatedBooks.
+        $authorIds = [];
+        if ($book->author_id) {
+            $authorIds = Book::standardOnly()
+                ->where('author_id', $book->author_id)
+                ->whereNotIn('id', $usedIds)
+                ->orderByRaw($stockSort)
+                ->latest()
+                ->limit(10)
+                ->pluck('id')
+                ->all();
+            $usedIds = array_merge($usedIds, $authorIds);
+        }
+
+        // Publisher books — exclude what's already used.
+        $publisherIds = [];
+        if ($book->publishing_house_id) {
+            $publisherIds = Book::standardOnly()
+                ->where('publishing_house_id', $book->publishing_house_id)
+                ->where('type', 'book')
+                ->whereNotIn('id', $usedIds)
+                ->orderByRaw($stockSort)
+                ->latest()
+                ->limit(10)
+                ->pluck('id')
+                ->all();
+            $usedIds = array_merge($usedIds, $publisherIds);
+        }
+
+        // "Customers also bought" — exclude full used list.
+        $alsoBoughtIds = [];
+        $orderIds = DB::table('order_details')->where('book_id', $book->id)->pluck('order_id');
+        if ($orderIds->isNotEmpty()) {
+            $candidateIds = DB::table('order_details')
+                ->whereIn('order_id', $orderIds)
+                ->where('book_id', '!=', $book->id)
+                ->whereNotIn('book_id', $usedIds)
+                ->groupBy('book_id')
+                ->orderByRaw('COUNT(*) DESC')
+                ->limit(10)
+                ->pluck('book_id');
+
+            if ($candidateIds->isNotEmpty()) {
+                $alsoBoughtIds = Book::standardOnly()
+                    ->whereIn('id', $candidateIds)
+                    ->orderByRaw($stockSort)
+                    ->pluck('id')
+                    ->all();
+            }
+        }
+
+        // Series books — NOT deduplicated (series volumes are always relevant in their own carousel).
+        $seriesIds = [];
+        if ($book->series_id) {
+            $seriesIds = Book::where('series_id', $book->series_id)
+                ->where('id', '!=', $book->id)
+                ->orderBy('volume_number')
+                ->pluck('id')
+                ->all();
+        }
+
+        return [
+            'relatedBooks'    => $relatedIds,
+            'authorBooks'     => $authorIds,
+            'publisherBooks'  => $publisherIds,
+            'alsoBoughtBooks' => $alsoBoughtIds,
+            'seriesBooks'     => $seriesIds,
+        ];
     }
 
     public function searchproductBooks(Request $request)

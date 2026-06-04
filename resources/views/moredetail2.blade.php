@@ -9,6 +9,18 @@
 @push('head')
     <x-seo.json-ld :schema="$schemas['book']" />
     <x-seo.json-ld :schema="$schemas['breadcrumbs']" />
+    @isset($schemas['itemlist_related'])
+        <x-seo.json-ld :schema="$schemas['itemlist_related']" />
+    @endisset
+    @isset($schemas['itemlist_series'])
+        <x-seo.json-ld :schema="$schemas['itemlist_series']" />
+    @endisset
+    @isset($schemas['itemlist_publisher'])
+        <x-seo.json-ld :schema="$schemas['itemlist_publisher']" />
+    @endisset
+    @isset($schemas['itemlist_also_bought'])
+        <x-seo.json-ld :schema="$schemas['itemlist_also_bought']" />
+    @endisset
 @endpush
 
 @section('content')

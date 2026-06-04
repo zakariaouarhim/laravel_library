@@ -152,21 +152,31 @@ class SchemaBuilder
     /**
      * Plain ItemList of books — each entry links to the book detail page.
      * Accepts Collection or LengthAwarePaginator (the latter exposes ->items()).
+     *
+     * When $name is provided, the result includes @context + name and is suitable
+     * for standalone emission as its own <script type="application/ld+json"> block.
      */
-    public function forItemList($books, int $startPosition = 1): array
+    public function forItemList($books, int $startPosition = 1, ?string $name = null): array
     {
         $items = $books instanceof Collection ? $books : collect($books->items() ?? $books);
 
-        return [
-            '@type'           => 'ItemList',
-            'numberOfItems'   => $items->count(),
-            'itemListElement' => $items->values()->map(fn ($book, $i) => [
-                '@type'    => 'ListItem',
-                'position' => $startPosition + $i,
-                'url'      => route('moredetail2.page', $book),
-                'name'     => $book->title,
-            ])->all(),
-        ];
+        $schema = [];
+        if ($name !== null) {
+            $schema['@context'] = 'https://schema.org';
+        }
+        $schema['@type']           = 'ItemList';
+        if ($name !== null) {
+            $schema['name'] = $name;
+        }
+        $schema['numberOfItems']   = $items->count();
+        $schema['itemListElement'] = $items->values()->map(fn ($book, $i) => [
+            '@type'    => 'ListItem',
+            'position' => $startPosition + $i,
+            'url'      => route('moredetail2.page', $book),
+            'name'     => $book->title,
+        ])->all();
+
+        return $schema;
     }
 
     /**
