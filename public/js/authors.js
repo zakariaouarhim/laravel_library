@@ -292,6 +292,8 @@ function editAuthor(id) {
             $('#editAuthorDeathDate').val(a.death_date ? a.death_date.split('T')[0] : '');
             $('#editAuthorStatus').val(a.status || 'active');
             $('#editAuthorWebsite').val(a.website || '');
+            $('#editAuthorMetaTitle').val(a.meta_title || '');
+            $('#editAuthorMetaDescription').val(a.meta_description || '');
 
             new bootstrap.Modal(document.getElementById('editAuthorModal')).show();
         }
@@ -311,6 +313,8 @@ function saveAuthor() {
         death_date: $('#editAuthorDeathDate').val() || null,
         status: $('#editAuthorStatus').val(),
         website: $('#editAuthorWebsite').val() || null,
+        meta_title: $('#editAuthorMetaTitle').val() || null,
+        meta_description: $('#editAuthorMetaDescription').val() || null,
     };
 
     $.ajax({

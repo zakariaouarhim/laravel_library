@@ -209,6 +209,31 @@
                             <label class="form-label">الموقع الإلكتروني</label>
                             <input type="url" class="form-control" id="editAuthorWebsite" placeholder="https://">
                         </div>
+
+                        <!-- SEO override fields. Empty = use auto-generated MetaBuilder fallback. -->
+                        <div class="accordion mb-3" id="editAuthorSeoAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editAuthorSeoCollapse">
+                                        <i class="fas fa-search me-2"></i>إعدادات SEO <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                                    </button>
+                                </h2>
+                                <div id="editAuthorSeoCollapse" class="accordion-collapse collapse" data-bs-parent="#editAuthorSeoAccordion">
+                                    <div class="accordion-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                            <input type="text" class="form-control" id="editAuthorMetaTitle" maxlength="70">
+                                            <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                            <textarea class="form-control" id="editAuthorMetaDescription" rows="2" maxlength="160"></textarea>
+                                            <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">

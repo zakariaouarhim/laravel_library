@@ -151,6 +151,8 @@ class AdminBookController extends Controller
             $product->quantity = $validated['productQuantity'];
             $product->series_id = $validated['series_id'] ?? null;
             $product->volume_number = $validated['volume_number'] ?? null;
+            $product->meta_title = $validated['meta_title'] ?? null;
+            $product->meta_description = $validated['meta_description'] ?? null;
             $product->api_data_status = 'pending';
 
             // Handle Algolia/Scout crash gracefully
@@ -435,6 +437,10 @@ class AdminBookController extends Controller
             $product->quantity = $validated['quantity'];
             $product->series_id = $validated['series_id'] ?? null;
             $product->volume_number = $validated['volume_number'] ?? null;
+            // SEO overrides — `null` (empty form) clears the column and re-enables
+            // MetaBuilder's auto-generated fallback.
+            $product->meta_title = $validated['meta_title'] ?? null;
+            $product->meta_description = $validated['meta_description'] ?? null;
 
             // Handle categories
             if (!empty($validated['categories'])) {

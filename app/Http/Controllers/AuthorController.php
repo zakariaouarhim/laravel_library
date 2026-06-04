@@ -285,6 +285,9 @@ class AuthorController extends Controller
             'nationality' => 'nullable|string|max:100',
             'website' => 'nullable|url|max:255',
             'status' => 'required|in:active,inactive',
+            // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.
+            'meta_title' => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:160',
         ]);
 
         $author->update($validated);

@@ -34,6 +34,9 @@ class UpdateBookRequest extends FormRequest
             'image'               => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
             'series_id'           => 'nullable|exists:series,id',
             'volume_number'       => 'nullable|integer|min:1',
+            // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.
+            'meta_title'          => 'nullable|string|max:70',
+            'meta_description'    => 'nullable|string|max:160',
         ];
     }
 

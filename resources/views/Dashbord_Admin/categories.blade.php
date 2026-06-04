@@ -125,7 +125,7 @@
                                 <td class="text-center">
                                     <div class="action-buttons">
                                         <button class="btn-icon text-primary" title="تعديل"
-                                                onclick="openEditModal({{ $parent->id }}, '{{ addslashes($parent->name) }}', null, '{{ addslashes($parent->categorie_icon ?? '') }}', '{{ $parent->categorie_image ? asset('storage/'.$parent->categorie_image) : '' }}', '{{ $parent->language ?? '' }}')">
+                                                onclick="openEditModal({{ $parent->id }}, '{{ addslashes($parent->name) }}', null, '{{ addslashes($parent->categorie_icon ?? '') }}', '{{ $parent->categorie_image ? asset('storage/'.$parent->categorie_image) : '' }}', '{{ $parent->language ?? '' }}', '{{ addslashes($parent->meta_title ?? '') }}', '{{ addslashes($parent->meta_description ?? '') }}')">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="btn-icon text-danger" title="حذف"
@@ -166,7 +166,7 @@
                                     <td class="text-center">
                                         <div class="action-buttons">
                                             <button class="btn-icon text-primary" title="تعديل"
-                                                    onclick="openEditModal({{ $child->id }}, '{{ addslashes($child->name) }}', {{ $child->parent_id }}, '{{ addslashes($child->categorie_icon ?? '') }}', '{{ $child->categorie_image ? asset('storage/'.$child->categorie_image) : '' }}', '{{ $child->language ?? '' }}')">
+                                                    onclick="openEditModal({{ $child->id }}, '{{ addslashes($child->name) }}', {{ $child->parent_id }}, '{{ addslashes($child->categorie_icon ?? '') }}', '{{ $child->categorie_image ? asset('storage/'.$child->categorie_image) : '' }}', '{{ $child->language ?? '' }}', '{{ addslashes($child->meta_title ?? '') }}', '{{ addslashes($child->meta_description ?? '') }}')">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button class="btn-icon text-danger" title="حذف"
@@ -268,6 +268,31 @@
                         <div class="form-text">اختياري · JPG/PNG/WebP · الحد الأقصى 2MB</div>
                     </div>
 
+                    <!-- SEO override fields. Empty = use auto-generated MetaBuilder fallback. -->
+                    <div class="accordion mb-3" id="createCategorySeoAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#createCategorySeoCollapse">
+                                    <i class="fas fa-search me-2"></i>إعدادات SEO <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                                </button>
+                            </h2>
+                            <div id="createCategorySeoCollapse" class="accordion-collapse collapse" data-bs-parent="#createCategorySeoAccordion">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                        <input type="text" class="form-control" name="meta_title" value="{{ old('meta_title') }}" maxlength="70">
+                                        <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                        <textarea class="form-control" name="meta_description" rows="2" maxlength="160">{{ old('meta_description') }}</textarea>
+                                        <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -331,6 +356,31 @@
                     <label class="form-label">صورة جديدة (اختياري)</label>
                     <input type="file" id="edit_image_file" class="form-control" accept="image/*">
                     <div id="edit_current_image" class="mt-2"></div>
+                </div>
+
+                <!-- SEO override fields. Populated by openEditModal() from the row's data attributes. -->
+                <div class="accordion mb-3" id="editCategorySeoAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editCategorySeoCollapse">
+                                <i class="fas fa-search me-2"></i>إعدادات SEO <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                            </button>
+                        </h2>
+                        <div id="editCategorySeoCollapse" class="accordion-collapse collapse" data-bs-parent="#editCategorySeoAccordion">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                    <input type="text" id="edit_meta_title" class="form-control" maxlength="70">
+                                    <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                    <textarea id="edit_meta_description" class="form-control" rows="2" maxlength="160"></textarea>
+                                    <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -424,7 +474,7 @@ document.getElementById('edit_icon_input').addEventListener('input', function ()
 // ── Edit modal ───────────────────────────────────────────────
 var editCategoryId = null;
 
-function openEditModal(id, name, parentId, icon, imageUrl, language) {
+function openEditModal(id, name, parentId, icon, imageUrl, language, metaTitle, metaDescription) {
     editCategoryId = id;
     document.getElementById('edit_name').value       = name;
     document.getElementById('edit_icon_input').value = icon;
@@ -433,6 +483,8 @@ function openEditModal(id, name, parentId, icon, imageUrl, language) {
 
     document.getElementById('edit_parent_id').value = parentId || '';
     document.getElementById('edit_language').value  = language || '';
+    document.getElementById('edit_meta_title').value       = metaTitle || '';
+    document.getElementById('edit_meta_description').value = metaDescription || '';
 
     var imgDiv = document.getElementById('edit_current_image');
     if (imageUrl) {
@@ -452,10 +504,12 @@ document.getElementById('saveEditBtn').addEventListener('click', function () {
     var formData = new FormData();
     formData.append('_method', 'PUT');
     formData.append('_token', csrfToken);
-    formData.append('name',           document.getElementById('edit_name').value);
-    formData.append('parent_id',      document.getElementById('edit_parent_id').value);
-    formData.append('language',       document.getElementById('edit_language').value);
-    formData.append('categorie_icon', document.getElementById('edit_icon_input').value);
+    formData.append('name',             document.getElementById('edit_name').value);
+    formData.append('parent_id',        document.getElementById('edit_parent_id').value);
+    formData.append('language',         document.getElementById('edit_language').value);
+    formData.append('categorie_icon',   document.getElementById('edit_icon_input').value);
+    formData.append('meta_title',       document.getElementById('edit_meta_title').value);
+    formData.append('meta_description', document.getElementById('edit_meta_description').value);
     var fileInput = document.getElementById('edit_image_file');
     if (fileInput.files.length > 0) {
         formData.append('categorie_image', fileInput.files[0]);

@@ -299,6 +299,31 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- SEO override fields. Empty = use auto-generated MetaBuilder fallback. -->
+                        <div class="accordion mb-3" id="addPublisherSeoAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#addPublisherSeoCollapse">
+                                        <i class="fas fa-search me-2"></i>إعدادات SEO <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                                    </button>
+                                </h2>
+                                <div id="addPublisherSeoCollapse" class="accordion-collapse collapse" data-bs-parent="#addPublisherSeoAccordion">
+                                    <div class="accordion-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                            <input type="text" class="form-control" name="meta_title" maxlength="70">
+                                            <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                            <textarea class="form-control" name="meta_description" rows="2" maxlength="160"></textarea>
+                                            <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -419,6 +444,31 @@
                                 <option value="inactive">غير نشطة</option>
                             </select>
                         </div>
+
+                        <!-- SEO override fields. Populated by editPublisher() from the API response. -->
+                        <div class="accordion mb-3" id="editPublisherSeoAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editPublisherSeoCollapse">
+                                        <i class="fas fa-search me-2"></i>إعدادات SEO <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                                    </button>
+                                </h2>
+                                <div id="editPublisherSeoCollapse" class="accordion-collapse collapse" data-bs-parent="#editPublisherSeoAccordion">
+                                    <div class="accordion-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                            <input type="text" class="form-control" id="editPublisherMetaTitle" name="meta_title" maxlength="70">
+                                            <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                            <textarea class="form-control" id="editPublisherMetaDescription" name="meta_description" rows="2" maxlength="160"></textarea>
+                                            <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -494,6 +544,8 @@
             document.getElementById('editAddress').value = p.address || '';
             document.getElementById('editDescription').value = p.description || '';
             document.getElementById('editStatus').value = p.status || 'active';
+            document.getElementById('editPublisherMetaTitle').value = p.meta_title || '';
+            document.getElementById('editPublisherMetaDescription').value = p.meta_description || '';
 
             const preview = document.getElementById('editLogoPreview');
             if (p.logo) {

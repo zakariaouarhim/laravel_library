@@ -26,6 +26,9 @@ class UpdatePublishingHouseRequest extends FormRequest
             'description'  => 'nullable|string|max:5000',
             'logo'         => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status'       => 'required|in:active,inactive',
+            // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.
+            'meta_title'       => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:160',
         ];
     }
 

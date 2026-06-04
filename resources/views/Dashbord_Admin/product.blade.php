@@ -357,6 +357,31 @@
                             <input type="file" class="form-control" name="productImage" id="productImage" accept="image/*" required>
                             <small class="text-muted">الصيغ المدعومة: JPG, PNG, GIF (الحد الأقصى 5MB)</small>
                         </div>
+
+                        <!-- SEO override fields (optional). Empty = use auto-generated MetaBuilder fallback. -->
+                        <div class="accordion mb-3" id="addSeoAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#addSeoCollapse">
+                                        <i class="fas fa-search me-2"></i>إعدادات SEO <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                                    </button>
+                                </h2>
+                                <div id="addSeoCollapse" class="accordion-collapse collapse" data-bs-parent="#addSeoAccordion">
+                                    <div class="accordion-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                            <input type="text" class="form-control" name="meta_title" id="addMetaTitle" maxlength="70">
+                                            <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                            <textarea class="form-control" name="meta_description" id="addMetaDescription" rows="2" maxlength="160"></textarea>
+                                            <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -538,6 +563,31 @@
                             <input type="file" class="form-control" id="editProductImage" name="image" accept="image/*">
                             <small class="text-muted">اترك الحقل فارغاً للاحتفاظ بالصورة الحالية</small>
                         </div>
+
+                        <!-- SEO override fields. Populated by editProduct() JS from the product's stored values. -->
+                        <div class="accordion mb-3" id="editSeoAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editSeoCollapse">
+                                        <i class="fas fa-search me-2"></i>إعدادات SEO <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                                    </button>
+                                </h2>
+                                <div id="editSeoCollapse" class="accordion-collapse collapse" data-bs-parent="#editSeoAccordion">
+                                    <div class="accordion-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                            <input type="text" class="form-control" id="editMetaTitle" name="meta_title" maxlength="70">
+                                            <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                            <textarea class="form-control" id="editMetaDescription" name="meta_description" rows="2" maxlength="160"></textarea>
+                                            <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -619,6 +669,8 @@
             document.getElementById('editProductQuantity').value = product.quantity;
             document.getElementById('editSeriesId').value = product.series_id || '';
             document.getElementById('editVolumeNumber').value = product.volume_number || '';
+            document.getElementById('editMetaTitle').value = product.meta_title || '';
+            document.getElementById('editMetaDescription').value = product.meta_description || '';
 
             // Refresh autocomplete hints to reflect the just-populated bound IDs.
             if (window._editAuthorAC) window._editAuthorAC.refreshHint();
