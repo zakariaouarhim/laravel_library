@@ -20,8 +20,9 @@ class UpdateCategoryRequest extends FormRequest
             'categorie_icon'   => 'nullable|string|max:100',
             'categorie_image'  => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.
-            'meta_title'       => 'nullable|string|max:70',
-            'meta_description' => 'nullable|string|max:160',
+            'meta_title'        => 'nullable|string|max:70',
+            'meta_description'  => 'nullable|string|max:160',
+            'editorial_content' => 'nullable|string|max:3000',
         ];
     }
 

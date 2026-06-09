@@ -34,6 +34,16 @@
         'breadcrumbs' => $crumbs,
     ])
 
+    @if(isset($category) && !empty($category->editorial_content))
+        <section class="category-editorial bg-light border-bottom py-4">
+            <div class="container">
+                <div class="category-editorial-body">
+                    {!! $category->editorial_content_html !!}
+                </div>
+            </div>
+        </section>
+    @endif
+
     <div class="container py-5">
         <div class="row">
             <!-- Sidebar -->

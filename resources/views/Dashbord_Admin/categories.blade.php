@@ -125,7 +125,8 @@
                                 <td class="text-center">
                                     <div class="action-buttons">
                                         <button class="btn-icon text-primary" title="تعديل"
-                                                onclick="openEditModal({{ $parent->id }}, '{{ addslashes($parent->name) }}', null, '{{ addslashes($parent->categorie_icon ?? '') }}', '{{ $parent->categorie_image ? asset('storage/'.$parent->categorie_image) : '' }}', '{{ $parent->language ?? '' }}', '{{ addslashes($parent->meta_title ?? '') }}', '{{ addslashes($parent->meta_description ?? '') }}')">
+                                                data-editorial="{{ $parent->editorial_content ?? '' }}"
+                                                onclick="openEditModal({{ $parent->id }}, '{{ addslashes($parent->name) }}', null, '{{ addslashes($parent->categorie_icon ?? '') }}', '{{ $parent->categorie_image ? asset('storage/'.$parent->categorie_image) : '' }}', '{{ $parent->language ?? '' }}', '{{ addslashes($parent->meta_title ?? '') }}', '{{ addslashes($parent->meta_description ?? '') }}', this.dataset.editorial)">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="btn-icon text-danger" title="حذف"
@@ -166,7 +167,8 @@
                                     <td class="text-center">
                                         <div class="action-buttons">
                                             <button class="btn-icon text-primary" title="تعديل"
-                                                    onclick="openEditModal({{ $child->id }}, '{{ addslashes($child->name) }}', {{ $child->parent_id }}, '{{ addslashes($child->categorie_icon ?? '') }}', '{{ $child->categorie_image ? asset('storage/'.$child->categorie_image) : '' }}', '{{ $child->language ?? '' }}', '{{ addslashes($child->meta_title ?? '') }}', '{{ addslashes($child->meta_description ?? '') }}')">
+                                                    data-editorial="{{ $child->editorial_content ?? '' }}"
+                                                    onclick="openEditModal({{ $child->id }}, '{{ addslashes($child->name) }}', {{ $child->parent_id }}, '{{ addslashes($child->categorie_icon ?? '') }}', '{{ $child->categorie_image ? asset('storage/'.$child->categorie_image) : '' }}', '{{ $child->language ?? '' }}', '{{ addslashes($child->meta_title ?? '') }}', '{{ addslashes($child->meta_description ?? '') }}', this.dataset.editorial)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button class="btn-icon text-danger" title="حذف"
@@ -268,6 +270,12 @@
                         <div class="form-text">اختياري · JPG/PNG/WebP · الحد الأقصى 2MB</div>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="editorial_content" class="form-label">المحتوى التحريري <small class="text-muted">(يظهر للزوار أعلى صفحة التصنيف)</small></label>
+                        <textarea id="editorial_content" name="editorial_content" class="form-control" rows="8" maxlength="3000" placeholder="اكتب 150-300 كلمة عن هذا التصنيف، يفصل بين الفقرات سطر فارغ">{{ old('editorial_content') }}</textarea>
+                        <div class="form-text">يدعم الفقرات (سطر فارغ = فقرة جديدة). أفضل لأقسام SEO. اتركه فارغاً للأقسام الفرعية.</div>
+                    </div>
+
                     <!-- SEO override fields. Empty = use auto-generated MetaBuilder fallback. -->
                     <div class="accordion mb-3" id="createCategorySeoAccordion">
                         <div class="accordion-item">
@@ -356,6 +364,12 @@
                     <label class="form-label">صورة جديدة (اختياري)</label>
                     <input type="file" id="edit_image_file" class="form-control" accept="image/*">
                     <div id="edit_current_image" class="mt-2"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="edit_editorial_content" class="form-label">المحتوى التحريري <small class="text-muted">(يظهر للزوار أعلى صفحة التصنيف)</small></label>
+                    <textarea id="edit_editorial_content" class="form-control" rows="8" maxlength="3000" placeholder="اكتب 150-300 كلمة عن هذا التصنيف، يفصل بين الفقرات سطر فارغ"></textarea>
+                    <div class="form-text">يدعم الفقرات (سطر فارغ = فقرة جديدة). أفضل لأقسام SEO. اتركه فارغاً للأقسام الفرعية.</div>
                 </div>
 
                 <!-- SEO override fields. Populated by openEditModal() from the row's data attributes. -->
@@ -474,7 +488,7 @@ document.getElementById('edit_icon_input').addEventListener('input', function ()
 // ── Edit modal ───────────────────────────────────────────────
 var editCategoryId = null;
 
-function openEditModal(id, name, parentId, icon, imageUrl, language, metaTitle, metaDescription) {
+function openEditModal(id, name, parentId, icon, imageUrl, language, metaTitle, metaDescription, editorialContent) {
     editCategoryId = id;
     document.getElementById('edit_name').value       = name;
     document.getElementById('edit_icon_input').value = icon;
@@ -485,6 +499,7 @@ function openEditModal(id, name, parentId, icon, imageUrl, language, metaTitle, 
     document.getElementById('edit_language').value  = language || '';
     document.getElementById('edit_meta_title').value       = metaTitle || '';
     document.getElementById('edit_meta_description').value = metaDescription || '';
+    document.getElementById('edit_editorial_content').value = editorialContent || '';
 
     var imgDiv = document.getElementById('edit_current_image');
     if (imageUrl) {
@@ -508,8 +523,9 @@ document.getElementById('saveEditBtn').addEventListener('click', function () {
     formData.append('parent_id',        document.getElementById('edit_parent_id').value);
     formData.append('language',         document.getElementById('edit_language').value);
     formData.append('categorie_icon',   document.getElementById('edit_icon_input').value);
-    formData.append('meta_title',       document.getElementById('edit_meta_title').value);
-    formData.append('meta_description', document.getElementById('edit_meta_description').value);
+    formData.append('meta_title',        document.getElementById('edit_meta_title').value);
+    formData.append('meta_description',  document.getElementById('edit_meta_description').value);
+    formData.append('editorial_content', document.getElementById('edit_editorial_content').value);
     var fileInput = document.getElementById('edit_image_file');
     if (fileInput.files.length > 0) {
         formData.append('categorie_image', fileInput.files[0]);

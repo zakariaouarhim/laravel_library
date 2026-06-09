@@ -67,8 +67,11 @@ class MetaBuilder
     {
         $title = $category->meta_title ?: $this->clipTitle("كتب {$category->name} - مكتبة الفقراء");
         $countText = $bookCount !== null ? " ({$bookCount} كتاب)" : '';
+        // Fallback chain: explicit override → editorial copy (first ~155 chars) → auto-generated.
         $description = $category->meta_description
-            ?: $this->clip("تصفح أفضل كتب {$category->name} المتوفرة في مكتبة الفقراء{$countText} بأسعار مناسبة وشحن سريع.");
+            ?: ($category->editorial_content
+                ? $this->clip(strip_tags($category->editorial_content))
+                : $this->clip("تصفح أفضل كتب {$category->name} المتوفرة في مكتبة الفقراء{$countText} بأسعار مناسبة وشحن سريع."));
 
         return [
             'title'       => $title,

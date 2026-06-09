@@ -16,8 +16,24 @@ class Category extends Model
     }
 
     protected $fillable = [
-        'name', 'slug', 'meta_title', 'meta_description', 'parent_id', 'language', 'categorie_icon', 'categorie_image',
+        'name', 'slug', 'meta_title', 'meta_description', 'editorial_content',
+        'parent_id', 'language', 'categorie_icon', 'categorie_image',
     ];
+
+    /**
+     * Render editorial_content (admin-provided plain text) as safe paragraphs.
+     * Splits on blank lines and HTML-escapes each chunk before wrapping in <p>.
+     */
+    public function getEditorialContentHtmlAttribute(): string
+    {
+        if (empty($this->editorial_content)) {
+            return '';
+        }
+        return collect(preg_split('/\R\s*\R/', trim($this->editorial_content)))
+            ->filter()
+            ->map(fn ($para) => '<p>' . e(trim($para)) . '</p>')
+            ->implode("\n");
+    }
      // Parent category has many children
     public function children()
     {
