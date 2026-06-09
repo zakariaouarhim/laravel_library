@@ -400,7 +400,14 @@ class BookController extends Controller
         $request->validate(['query' => 'nullable|string|max:200']);
 
         try {
-            $books = $this->searchService->search($request->input('query', ''), 10);
+            $rawQuery = $request->input('query', '');
+            $books = $this->searchService->search($rawQuery, 10);
+            app(\App\Services\SearchQueryLogger::class)->log(
+                $rawQuery,
+                is_countable($books) ? count($books) : 0,
+                'autocomplete',
+                $request,
+            );
 
             return response()->json(['success' => true, 'books' => $books]);
         } catch (\Exception $e) {
@@ -448,6 +455,13 @@ class BookController extends Controller
         };
 
         $totalSearchCount = $builder->count();
+
+        app(\App\Services\SearchQueryLogger::class)->log(
+            $query,
+            $totalSearchCount,
+            'page',
+            $request,
+        );
 
         // 5. DB-level pagination
         $paginatedBooks = $builder->paginate(12)->appends($request->query());

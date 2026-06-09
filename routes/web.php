@@ -166,6 +166,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/reports', [AdminReportsController::class, 'index'])->name('reports.index');
     Route::get('/reports/export', [AdminReportsController::class, 'export'])->name('reports.export');
 
+    // Search insights — aggregated user search queries for SEO copy + inventory gaps
+    Route::get('/search-insights', [\App\Http\Controllers\AdminSearchInsightsController::class, 'index'])->name('search-insights.index');
+
     // Categories management
     Route::get('/categories',                   [AdminCategoryController::class, 'index'])->name('categories.index');
     Route::post('/categories',                  [AdminCategoryController::class, 'store'])->name('categories.store');
