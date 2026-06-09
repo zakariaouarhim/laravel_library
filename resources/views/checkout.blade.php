@@ -8,7 +8,7 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}?v={{ filemtime(public_path('css/by-category.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/checkout.css') }}">
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     <!-- Favicon -->

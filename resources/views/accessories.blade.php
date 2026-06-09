@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}?v={{ filemtime(public_path('css/by-category.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/listview.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">

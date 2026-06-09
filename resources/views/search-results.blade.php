@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/headerstyle.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/by-category.css') }}?v={{ filemtime(public_path('css/by-category.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/listview.css') }}">
     <link rel="stylesheet" href="{{ asset('css/searchresult.css') }}">
     <link rel="stylesheet" href="{{ asset('css/book-card.css') }}">

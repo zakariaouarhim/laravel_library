@@ -804,3 +804,51 @@ body {
     }
 }
 
+/* ============================================
+   Category editorial section — subtle accent panel
+   Renders admin-written copy above the book grid.
+   ============================================ */
+.category-editorial {
+    padding: 2rem 0 0;
+}
+
+.category-editorial-body {
+    background: var(--color-accent-bg, #F0F4FA);
+    border-right: 4px solid var(--color-accent, #5A84C3);
+    border-radius: var(--radius-md, 12px);
+    padding: 1.75rem 2rem;
+    max-width: 920px;
+    margin-inline: auto;
+    box-shadow: var(--shadow-xs, 0 2px 8px rgba(0, 0, 0, 0.06));
+    color: var(--color-text, #333);
+    font-size: 1.05rem;
+    line-height: 1.95;
+    text-align: justify;
+}
+
+.category-editorial-body p {
+    margin: 0 0 1rem;
+}
+
+.category-editorial-body p:last-child {
+    margin-bottom: 0;
+}
+
+.category-editorial-body p:first-child::first-letter {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--color-primary-dark, #203a61);
+}
+
+@media (max-width: 768px) {
+    .category-editorial {
+        padding-top: 1.25rem;
+    }
+    .category-editorial-body {
+        padding: 1.25rem 1.25rem;
+        font-size: 1rem;
+        line-height: 1.85;
+        border-right-width: 3px;
+        margin-inline: 0.5rem;
+    }
+}
