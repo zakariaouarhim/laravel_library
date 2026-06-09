@@ -601,6 +601,19 @@ class BookController extends Controller
                 ->get();
         });
 
+        // Get French books with relationships (cached 30 min)
+        $frenchBooks = Cache::remember('french_books', 1800, function () {
+            return Book::where('language', 'French')
+                ->where('type', 'book')
+                ->standardOnly()
+                ->with(['primaryAuthor', 'authors', 'publishingHouse', 'bundles:id,title,price,image'])
+                ->withCount('reviews')
+                ->withAvg('reviews as reviews_avg_rating', 'rating')
+                ->latest()
+                ->limit(10)
+                ->get();
+        });
+
         // Get accessories (cached 30 min)
         $accessories = Cache::remember('accessories_home', 1800, function () {
             return Book::accessories()
@@ -683,7 +696,7 @@ class BookController extends Controller
             'website' => app(\App\Services\Seo\SchemaBuilder::class)->forWebsite(),
         ];
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo', 'schemas'));
+        return view('index', compact('books', 'categorie', 'englishBooks', 'frenchBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo', 'schemas'));
     }
 
     public function byCategory(Request $request, Category $category)

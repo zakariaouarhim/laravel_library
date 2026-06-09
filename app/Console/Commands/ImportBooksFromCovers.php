@@ -298,6 +298,11 @@ class ImportBooksFromCovers extends Command
         if (!$dryRun && !$stageMode && ($stats['success'] ?? 0) > 0) {
             Cache::forget('latest_books');
             Cache::forget('popular_books');
+            Cache::forget('english_books');
+            Cache::forget('french_books');
+            Cache::forget('accessories_home');
+            Cache::forget('arabic_series_home');
+            Cache::forget('english_series_home');
             $this->info('Cache cleared.');
         }
 

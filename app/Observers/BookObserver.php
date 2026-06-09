@@ -16,8 +16,7 @@ class BookObserver
      */
     public function created(Book $book): void
     {
-        Cache::forget('latest_books');
-        Cache::forget('popular_books');
+        $this->forgetHomepageCaches();
         $this->forgetRelatedCaches($book);
         $this->notifyFollowers($book);
     }
@@ -29,8 +28,7 @@ class BookObserver
      */
     public function updating(Book $book): void
     {
-        Cache::forget('latest_books');
-        Cache::forget('popular_books');
+        $this->forgetHomepageCaches();
         $this->forgetRelatedCaches($book);
         // Back in stock: quantity changed from 0 to > 0
         if ($book->isDirty('quantity')
@@ -50,9 +48,25 @@ class BookObserver
 
     public function deleted(Book $book): void
     {
+        $this->forgetHomepageCaches();
+        $this->forgetRelatedCaches($book);
+    }
+
+    /**
+     * Bust the cached homepage carousels that can be affected by a book
+     * being created, updated, or deleted.
+     */
+    private function forgetHomepageCaches(): void
+    {
         Cache::forget('latest_books');
         Cache::forget('popular_books');
-        $this->forgetRelatedCaches($book);
+        Cache::forget('english_books');
+        Cache::forget('french_books');
+        Cache::forget('accessories_home');
+        // A book's series_id / language change affects which series appear in
+        // the language carousels and their books_count ordering.
+        Cache::forget('arabic_series_home');
+        Cache::forget('english_series_home');
     }
 
     /**

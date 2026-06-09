@@ -53,6 +53,10 @@
             <x-series-carousel :series="$englishSeries" title="سلاسل إنجليزية" />
         </div>
 
+        <div id="french-books">
+            <x-book-carousel :books="$frenchBooks" title="كتب بالفرنسية" />
+        </div>
+
         @if($recentlyViewed->count() > 0)
         <div id="recently-viewed">
             <x-book-carousel :books="$recentlyViewed" title="شاهدت مؤخراً" />

@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use App\Models\Category;
 use App\Models\Book;
+use App\Models\Series;
 use App\View\Composers\AdminSidebarComposer;
 use App\Models\SystemSetting;
 use App\Observers\BookObserver;
+use App\Observers\SeriesObserver;
 use Illuminate\Support\Facades\Cache;
 
 class AppServiceProvider extends ServiceProvider
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
        Paginator::useBootstrap();
 
         Book::observe(BookObserver::class);
+        Series::observe(SeriesObserver::class);
 
         View::composer('header', function ($view) {
            $navCategories = Cache::remember('header_nav_categories', 3600, function () {
