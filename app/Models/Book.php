@@ -99,6 +99,22 @@ class Book extends Model
         return $this->image ?? 'images/book-placeholder.png';
     }
 
+    /**
+     * 800px-wide WebP variant used as the 2x source on the book detail page's
+     * LCP <img srcset>. Falls back to the 400px image when the large variant
+     * doesn't exist on disk (legacy books processed before the large/ pipeline).
+     */
+    public function getLargeImageAttribute()
+    {
+        if ($this->image) {
+            $largePath = str_replace('images/books/', 'images/books/large/', $this->image);
+            if (file_exists(public_path($largePath))) {
+                return $largePath;
+            }
+        }
+        return $this->image ?? 'images/book-placeholder.png';
+    }
+
     // Primary category (denormalized for breadcrumbs/display)
     public function category()
     {

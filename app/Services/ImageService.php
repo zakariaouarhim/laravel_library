@@ -28,6 +28,8 @@ class ImageService
             if (!file_exists($fullDestination)) mkdir($fullDestination, 0755, true);
             if (!file_exists($thumbDir)) mkdir($thumbDir, 0755, true);
 
+            $this->saveLargeVariant($bytes, $destinationDir, $filename);
+
             $image = Image::read($bytes);
             $image->scale(width: 400);
             $image->toWebp(80)->save($fullDestination . '/' . $filename);
@@ -70,6 +72,8 @@ class ImageService
                 mkdir($thumbDir, 0755, true);
             }
 
+            $this->saveLargeVariant($imageContent, $destinationDir, $filename);
+
             // Resize to 400px wide and convert to WebP
             $image = Image::read($imageContent);
             $image->scale(width: 400);
@@ -110,6 +114,8 @@ class ImageService
                 mkdir($thumbDir, 0755, true);
             }
 
+            $this->saveLargeVariant($filePath, $destinationDir, $filename);
+
             // Resize to 400px wide and convert to WebP
             $image = Image::read($filePath);
             $image->scale(width: 400);
@@ -125,6 +131,31 @@ class ImageService
         } catch (\Exception $e) {
             \Log::error('Error processing local image: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Save an 800px-wide WebP variant under <destinationDir>/large/<filename>
+     * for retina @2x LCP. Sources <800px are saved at their native width
+     * (no upscaling — that adds no visual information). Failures are logged
+     * but not re-thrown: large variant is optional, srcset falls back to 400px.
+     *
+     * @param  string|UploadedFile $source  Raw bytes, local file path, or an UploadedFile
+     */
+    private function saveLargeVariant($source, string $destinationDir, string $filename): void
+    {
+        try {
+            $largeDir = public_path($destinationDir . '/large');
+            if (!file_exists($largeDir)) mkdir($largeDir, 0755, true);
+
+            $img = Image::read($source);
+            // Don't upscale — saves no information and bloats the file.
+            if ($img->width() > 800) {
+                $img->scale(width: 800);
+            }
+            $img->toWebp(82)->save($largeDir . '/' . $filename);
+        } catch (\Throwable $e) {
+            \Log::warning('ImageService::saveLargeVariant failed: ' . $e->getMessage());
         }
     }
 

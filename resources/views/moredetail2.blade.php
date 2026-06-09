@@ -7,6 +7,7 @@
 @endpush
 
 @push('head')
+    <link rel="preload" as="image" fetchpriority="high" href="{{ asset($book->image) }}" type="image/webp">
     <x-seo.json-ld :schema="$schemas['book']" />
     <x-seo.json-ld :schema="$schemas['breadcrumbs']" />
     @isset($schemas['itemlist_related'])
@@ -56,7 +57,12 @@
                         @if($book->is_new ?? false)
                         <span class="v2-badge-new">جديد</span>
                         @endif
-                        <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" width="400" height="560">
+                        <img src="{{ asset($book->image) }}"
+                             srcset="{{ asset($book->image) }} 400w, {{ asset($book->large_image) }} 800w"
+                             sizes="(max-width: 768px) 90vw, 400px"
+                             alt="{{ $book->title }}"
+                             width="400" height="560"
+                             fetchpriority="high" decoding="async">
                     </div>
 
                     <!-- Share buttons under image -->

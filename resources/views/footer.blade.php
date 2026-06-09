@@ -6,7 +6,7 @@
                     <!-- Brand Column -->
                     <div class="footer-col footer-brand">
                         <a href="{{ route('index.page') }}" class="footer-logo">
-                            <img src="{{ asset('images/logo.svg') }}" alt="{{ $footerSettings['store_name'] ?? 'مكتبة الفقراء' }}" width="40" height="40" loading="lazy">
+                            <img src="{{ asset('images/logo.svg') }}" alt="{{ $footerSettings['store_name'] ?? 'مكتبة الفقراء' }}" width="40" height="40" loading="lazy" decoding="async">
                             <span>{{ $footerSettings['store_name'] ?? 'مكتبة الفقراء' }}</span>
                         </a>
                         <p class="footer-about">نؤمن بأن المعرفة حق للجميع. نسعى لتوفير أفضل الكتب بأسعار مناسبة لكل القراء.</p>

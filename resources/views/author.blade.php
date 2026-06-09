@@ -31,7 +31,7 @@
             <div class="hero-profile">
                 <div class="hero-avatar">
                     @if($author->profile_image)
-                        <img src="{{ asset('storage/' . $author->profile_image) }}" alt="{{ $author->name }}" width="120" height="120" loading="lazy">
+                        <img src="{{ asset('storage/' . $author->profile_image) }}" alt="{{ $author->name }}" width="120" height="120" loading="lazy" decoding="async">
                     @else
                         <div class="avatar-placeholder">
                             <span>{{ mb_substr($author->name, 0, 1) }}</span>
