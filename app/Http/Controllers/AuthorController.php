@@ -288,7 +288,19 @@ class AuthorController extends Controller
             // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
+            'profile_image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('profile_image')) {
+            // Replace the old image (same authors/ folder used by enrichment downloads).
+            if ($author->profile_image && \Storage::disk('public')->exists($author->profile_image)) {
+                \Storage::disk('public')->delete($author->profile_image);
+            }
+            $validated['profile_image'] = $request->file('profile_image')->store('authors', 'public');
+        } else {
+            // No new upload — leave the existing image untouched.
+            unset($validated['profile_image']);
+        }
 
         $author->update($validated);
 

@@ -164,6 +164,27 @@
                 <div class="modal-body">
                     <form id="editAuthorForm">
                         <input type="hidden" id="editAuthorId">
+
+                        <!-- Profile image upload -->
+                        <div class="mb-4 text-center">
+                            <img id="editAuthorImagePreview" src="" alt="صورة المؤلف"
+                                 style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid #e9ecef;display:none;">
+                            <div id="editAuthorImagePlaceholder"
+                                 style="width:120px;height:120px;border-radius:50%;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#adb5bd;margin:0 auto;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="mt-2">
+                                <label for="editAuthorImage" class="btn btn-outline-primary btn-sm mb-0" style="cursor:pointer;">
+                                    <i class="fas fa-camera me-2"></i>تغيير الصورة
+                                </label>
+                                <button type="button" id="editAuthorImageRemove" class="btn btn-outline-danger btn-sm" style="display:none;">
+                                    <i class="fas fa-times me-1"></i>إلغاء
+                                </button>
+                                <input type="file" id="editAuthorImage" accept="image/jpeg,image/png,image/webp" class="d-none">
+                            </div>
+                            <small class="text-muted d-block mt-1">JPG · PNG · WEBP — بحد أقصى 2 ميجابايت</small>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">

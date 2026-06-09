@@ -4,6 +4,7 @@ let currentSearch = '';
 let currentStatus = '';
 let currentApiStatus = '';
 let enrichmentApiData = null;
+let editAuthorOriginalImage = null; // server path of the author's current image, for cancel/revert
 
 // Initialize on page load
 $(document).ready(function () {
@@ -37,6 +38,26 @@ function initializeEventListeners() {
     $('#selectAllFields').on('change', function () {
         const isChecked = $(this).is(':checked');
         $('.enrich-field-checkbox').prop('checked', isChecked);
+    });
+
+    // Live preview when admin picks a new author image
+    $('#editAuthorImage').on('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            $('#editAuthorImagePreview').attr('src', e.target.result).show();
+            $('#editAuthorImagePlaceholder').hide();
+        };
+        reader.readAsDataURL(file);
+        $('#editAuthorImageRemove').show();
+    });
+
+    // Cancel a freshly picked image and revert to the stored one
+    $('#editAuthorImageRemove').on('click', function () {
+        $('#editAuthorImage').val('');
+        $(this).hide();
+        setEditAuthorImagePreview(editAuthorOriginalImage);
     });
 
     $.ajaxSetup({
@@ -295,6 +316,12 @@ function editAuthor(id) {
             $('#editAuthorMetaTitle').val(a.meta_title || '');
             $('#editAuthorMetaDescription').val(a.meta_description || '');
 
+            // Reset image controls and show the author's current image (if any)
+            $('#editAuthorImage').val('');
+            $('#editAuthorImageRemove').hide();
+            editAuthorOriginalImage = a.profile_image || null;
+            setEditAuthorImagePreview(editAuthorOriginalImage);
+
             new bootstrap.Modal(document.getElementById('editAuthorModal')).show();
         }
     })
@@ -303,24 +330,45 @@ function editAuthor(id) {
     });
 }
 
+// Sets the edit-modal image preview from a server-stored path, or shows the placeholder.
+function setEditAuthorImagePreview(path) {
+    if (path) {
+        $('#editAuthorImagePreview').attr('src', '/storage/' + path).show();
+        $('#editAuthorImagePlaceholder').hide();
+    } else {
+        $('#editAuthorImagePreview').attr('src', '').hide();
+        $('#editAuthorImagePlaceholder').show();
+    }
+}
+
 function saveAuthor() {
     const id = $('#editAuthorId').val();
-    const data = {
-        name: $('#editAuthorName').val(),
-        nationality: $('#editAuthorNationality').val() || null,
-        biography: $('#editAuthorBiography').val() || null,
-        birth_date: $('#editAuthorBirthDate').val() || null,
-        death_date: $('#editAuthorDeathDate').val() || null,
-        status: $('#editAuthorStatus').val(),
-        website: $('#editAuthorWebsite').val() || null,
-        meta_title: $('#editAuthorMetaTitle').val() || null,
-        meta_description: $('#editAuthorMetaDescription').val() || null,
-    };
+
+    // Use FormData so an optional image file can be uploaded alongside the fields.
+    // Sent as POST with method spoofing because PHP does not parse multipart on PUT.
+    const formData = new FormData();
+    formData.append('_method', 'PUT');
+    formData.append('name', $('#editAuthorName').val());
+    formData.append('nationality', $('#editAuthorNationality').val());
+    formData.append('biography', $('#editAuthorBiography').val());
+    formData.append('birth_date', $('#editAuthorBirthDate').val());
+    formData.append('death_date', $('#editAuthorDeathDate').val());
+    formData.append('status', $('#editAuthorStatus').val());
+    formData.append('website', $('#editAuthorWebsite').val());
+    formData.append('meta_title', $('#editAuthorMetaTitle').val());
+    formData.append('meta_description', $('#editAuthorMetaDescription').val());
+
+    const imageFile = $('#editAuthorImage')[0].files[0];
+    if (imageFile) {
+        formData.append('profile_image', imageFile);
+    }
 
     $.ajax({
         url: `/admin/authors/${id}`,
-        method: 'PUT',
-        data: data,
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
     })
     .done(function (response) {
         if (response.success) {
