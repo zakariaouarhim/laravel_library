@@ -392,17 +392,29 @@
                                                                     {{ in_array($parent->id, $oldCats) ? 'checked' : '' }}>
                                                                 <span class="form-check-label fw-bold text-muted">{{ $parent->name }} (الفئة الأم نفسها)</span>
                                                             </label>
-                                                            <div class="row g-2">
-                                                                @foreach($parent->children as $child)
-                                                                    <div class="col-md-4 col-sm-6 col-12">
-                                                                        <label class="form-check">
-                                                                            <input type="checkbox" name="category_ids[]" value="{{ $child->id }}" class="form-check-input cat-cb" data-parent="{{ $parent->id }}"
-                                                                                {{ in_array($child->id, $oldCats) ? 'checked' : '' }}>
-                                                                            <span class="form-check-label">{{ $child->name }}</span>
-                                                                        </label>
+                                                            @php
+                                                                // Children arrive pre-sorted by name from the controller, so
+                                                                // grouping by first letter keeps the letter groups alphabetical.
+                                                                $childrenByLetter = $parent->children->groupBy(
+                                                                    fn($c) => mb_substr(trim($c->name), 0, 1, 'UTF-8')
+                                                                );
+                                                            @endphp
+                                                            @foreach($childrenByLetter as $letter => $childGroup)
+                                                                <div class="cat-letter-group mb-2">
+                                                                    <div class="small fw-bold text-primary border-bottom pb-1 mb-2">{{ $letter }}</div>
+                                                                    <div class="row g-2">
+                                                                        @foreach($childGroup as $child)
+                                                                            <div class="col-md-4 col-sm-6 col-12">
+                                                                                <label class="form-check">
+                                                                                    <input type="checkbox" name="category_ids[]" value="{{ $child->id }}" class="form-check-input cat-cb" data-parent="{{ $parent->id }}"
+                                                                                        {{ in_array($child->id, $oldCats) ? 'checked' : '' }}>
+                                                                                    <span class="form-check-label">{{ $child->name }}</span>
+                                                                                </label>
+                                                                            </div>
+                                                                        @endforeach
                                                                     </div>
-                                                                @endforeach
-                                                            </div>
+                                                                </div>
+                                                            @endforeach
                                                         </div>
                                                     </div>
                                                 </div>
