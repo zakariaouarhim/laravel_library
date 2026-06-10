@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/authors.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/authors.css') }}?v={{ filemtime(public_path('css/authors.css')) }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
@@ -402,6 +402,6 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
-    <script src="{{ asset('js/authors.js') }}" defer></script>
+    <script src="{{ asset('js/authors.js') }}?v={{ filemtime(public_path('js/authors.js')) }}" defer></script>
 </body>
 </html>
