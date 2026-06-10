@@ -345,6 +345,10 @@ class BookIngestionService
             $imageSource    = $overrides['image_source']   ?? null;
             $uploadedCover  = $overrides['uploaded_cover'] ?? null;   // \Illuminate\Http\UploadedFile|null
 
+            // SEO overrides — null/blank falls back to MetaBuilder auto-generation.
+            $metaTitle       = $overrides['meta_title']       ?? null;
+            $metaDescription = $overrides['meta_description'] ?? null;
+
             // Author — if the admin picked one from autocomplete at stage time AND
             // didn't override the name to something different, bind to that exact row.
             // Otherwise firstOrCreate by name (with enrichment for newly created rows).
@@ -447,6 +451,8 @@ class BookIngestionService
                 'api_data_status'     => 'enriched',
                 'api_source'          => $sourceTag,
                 'api_last_updated'    => now(),
+                'meta_title'          => $metaTitle ?: null,
+                'meta_description'    => $metaDescription ?: null,
             ]);
 
             // Pivot: book_authors (primary)

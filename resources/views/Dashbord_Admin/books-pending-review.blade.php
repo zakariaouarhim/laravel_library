@@ -353,6 +353,34 @@
                                     <small class="text-muted">الكتاب لن يكون قابلاً للشراء حتى تضع كمية > 0</small>
                                 </div>
 
+                                {{-- ========== SEO (OPTIONAL OVERRIDES) ========== --}}
+                                <div class="col-12">
+                                    <div class="accordion" id="bookSeoAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bookSeoCollapse">
+                                                    <i class="fas fa-search me-2"></i>إعدادات SEO
+                                                    <span class="text-muted ms-2 small">(اختياري — اتركه فارغاً للتوليد التلقائي)</span>
+                                                </button>
+                                            </h2>
+                                            <div id="bookSeoCollapse" class="accordion-collapse collapse" data-bs-parent="#bookSeoAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">عنوان SEO <small class="text-muted">(الحد الأقصى 70 حرف)</small></label>
+                                                        <input type="text" name="meta_title" value="{{ old('meta_title') }}" class="form-control" maxlength="70" dir="auto">
+                                                        <small class="text-muted">يظهر كعنوان نتيجة البحث في Google</small>
+                                                    </div>
+                                                    <div class="mb-0">
+                                                        <label class="form-label">وصف SEO <small class="text-muted">(الحد الأقصى 160 حرف)</small></label>
+                                                        <textarea name="meta_description" class="form-control" rows="2" maxlength="160" dir="auto">{{ old('meta_description') }}</textarea>
+                                                        <small class="text-muted">يظهر تحت العنوان في نتائج البحث</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="col-12">
                                     <label class="form-label">الفئات</label>
                                     @php

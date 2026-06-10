@@ -154,6 +154,9 @@ class AdminBookIngestionController extends Controller
             'category_ids.*' => 'integer|exists:categories,id',
             'image_source'   => 'nullable|in:bnf,google_books,open_library,wikipedia,custom',
             'uploaded_cover' => 'required_if:image_source,custom|nullable|image|max:5120',
+            // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.
+            'meta_title'       => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:160',
         ]);
 
         // Pass the uploaded file (if any) through to the service via overrides.
