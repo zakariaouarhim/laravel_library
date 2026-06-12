@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Follow;
 use App\Models\Series;
+use App\Models\HomeCarousel;
 use Illuminate\Support\Facades\Auth;
 
 class BookController extends Controller
@@ -150,12 +151,6 @@ class BookController extends Controller
             'book'        => $schemaBuilder->forBook($loaded),
             'breadcrumbs' => $schemaBuilder->forBreadcrumbs($trail),
         ];
-
-        // Per-review Review objects (only when approved reviews exist).
-        $reviews = $schemaBuilder->forReviews($loaded);
-        if (!empty($reviews)) {
-            $data['schemas']['reviews'] = ['@context' => 'https://schema.org', '@graph' => $reviews];
-        }
 
         // ItemList schemas for each visible carousel (only when non-empty).
         if ($data['relatedBooks']->isNotEmpty()) {
@@ -577,20 +572,42 @@ class BookController extends Controller
               ->get();
         });
         $popularBooks = Cache::remember('popular_books', 1800, function () {
-            return Book::select(
-                'books.*',
-                DB::raw('COUNT(order_details.book_id) as orders_count')
-            )
-            ->join('order_details', 'books.id', '=', 'order_details.book_id')
-            ->where('books.type', 'book')
-            ->where('books.product_type', 'standard')
-            ->groupBy('books.id')
-            ->orderByDesc('orders_count')
-            ->with(['primaryAuthor', 'authors', 'bundles:id,title,price,image'])
-            ->withCount('reviews')
-            ->withAvg('reviews as reviews_avg_rating', 'rating')
-            ->limit(10)
-            ->get();
+            // Best-sellers ranked by units sold within a recent time window.
+            // Widen the window (1 → 7 → 14 → 30 → 60 days → all-time) until the
+            // carousel is filled, then fall back to all-time if still short.
+            $limit = 10;
+
+            $bestSellersWithin = function (?int $days) use ($limit) {
+                $query = Book::select(
+                        'books.*',
+                        DB::raw('SUM(order_details.quantity) as orders_count')
+                    )
+                    ->join('order_details', 'books.id', '=', 'order_details.book_id')
+                    ->where('books.type', 'book')
+                    ->where('books.product_type', 'standard');
+
+                if ($days !== null) {
+                    $query->where('order_details.created_at', '>=', now()->subDays($days));
+                }
+
+                return $query->groupBy('books.id')
+                    ->orderByDesc('orders_count')
+                    ->with(['primaryAuthor', 'authors', 'bundles:id,title,price,image'])
+                    ->withCount('reviews')
+                    ->withAvg('reviews as reviews_avg_rating', 'rating')
+                    ->limit($limit)
+                    ->get();
+            };
+
+            foreach ([1, 7, 14, 30, 60] as $days) {
+                $books = $bestSellersWithin($days);
+                if ($books->count() >= $limit) {
+                    return $books;
+                }
+            }
+
+            // Final fallback: all-time best-sellers (no date filter).
+            return $bestSellersWithin(null);
         });
 
         // Get categories with children
@@ -710,6 +727,22 @@ class BookController extends Controller
             ? $this->recommendations->getScoredRecommendations(Auth::id(), 12)
             : collect();
 
+        // Admin-built dynamic carousels, ordered by sort_order, rendered after the
+        // fixed homepage sections. Each carousel's resolved books are cached for 30 min;
+        // the cache key includes updated_at so admin edits invalidate it automatically.
+        $dynamicCarousels = Cache::remember('home_carousels_active', 1800, function () {
+            return HomeCarousel::active()
+                ->orderBy('sort_order')
+                ->orderByDesc('id')
+                ->get()
+                ->map(function (HomeCarousel $carousel) {
+                    $carousel->setRelation('resolvedBooks', $carousel->resolveBooks());
+                    return $carousel;
+                })
+                ->filter(fn(HomeCarousel $c) => $c->resolvedBooks->isNotEmpty())
+                ->values();
+        });
+
         $seo = app(\App\Services\Seo\MetaBuilder::class)->forHomepage();
 
         $schemaBuilder = app(\App\Services\Seo\SchemaBuilder::class);
@@ -721,7 +754,7 @@ class BookController extends Controller
             $schemas['bookstore'] = $bookStore;
         }
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'frenchBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo', 'schemas'));
+        return view('index', compact('books', 'categorie', 'englishBooks', 'frenchBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'dynamicCarousels', 'seo', 'schemas'));
     }
 
     public function byCategory(Request $request, Category $category)

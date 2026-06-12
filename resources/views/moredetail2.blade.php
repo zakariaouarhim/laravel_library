@@ -10,9 +10,6 @@
     <link rel="preload" as="image" fetchpriority="high" href="{{ asset($book->image) }}" type="image/webp">
     <x-seo.json-ld :schema="$schemas['book']" />
     <x-seo.json-ld :schema="$schemas['breadcrumbs']" />
-    @isset($schemas['reviews'])
-        <x-seo.json-ld :schema="$schemas['reviews']" />
-    @endisset
     @isset($schemas['itemlist_related'])
         <x-seo.json-ld :schema="$schemas['itemlist_related']" />
     @endisset

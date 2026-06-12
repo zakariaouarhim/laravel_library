@@ -29,6 +29,26 @@ class SchemaBuilder
         $ratingCount = $approvedReviews->count();
         $avgRating   = $approvedReviews->avg('rating') ?? 0;
 
+        // Embed Review objects inside Product (Google attaches them to the Product
+        // entity, unlocking review snippets in SERP). Cap at 10 to avoid bloat.
+        $reviewObjects = $approvedReviews
+            ->sortByDesc('created_at')
+            ->take(10)
+            ->values()
+            ->map(fn ($r) => $this->stripNulls([
+                '@type'         => 'Review',
+                'reviewRating'  => [
+                    '@type'       => 'Rating',
+                    'ratingValue' => (int) $r->rating,
+                    'bestRating'  => 5,
+                    'worstRating' => 1,
+                ],
+                'author'        => ['@type' => 'Person', 'name' => $r->user?->name ?: 'قارئ'],
+                'reviewBody'    => $r->comment ? Str::limit(strip_tags($r->comment), 500) : null,
+                'datePublished' => $r->created_at?->toIso8601String(),
+            ]))
+            ->all();
+
         $authorName    = $book->primaryAuthor?->name ?? $book->author_name ?? null;
         $publisherName = $book->publishingHouse?->name ?? $book->publishing_house_name ?? null;
         $brandName     = $publisherName ?: config('seo.organization.name');
@@ -65,6 +85,7 @@ class SchemaBuilder
                 'bestRating'  => 5,
                 'worstRating' => 1,
             ] : null,
+            'review' => !empty($reviewObjects) ? $reviewObjects : null,
         ];
 
         return $this->stripNulls($schema);
@@ -177,45 +198,6 @@ class SchemaBuilder
                 ],
             ])->all(),
         ];
-    }
-
-    /**
-     * Per-review Review objects for a book. Caller wraps the result in a single
-     * @graph script so Google reads N reviews from one <script> tag.
-     *
-     * Returns [] when no approved reviews exist (caller gates emission).
-     * Reuses the same approved-reviews filter as forBook().
-     */
-    public function forReviews(Book $book, int $limit = 10): array
-    {
-        if (!$book->relationLoaded('reviewsWithUsers')) {
-            return [];
-        }
-
-        $approved = $book->reviewsWithUsers
-            ->where('status', 'approved')
-            ->sortByDesc('created_at')
-            ->take($limit);
-
-        if ($approved->isEmpty()) {
-            return [];
-        }
-
-        $bookRef = ['@type' => 'Book', 'name' => $book->title, 'url' => route('moredetail2.page', $book)];
-
-        return $approved->values()->map(fn ($r) => $this->stripNulls([
-            '@type'         => 'Review',
-            'reviewRating'  => [
-                '@type'       => 'Rating',
-                'ratingValue' => (int) $r->rating,
-                'bestRating'  => 5,
-                'worstRating' => 1,
-            ],
-            'author'        => ['@type' => 'Person', 'name' => $r->user?->name ?: 'قارئ'],
-            'reviewBody'    => $r->comment ? Str::limit(strip_tags($r->comment), 500) : null,
-            'datePublished' => $r->created_at?->toIso8601String(),
-            'itemReviewed'  => $bookRef,
-        ]))->all();
     }
 
     /**
