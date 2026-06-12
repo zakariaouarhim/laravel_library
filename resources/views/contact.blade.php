@@ -5,6 +5,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 @endpush
 
+@push('head')
+    @isset($schemas['bookstore'])
+        <x-seo.json-ld :schema="$schemas['bookstore']" />
+    @endisset
+@endpush
+
 @section('content')
     @include('partials.page-hero', [
         'title'       => 'اتصل بنا',
@@ -83,7 +89,7 @@
                         <i class="fas fa-envelope"></i>
                     </div>
                     <h4>البريد الإلكتروني</h4>
-                    <p>info@maktabet-alfuqara.com</p>
+                    <p>{{ \App\Models\SystemSetting::getSetting('store_email', 'info@maktabet-alfuqara.com') }}</p>
                 </div>
 
                 <div class="info-card">
@@ -91,7 +97,7 @@
                         <i class="fas fa-phone-alt"></i>
                     </div>
                     <h4>الهاتف</h4>
-                    <p dir="ltr">+212 69 121 8840</p>
+                    <p dir="ltr">{{ \App\Models\SystemSetting::getSetting('store_phone', '+212 69 121 8840') }}</p>
                 </div>
 
                 <div class="info-card">
@@ -99,7 +105,15 @@
                         <i class="fas fa-map-marker-alt"></i>
                     </div>
                     <h4>العنوان</h4>
-                    <p>المملكة المغربية</p>
+                    @php
+                        $addrParts = array_filter([
+                            \App\Models\SystemSetting::getSetting('store_street'),
+                            \App\Models\SystemSetting::getSetting('store_city'),
+                            \App\Models\SystemSetting::getSetting('store_region'),
+                        ]);
+                        $address = $addrParts ? implode('، ', $addrParts) : \App\Models\SystemSetting::getSetting('store_address', 'المملكة المغربية');
+                    @endphp
+                    <p>{{ $address }}</p>
                 </div>
 
                 <div class="info-card">
@@ -107,7 +121,7 @@
                         <i class="fas fa-clock"></i>
                     </div>
                     <h4>ساعات العمل</h4>
-                    <p>الثلثاء - الأحد: 10 صباحاً - 8 مساءً</p>
+                    <p dir="ltr">{{ \App\Models\SystemSetting::getSetting('opening_hours') ?: 'الثلثاء - الأحد: 10 صباحاً - 8 مساءً' }}</p>
                 </div>
 
                 <!-- Social Links -->

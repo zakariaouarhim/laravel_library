@@ -5,6 +5,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 @endpush
 
+@push('head')
+    @isset($schemas['faq'])
+        <x-seo.json-ld :schema="$schemas['faq']" />
+    @endisset
+@endpush
+
 @section('content')
     @include('partials.page-hero', [
         'title'       => 'من نحن',
@@ -154,4 +160,36 @@
             </div>
         </div>
     </section>
+
+    @if(isset($faqs) && $faqs->isNotEmpty())
+        <section class="about-faqs" style="background:#fff;padding:3rem 0;">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <div class="section-badge mb-2"><i class="fas fa-question-circle"></i><span>الأسئلة الشائعة</span></div>
+                    <h2 class="story-title mb-0">إجابات على ما يهمك</h2>
+                </div>
+                <div class="accordion mx-auto" id="aboutFaqAccordion" style="max-width:900px;">
+                    @foreach($faqs as $faq)
+                        <div class="accordion-item mb-2" style="border-radius:12px;overflow:hidden;border:1px solid var(--color-border-light,#f0f0f0);">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq-{{ $faq->id }}" aria-expanded="false" style="font-weight:600;">
+                                    {{ $faq->question }}
+                                </button>
+                            </h3>
+                            <div id="faq-{{ $faq->id }}" class="accordion-collapse collapse" data-bs-parent="#aboutFaqAccordion">
+                                <div class="accordion-body" style="line-height:1.85;">
+                                    @foreach(preg_split('/\R\s*\R/', trim($faq->answer)) as $para)
+                                        @if(trim($para) !== '')
+                                            <p style="margin:0 0 .75rem;">{{ trim($para) }}</p>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 @endsection

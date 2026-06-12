@@ -151,6 +151,12 @@ class BookController extends Controller
             'breadcrumbs' => $schemaBuilder->forBreadcrumbs($trail),
         ];
 
+        // Per-review Review objects (only when approved reviews exist).
+        $reviews = $schemaBuilder->forReviews($loaded);
+        if (!empty($reviews)) {
+            $data['schemas']['reviews'] = ['@context' => 'https://schema.org', '@graph' => $reviews];
+        }
+
         // ItemList schemas for each visible carousel (only when non-empty).
         if ($data['relatedBooks']->isNotEmpty()) {
             $data['schemas']['itemlist_related'] = $schemaBuilder->forItemList($data['relatedBooks'], 1, 'كتب ذات صلة');
@@ -706,9 +712,14 @@ class BookController extends Controller
 
         $seo = app(\App\Services\Seo\MetaBuilder::class)->forHomepage();
 
+        $schemaBuilder = app(\App\Services\Seo\SchemaBuilder::class);
         $schemas = [
-            'website' => app(\App\Services\Seo\SchemaBuilder::class)->forWebsite(),
+            'website' => $schemaBuilder->forWebsite(),
         ];
+        $bookStore = $schemaBuilder->forBookStore();
+        if (!empty($bookStore)) {
+            $schemas['bookstore'] = $bookStore;
+        }
 
         return view('index', compact('books', 'categorie', 'englishBooks', 'frenchBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo', 'schemas'));
     }

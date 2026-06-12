@@ -9,6 +9,9 @@
 
 @push('head')
     <x-seo.json-ld :schema="$schemas['website']" />
+    @isset($schemas['bookstore'])
+        <x-seo.json-ld :schema="$schemas['bookstore']" />
+    @endisset
 @endpush
 
 @section('content')
@@ -56,6 +59,12 @@
         <div id="french-books">
             <x-book-carousel :books="$frenchBooks" title="كتب بالفرنسية" />
         </div>
+
+        @foreach($dynamicCarousels as $carousel)
+        <div id="home-carousel-{{ $carousel->id }}">
+            <x-book-carousel :books="$carousel->resolvedBooks" :title="$carousel->title" />
+        </div>
+        @endforeach
 
         @if($recentlyViewed->count() > 0)
         <div id="recently-viewed">

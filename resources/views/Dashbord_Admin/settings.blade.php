@@ -77,6 +77,48 @@
                     </div>
                 </div>
 
+                {{-- SEO BookStore schema fields --}}
+                <div class="settings-card">
+                    <h3><i class="fas fa-map-marked-alt"></i>معلومات المتجر للـ SEO</h3>
+                    <div class="input-hint mb-3">تظهر هذه البيانات في نتائج البحث وخرائط Google. اتركها فارغة إن لم يكن للمتجر فرع فعلي.</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">الشارع</label>
+                            <input type="text" name="store_street" class="form-control" value="{{ old('store_street', $settings['store_street']) }}" placeholder="123 شارع محمد الخامس">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">المدينة</label>
+                            <input type="text" name="store_city" class="form-control" value="{{ old('store_city', $settings['store_city']) }}" placeholder="مراكش">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">الجهة (اختياري)</label>
+                            <input type="text" name="store_region" class="form-control" value="{{ old('store_region', $settings['store_region']) }}" placeholder="جهة مراكش-آسفي">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">الرمز البريدي</label>
+                            <input type="text" name="store_postal_code" class="form-control" value="{{ old('store_postal_code', $settings['store_postal_code']) }}" placeholder="40000">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">رمز البلد (ISO)</label>
+                            <input type="text" name="store_country" class="form-control text-uppercase" maxlength="2" value="{{ old('store_country', $settings['store_country']) }}" placeholder="MA">
+                            <div class="input-hint">MA = المغرب</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">خط العرض (Latitude)</label>
+                            <input type="text" name="store_latitude" class="form-control" value="{{ old('store_latitude', $settings['store_latitude']) }}" placeholder="31.6295">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">خط الطول (Longitude)</label>
+                            <input type="text" name="store_longitude" class="form-control" value="{{ old('store_longitude', $settings['store_longitude']) }}" placeholder="-7.9811">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">ساعات العمل (تنسيق Schema.org)</label>
+                            <input type="text" name="opening_hours" class="form-control" value="{{ old('opening_hours', $settings['opening_hours']) }}" placeholder="Tu-Su 10:00-20:00" dir="ltr">
+                            <div class="input-hint">مثال: <code>Tu-Su 10:00-20:00</code> (الثلاثاء للأحد، 10 صباحاً - 8 مساءً). أيام الأسبوع: Mo Tu We Th Fr Sa Su.</div>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Shipping --}}
                 <div class="settings-card">
                     <h3><i class="fas fa-truck"></i>الشحن</h3>

@@ -150,6 +150,70 @@ class SchemaBuilder
     }
 
     /**
+     * FAQPage with N Question/Answer pairs. Pass a Collection of Faq models.
+     * Returns [] when collection is empty (caller gates emission).
+     */
+    public function forFaqPage($faqs): array
+    {
+        $items = $faqs instanceof Collection ? $faqs : collect($faqs);
+        if ($items->isEmpty()) {
+            return [];
+        }
+
+        return [
+            '@context'   => 'https://schema.org',
+            '@type'      => 'FAQPage',
+            'mainEntity' => $items->values()->map(fn ($f) => [
+                '@type'          => 'Question',
+                'name'           => $f->question,
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text'  => strip_tags($f->answer),
+                ],
+            ])->all(),
+        ];
+    }
+
+    /**
+     * Per-review Review objects for a book. Caller wraps the result in a single
+     * @graph script so Google reads N reviews from one <script> tag.
+     *
+     * Returns [] when no approved reviews exist (caller gates emission).
+     * Reuses the same approved-reviews filter as forBook().
+     */
+    public function forReviews(Book $book, int $limit = 10): array
+    {
+        if (!$book->relationLoaded('reviewsWithUsers')) {
+            return [];
+        }
+
+        $approved = $book->reviewsWithUsers
+            ->where('status', 'approved')
+            ->sortByDesc('created_at')
+            ->take($limit);
+
+        if ($approved->isEmpty()) {
+            return [];
+        }
+
+        $bookRef = ['@type' => 'Book', 'name' => $book->title, 'url' => route('moredetail2.page', $book)];
+
+        return $approved->values()->map(fn ($r) => $this->stripNulls([
+            '@type'         => 'Review',
+            'reviewRating'  => [
+                '@type'       => 'Rating',
+                'ratingValue' => (int) $r->rating,
+                'bestRating'  => 5,
+                'worstRating' => 1,
+            ],
+            'author'        => ['@type' => 'Person', 'name' => $r->user?->name ?: 'قارئ'],
+            'reviewBody'    => $r->comment ? Str::limit(strip_tags($r->comment), 500) : null,
+            'datePublished' => $r->created_at?->toIso8601String(),
+            'itemReviewed'  => $bookRef,
+        ]))->all();
+    }
+
+    /**
      * Plain ItemList of books — each entry links to the book detail page.
      * Accepts Collection or LengthAwarePaginator (the latter exposes ->items()).
      *
@@ -216,6 +280,52 @@ class SchemaBuilder
                 'query-input' => 'required name=search_term_string',
             ],
         ];
+    }
+
+    /**
+     * BookStore (specialized LocalBusiness) — emitted on homepage + contact page
+     * when admin has populated a complete address in SystemSetting. Returns []
+     * if addressLocality (city) is missing — empty/partial address worse than no
+     * schema (Google demotes for incomplete LocalBusiness data).
+     */
+    public function forBookStore(): array
+    {
+        $get = fn ($k, $d = null) => \App\Models\SystemSetting::getSetting($k, $d);
+
+        $city = trim((string) $get('store_city', ''));
+        if ($city === '') {
+            return [];
+        }
+
+        $lat = $get('store_latitude');
+        $lng = $get('store_longitude');
+
+        return $this->stripNulls([
+            '@context'    => 'https://schema.org',
+            '@type'       => 'BookStore',
+            'name'        => config('seo.organization.name'),
+            'url'         => url('/'),
+            'image'       => asset(config('seo.organization.logo')),
+            'telephone'   => $get('store_phone') ?: null,
+            'email'       => $get('store_email') ?: null,
+            'address'     => [
+                '@type'           => 'PostalAddress',
+                'streetAddress'   => $get('store_street') ?: null,
+                'addressLocality' => $city,
+                'addressRegion'   => $get('store_region') ?: null,
+                'postalCode'      => $get('store_postal_code') ?: null,
+                'addressCountry'  => $get('store_country', 'MA') ?: 'MA',
+            ],
+            'geo'         => ($lat !== '' && $lng !== '' && $lat !== null && $lng !== null) ? [
+                '@type'     => 'GeoCoordinates',
+                'latitude'  => (string) $lat,
+                'longitude' => (string) $lng,
+            ] : null,
+            'openingHours' => $get('opening_hours') ?: null,
+            'sameAs'       => !empty(config('seo.organization.social'))
+                ? array_values(config('seo.organization.social'))
+                : null,
+        ]);
     }
 
     /**

@@ -33,7 +33,14 @@ class PageController extends Controller
             route('about.page')
         );
 
-        return view('about', compact('stats', 'seo'));
+        $faqs = \App\Models\Faq::active()->ordered()->get();
+        $schemas = [];
+        $faqSchema = app(\App\Services\Seo\SchemaBuilder::class)->forFaqPage($faqs);
+        if (!empty($faqSchema)) {
+            $schemas['faq'] = $faqSchema;
+        }
+
+        return view('about', compact('stats', 'seo', 'faqs', 'schemas'));
     }
 
     public function contact()
@@ -44,7 +51,13 @@ class PageController extends Controller
             route('contact.page')
         );
 
-        return view('contact', compact('seo'));
+        $schemas = [];
+        $bookStore = app(\App\Services\Seo\SchemaBuilder::class)->forBookStore();
+        if (!empty($bookStore)) {
+            $schemas['bookstore'] = $bookStore;
+        }
+
+        return view('contact', compact('seo', 'schemas'));
     }
 
     public function storeContact(StoreContactRequest $request)

@@ -169,6 +169,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     // Search insights — aggregated user search queries for SEO copy + inventory gaps
     Route::get('/search-insights', [\App\Http\Controllers\AdminSearchInsightsController::class, 'index'])->name('search-insights.index');
 
+    // FAQ management (powers the public /about FAQ section + FAQPage schema)
+    Route::get('/faqs',                 [\App\Http\Controllers\AdminFaqController::class, 'index'])->name('faqs.index');
+    Route::post('/faqs',                [\App\Http\Controllers\AdminFaqController::class, 'store'])->name('faqs.store');
+    Route::put('/faqs/{faq}',           [\App\Http\Controllers\AdminFaqController::class, 'update'])->name('faqs.update');
+    Route::delete('/faqs/{faq}',        [\App\Http\Controllers\AdminFaqController::class, 'destroy'])->name('faqs.destroy');
+
     // Categories management
     Route::get('/categories',                   [AdminCategoryController::class, 'index'])->name('categories.index');
     Route::post('/categories',                  [AdminCategoryController::class, 'store'])->name('categories.store');
