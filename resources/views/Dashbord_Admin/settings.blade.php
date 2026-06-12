@@ -138,6 +138,70 @@
                             </div>
                             <div class="input-hint">أدخل 0 لتعطيل الشحن المجاني</div>
                         </div>
+                        <div class="col-12"><hr class="my-2"></div>
+                        <div class="col-12">
+                            <div class="input-hint mb-2"><strong>مدة التسليم</strong> — تظهر في نتائج البحث (Schema.org OfferShippingDetails).</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">معالجة الطلب (الحد الأدنى)</label>
+                            <div class="input-group">
+                                <input type="number" name="shipping_handling_days_min" class="form-control" min="0" max="60" value="{{ old('shipping_handling_days_min', $settings['shipping_handling_days_min']) }}">
+                                <span class="input-group-text">يوم</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">معالجة الطلب (الحد الأقصى)</label>
+                            <div class="input-group">
+                                <input type="number" name="shipping_handling_days_max" class="form-control" min="0" max="60" value="{{ old('shipping_handling_days_max', $settings['shipping_handling_days_max']) }}">
+                                <span class="input-group-text">يوم</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">النقل (الحد الأدنى)</label>
+                            <div class="input-group">
+                                <input type="number" name="shipping_transit_days_min" class="form-control" min="0" max="60" value="{{ old('shipping_transit_days_min', $settings['shipping_transit_days_min']) }}">
+                                <span class="input-group-text">يوم</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">النقل (الحد الأقصى)</label>
+                            <div class="input-group">
+                                <input type="number" name="shipping_transit_days_max" class="form-control" min="0" max="60" value="{{ old('shipping_transit_days_max', $settings['shipping_transit_days_max']) }}">
+                                <span class="input-group-text">يوم</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Returns Policy (Schema.org MerchantReturnPolicy) --}}
+                <div class="settings-card">
+                    <h3><i class="fas fa-undo"></i>سياسة الإرجاع</h3>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">مدة الإرجاع</label>
+                            <div class="input-group">
+                                <input type="number" name="return_window_days" class="form-control" min="0" max="365" value="{{ old('return_window_days', $settings['return_window_days']) }}">
+                                <span class="input-group-text">يوم</span>
+                            </div>
+                            <div class="input-hint">عدد الأيام المسموح فيها بإرجاع المنتج</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">طريقة الإرجاع</label>
+                            <select name="return_method" class="form-control">
+                                <option value="ReturnByMail" @selected(old('return_method', $settings['return_method']) === 'ReturnByMail')>عبر البريد</option>
+                                <option value="ReturnInStore" @selected(old('return_method', $settings['return_method']) === 'ReturnInStore')>في المتجر</option>
+                                <option value="ReturnAtKiosk" @selected(old('return_method', $settings['return_method']) === 'ReturnAtKiosk')>في نقطة استلام</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">رسوم الإرجاع</label>
+                            <select name="return_fees" class="form-control">
+                                <option value="ReturnFeesCustomerResponsibility" @selected(old('return_fees', $settings['return_fees']) === 'ReturnFeesCustomerResponsibility')>يتحملها العميل</option>
+                                <option value="FreeReturn" @selected(old('return_fees', $settings['return_fees']) === 'FreeReturn')>إرجاع مجاني</option>
+                                <option value="ReturnShippingFees" @selected(old('return_fees', $settings['return_fees']) === 'ReturnShippingFees')>رسوم شحن الإرجاع فقط</option>
+                                <option value="RestockingFees" @selected(old('return_fees', $settings['return_fees']) === 'RestockingFees')>رسوم إعادة التخزين</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

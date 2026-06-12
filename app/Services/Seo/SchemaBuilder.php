@@ -31,6 +31,8 @@ class SchemaBuilder
 
         $authorName    = $book->primaryAuthor?->name ?? $book->author_name ?? null;
         $publisherName = $book->publishingHouse?->name ?? $book->publishing_house_name ?? null;
+        $brandName     = $publisherName ?: config('seo.organization.name');
+        $currency      = 'MAD';
 
         $schema = [
             '@context' => 'https://schema.org',
@@ -44,14 +46,17 @@ class SchemaBuilder
             'numberOfPages' => $book->page_num ? (int) $book->page_num : null,
             'author'    => $authorName ? ['@type' => 'Person', 'name' => $authorName] : null,
             'publisher' => $publisherName ? ['@type' => 'Organization', 'name' => $publisherName] : null,
+            'brand'     => ['@type' => 'Brand', 'name' => $brandName],
             'offers' => [
-                '@type'         => 'Offer',
-                'price'         => $book->price,
-                'priceCurrency' => 'DZD',
-                'availability'  => ($book->quantity ?? 0) > 0
+                '@type'                  => 'Offer',
+                'price'                  => $book->price,
+                'priceCurrency'          => $currency,
+                'availability'           => ($book->quantity ?? 0) > 0
                     ? 'https://schema.org/InStock'
                     : 'https://schema.org/OutOfStock',
-                'url'           => route('moredetail2.page', $book),
+                'url'                    => route('moredetail2.page', $book),
+                'shippingDetails'        => $this->buildShippingDetails($currency),
+                'hasMerchantReturnPolicy' => $this->buildReturnPolicy(),
             ],
             'aggregateRating' => $ratingCount > 0 ? [
                 '@type'       => 'AggregateRating',
@@ -343,6 +348,64 @@ class SchemaBuilder
                 ? array_values(config('seo.organization.social'))
                 : null,
         ]);
+    }
+
+    /**
+     * OfferShippingDetails read from SystemSetting. Rate reuses shipping_cost;
+     * country reuses store_country (defaults MA). Caller passes currency so
+     * shipping matches offer currency.
+     */
+    private function buildShippingDetails(string $currency): array
+    {
+        $get = fn ($k, $d = null) => \App\Models\SystemSetting::getSetting($k, $d);
+
+        return [
+            '@type'        => 'OfferShippingDetails',
+            'shippingRate' => [
+                '@type'    => 'MonetaryAmount',
+                'value'    => (string) $get('shipping_cost', '25'),
+                'currency' => $currency,
+            ],
+            'shippingDestination' => [
+                '@type'          => 'DefinedRegion',
+                'addressCountry' => $get('store_country', 'MA') ?: 'MA',
+            ],
+            'deliveryTime' => [
+                '@type'        => 'ShippingDeliveryTime',
+                'handlingTime' => [
+                    '@type'    => 'QuantitativeValue',
+                    'minValue' => (int) $get('shipping_handling_days_min', 0),
+                    'maxValue' => (int) $get('shipping_handling_days_max', 1),
+                    'unitCode' => 'DAY',
+                ],
+                'transitTime' => [
+                    '@type'    => 'QuantitativeValue',
+                    'minValue' => (int) $get('shipping_transit_days_min', 2),
+                    'maxValue' => (int) $get('shipping_transit_days_max', 5),
+                    'unitCode' => 'DAY',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * MerchantReturnPolicy from SystemSetting. Defaults: 7-day window, return
+     * by mail, customer pays return shipping (matches typical Moroccan retail).
+     * returnMethod / returnFees are short identifiers stored in settings and
+     * expanded to full schema.org URLs here.
+     */
+    private function buildReturnPolicy(): array
+    {
+        $get = fn ($k, $d = null) => \App\Models\SystemSetting::getSetting($k, $d);
+
+        return [
+            '@type'                => 'MerchantReturnPolicy',
+            'applicableCountry'    => $get('store_country', 'MA') ?: 'MA',
+            'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
+            'merchantReturnDays'   => (int) $get('return_window_days', 7),
+            'returnMethod'         => 'https://schema.org/' . $get('return_method', 'ReturnByMail'),
+            'returnFees'           => 'https://schema.org/' . $get('return_fees', 'ReturnFeesCustomerResponsibility'),
+        ];
     }
 
     /**
