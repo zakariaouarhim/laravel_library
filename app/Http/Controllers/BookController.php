@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Follow;
 use App\Models\Series;
-use App\Models\HomeCarousel;
 use Illuminate\Support\Facades\Auth;
 
 class BookController extends Controller
@@ -727,22 +726,6 @@ class BookController extends Controller
             ? $this->recommendations->getScoredRecommendations(Auth::id(), 12)
             : collect();
 
-        // Admin-built dynamic carousels, ordered by sort_order, rendered after the
-        // fixed homepage sections. Each carousel's resolved books are cached for 30 min;
-        // the cache key includes updated_at so admin edits invalidate it automatically.
-        $dynamicCarousels = Cache::remember('home_carousels_active', 1800, function () {
-            return HomeCarousel::active()
-                ->orderBy('sort_order')
-                ->orderByDesc('id')
-                ->get()
-                ->map(function (HomeCarousel $carousel) {
-                    $carousel->setRelation('resolvedBooks', $carousel->resolveBooks());
-                    return $carousel;
-                })
-                ->filter(fn(HomeCarousel $c) => $c->resolvedBooks->isNotEmpty())
-                ->values();
-        });
-
         $seo = app(\App\Services\Seo\MetaBuilder::class)->forHomepage();
 
         $schemaBuilder = app(\App\Services\Seo\SchemaBuilder::class);
@@ -754,7 +737,7 @@ class BookController extends Controller
             $schemas['bookstore'] = $bookStore;
         }
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'frenchBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'dynamicCarousels', 'seo', 'schemas'));
+        return view('index', compact('books', 'categorie', 'englishBooks', 'frenchBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'seo', 'schemas'));
     }
 
     public function byCategory(Request $request, Category $category)
