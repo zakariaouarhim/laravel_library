@@ -60,11 +60,13 @@
             <x-book-carousel :books="$frenchBooks" title="كتب بالفرنسية" />
         </div>
 
-        @foreach($dynamicCarousels as $carousel)
-        <div id="home-carousel-{{ $carousel->id }}">
-            <x-book-carousel :books="$carousel->resolvedBooks" :title="$carousel->title" />
-        </div>
-        @endforeach
+        @isset($dynamicCarousels)
+            @foreach($dynamicCarousels as $carousel)
+            <div id="home-carousel-{{ $carousel->id }}">
+                <x-book-carousel :books="$carousel->resolvedBooks" :title="$carousel->title" />
+            </div>
+            @endforeach
+        @endisset
 
         @if($recentlyViewed->count() > 0)
         <div id="recently-viewed">
