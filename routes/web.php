@@ -35,6 +35,7 @@ use App\Http\Controllers\ReadingShelfController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminSeriesController;
 use App\Http\Controllers\AdminBundleController;
+use App\Http\Controllers\AdminHomeCarouselController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
 
@@ -69,6 +70,13 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/coupons/{coupon}',               [CouponController::class, 'update'])->name('coupons.update');
     Route::delete('/coupons/{coupon}',            [CouponController::class, 'destroy'])->name('coupons.destroy');
     Route::post('/coupons/{coupon}/toggle',       [CouponController::class, 'toggleActive'])->name('coupons.toggle');
+
+    // Home carousels (كاروسيلات الصفحة الرئيسية)
+    Route::get('/home-carousels',                       [AdminHomeCarouselController::class, 'index'])->name('home-carousels.index');
+    Route::post('/home-carousels',                      [AdminHomeCarouselController::class, 'store'])->name('home-carousels.store');
+    Route::put('/home-carousels/{home_carousel}',        [AdminHomeCarouselController::class, 'update'])->name('home-carousels.update');
+    Route::delete('/home-carousels/{home_carousel}',     [AdminHomeCarouselController::class, 'destroy'])->name('home-carousels.destroy');
+    Route::post('/home-carousels/{home_carousel}/toggle',[AdminHomeCarouselController::class, 'toggleActive'])->name('home-carousels.toggle');
 
     // Client management
     Route::get('/client', [AdminClientController::class, 'index'])->name('client.index');

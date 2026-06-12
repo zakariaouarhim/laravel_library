@@ -144,6 +144,14 @@
                     </svg>
                     <span class="nav-text">الكوبونات</span>
                 </a>
+                <a href="{{ route('admin.home-carousels.index') }}"
+                   class="sidebar-nav-item {{ request()->routeIs('admin.home-carousels.*') ? 'active' : '' }}"
+                   title="كاروسيلات الصفحة الرئيسية">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="14" height="12" rx="2"/><path d="M18 8v8"/><path d="M22 10v4"/>
+                    </svg>
+                    <span class="nav-text">كاروسيلات الرئيسية</span>
+                </a>
                 <a href="{{ route('admin.client.index') }}"
                    class="sidebar-nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}"
                    title="الزبائن">
