@@ -16,6 +16,7 @@ class StoreHomeCarouselRequest extends FormRequest
         return [
             'title'         => 'required|string|max:191',
             'source_type'   => 'required|in:categories,author,manual',
+            'language'      => 'nullable|in:arabic,english,french',
             'book_limit'    => 'required|integer|min:1|max:50',
             'sort_order'    => 'nullable|integer',
             'is_active'     => 'boolean',

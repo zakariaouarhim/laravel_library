@@ -91,10 +91,14 @@ class AdminHomeCarouselController extends Controller
 
     private function baseData($request): array
     {
+        $type = $request->input('source_type');
+
         return [
             'title'       => $request->input('title'),
-            'source_type' => $request->input('source_type'),
-            'author_id'   => $request->input('source_type') === 'author' ? $request->input('author_id') : null,
+            'source_type' => $type,
+            // Language filter only applies to author/categories sources.
+            'language'    => in_array($type, ['author', 'categories'], true) ? ($request->input('language') ?: null) : null,
+            'author_id'   => $type === 'author' ? $request->input('author_id') : null,
             'book_limit'  => $request->input('book_limit', 12),
             'sort_order'  => $request->input('sort_order', 0),
             'is_active'   => $request->boolean('is_active'),

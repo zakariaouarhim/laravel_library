@@ -70,6 +70,18 @@
     </div>
     <div id="selectedBooks_{{ $ctx }}" class="selected-books"></div>
 </div>
+
+{{-- Language filter — only for author / categories sources (a mix of languages is possible). --}}
+<div class="mb-3" id="langFilter_{{ $ctx }}">
+    <label class="form-label">لغة الكتب</label>
+    <select name="language" id="language_{{ $ctx }}" class="form-select">
+        <option value="">كل اللغات</option>
+        <option value="arabic">العربية</option>
+        <option value="english">الإنجليزية</option>
+        <option value="french">الفرنسية</option>
+    </select>
+    <small class="text-muted d-block mt-1">اختر لغة محددة لعرض كتب تلك اللغة فقط من هذا المصدر.</small>
+</div>
 </div>{{-- /sourceSection --}}
 
 <div class="row g-3">

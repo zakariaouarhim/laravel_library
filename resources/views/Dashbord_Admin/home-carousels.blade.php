@@ -127,6 +127,7 @@
                                                         'id' => $carousel->id,
                                                         'title' => $carousel->title,
                                                         'source_type' => $carousel->source_type,
+                                                        'language' => $carousel->language,
                                                         'author_id' => $carousel->author_id,
                                                         'book_limit' => $carousel->book_limit,
                                                         'sort_order' => $carousel->sort_order,
@@ -240,6 +241,9 @@ function onSourceChange(ctx) {
     document.querySelectorAll(`#block_categories_${ctx}, #block_author_${ctx}, #block_manual_${ctx}`).forEach(b => {
         b.style.display = (b.dataset.source === type) ? '' : 'none';
     });
+    // Language filter applies to author/categories sources only.
+    const lang = document.getElementById(`langFilter_${ctx}`);
+    if (lang) lang.style.display = (type === 'author' || type === 'categories') ? '' : 'none';
 }
 
 // ============ Book picker (manual source) ============
@@ -366,6 +370,7 @@ function openEdit(c) {
     document.getElementById('editForm').action = `${baseUrl}/${c.id}`;
     document.getElementById('title_edit').value       = c.title || '';
     document.getElementById('source_type_edit').value = c.source_type || 'categories';
+    document.getElementById('language_edit').value    = c.language || '';
     document.getElementById('book_limit_edit').value  = c.book_limit || 12;
     document.getElementById('sort_order_edit').value  = c.sort_order || 0;
     document.getElementById('is_active_edit').checked  = !!c.is_active;

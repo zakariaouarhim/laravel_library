@@ -10,7 +10,7 @@ class HomeCarousel extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'source_type', 'author_id', 'book_limit', 'is_active', 'sort_order',
+        'title', 'source_type', 'language', 'author_id', 'book_limit', 'is_active', 'sort_order',
         'system_key', 'show_unavailable',
     ];
 
@@ -82,6 +82,11 @@ class HomeCarousel extends Model
         // "Only available" toggle — restrict to in-stock books.
         if (!$this->show_unavailable) {
             $query->where('quantity', '>', 0);
+        }
+
+        // Optional language filter (author/categories sources can span languages).
+        if ($this->language) {
+            $query->where('language', $this->language);
         }
 
         switch ($this->source_type) {
