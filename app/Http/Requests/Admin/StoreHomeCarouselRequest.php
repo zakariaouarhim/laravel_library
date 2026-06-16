@@ -19,6 +19,7 @@ class StoreHomeCarouselRequest extends FormRequest
             'book_limit'    => 'required|integer|min:1|max:50',
             'sort_order'    => 'nullable|integer',
             'is_active'     => 'boolean',
+            'show_unavailable' => 'boolean',
 
             'author_id'     => 'required_if:source_type,author|nullable|integer|exists:authors,id',
 

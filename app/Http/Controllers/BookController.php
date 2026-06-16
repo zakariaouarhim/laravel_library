@@ -548,69 +548,7 @@ class BookController extends Controller
 
     public function index()
     {
-        // Get all authors (cached 1 hour)
-        $authors = Cache::remember('active_authors', 3600, fn() => Author::active()->get());
-
-        // Get all active publishing houses (cached 1 hour)
-        $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
-
-        // Get latest books with their relationships loaded (cached 5 min)
-        $books = Cache::remember('latest_books', 300, function () {
-            return Book::with([
-                'primaryAuthor',
-                'authors',
-                'publishingHouse',
-                'category',
-                'series',
-                'bundles:id,title,price,image',
-            ])->withCount('reviews')
-              ->withAvg('reviews as reviews_avg_rating', 'rating')
-              ->where('type', 'book')
-              ->standardOnly()
-              ->latest()
-              ->limit(20)
-              ->get();
-        });
-        $popularBooks = Cache::remember('popular_books', 1800, function () {
-            // Best-sellers ranked by units sold within a recent time window.
-            // Widen the window (1 → 7 → 14 → 30 → 60 days → all-time) until the
-            // carousel is filled, then fall back to all-time if still short.
-            $limit = 10;
-
-            $bestSellersWithin = function (?int $days) use ($limit) {
-                $query = Book::select(
-                        'books.*',
-                        DB::raw('SUM(order_details.quantity) as orders_count')
-                    )
-                    ->join('order_details', 'books.id', '=', 'order_details.book_id')
-                    ->where('books.type', 'book')
-                    ->where('books.product_type', 'standard');
-
-                if ($days !== null) {
-                    $query->where('order_details.created_at', '>=', now()->subDays($days));
-                }
-
-                return $query->groupBy('books.id')
-                    ->orderByDesc('orders_count')
-                    ->with(['primaryAuthor', 'authors', 'bundles:id,title,price,image'])
-                    ->withCount('reviews')
-                    ->withAvg('reviews as reviews_avg_rating', 'rating')
-                    ->limit($limit)
-                    ->get();
-            };
-
-            foreach ([1, 7, 14, 30, 60] as $days) {
-                $books = $bestSellersWithin($days);
-                if ($books->count() >= $limit) {
-                    return $books;
-                }
-            }
-
-            // Final fallback: all-time best-sellers (no date filter).
-            return $bestSellersWithin(null);
-        });
-
-        // Get categories with children
+        // Categories for the homepage search bar (Index-searchbar partial).
         $categorie = Cache::remember('nav_categories', 3600, function () {
             return Category::whereNull('parent_id')
                 ->with('children')
@@ -618,130 +556,9 @@ class BookController extends Controller
                 ->get();
         });
 
-        $categorieIcons = Cache::remember('category_icons', 3600, function () {
-            return Category::withIcons()
-                ->inRandomOrder()
-                ->limit(12)
-                ->get();
-        });
-
-        // Get English books with relationships (cached 30 min)
-        $englishBooks = Cache::remember('english_books', 1800, function () {
-            return Book::where('language', 'English')
-                ->where('type', 'book')
-                ->standardOnly()
-                ->with(['primaryAuthor', 'authors', 'publishingHouse', 'bundles:id,title,price,image'])
-                ->withCount('reviews')
-                ->withAvg('reviews as reviews_avg_rating', 'rating')
-                ->latest()
-                ->limit(10)
-                ->get();
-        });
-
-        // Get French books with relationships (cached 30 min)
-        $frenchBooks = Cache::remember('french_books', 1800, function () {
-            return Book::where('language', 'French')
-                ->where('type', 'book')
-                ->standardOnly()
-                ->with(['primaryAuthor', 'authors', 'publishingHouse', 'bundles:id,title,price,image'])
-                ->withCount('reviews')
-                ->withAvg('reviews as reviews_avg_rating', 'rating')
-                ->latest()
-                ->limit(10)
-                ->get();
-        });
-
-        // Get accessories (cached 30 min)
-        $accessories = Cache::remember('accessories_home', 1800, function () {
-            return Book::accessories()
-                ->with('primaryAuthor')
-                ->withCount('reviews')
-                ->withAvg('reviews as reviews_avg_rating', 'rating')
-                ->limit(10)
-                ->get();
-        });
-
-        // Get recently viewed books from session
-        $recentlyViewedIds = session()->get('recently_viewed', []);
-        $recentlyViewed = collect();
-        if (!empty($recentlyViewedIds)) {
-            $recentlyViewed = Book::with(['primaryAuthor', 'bundles:id,title,price,image'])
-                ->whereIn('id', $recentlyViewedIds)
-                ->where('type', 'book')
-                ->standardOnly()
-                ->withCount('reviews')
-                ->withAvg('reviews as reviews_avg_rating', 'rating')
-                ->get()
-                ->sortBy(function ($book) use ($recentlyViewedIds) {
-                    return array_search($book->id, $recentlyViewedIds);
-                })->values();
-        }
-
-        // Get new books from followed authors/publishers (personalized)
-        $fromFollows = collect();
-        if (Auth::check()) {
-            $userFollows = Follow::where('user_id', Auth::id())->get();
-            $followedAuthorIds = $userFollows->where('followable_type', 'author')
-                ->pluck('followable_id')->toArray();
-            $followedPublisherIds = $userFollows->where('followable_type', 'publisher')
-                ->pluck('followable_id')->toArray();
-
-            if (!empty($followedAuthorIds) || !empty($followedPublisherIds)) {
-                $fromFollows = Book::where('status', 'active')
-                    ->where('type', 'book')
-                    ->standardOnly()
-                    ->where(function ($q) use ($followedAuthorIds, $followedPublisherIds) {
-                        $q->whereIn('author_id', $followedAuthorIds)
-                          ->orWhereIn('publishing_house_id', $followedPublisherIds);
-                    })
-                    ->with(['primaryAuthor', 'authors', 'publishingHouse', 'bundles:id,title,price,image'])
-                    ->withCount('reviews')
-                    ->withAvg('reviews as reviews_avg_rating', 'rating')
-                    ->orderByDesc('created_at')
-                    ->limit(15)
-                    ->get();
-            }
-        }
-
-        $arabicSeries = Cache::remember('arabic_series_home', 1800, function () {
-            return Series::inLanguage('Arabic')
-                ->with(['author', 'bundle'])
-                ->withCount('books')
-                ->orderByDesc('books_count')
-                ->limit(10)
-                ->get();
-        });
-
-        $englishSeries = Cache::remember('english_series_home', 1800, function () {
-            return Series::inLanguage('English')
-                ->with(['author', 'bundle'])
-                ->withCount('books')
-                ->orderByDesc('books_count')
-                ->limit(10)
-                ->get();
-        });
-
-        // Interest-score-weighted recommendations for authenticated users.
-        // Returns an empty Collection for guests or users with no signal yet.
-        $recommendedForYou = Auth::check()
-            ? $this->recommendations->getScoredRecommendations(Auth::id(), 12)
-            : collect();
-
-        // Admin-built dynamic carousels, ordered by sort_order, rendered after the
-        // fixed homepage sections. Each carousel's resolved books are cached for 30 min;
-        // the cache key includes updated_at so admin edits invalidate it automatically.
-        $dynamicCarousels = Cache::remember('home_carousels_active', 1800, function () {
-            return HomeCarousel::active()
-                ->orderBy('sort_order')
-                ->orderByDesc('id')
-                ->get()
-                ->map(function (HomeCarousel $carousel) {
-                    $carousel->setRelation('resolvedBooks', $carousel->resolveBooks());
-                    return $carousel;
-                })
-                ->filter(fn(HomeCarousel $c) => $c->resolvedBooks->isNotEmpty())
-                ->values();
-        });
+        // All homepage carousels (built-in "system" + admin custom), ordered and
+        // resolved per the admin configuration. See HomeCarouselService.
+        $homeCarousels = app(\App\Services\HomeCarouselService::class)->resolveForHomepage();
 
         $seo = app(\App\Services\Seo\MetaBuilder::class)->forHomepage();
 
@@ -754,7 +571,7 @@ class BookController extends Controller
             $schemas['bookstore'] = $bookStore;
         }
 
-        return view('index', compact('books', 'categorie', 'englishBooks', 'frenchBooks', 'authors', 'publishingHouses','popularBooks','categorieIcons','accessories','recentlyViewed','fromFollows','arabicSeries','englishSeries','recommendedForYou', 'dynamicCarousels', 'seo', 'schemas'));
+        return view('index', compact('categorie', 'homeCarousels', 'seo', 'schemas'));
     }
 
     public function byCategory(Request $request, Category $category)

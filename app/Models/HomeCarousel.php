@@ -11,13 +11,40 @@ class HomeCarousel extends Model
 
     protected $fillable = [
         'title', 'source_type', 'author_id', 'book_limit', 'is_active', 'sort_order',
+        'system_key', 'show_unavailable',
     ];
 
     protected $casts = [
-        'book_limit' => 'integer',
-        'is_active'  => 'boolean',
-        'sort_order' => 'integer',
+        'book_limit'       => 'integer',
+        'is_active'        => 'boolean',
+        'sort_order'       => 'integer',
+        'show_unavailable' => 'boolean',
     ];
+
+    /**
+     * Registry of built-in carousels. Keyed by system_key; resolution logic lives
+     * in HomeCarouselService. 'render' picks the homepage component; 'dom_id' keeps
+     * the original wrapper id (some are linked from the header, e.g. #popular-books).
+     * 'group' = global (cacheable) | personalized (per-user) | session.
+     */
+    public const SYSTEM = [
+        'recommended'      => ['render' => 'books',      'dom_id' => 'recommended-for-you', 'group' => 'personalized'],
+        'from_follows'     => ['render' => 'books',      'dom_id' => 'from-follows',        'group' => 'personalized'],
+        'new_arrivals'     => ['render' => 'books',      'dom_id' => 'all-books',           'group' => 'global'],
+        'categories_strip' => ['render' => 'categories', 'dom_id' => 'categories-strip',    'group' => 'global'],
+        'popular'          => ['render' => 'books',      'dom_id' => 'popular-books',       'group' => 'global'],
+        'arabic_series'    => ['render' => 'series',     'dom_id' => 'arabic-series',       'group' => 'global'],
+        'accessories'      => ['render' => 'books',      'dom_id' => 'Accessories',         'group' => 'global'],
+        'english_books'    => ['render' => 'books',      'dom_id' => 'english-books',       'group' => 'global'],
+        'english_series'   => ['render' => 'series',     'dom_id' => 'english-series',      'group' => 'global'],
+        'french_books'     => ['render' => 'books',      'dom_id' => 'french-books',        'group' => 'global'],
+        'recently_viewed'  => ['render' => 'books',      'dom_id' => 'recently-viewed',     'group' => 'session'],
+    ];
+
+    public function getIsSystemAttribute(): bool
+    {
+        return $this->system_key !== null;
+    }
 
     public function categories()
     {
@@ -51,6 +78,11 @@ class HomeCarousel extends Model
             ->with(['primaryAuthor', 'authors', 'bundles:id,title,price,image'])
             ->withCount('reviews')
             ->withAvg('reviews as reviews_avg_rating', 'rating');
+
+        // "Only available" toggle — restrict to in-stock books.
+        if (!$this->show_unavailable) {
+            $query->where('quantity', '>', 0);
+        }
 
         switch ($this->source_type) {
             case 'author':

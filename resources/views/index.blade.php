@@ -18,61 +18,19 @@
     @include('Index-searchbar')
 
     <div class="layout-indexpage">
-        @if($recommendedForYou->count() > 0)
-        <div id="recommended-for-you">
-            <x-book-carousel :books="$recommendedForYou" title="موصى لك" />
-        </div>
-        @endif
-
-        @if($fromFollows->count() > 0)
-        <div id="from-follows">
-            <x-book-carousel :books="$fromFollows" title="جديد من متابعاتك" />
-        </div>
-        @endif
-
-        <div id="all-books">
-            <x-book-carousel :books="$books" title="جميع الكتب" />
-        </div>
-
-        @include('categories_carousel2')
-
-        <div id="popular-books">
-            <x-book-carousel :books="$popularBooks" title="الأكثر مبيعا" />
-        </div>
-
-        <div id="arabic-series">
-            <x-series-carousel :series="$arabicSeries" title="سلاسل عربية" />
-        </div>
-
-        <div id="Accessories">
-            <x-book-carousel :books="$accessories" title="إكسسوارات القراءة" />
-        </div>
-
-        <div id="english-books">
-            <x-book-carousel :books="$englishBooks" title="كتب بالإنجليزية" />
-        </div>
-
-        <div id="english-series">
-            <x-series-carousel :series="$englishSeries" title="سلاسل إنجليزية" />
-        </div>
-
-        <div id="french-books">
-            <x-book-carousel :books="$frenchBooks" title="كتب بالفرنسية" />
-        </div>
-
-        @isset($dynamicCarousels)
-            @foreach($dynamicCarousels as $carousel)
-            <div id="home-carousel-{{ $carousel->id }}">
-                <x-book-carousel :books="$carousel->resolvedBooks" :title="$carousel->title" />
+        {{-- All carousels (built-in + custom) are admin-managed and resolved by
+             HomeCarouselService, ordered by sort_order. Empty ones are filtered out. --}}
+        @foreach($homeCarousels as $c)
+            <div id="{{ $c->dom_id }}">
+                @if($c->render === 'series')
+                    <x-series-carousel :series="$c->payload" :title="$c->title" />
+                @elseif($c->render === 'categories')
+                    @include('categories_carousel2', ['categorieIcons' => $c->payload, 'title' => $c->title])
+                @else
+                    <x-book-carousel :books="$c->payload" :title="$c->title" />
+                @endif
             </div>
-            @endforeach
-        @endisset
-
-        @if($recentlyViewed->count() > 0)
-        <div id="recently-viewed">
-            <x-book-carousel :books="$recentlyViewed" title="شاهدت مؤخراً" />
-        </div>
-        @endif
+        @endforeach
     </div>
 @endsection
 

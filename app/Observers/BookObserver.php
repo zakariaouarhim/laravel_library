@@ -67,6 +67,8 @@ class BookObserver
         // the language carousels and their books_count ordering.
         Cache::forget('arabic_series_home');
         Cache::forget('english_series_home');
+        // Resolved homepage carousels (built-in + custom) — rebuild on any book change.
+        Cache::forget(\App\Services\HomeCarouselService::CACHE_KEY);
     }
 
     /**

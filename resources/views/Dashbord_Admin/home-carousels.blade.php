@@ -84,9 +84,16 @@
                             @forelse($carousels as $carousel)
                                 <tr id="row-{{ $carousel->id }}">
                                     <td><span class="badge bg-secondary">{{ $carousel->sort_order }}</span></td>
-                                    <td><strong>{{ $carousel->title }}</strong></td>
+                                    <td>
+                                        <strong>{{ $carousel->title }}</strong>
+                                        @if($carousel->is_system)
+                                            <span class="badge bg-dark ms-1" title="كاروسيل مدمج — يُدار محتواه تلقائياً">مدمج</span>
+                                        @endif
+                                    </td>
                                     <td class="small">
-                                        @if($carousel->source_type === 'author')
+                                        @if($carousel->is_system)
+                                            <span class="source-pill"><i class="fas fa-cube me-1"></i>تلقائي</span>
+                                        @elseif($carousel->source_type === 'author')
                                             <span class="source-pill"><i class="fas fa-user-pen me-1"></i>{{ optional($carousel->author)->name ?? '—' }}</span>
                                         @elseif($carousel->source_type === 'manual')
                                             <span class="source-pill"><i class="fas fa-hand-pointer me-1"></i>اختيار يدوي</span>
@@ -124,14 +131,18 @@
                                                         'book_limit' => $carousel->book_limit,
                                                         'sort_order' => $carousel->sort_order,
                                                         'is_active' => $carousel->is_active,
+                                                        'is_system' => $carousel->is_system,
+                                                        'show_unavailable' => $carousel->show_unavailable,
                                                         'category_ids' => $carousel->categories->pluck('id'),
                                                         'books' => $carousel->books->map(fn($b) => ['id' => $b->id, 'title' => $b->title, 'author' => optional($b->primaryAuthor)->name]),
                                                     ]) }})">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            @unless($carousel->is_system)
                                             <button class="btn-icon text-danger" title="حذف" onclick="confirmDelete({{ $carousel->id }}, '{{ addslashes($carousel->title) }}')">
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                            @endunless
                                         </div>
                                     </td>
                                 </tr>
@@ -346,6 +357,7 @@ function resetCreateForm() {
     document.querySelector('#createModal form').reset();
     document.getElementById('bookSearch_create')._clear();
     setTreeChecked('create', []);
+    document.getElementById('sourceSection_create').style.display = '';
     onSourceChange('create');
 }
 
@@ -357,6 +369,7 @@ function openEdit(c) {
     document.getElementById('book_limit_edit').value  = c.book_limit || 12;
     document.getElementById('sort_order_edit').value  = c.sort_order || 0;
     document.getElementById('is_active_edit').checked  = !!c.is_active;
+    document.getElementById('show_unavailable_edit').checked = !!c.show_unavailable;
 
     // Author
     document.getElementById('author_id_edit').value = c.author_id || '';
@@ -368,6 +381,9 @@ function openEdit(c) {
     const picker = document.getElementById('bookSearch_edit');
     picker._clear();
     (c.books || []).forEach(b => picker._addBook(b.id, b.title, b.author));
+
+    // Built-in carousels: content is code-driven, so hide the source picker.
+    document.getElementById('sourceSection_edit').style.display = c.is_system ? 'none' : '';
 
     onSourceChange('edit');
     new bootstrap.Modal(document.getElementById('editModal')).show();

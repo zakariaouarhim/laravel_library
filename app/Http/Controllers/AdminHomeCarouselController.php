@@ -41,8 +41,20 @@ class AdminHomeCarouselController extends Controller
 
     public function update(UpdateHomeCarouselRequest $request, HomeCarousel $home_carousel)
     {
-        $home_carousel->update($this->baseData($request));
-        $this->syncSource($home_carousel, $request);
+        if ($home_carousel->is_system) {
+            // Built-in carousels: only presentation knobs are editable; source is code-driven.
+            $home_carousel->update([
+                'title'            => $request->input('title'),
+                'book_limit'       => $request->input('book_limit', $home_carousel->book_limit),
+                'sort_order'       => $request->input('sort_order', $home_carousel->sort_order),
+                'is_active'        => $request->boolean('is_active'),
+                'show_unavailable' => $request->boolean('show_unavailable'),
+            ]);
+        } else {
+            $home_carousel->update($this->baseData($request));
+            $this->syncSource($home_carousel, $request);
+        }
+
         $this->forgetCache();
 
         return redirect()->route('admin.home-carousels.index')->with('success', 'تم تحديث الكاروسيل بنجاح.');
@@ -50,6 +62,14 @@ class AdminHomeCarouselController extends Controller
 
     public function destroy(HomeCarousel $home_carousel)
     {
+        // Built-in carousels can't be deleted — only hidden via the toggle.
+        if ($home_carousel->is_system) {
+            return response()->json([
+                'success' => false,
+                'message' => 'الكاروسيلات المدمجة لا يمكن حذفها، يمكنك إخفاؤها فقط.',
+            ], 422);
+        }
+
         $home_carousel->delete();
         $this->forgetCache();
 
@@ -78,6 +98,7 @@ class AdminHomeCarouselController extends Controller
             'book_limit'  => $request->input('book_limit', 12),
             'sort_order'  => $request->input('sort_order', 0),
             'is_active'   => $request->boolean('is_active'),
+            'show_unavailable' => $request->boolean('show_unavailable'),
         ];
     }
 
@@ -97,6 +118,7 @@ class AdminHomeCarouselController extends Controller
 
     private function forgetCache(): void
     {
-        Cache::forget('home_carousels_active');
+        Cache::forget('home_carousels_active'); // legacy key
+        Cache::forget(\App\Services\HomeCarouselService::CACHE_KEY);
     }
 }

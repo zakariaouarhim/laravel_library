@@ -13,12 +13,25 @@ class UpdateHomeCarouselRequest extends FormRequest
 
     public function rules(): array
     {
+        // Built-in (system) carousels expose only presentation knobs — no source fields.
+        $carousel = $this->route('home_carousel');
+        if ($carousel && $carousel->is_system) {
+            return [
+                'title'            => 'required|string|max:191',
+                'book_limit'       => 'required|integer|min:1|max:50',
+                'sort_order'       => 'nullable|integer',
+                'is_active'        => 'boolean',
+                'show_unavailable' => 'boolean',
+            ];
+        }
+
         return [
             'title'         => 'required|string|max:191',
             'source_type'   => 'required|in:categories,author,manual',
             'book_limit'    => 'required|integer|min:1|max:50',
             'sort_order'    => 'nullable|integer',
             'is_active'     => 'boolean',
+            'show_unavailable' => 'boolean',
 
             'author_id'     => 'required_if:source_type,author|nullable|integer|exists:authors,id',
 

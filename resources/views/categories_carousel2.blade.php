@@ -1,6 +1,6 @@
 <!-- Category Carousel Section -->
     <section class="category-section2">
-        <h2>أشعر الآن وكأنني أريد...</h2>
+        <h2>{{ $title ?? 'أشعر الآن وكأنني أريد...' }}</h2>
         
         <div class="carousel-container">
             <!-- Carousel Wrapper - Native scrollable -->

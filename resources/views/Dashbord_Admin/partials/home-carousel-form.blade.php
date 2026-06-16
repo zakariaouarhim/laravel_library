@@ -6,6 +6,7 @@
            value="{{ $ctx === 'create' ? old('title') : '' }}" placeholder="مثال: روايات مختارة">
 </div>
 
+<div id="sourceSection_{{ $ctx }}">
 <div class="mb-3">
     <label class="form-label">مصدر الكتب <span class="text-danger">*</span></label>
     <select name="source_type" id="source_type_{{ $ctx }}" class="form-select" onchange="onSourceChange('{{ $ctx }}')">
@@ -69,6 +70,7 @@
     </div>
     <div id="selectedBooks_{{ $ctx }}" class="selected-books"></div>
 </div>
+</div>{{-- /sourceSection --}}
 
 <div class="row g-3">
     <div class="col-md-6">
@@ -82,6 +84,13 @@
                value="{{ $ctx === 'create' ? old('sort_order', 0) : '' }}">
         <small class="text-muted">الأصغر يظهر أولاً.</small>
     </div>
+</div>
+
+<div class="form-check form-switch mt-3">
+    <input class="form-check-input" type="checkbox" name="show_unavailable" value="1" id="show_unavailable_{{ $ctx }}"
+           {{ $ctx === 'create' ? 'checked' : '' }}>
+    <label class="form-check-label" for="show_unavailable_{{ $ctx }}">عرض كل الكتب (بما فيها غير المتوفرة)</label>
+    <small class="text-muted d-block">أوقفه لعرض الكتب المتوفرة في المخزون فقط. (لا يؤثر على السلاسل وشريط الفئات)</small>
 </div>
 
 <div class="form-check form-switch mt-3">

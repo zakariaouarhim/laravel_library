@@ -303,6 +303,7 @@ class ImportBooksFromCovers extends Command
             Cache::forget('accessories_home');
             Cache::forget('arabic_series_home');
             Cache::forget('english_series_home');
+            Cache::forget(\App\Services\HomeCarouselService::CACHE_KEY);
             $this->info('Cache cleared.');
         }
 
