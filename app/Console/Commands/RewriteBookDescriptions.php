@@ -124,6 +124,7 @@ PROMPT;
                         'rewrite_status'       => 'rewritten',
                         'rewrite_error'        => null,
                         'rewritten_at'         => now(),
+                        'updated_at'           => now(), // bumps sitemap <lastmod> so Google recrawls
                     ]);
                     $stats['rewritten']++;
                 } else {
