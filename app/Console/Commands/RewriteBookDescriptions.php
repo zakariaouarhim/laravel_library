@@ -143,7 +143,7 @@ PROMPT;
                 'content-type'       => 'application/json',
             ])
                 ->timeout(60)
-                ->retry(2, 2000, throw: false)
+                ->retry(2, 2000)
                 ->post('https://api.anthropic.com/v1/messages', [
                     'model'      => config('services.anthropic.model'),
                     'max_tokens' => self::MAX_OUTPUT_TOKENS,
