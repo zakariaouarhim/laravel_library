@@ -20,23 +20,39 @@ class RewriteBookDescriptions extends Command
     private const MIN_LENGTH = 80;
     private const MAX_LENGTH = 3000;
     private const MAX_OUTPUT_TOKENS = 600;
-    private const SYSTEM_PROMPT = <<<'PROMPT'
-You are an expert e-commerce SEO copywriter for an Arabic digital bookstore (مكتبة الفقراء).
+
+    private const LANGUAGE_LABELS = [
+        'arabic'  => 'Arabic (clear formal فصحى)',
+        'english' => 'English',
+        'french'  => 'French (français)',
+        'spanish' => 'Spanish (español)',
+        'german'  => 'German (Deutsch)',
+    ];
+
+    private function systemPromptFor(?string $language): string
+    {
+        $label = self::LANGUAGE_LABELS[strtolower((string) $language)]
+            ?? 'the same language as the input description (detect automatically)';
+
+        return <<<PROMPT
+You are an expert e-commerce SEO copywriter for a multilingual digital bookstore (مكتبة الفقراء) that carries Arabic, English, French, Spanish, and German titles.
 
 Your task: rewrite the provided book description to make it 100% unique, avoiding duplicate-content SEO penalties.
 
 CRITICAL RULES:
-1. The input is Arabic. Your output MUST be in clear formal Arabic (فصحى) suitable for retail.
-   Do NOT translate to English. Do NOT mix languages.
+1. Target language for your output: {$label}.
+   Output MUST be entirely in this language. Do NOT translate to another language. Do NOT mix languages.
 2. NEVER invent or change plot points, character names, or factual details.
    If the original is sparse, write a SHORTER rewrite rather than fabricate.
 3. Completely restructure sentences and word choices — do not just swap synonyms.
-4. Adopt an engaging, professional retail tone.
-5. End with a natural soft call-to-action in Arabic (e.g.,
-   «أضف هذا الكتاب إلى مكتبتك اليوم», «لا تفوّت فرصة قراءة هذا العمل المميز»).
-6. Length: 80-200 Arabic words. Aim for similar length to the input.
-7. Return ONLY the rewritten Arabic text. No filler like "إليك النص:" or English commentary.
+4. Adopt an engaging, professional retail tone appropriate to the target language.
+5. End with a natural soft call-to-action in the target language (e.g.,
+   "Add this gripping read to your collection today" / «أضف هذا الكتاب إلى مكتبتك اليوم» /
+   "Ajoutez ce livre captivant à votre collection").
+6. Length: roughly 80-200 words. Aim for similar length to the input.
+7. Return ONLY the rewritten text in the target language. No filler like "Here is..." or "إليك النص:" or commentary in any other language.
 PROMPT;
+    }
 
     public function handle(): int
     {
@@ -88,7 +104,7 @@ PROMPT;
 
                     if ($dryRun) {
                         $this->newLine();
-                        $this->line("--- Book #{$book->id}: {$book->title} ---");
+                        $this->line("--- Book #{$book->id} [{$book->language}]: {$book->title} ---");
                         $this->line("ORIGINAL: " . mb_substr($book->description, 0, 200) . '...');
                         $this->line("REWRITE:  " . ($result['text'] ?? '[FAILED: ' . $result['error'] . ']'));
                         $this->newLine();
@@ -130,11 +146,11 @@ PROMPT;
      */
     private function rewriteOne(Book $book, string $apiKey): array
     {
-        $authorName = $book->primaryAuthor?->name ?? $book->author_name ?? 'غير محدد';
+        $authorName = $book->primaryAuthor?->name ?? $book->author_name ?? '—';
 
-        $userMessage = "العنوان: {$book->title}\n"
-                     . "المؤلف: {$authorName}\n\n"
-                     . "الوصف الأصلي:\n{$book->description}";
+        $userMessage = "Title: {$book->title}\n"
+                     . "Author: {$authorName}\n\n"
+                     . "Original description:\n{$book->description}";
 
         try {
             $response = Http::withHeaders([
@@ -147,7 +163,7 @@ PROMPT;
                 ->post('https://api.anthropic.com/v1/messages', [
                     'model'      => config('services.anthropic.model'),
                     'max_tokens' => self::MAX_OUTPUT_TOKENS,
-                    'system'     => self::SYSTEM_PROMPT,
+                    'system'     => $this->systemPromptFor($book->language),
                     'messages'   => [
                         ['role' => 'user', 'content' => $userMessage],
                     ],
