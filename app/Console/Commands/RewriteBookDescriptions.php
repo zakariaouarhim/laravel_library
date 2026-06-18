@@ -97,42 +97,48 @@ PROMPT;
 
         $stats = ['rewritten' => 0, 'failed' => 0, 'skipped' => 0];
 
-        $query->when($limit, fn ($q) => $q->limit($limit))
-            ->chunkById(50, function ($books) use ($dryRun, $bar, &$stats, $apiKey) {
-                foreach ($books as $book) {
-                    $result = $this->rewriteOne($book, $apiKey);
-
-                    if ($dryRun) {
-                        $this->newLine();
-                        $this->line("--- Book #{$book->id} [{$book->language}]: {$book->title} ---");
-                        $this->line("ORIGINAL: " . mb_substr($book->description, 0, 200) . '...');
-                        $this->line("REWRITE:  " . ($result['text'] ?? '[FAILED: ' . $result['error'] . ']'));
-                        $this->newLine();
-                        $bar->advance();
-                        continue;
-                    }
-
-                    if ($result['ok']) {
-                        DB::table('books')->where('id', $book->id)->update([
-                            'original_description' => $book->original_description ?: $book->description,
-                            'description'          => $result['text'],
-                            'rewrite_status'       => 'rewritten',
-                            'rewrite_error'        => null,
-                            'rewritten_at'         => now(),
-                        ]);
-                        $stats['rewritten']++;
-                    } else {
-                        DB::table('books')->where('id', $book->id)->update([
-                            'rewrite_status' => 'failed',
-                            'rewrite_error'  => mb_substr($result['error'], 0, 500),
-                        ]);
-                        $stats['failed']++;
-                        Log::warning("Book rewrite failed", ['book_id' => $book->id, 'error' => $result['error']]);
-                    }
-
-                    $bar->advance();
+        $processed = 0;
+        $query->chunkById(50, function ($books) use ($dryRun, $bar, &$stats, $apiKey, $limit, &$processed) {
+            foreach ($books as $book) {
+                if ($limit !== null && $processed >= $limit) {
+                    return false; // halts chunkById
                 }
-            });
+
+                $result = $this->rewriteOne($book, $apiKey);
+
+                if ($dryRun) {
+                    $this->newLine();
+                    $this->line("--- Book #{$book->id} [{$book->language}]: {$book->title} ---");
+                    $this->line("ORIGINAL: " . mb_substr($book->description, 0, 200) . '...');
+                    $this->line("REWRITE:  " . ($result['text'] ?? '[FAILED: ' . $result['error'] . ']'));
+                    $this->newLine();
+                    $bar->advance();
+                    $processed++;
+                    continue;
+                }
+
+                if ($result['ok']) {
+                    DB::table('books')->where('id', $book->id)->update([
+                        'original_description' => $book->original_description ?: $book->description,
+                        'description'          => $result['text'],
+                        'rewrite_status'       => 'rewritten',
+                        'rewrite_error'        => null,
+                        'rewritten_at'         => now(),
+                    ]);
+                    $stats['rewritten']++;
+                } else {
+                    DB::table('books')->where('id', $book->id)->update([
+                        'rewrite_status' => 'failed',
+                        'rewrite_error'  => mb_substr($result['error'], 0, 500),
+                    ]);
+                    $stats['failed']++;
+                    Log::warning("Book rewrite failed", ['book_id' => $book->id, 'error' => $result['error']]);
+                }
+
+                $bar->advance();
+                $processed++;
+            }
+        });
 
         $bar->finish();
         $this->newLine(2);
