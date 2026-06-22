@@ -46,26 +46,22 @@ class RouteServiceProvider extends ServiceProvider
         // stores the routes themselves, not the closure-based binders. Without
         // this, browsing to /كتاب/<slug> after route:cache would 404 because
         // implicit model binding tries Book::where('id', '<slug>')->first().
-        Route::bind('book', fn ($v) => is_numeric($v)
-            ? \App\Models\Book::findOrFail($v)
-            : \App\Models\Book::where('slug', $v)->firstOrFail()
-        );
-        Route::bind('author', fn ($v) => is_numeric($v)
-            ? \App\Models\Author::findOrFail($v)
-            : \App\Models\Author::where('slug', $v)->firstOrFail()
-        );
-        Route::bind('category', fn ($v) => is_numeric($v)
-            ? \App\Models\Category::findOrFail($v)
-            : \App\Models\Category::where('slug', $v)->firstOrFail()
-        );
-        Route::bind('publisher', fn ($v) => is_numeric($v)
-            ? \App\Models\PublishingHouse::findOrFail($v)
-            : \App\Models\PublishingHouse::where('slug', $v)->firstOrFail()
-        );
-        Route::bind('series', fn ($v) => is_numeric($v)
-            ? \App\Models\Series::findOrFail($v)
-            : \App\Models\Series::where('slug', $v)->firstOrFail()
-        );
+        //
+        // Slug is matched FIRST, even when the value is numeric: a slug can
+        // legitimately be all digits (e.g. a book titled "005" → slug "005").
+        // Checking is_numeric() first would treat that slug as an id and load
+        // the wrong record (id=5 → "1984") or 404 when no such id exists. The
+        // numeric id branch is only a fallback for legacy/internal links that
+        // still pass $model->id, and only when no slug matches.
+        $bindBySlugThenId = fn (string $model) => function ($v) use ($model) {
+            return $model::where('slug', $v)->first()
+                ?? (is_numeric($v) ? $model::findOrFail($v) : abort(404));
+        };
+        Route::bind('book', $bindBySlugThenId(\App\Models\Book::class));
+        Route::bind('author', $bindBySlugThenId(\App\Models\Author::class));
+        Route::bind('category', $bindBySlugThenId(\App\Models\Category::class));
+        Route::bind('publisher', $bindBySlugThenId(\App\Models\PublishingHouse::class));
+        Route::bind('series', $bindBySlugThenId(\App\Models\Series::class));
 
         $this->routes(function () {
             Route::prefix('api')
