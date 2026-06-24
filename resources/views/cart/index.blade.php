@@ -39,16 +39,21 @@
         ],
     ])
 
+    @php
+        $offerGroups = $offerGroups ?? [];
+        $offerBookCount = array_sum(array_map(fn($g) => count($g['books']), $offerGroups));
+        $cartItemCount = count($cart) + $offerBookCount;
+    @endphp
     <div class="layout-cart">
         <div class="container py-4">
-            @if(count($cart) > 0)
+            @if($cartItemCount > 0)
                 <div class="row g-4">
                     <!-- Cart Items Section -->
                     <div class="col-lg-8">
                         <div class="cart-card">
                             <div class="cart-card-header">
                                 <h2><i class="fas fa-shopping-bag me-2"></i> المنتجات</h2>
-                                <span class="items-count" id="countcart">{{ count($cart) }} منتج</span>
+                                <span class="items-count" id="countcart">{{ $cartItemCount }} منتج</span>
                             </div>
                             <div class="cart-card-body">
                                 <div class="cart-items" id="cartItemsList">
@@ -88,6 +93,30 @@
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </div>
+                                        </div>
+                                    @endforeach
+
+                                    {{-- Offer groups ("N books for fixed price") --}}
+                                    @foreach($offerGroups as $group)
+                                        <div class="cart-offer-group" style="border:1px solid #cdddff;background:#f5f9ff;border-radius:12px;padding:1rem;margin-top:1rem;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <strong><i class="fas fa-tags me-1 text-primary"></i> {{ $group['title'] }}</strong>
+                                                <span style="font-weight:700;color:#0d6efd;">
+                                                    {{ $group['quantity'] }} كتب بـ {{ number_format($group['fixed_price'], 2) }} د.م
+                                                </span>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                                @foreach($group['books'] as $b)
+                                                    <span style="display:inline-flex;align-items:center;gap:.4rem;background:#fff;border:1px solid #e3e7ee;border-radius:20px;padding:.2rem .6rem;font-size:.82rem;">
+                                                        <img src="{{ asset($b['image']) }}" alt="" width="22" height="30" style="object-fit:cover;border-radius:3px;"
+                                                             onerror="this.src='{{ asset('images/book-placeholder.png') }}'">
+                                                        {{ \Illuminate\Support\Str::limit($b['title'], 30) }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                            <button type="button" class="remove-offer-btn btn btn-sm btn-outline-danger" data-uid="{{ $group['uid'] }}">
+                                                <i class="fas fa-trash-alt me-1"></i> إزالة العرض
+                                            </button>
                                         </div>
                                     @endforeach
                                 </div>
@@ -180,5 +209,24 @@
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script src="{{ asset('js/scripts.js') }}" defer></script>
     <script src="{{ asset('js/cart.js') }}" defer></script>
+    <script>
+        // Remove a whole offer group, then reload to recompute totals.
+        document.querySelectorAll('.remove-offer-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                fetch("{{ route('cart.offer.remove') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ uid: btn.dataset.uid }),
+                })
+                .then(r => r.json())
+                .then(d => { if (d.success) window.location.reload(); })
+                .catch(() => {});
+            });
+        });
+    </script>
 </body>
 </html>

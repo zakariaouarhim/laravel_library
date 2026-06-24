@@ -192,6 +192,9 @@
 
             <!-- Nav Links -->
             <ul class="nav-links-list">
+                @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'super_admin']))
+                <li><a href="{{ route('offers.index') }}">العروض</a></li>
+                @endif
                 <li><a href="{{ route('index.page') }}#popular-books">الأكثر مبيعًا</a></li>
                 <li><a href="{{ route('index.page') }}#all-books">الإصدارات الحديثة</a></li>
                 <li><a href="{{ route('accessories.index') }}">الإكسسوارات</a></li>
@@ -268,6 +271,9 @@
     {{-- Navigation Links --}}
     <nav class="mobile-nav">
         <a href="{{ route('index.page') }}"><i class="fas fa-home"></i> الرئيسية</a>
+        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'super_admin']))
+        <a href="{{ route('offers.index') }}"><i class="fas fa-tags"></i> العروض</a>
+        @endif
         <a href="{{ route('categories.index') }}"><i class="fas fa-th-large"></i> التصنيفات</a>
         <a href="{{ route('index.page') }}#popular-books"><i class="fas fa-fire"></i> الأكثر مبيعًا</a>
         <a href="{{ route('accessories.index') }}"><i class="fas fa-bookmark"></i> الإكسسوارات</a>

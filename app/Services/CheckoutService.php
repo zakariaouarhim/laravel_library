@@ -74,24 +74,41 @@ class CheckoutService
      * Create the order inside a DB transaction.
      * Decrements stock, records order details and status history, increments coupon usage.
      */
-    public function createOrder(array $cart, array $validated, float $total, float $subtotal, float $shipping, float $discount, ?string $couponCode): Order
+    public function createOrder(array $cart, array $validated, float $total, float $subtotal, float $shipping, float $discount, ?string $couponCode, array $offerGroups = []): Order
     {
-        $order = DB::transaction(function () use ($cart, $validated, $total, $subtotal, $shipping, $discount, $couponCode) {
-            // Lock all cart rows in deterministic order (by id) to prevent deadlocks
+        $order = DB::transaction(function () use ($cart, $validated, $total, $subtotal, $shipping, $discount, $couponCode, $offerGroups) {
+            // Flatten offer groups into per-book lines (quantity 1, price = allocation).
+            $offerLines = [];
+            foreach ($offerGroups as $group) {
+                foreach ($group['books'] as $b) {
+                    $offerLines[] = ['id' => (int) $b['id'], 'title' => $b['title'], 'price' => (float) $b['price']];
+                }
+            }
+
+            // Total demand per book across standalone cart + offer selections.
+            $demand = [];
+            foreach ($cart as $id => $item) {
+                $demand[$id] = ($demand[$id] ?? 0) + (int) $item['quantity'];
+            }
+            foreach ($offerLines as $line) {
+                $demand[$line['id']] = ($demand[$line['id']] ?? 0) + 1;
+            }
+
+            // Lock all rows in deterministic order (by id) to prevent deadlocks
             // between concurrent carts that overlap on the same books.
-            $lockedBooks = Book::whereIn('id', array_keys($cart))
+            $lockedBooks = Book::whereIn('id', array_keys($demand))
                 ->orderBy('id')
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
 
             $outOfStock = [];
-            foreach ($cart as $id => $item) {
+            foreach ($demand as $id => $needed) {
                 $book = $lockedBooks->get($id);
                 if (!$book) {
-                    $outOfStock[] = $item['title'] . ' (لم يعد متوفراً)';
-                } elseif ($book->quantity < $item['quantity']) {
-                    $outOfStock[] = $item['title'] . ' (المتوفر: ' . $book->quantity . ')';
+                    $outOfStock[] = '#' . $id . ' (لم يعد متوفراً)';
+                } elseif ($book->quantity < $needed) {
+                    $outOfStock[] = $book->title . ' (المتوفر: ' . $book->quantity . ')';
                 }
             }
             if (!empty($outOfStock)) {
@@ -127,7 +144,7 @@ class CheckoutService
                 'shipping'       => $shipping,
                 'discount'       => $discount,
                 'total'          => $total,
-                'cart_items'     => json_encode($cart),
+                'cart_items'     => json_encode(['books' => $cart, 'offers' => $offerGroups]),
                 'status'         => 'pending',
             ]);
 
@@ -145,6 +162,24 @@ class CheckoutService
 
                 if (!$updated) {
                     throw new \Exception('الكتاب "' . $item['title'] . '" لم يعد متوفراً بالكمية المطلوبة');
+                }
+            }
+
+            // Offer books: one order_detail per book at its allocated (discounted) price.
+            foreach ($offerLines as $line) {
+                OrderDetail::create([
+                    'order_id' => $order->id,
+                    'book_id'  => $line['id'],
+                    'quantity' => 1,
+                    'price'    => $line['price'],
+                ]);
+
+                $updated = Book::where('id', $line['id'])
+                    ->where('quantity', '>=', 1)
+                    ->decrement('quantity', 1);
+
+                if (!$updated) {
+                    throw new \Exception('الكتاب "' . $line['title'] . '" لم يعد متوفراً بالكمية المطلوبة');
                 }
             }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Book;
+use App\Models\Offer;
 use App\Services\CartService;
 use Illuminate\Support\Facades\Auth;
 
@@ -54,7 +55,7 @@ class CartController extends Controller
             return response()->json([
                 'success'   => true,
                 'cart'      => $cart,
-                'cartCount' => count($cart),
+                'cartCount' => count($cart) + $this->cartService->offersBookCount(),
             ]);
 
         } catch (\Exception $e) {
@@ -161,5 +162,51 @@ class CartController extends Controller
     {
         session()->put('checkout_cart', json_decode($request->cart_data, true));
         return redirect()->route('checkout.page');
+    }
+
+    /**
+     * Add an offer selection ("N books for fixed price") to the cart.
+     */
+    public function addOfferToCart(Offer $offer, Request $request)
+    {
+        // The offer must be live right now.
+        if (!Offer::active()->whereKey($offer->id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'هذا العرض لم يعد متاحاً.'], 422);
+        }
+
+        $validated = $request->validate([
+            'book_ids'   => 'required|array',
+            'book_ids.*' => 'integer',
+        ]);
+
+        try {
+            $this->cartService->addOfferGroup($offer, $validated['book_ids']);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Add offer to cart error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'حدث خطأ، يرجى المحاولة لاحقاً'], 500);
+        }
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'تمت إضافة العرض إلى السلة.',
+            'cartCount' => count($this->cartService->loadCart()) + $this->cartService->offersBookCount(),
+        ]);
+    }
+
+    /**
+     * Remove a whole offer group from the cart by its uid.
+     */
+    public function removeOfferFromCart(Request $request)
+    {
+        $validated = $request->validate(['uid' => 'required|string']);
+        $this->cartService->removeOfferGroup($validated['uid']);
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'تمت إزالة العرض من السلة.',
+            'cartCount' => count($this->cartService->loadCart()) + $this->cartService->offersBookCount(),
+        ]);
     }
 }

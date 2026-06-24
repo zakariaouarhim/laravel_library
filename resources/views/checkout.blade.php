@@ -78,12 +78,17 @@
                     <div class="col-lg-8">
                         <!-- Shopping Cart Section -->
                         <div class="card shadow-sm mb-4">
+                            @php
+                                $offerGroups = $offerGroups ?? [];
+                                $offerBookCount = array_sum(array_map(fn($g) => count($g['books']), $offerGroups));
+                                $cartItemCount = count($cart) + $offerBookCount;
+                            @endphp
                             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                                 <h2 class="fs-5 m-0"><i class="fas fa-shopping-bag me-2"></i> سلة التسوق</h2>
-                                <span class="text-muted" id="countcart">{{ count($cart) }} منتج</span>
+                                <span class="text-muted" id="countcart">{{ $cartItemCount }} منتج</span>
                             </div>
                             <div class="card-body" id="cartContent">
-                                @if(count($cart) > 0)
+                                @if($cartItemCount > 0)
                                 <div class="cart-items">
                                     @foreach($cart as $id => $item)
                                         <div class="d-flex align-items-center mb-3 pb-3 border-bottom" id="element{{ $id }}" data-item-id="{{ $id }}">
@@ -121,6 +126,25 @@
                                                 <button type="button" class="delete-item-btn" title="حذف المنتج" onclick="removeFromCart2({{ $id }})">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    {{-- Offer groups ("N books for fixed price") --}}
+                                    @foreach($offerGroups as $group)
+                                        <div class="mb-3 pb-3 border-bottom" style="background:#f5f9ff;border:1px solid #cdddff;border-radius:12px;padding:1rem;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <strong><i class="fas fa-tags me-1 text-primary"></i> {{ $group['title'] }}</strong>
+                                                <span class="fw-bold text-primary">{{ $group['quantity'] }} كتب بـ {{ number_format($group['fixed_price'], 2) }} د.م</span>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach($group['books'] as $b)
+                                                    <span style="display:inline-flex;align-items:center;gap:.4rem;background:#fff;border:1px solid #e3e7ee;border-radius:20px;padding:.2rem .6rem;font-size:.8rem;">
+                                                        <img src="{{ asset($b['image']) }}" alt="" width="20" height="28" style="object-fit:cover;border-radius:3px;"
+                                                             onerror="this.src='{{ asset('images/book-placeholder.png') }}'">
+                                                        {{ \Illuminate\Support\Str::limit($b['title'], 28) }}
+                                                    </span>
+                                                @endforeach
                                             </div>
                                         </div>
                                     @endforeach

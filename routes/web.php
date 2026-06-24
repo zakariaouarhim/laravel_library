@@ -35,7 +35,9 @@ use App\Http\Controllers\ReadingShelfController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminSeriesController;
 use App\Http\Controllers\AdminBundleController;
+use App\Http\Controllers\AdminOfferController;
 use App\Http\Controllers\AdminHomeCarouselController;
+use App\Http\Controllers\OfferController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
 
@@ -70,6 +72,14 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/coupons/{coupon}',               [CouponController::class, 'update'])->name('coupons.update');
     Route::delete('/coupons/{coupon}',            [CouponController::class, 'destroy'])->name('coupons.destroy');
     Route::post('/coupons/{coupon}/toggle',       [CouponController::class, 'toggleActive'])->name('coupons.toggle');
+
+    // Offers (عروض)
+    Route::get('/offers',                         [AdminOfferController::class, 'index'])->name('offers.index');
+    Route::get('/offers/picker-books',            [AdminOfferController::class, 'pickerBooks'])->name('offers.picker-books');
+    Route::post('/offers',                        [AdminOfferController::class, 'store'])->name('offers.store');
+    Route::put('/offers/{offer:id}',              [AdminOfferController::class, 'update'])->name('offers.update');
+    Route::delete('/offers/{offer:id}',           [AdminOfferController::class, 'destroy'])->name('offers.destroy');
+    Route::post('/offers/{offer:id}/toggle',      [AdminOfferController::class, 'toggleActive'])->name('offers.toggle');
 
     // Home carousels (كاروسيلات الصفحة الرئيسية)
     Route::get('/home-carousels',                       [AdminHomeCarouselController::class, 'index'])->name('home-carousels.index');
@@ -240,6 +250,12 @@ Route::post('/remove-from-cart', [CartController::class, 'removeFromCart'])->nam
 Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart']);
 Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.update-quantity');
 
+// Offer purchases ("pick N for fixed price") — admin-only while the feature is in testing.
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::post('/cart/offer/{offer}', [CartController::class, 'addOfferToCart'])->name('cart.offer.add');
+    Route::post('/cart/offer-remove',  [CartController::class, 'removeOfferFromCart'])->name('cart.offer.remove');
+});
+
 Route::post('/checkout/store-cart', [CartController::class, 'storeForCheckout'])->name('checkout.store-cart');
 
 Route::get('/cart', [CartController::class, 'showCart'])->name('cart.page');
@@ -323,6 +339,13 @@ Route::get('/categories/{id}', function ($id) {
 })->where('id', '[0-9]+');
 
 Route::get('/accessories', [AccessoryController::class, 'index'])->name('accessories.index');
+
+// Offers / عروض — admin-only while the feature is in testing on the VPS.
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::get('/عروض', [OfferController::class, 'index'])->name('offers.index');
+    Route::get('/عرض/{offer}', [OfferController::class, 'show'])->name('offer.show');
+    Route::get('/عرض/{offer}/books', [OfferController::class, 'books'])->name('offer.books');
+});
 
 Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.index');
 Route::get('/مؤلف/{author}', [AuthorController::class, 'publicShow'])->name('author.show');

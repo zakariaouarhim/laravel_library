@@ -31,20 +31,24 @@ class CheckoutController extends Controller
         try {
             $validated = $request->validated();
 
-            $cart = $this->cartService->loadCartForCheckout();
-            if (empty($cart)) {
+            $cart        = $this->cartService->loadCartForCheckout();
+            $offerGroups = $this->cartService->loadOfferGroups();
+            if (empty($cart) && empty($offerGroups)) {
                 Log::warning('Checkout: cart was empty at submit time');
                 return redirect()->back()->with('error', 'السلة فارغة');
             }
 
-            // Calculate totals
-            $subtotal = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+            // Calculate totals (standalone books + offer fixed prices)
+            $booksSubtotal  = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+            $offersSubtotal = $this->cartService->offersSubtotal();
+            $subtotal = round($booksSubtotal + $offersSubtotal, 2);
+
             ['shipping' => $shipping] = \App\Models\SystemSetting::calculateShipping($subtotal);
             ['discount' => $discount, 'couponCode' => $couponCode] = $this->checkoutService->resolveDiscount($subtotal);
 
             $total = $subtotal + $shipping - $discount;
 
-            $order = $this->checkoutService->createOrder($cart, $validated, $total, $subtotal, $shipping, $discount, $couponCode);
+            $order = $this->checkoutService->createOrder($cart, $validated, $total, $subtotal, $shipping, $discount, $couponCode, $offerGroups);
 
             if ($couponCode) {
                 session()->forget('applied_coupon');
