@@ -56,7 +56,13 @@ class Series extends Model
 
     public function books()
     {
-        return $this->hasMany(Book::class)->orderBy('volume_number');
+        // A series' books are its volumes only. The series' bundle product is a
+        // Book row that also carries this series_id (see bundle() / onlyBundles());
+        // excluding it here keeps withCount('books') / books_count from counting
+        // n+1, and matches the ->standardOnly() list the series page renders.
+        return $this->hasMany(Book::class)
+            ->where('product_type', 'standard')
+            ->orderBy('volume_number');
     }
 
     public function bundle()
