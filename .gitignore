@@ -13,3 +13,6 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+
+# Scraped "reader" import source data + images (review material, not for the repo)
+/reader_DB

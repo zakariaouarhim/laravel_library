@@ -1,57 +1,74 @@
-# Offer: series/bundle as units (count by book count)
+# Reader-import review tool (admin-only)
 
-## Decisions (confirmed)
-- Series/bundle shown to customer as ONE unit card; picking it is all-or-nothing and
-  counts by its book count (3-book series = 3 toward N).
-- Reaching N: total selected book count must be >= N (may exceed). Price stays fixed.
+Import 494 scraped books (reader_DB/exports/*.json) into `books` after one-by-one
+admin review. Source data is messy (89% null authors, junk prices, category labels
+that are really authors/carousels/merch). Confirmed decisions:
+- price => force **40** (editable per item).
+- author-name "categories" (أغاثا كريستي، أسامة مسلم، دوستويفسكي…) => fill the AUTHOR field, store the Arabic form.
+- merch (mugs, ADD ONES) => Accessories category.
+- images => copy + convert to webp via ImageService::processLocalFile.
+- carousel/promo/series labels (وصل حديثا، الأكثر مبيعا، FOR-SALE، عشوائيات، سلاسل، منتجاتنا، …) => ignored for categorization.
 
-## Design
-- Offer gains `series_ids` + `bundle_ids` (JSON). Admin series/bundle tabs now add UNITS
-  (not loose member books). Categories/title/price-rule still add loose books.
-- Loose display set = (offer_book ∪ price-rule) − excluded − unit-member-books.
-- eligibleBookIds (cart validation) = loose ids ∪ unit-member-book-ids.
-- Customer page: unit cards (count badge) above the paginated loose grid. Selection is a
-  Set of book ids; unit card toggles ALL its member ids. Counter = book count. Add enabled
-  at >= N. Submit sends the expanded id set (units already expanded to members).
-- Cart addOfferGroup: accept count >= N (was == N); distribute fixed price across all.
+## Mapping (App\Services\ReaderImportMapper)
+- CATEGORY_MAP source=>DB id: كتب انجليزية=>82, تنمية ذاتية=>3, كتب دينية=>2,
+  كتب فرنسية=>79, رعب و فانتازيا=>99, mugs=>80, ADD ONES=>80.
+- AUTHOR_LABELS: أغاثا كريستي, أسامة مسلم, دوستويفسكي, خولة حميدي, مصطفى محمود,
+  حسن أوريد, مؤلفات إيمان نضيفي=>إيمان نضيفي, تحقيقات نوح الألفي=>نوح الألفي.
+- IGNORE: وصل حديثا, وصل حديثا 2, الأكثر مبيعا, FOR-SALE, عشوائيات, سلاسل,
+  منتجاتنا, مملكة البلاغة, قواعد جارتين, ثلاثية ردني إليك.
+- Fallback category by language: arabic=>83 (كتب عربية), english=>82 (كتب إنجليزية), french=>79.
+- normalizeLanguage: Arabic=>arabic, English=>english (lowercase).
+- suggestAuthor: data author -> else first AUTHOR_LABEL among categories -> else regex "للكاتب(ة)? X" from description.
 
 ## Tasks
-- [ ] migration: offers.series_ids, offers.bundle_ids (json nullable).
-- [ ] Offer: fillable+cast; resolveUnits() (label/image/book_ids/count per series+bundle),
-      unitMemberBookIds(); eligibleBooksQuery() excludes unit members; eligibleBookIds() adds them.
-- [ ] Store/UpdateOfferRequest: series_ids[]/bundle_ids[] arrays of ints.
-- [ ] AdminOfferController: store/update save series_ids/bundle_ids; index passes series/bundles
-      withCount (books/items) for unit labels.
-- [ ] offer-form: series/bundle panel items carry data-count; a units chip area + hidden
-      series_ids[]/bundle_ids[].
-- [ ] offers.blade JS: unitPicker (chips + hidden inputs); cat-pick branches: series/bundle
-      => addUnit (no checklist); edit prefill units; reset clears.
-- [ ] OfferController show/books: pass $units; CartService addOfferGroup >= N + validate union.
-- [ ] offers/show: render unit cards; selection by book count; add enabled >= N; submit expanded ids.
-- [ ] Verify: lint, migrate, view:cache; unit counts toward N; cart group expands unit to books,
-      price sums to fixed; eligibility accepts unit members.
+- [ ] migration: reader_staging_books (external_id unique, name, author, language,
+      price, description, local_image, source_categories json, suggested_category_id,
+      status [pending|imported|skipped], book_id, reviewed_at, timestamps).
+- [ ] Model ReaderStagingBook.
+- [ ] ReaderImportMapper service (maps + suggestCategory/suggestAuthor/normalizeLanguage).
+- [ ] Command `reader:stage` (--reset, --file=): load JSON -> staging rows with
+      suggestions; skip status=rejected; flag missing local images.
+- [ ] Admin\ReaderImportController: index (view), list (paginated json + counts),
+      image (stream reader_DB file), approve (create Book + image + author + category,
+      dedup by title), skip, unskip.
+- [ ] routes/web.php (admin group): reader-import.{index,list,image,approve,skip}.
+- [ ] view admin/reader-import/index.blade.php: card grid, filters (pending/imported/
+      skipped/all), counts+progress, per-card edit title/author/price/description +
+      language dropdown + category dropdown(tree, presel suggestion), Approve/Skip.
+- [ ] Verify: php -l, migrate, reader:stage seeds 493, approve creates a real book
+      (image webp in public/images/books, author+category set), dedup works.
+
+## Notes
+- reader_DB/ stays OUT of git (source material + images). Admin-gated routes.
+- Book create: set author_id + book_authors(author_type=primary) pivot; syncCategories
+  / categories()->attach(is_primary); quantity=stock; status=active; slug auto (HasSlug).
 
 ## Review
-Done. offers.series_ids/bundle_ids (json). Offer.resolveUnits() (memoized) builds unit
-descriptors (label/image/book_ids/count); unitMemberBookIds(); eligibleBooksQuery() excludes
-unit members (no double display); eligibleBookIds() = loose ∪ unit members (cart accepts them).
-Admin: series/bundle tabs now ADD UNITS (cat-pick branches to unitPicker chips -> series_ids[]/
-bundle_ids[]); counts shown via withCount. Customer: unit cards in #offerUnits (outside the
-paginated #offerGrid so search/load-more don't wipe them); selection Set of book ids, unit card
-toggles all members; counter = book count; add enabled at >= N (was == N); submit sends expanded
-ids. CartService.addOfferGroup now requires >= N. VERIFIED: series(3) unit -> count 3, excluded
-from loose grid, members eligible; unit+7 loose = 10 -> addOfferGroup ok, group=10 books,
-alloc sum 350.00. migrate/lint/view ok. (offers WIP, not committed)
+DONE & verified. Staging table + ReaderStagingBook model + ReaderImportMapper (category/
+author/language maps) + `reader:stage` command + ReaderImportController (index/list/image/
+approve/skip/unskip) + admin/reader-import blade + admin routes (auth+isAdmin) + Sidebar link.
+`reader:stage --reset` seeded 493 (1 rejected skipped, 3 missing images flagged). Suggestions:
+author coverage 53→176 (labels + "للكاتب X" regex), all 493 categorized, mug→Accessories,
+Agatha→author filled. End-to-end approve verified (rolled back): Book created with auto slug,
+category_id+pivot primary, qty=stock, price=40, image converted to webp + thumb + large.
+Book::create wrapped in withoutSyncingToSearch so import doesn't hard-depend on Meilisearch
+(run `scout:import "App\Models\Book"` after a batch to index). reader_DB/ added to .gitignore.
 
----
+UPDATE: admin can now edit quantity per card (editable الكمية field, defaults to scraped
+stock, saved as book quantity on approve; validated required integer min 0). Category
+dropdown now renders as a tree like the product filter: bold top-level parents + children
+indented with ── (categoryOptions returns ordered {id,name,parent}). Verified ordering
+([P] Accessories, [P] English Books, ── Adult …). NOT committed (WIP).
 
-## TODO before public launch of Offers — REMOVE the admin-only gate
-The whole offers feature is currently locked to admins (admin/super_admin) so it can be
-tested on the VPS without customers seeing it. When ready to go public, undo BOTH:
-1. routes/web.php — remove the two `Route::middleware(['auth','isAdmin'])->group(...)`
-   wrappers around: (a) `offers.index` / `offer.show` / `offer.books`, and
-   (b) `cart.offer.add` / `cart.offer.remove`. Leave the routes themselves intact.
-2. resources/views/header.blade.php — remove the two
-   `@if(auth()->check() && in_array(auth()->user()->role, ['admin','super_admin']))`
-   wrappers around the "العروض" link (desktop nav + mobile nav).
-Then `php artisan route:clear && php artisan view:clear`.
+UPDATE 2 (detail modal): per-book "تحرير التفاصيل" modal added — ISBN, publisher, page_num,
+replace cover (upload → ImageService::processLocalFile, or "جلب من API"), Google-Books enrich
+(preview & pick fields via APIService → enrich-preview endpoint, no writes), SEO rewrite (new
+shared App\Services\DescriptionRewriteService, extracted from books:rewrite-descriptions cmd),
+and multi-category checkboxes + primary star (Book::syncCategories). Staging table gained isbn,
+page_num, publisher, category_ids(json), primary_category_id, custom_image, description_rewritten,
+original_description (migration 2026_06_29_000001). Card uses an in-memory STATE model; enrich/
+rewrite endpoints accept the admin's current (unsaved) modal values. approve() persists all new
+fields; rewritten books get original_description + rewrite_status='rewritten' via forceFill
+(not in Book::$fillable) so the nightly cron skips them. VERIFIED end-to-end (rolled back):
+multi-cat (primary=2, 2 cats, pivot is_primary), isbn/page_num/publisher/qty, webp image,
+rewrite branch. Routes + list payload + blade compile OK. NOT committed (WIP).

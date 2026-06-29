@@ -38,6 +38,7 @@ use App\Http\Controllers\AdminBundleController;
 use App\Http\Controllers\AdminOfferController;
 use App\Http\Controllers\AdminHomeCarouselController;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\ReaderImportController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
 
@@ -80,6 +81,18 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/offers/{offer:id}',              [AdminOfferController::class, 'update'])->name('offers.update');
     Route::delete('/offers/{offer:id}',           [AdminOfferController::class, 'destroy'])->name('offers.destroy');
     Route::post('/offers/{offer:id}/toggle',      [AdminOfferController::class, 'toggleActive'])->name('offers.toggle');
+
+    // Reader import (review scraped books one by one -> real catalogue)
+    Route::get('/reader-import',                   [ReaderImportController::class, 'index'])->name('reader-import.index');
+    Route::get('/reader-import/list',              [ReaderImportController::class, 'list'])->name('reader-import.list');
+    Route::get('/reader-import/{staged}/image',    [ReaderImportController::class, 'image'])->name('reader-import.image');
+    Route::post('/reader-import/{staged}/enrich-preview', [ReaderImportController::class, 'enrichPreview'])->name('reader-import.enrich-preview');
+    Route::post('/reader-import/{staged}/rewrite', [ReaderImportController::class, 'rewriteDescription'])->name('reader-import.rewrite');
+    Route::post('/reader-import/{staged}/image',   [ReaderImportController::class, 'uploadImage'])->name('reader-import.image-upload');
+    Route::post('/reader-import/{staged}/image-from-url', [ReaderImportController::class, 'imageFromUrl'])->name('reader-import.image-from-url');
+    Route::post('/reader-import/{staged}/approve', [ReaderImportController::class, 'approve'])->name('reader-import.approve');
+    Route::post('/reader-import/{staged}/skip',    [ReaderImportController::class, 'skip'])->name('reader-import.skip');
+    Route::post('/reader-import/{staged}/unskip',  [ReaderImportController::class, 'unskip'])->name('reader-import.unskip');
 
     // Home carousels (كاروسيلات الصفحة الرئيسية)
     Route::get('/home-carousels',                       [AdminHomeCarouselController::class, 'index'])->name('home-carousels.index');

@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Book;
+use App\Services\DescriptionRewriteService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RewriteBookDescriptions extends Command
@@ -19,42 +19,8 @@ class RewriteBookDescriptions extends Command
 
     private const MIN_LENGTH = 80;
     private const MAX_LENGTH = 3000;
-    private const MAX_OUTPUT_TOKENS = 600;
 
-    private const LANGUAGE_LABELS = [
-        'arabic'  => 'Arabic (clear formal فصحى)',
-        'english' => 'English',
-        'french'  => 'French (français)',
-        'spanish' => 'Spanish (español)',
-        'german'  => 'German (Deutsch)',
-    ];
-
-    private function systemPromptFor(?string $language): string
-    {
-        $label = self::LANGUAGE_LABELS[strtolower((string) $language)]
-            ?? 'the same language as the input description (detect automatically)';
-
-        return <<<PROMPT
-You are an expert e-commerce SEO copywriter for a multilingual digital bookstore (مكتبة الفقراء) that carries Arabic, English, French, Spanish, and German titles.
-
-Your task: rewrite the provided book description to make it 100% unique, avoiding duplicate-content SEO penalties.
-
-CRITICAL RULES:
-1. Target language for your output: {$label}.
-   Output MUST be entirely in this language. Do NOT translate to another language. Do NOT mix languages.
-2. NEVER invent or change plot points, character names, or factual details.
-   If the original is sparse, write a SHORTER rewrite rather than fabricate.
-3. Completely restructure sentences and word choices — do not just swap synonyms.
-4. Adopt an engaging, professional retail tone appropriate to the target language.
-5. End with a natural soft call-to-action in the target language (e.g.,
-   "Add this gripping read to your collection today" / «أضف هذا الكتاب إلى مكتبتك اليوم» /
-   "Ajoutez ce livre captivant à votre collection").
-6. Length: roughly 80-200 words. Aim for similar length to the input.
-7. Return ONLY the rewritten text in the target language. No filler like "Here is..." or "إليك النص:" or commentary in any other language.
-PROMPT;
-    }
-
-    public function handle(): int
+    public function handle(DescriptionRewriteService $rewriter): int
     {
         $apiKey = config('services.anthropic.api_key');
         if (empty($apiKey)) {
@@ -98,13 +64,13 @@ PROMPT;
         $stats = ['rewritten' => 0, 'failed' => 0, 'skipped' => 0];
 
         $processed = 0;
-        $query->chunkById(50, function ($books) use ($dryRun, $bar, &$stats, $apiKey, $limit, &$processed) {
+        $query->chunkById(50, function ($books) use ($dryRun, $bar, &$stats, $rewriter, $limit, &$processed) {
             foreach ($books as $book) {
                 if ($limit !== null && $processed >= $limit) {
                     return false; // halts chunkById
                 }
 
-                $result = $this->rewriteOne($book, $apiKey);
+                $result = $this->rewriteOne($book, $rewriter);
 
                 if ($dryRun) {
                     $this->newLine();
@@ -151,47 +117,10 @@ PROMPT;
     /**
      * Returns ['ok' => bool, 'text' => ?string, 'error' => ?string].
      */
-    private function rewriteOne(Book $book, string $apiKey): array
+    private function rewriteOne(Book $book, DescriptionRewriteService $rewriter): array
     {
-        $authorName = $book->primaryAuthor?->name ?? $book->author_name ?? '—';
+        $authorName = $book->primaryAuthor?->name ?? $book->author_name ?? null;
 
-        $userMessage = "Title: {$book->title}\n"
-                     . "Author: {$authorName}\n\n"
-                     . "Original description:\n{$book->description}";
-
-        try {
-            $response = Http::withHeaders([
-                'x-api-key'          => $apiKey,
-                'anthropic-version'  => '2023-06-01',
-                'content-type'       => 'application/json',
-            ])
-                ->timeout(60)
-                ->retry(2, 2000)
-                ->post('https://api.anthropic.com/v1/messages', [
-                    'model'      => config('services.anthropic.model'),
-                    'max_tokens' => self::MAX_OUTPUT_TOKENS,
-                    'system'     => $this->systemPromptFor($book->language),
-                    'messages'   => [
-                        ['role' => 'user', 'content' => $userMessage],
-                    ],
-                ]);
-        } catch (\Throwable $e) {
-            return ['ok' => false, 'text' => null, 'error' => 'HTTP exception: ' . $e->getMessage()];
-        }
-
-        if (!$response->successful()) {
-            return [
-                'ok'    => false,
-                'text'  => null,
-                'error' => "HTTP {$response->status()}: " . mb_substr($response->body(), 0, 300),
-            ];
-        }
-
-        $text = trim($response->json('content.0.text') ?? '');
-        if ($text === '') {
-            return ['ok' => false, 'text' => null, 'error' => 'Empty response body'];
-        }
-
-        return ['ok' => true, 'text' => $text, 'error' => null];
+        return $rewriter->rewrite($book->title, $authorName, $book->description, $book->language);
     }
 }
