@@ -103,6 +103,16 @@
         .cat-star.primary { color: #f59e0b; }
         .cat-hint { font-size: .72rem; color: #6b7280; margin-top: 4px; }
 
+        /* Author / publisher autocomplete */
+        .ac-wrap { position: relative; }
+        .ac-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 300; background: #fff;
+                   border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 6px 6px;
+                   max-height: 180px; overflow-y: auto; box-shadow: 0 6px 16px rgba(0,0,0,.12); display: none; }
+        .ac-list.open { display: block; }
+        .ac-item { padding: 6px 10px; font-size: .85rem; cursor: pointer; }
+        .ac-item:hover, .ac-item.active { background: #eef2ff; }
+        .ac-item small { color: #6b7280; }
+
         .modal-foot { display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid #eef0f3; }
         .modal-foot button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
         .mf-save { background: #2563eb; color: #fff; }
@@ -170,7 +180,9 @@
                 <label>العنوان</label>
                 <input class="field" id="mName">
                 <div class="row2">
-                    <div><label>المؤلف</label><input class="field" id="mAuthor" placeholder="غير معروف"></div>
+                    <div><label>المؤلف</label>
+                        <div class="ac-wrap"><input class="field" id="mAuthor" placeholder="غير معروف" autocomplete="off"><div class="ac-list" id="mAuthorAC"></div></div>
+                    </div>
                     <div><label>ISBN</label><input class="field" id="mIsbn" placeholder="—"></div>
                 </div>
                 <div class="row2">
@@ -179,7 +191,9 @@
                     <div><label>الكمية</label><input class="field" id="mQty" type="number" min="0" step="1"></div>
                 </div>
                 <div class="row2">
-                    <div><label>دار النشر</label><input class="field" id="mPublisher" placeholder="—"></div>
+                    <div><label>دار النشر</label>
+                        <div class="ac-wrap"><input class="field" id="mPublisher" placeholder="—" autocomplete="off"><div class="ac-list" id="mPublisherAC"></div></div>
+                    </div>
                     <div><label>عدد الصفحات</label><input class="field" id="mPages" type="number" min="0"></div>
                 </div>
 
@@ -212,6 +226,8 @@
         const CSRF = document.querySelector('meta[name="csrf-token"]').content;
         const BASE = '{{ url('admin/reader-import') }}';
         const LIST_URL = '{{ route('admin.reader-import.list') }}';
+        const SEARCH_AUTHORS = '{{ route('admin.search.authors') }}';
+        const SEARCH_PUBLISHERS = '{{ route('admin.search.publishers') }}';
         const LANGS = { arabic: 'العربية', english: 'الإنجليزية', french: 'الفرنسية' };
 
         let status = 'pending';
@@ -660,6 +676,54 @@
         });
 
         document.getElementById('loadMore').addEventListener('click', () => fetchPage(false));
+
+        // ---- author / publisher autocomplete (reuses the admin search endpoints) ----
+        function attachAutocomplete(input, list, url) {
+            let timer, items = [], active = -1;
+
+            const close = () => { list.classList.remove('open'); active = -1; };
+            const render = () => {
+                list.innerHTML = items.map((it, i) =>
+                    `<div class="ac-item${i === active ? ' active' : ''}" data-i="${i}">${esc(it.name)}` +
+                    ((it.nationality || it.country) ? ` <small>${esc(it.nationality || it.country)}</small>` : '') +
+                    `</div>`
+                ).join('');
+            };
+            const choose = (i) => { if (items[i]) input.value = items[i].name; close(); };
+
+            input.addEventListener('input', () => {
+                clearTimeout(timer);
+                const term = input.value.trim();
+                if (term.length < 1) { close(); return; }
+                timer = setTimeout(async () => {
+                    try {
+                        const resp = await fetch(`${url}?q=${encodeURIComponent(term)}`, { headers: { 'Accept': 'application/json' } });
+                        items = await resp.json();
+                        if (!Array.isArray(items) || !items.length) { close(); return; }
+                        active = -1; render(); list.classList.add('open');
+                    } catch (e) { close(); }
+                }, 250);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (!list.classList.contains('open')) return;
+                if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, items.length - 1); render(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); render(); }
+                else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); choose(active); }
+                else if (e.key === 'Escape') { close(); }
+            });
+
+            list.addEventListener('mousedown', (e) => {
+                const item = e.target.closest('.ac-item');
+                if (!item) return;
+                e.preventDefault();   // keep focus so blur doesn't close before the pick registers
+                choose(Number(item.dataset.i));
+            });
+
+            input.addEventListener('blur', () => setTimeout(close, 150));
+        }
+        attachAutocomplete($('mAuthor'), $('mAuthorAC'), SEARCH_AUTHORS);
+        attachAutocomplete($('mPublisher'), $('mPublisherAC'), SEARCH_PUBLISHERS);
 
         reload();
     </script>
