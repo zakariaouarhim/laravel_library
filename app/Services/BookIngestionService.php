@@ -316,6 +316,128 @@ class BookIngestionService
     }
 
     /**
+     * Fetch-only, read-only variant of stageFromTitleAuthor's API phase: query
+     * every language-appropriate source (concurrently, 24h cached) and return the
+     * per-source normalized results, WITHOUT staging cover images or creating a
+     * pending row. Used by the reader-import review preview. Reuses the same
+     * private request/parse helpers as the stage methods, so source behaviour and
+     * language selection stay identical (BNF only for French, Wikipedia per language).
+     *
+     * @return array<string,array> source => normalized book data
+     */
+    public function resolveSources(string $title, string $author, string $language = 'french', bool $force = false): array
+    {
+        $title  = trim($title);
+        $author = trim($author);
+
+        $sources = $language === 'french'
+            ? ['bnf', 'google_books', 'open_library', 'wikipedia']
+            : ['google_books', 'open_library', 'wikipedia'];
+
+        $apiResults     = [];
+        $sourcesToFetch = [];
+
+        foreach ($sources as $source) {
+            if ($force) { $sourcesToFetch[] = $source; continue; }
+            $cached = Cache::get($this->ingestCacheKey($source, $title, $author, $language));
+            if ($cached === null) {
+                $sourcesToFetch[] = $source;
+            } else {
+                $value = $cached['v'] ?? null;
+                if (is_array($value)) $apiResults[$source] = $value;
+            }
+        }
+
+        $responses = !empty($sourcesToFetch)
+            ? $this->poolTitleAuthorRequests($sourcesToFetch, $title, $author, $language)
+            : [];
+
+        foreach (['bnf', 'google_books', 'open_library'] as $source) {
+            if (!in_array($source, $sourcesToFetch, true)) continue;
+            try {
+                $response = $responses[$source] ?? null;
+                $parsed = $this->isOkResponse($response) ? match ($source) {
+                    'bnf'          => $this->parseBnfResponse($response, $title),
+                    'google_books' => $this->parseGoogleBooksResponse($response),
+                    'open_library' => $this->parseOpenLibraryResponse($response, $title),
+                } : null;
+                Cache::put($this->ingestCacheKey($source, $title, $author, $language), ['v' => $parsed], now()->addHours(24));
+                if ($parsed) $apiResults[$source] = $parsed;
+            } catch (\Throwable $e) {
+                Log::info("BookIngestion {$source} parse failed for '{$title}': " . $e->getMessage());
+            }
+        }
+
+        if (in_array('wikipedia', $sourcesToFetch, true)) {
+            try {
+                $searchResp = $responses['wikipedia'] ?? null;
+                $parsed = $this->isOkResponse($searchResp)
+                    ? $this->finishWikipediaLookup($searchResp, $title, $language)
+                    : null;
+                Cache::put($this->ingestCacheKey('wikipedia', $title, $author, $language), ['v' => $parsed], now()->addHours(24));
+                if ($parsed) $apiResults['wikipedia'] = $parsed;
+            } catch (\Throwable $e) {
+                Log::info("BookIngestion wikipedia lookup failed for '{$title}': " . $e->getMessage());
+            }
+        }
+
+        return $apiResults;
+    }
+
+    /**
+     * Fetch-only, read-only variant of stageFromIsbn's API phase (no Wikipedia —
+     * its ISBN search is unreliable). Returns per-source normalized results.
+     *
+     * @return array<string,array> source => normalized book data
+     */
+    public function resolveSourcesByIsbn(string $isbn, string $language = 'french', bool $force = false): array
+    {
+        $cleanIsbn = preg_replace('/[^0-9Xx]/', '', $isbn);
+        if (strlen($cleanIsbn) < 10) {
+            return [];
+        }
+
+        $sources = $language === 'french'
+            ? ['bnf', 'google_books', 'open_library']
+            : ['google_books', 'open_library'];
+
+        $apiResults     = [];
+        $sourcesToFetch = [];
+
+        foreach ($sources as $source) {
+            if ($force) { $sourcesToFetch[] = $source; continue; }
+            $cached = Cache::get($this->ingestIsbnCacheKey($source, $cleanIsbn));
+            if ($cached === null) {
+                $sourcesToFetch[] = $source;
+            } else {
+                $value = $cached['v'] ?? null;
+                if (is_array($value)) $apiResults[$source] = $value;
+            }
+        }
+
+        $responses = !empty($sourcesToFetch)
+            ? $this->poolIsbnRequests($sourcesToFetch, $cleanIsbn)
+            : [];
+
+        foreach ($sourcesToFetch as $source) {
+            try {
+                $response = $responses[$source] ?? null;
+                $parsed = $this->isOkResponse($response) ? match ($source) {
+                    'bnf'          => $this->parseBnfIsbnResponse($response),
+                    'google_books' => $this->parseGoogleBooksResponse($response),
+                    'open_library' => $this->parseOpenLibraryIsbnResponse($response, $cleanIsbn),
+                } : null;
+                Cache::put($this->ingestIsbnCacheKey($source, $cleanIsbn), ['v' => $parsed], now()->addHours(24));
+                if ($parsed) $apiResults[$source] = $parsed;
+            } catch (\Throwable $e) {
+                Log::info("BookIngestion ISBN {$source} parse failed for '{$cleanIsbn}': " . $e->getMessage());
+            }
+        }
+
+        return $apiResults;
+    }
+
+    /**
      * Convert an enriched/failed pending row into a live Book. The admin's edits
      * are passed in $overrides — every field below is taken from the override
      * if present, otherwise falls back to the fetched value.

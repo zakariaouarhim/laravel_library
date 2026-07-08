@@ -94,6 +94,17 @@
         .enrich-row label { margin: 0; display: flex; gap: 6px; align-items: flex-start; cursor: pointer; flex: 1; color: #1a1a2e; font-weight: 500; }
         .enrich-row .ekey { font-weight: 700; color: #2563eb; min-width: 64px; }
         .enrich-row img { width: 46px; height: 64px; object-fit: cover; border-radius: 4px; }
+        /* Per-field, per-source picker: each field lists every source that has a value. */
+        .enrich-field { padding: 7px 0; border-bottom: 1px dashed #e5e7eb; font-size: .82rem; }
+        .enrich-field:last-of-type { border-bottom: none; }
+        .enrich-field > .ekey { font-weight: 700; color: #2563eb; margin-bottom: 4px; }
+        .esrc { display: flex; gap: 6px; align-items: flex-start; cursor: pointer; margin: 0 0 3px; padding: 2px 4px; border-radius: 5px; color: #1a1a2e; }
+        .esrc:hover { background: #eef4ff; }
+        .esrc input { margin-top: 3px; }
+        .esrc-label { min-width: 84px; font-weight: 600; color: #16a34a; flex-shrink: 0; }
+        .esrc-val { color: #374151; overflow: hidden; }
+        .esrc img { width: 46px; height: 64px; object-fit: cover; border-radius: 4px; }
+        .esrc-ignore .esrc-label { color: #9ca3af; }
 
         .cat-box { max-height: 230px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; margin-top: 4px; }
         .cat-row { display: flex; align-items: center; gap: 6px; padding: 1px 0; font-size: .85rem; }
@@ -598,18 +609,25 @@
             const labels = { description: 'الوصف', image: 'الصورة', page_num: 'الصفحات', publisher: 'الناشر', language: 'اللغة', isbn: 'ISBN' };
             let rows = '';
             for (const key in f) {
-                const val = f[key].api;
-                const display = key === 'image'
-                    ? `<img src="${esc(val)}" alt=""> صورة من Google`
-                    : esc(String(val).slice(0, 160));
-                rows += `<div class="enrich-row">
-                    <label><input type="checkbox" class="echk" data-key="${key}" checked>
-                    <span class="ekey">${labels[key] || key}</span><span>${display}</span></label>
-                </div>`;
+                const opts = f[key];
+                let optsHtml = '';
+                opts.forEach((o, i) => {
+                    const preview = key === 'image'
+                        ? `<img src="${esc(o.value)}" alt="">`
+                        : esc(String(key === 'language' && LANGS[o.value] ? LANGS[o.value] : o.value).slice(0, 140));
+                    optsHtml += `<label class="esrc">
+                        <input type="radio" name="ef_${key}" data-key="${key}" data-idx="${i}" ${i === 0 ? 'checked' : ''}>
+                        <span class="esrc-label">${esc(o.label)}</span><span class="esrc-val">${preview}</span></label>`;
+                });
+                optsHtml += `<label class="esrc esrc-ignore">
+                    <input type="radio" name="ef_${key}" data-key="${key}" data-idx="-1">
+                    <span class="esrc-label">تجاهل</span></label>`;
+                rows += `<div class="enrich-field"><div class="ekey">${labels[key] || key}</div>${optsHtml}</div>`;
             }
             panel.dataset.fields = JSON.stringify(f);
+            const srcList = (res.data.sources || []).join('، ');
             panel.innerHTML = rows + `<button type="button" class="mbtn api" id="mApplyEnrich" style="margin-top:10px">تطبيق المحدد</button>
-                <div style="font-size:.72rem;color:#6b7280;margin-top:4px">المصدر: ${res.data.search_method || '—'}</div>`;
+                <div style="font-size:.72rem;color:#6b7280;margin-top:4px">المصادر: ${esc(srcList) || '—'}</div>`;
             panel.classList.add('open');
         });
 
@@ -618,10 +636,13 @@
             if (!e.target.closest('#mApplyEnrich')) return;
             const panel = $('mEnrichPanel');
             const f = JSON.parse(panel.dataset.fields || '{}');
-            const picked = Array.from(panel.querySelectorAll('.echk:checked')).map(c => c.dataset.key);
 
-            for (const key of picked) {
-                const val = f[key].api;
+            for (const key in f) {
+                const checked = panel.querySelector(`input[name="ef_${key}"]:checked`);
+                if (!checked) continue;
+                const idx = parseInt(checked.dataset.idx, 10);
+                if (isNaN(idx) || idx < 0 || !f[key][idx]) continue; // "تجاهل"
+                const val = f[key][idx].value;
                 if (key === 'description') $('mDesc').value = val;
                 else if (key === 'page_num') $('mPages').value = val;
                 else if (key === 'publisher') $('mPublisher').value = val;

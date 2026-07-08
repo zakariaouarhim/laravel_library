@@ -7,7 +7,6 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Models\PublishingHouse;
 use App\Models\ReaderStagingBook;
-use App\Services\APIService;
 use App\Services\DescriptionRewriteService;
 use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
@@ -109,86 +108,95 @@ class ReaderImportController extends Controller
     }
 
     /**
-     * Preview Google Books data for a staged book WITHOUT writing anything.
-     * Returns each found field with the current staging value so the admin can
-     * tick what to apply in the modal.
+     * Preview book data WITHOUT writing anything. Queries our local reference
+     * catalogue (~81k almouggar.com rows — instant, free, strong on Arabic/French)
+     * AND the language-aware web pipeline (BNF/Google Books/Open Library/Wikipedia
+     * — BNF only for French, Wikipedia in the book's language). Rather than merging,
+     * it returns EVERY source's value per field so the admin picks which one to
+     * apply in the modal. Sources are ordered catalogue > BNF > Google > Open
+     * Library > Wikipedia (only affects the default selection).
      */
     public function enrichPreview(Request $request, ReaderStagingBook $staged): JsonResponse
     {
         // Use the admin's current (possibly unsaved) modal values for the search.
-        $name   = trim((string) $request->input('name', $staged->name));
-        $author = $request->input('author', $staged->author);
-        $isbnIn = $request->input('isbn', $staged->isbn);
+        $name     = trim((string) $request->input('name', $staged->name));
+        $author   = trim((string) $request->input('author', $staged->author ?? ''));
+        $isbnIn   = $request->input('isbn', $staged->isbn);
+        $language = $request->input('language', $staged->language) ?: 'arabic';
 
         try {
-            // Resolved here (not method-injected) so a missing API key returns a
-            // friendly message instead of a hard 500.
-            $api = app(APIService::class);
-
-            $apiData = null;
+            $results = [];
             $method  = null;
 
+            // 1) Local reference catalogue — always, does its own isbn/title match.
+            if ($name !== '' || $this->cleanIsbn($isbnIn)) {
+                $cat = app(\App\Services\CatalogueLookupService::class)->lookup($isbnIn, $name, $author);
+                if ($cat) {
+                    $results['catalogue'] = $cat;
+                    $method = 'catalogue';
+                }
+            }
+
+            // 2) Web pipeline — prefer ISBN lookup, fall back to title+author.
+            $svc = app(\App\Services\BookIngestionService::class);
+            $web = [];
             $isbn = $this->cleanIsbn($isbnIn);
             if ($isbn) {
-                try {
-                    $apiData = $api->fetchBookDataByISBN($isbn);
-                    $method  = !empty($apiData['items']) ? 'ISBN' : null;
-                    if (!$method) {
-                        $apiData = null;
-                    }
-                } catch (\Throwable $e) {
-                    $apiData = null;
+                $web = $svc->resolveSourcesByIsbn($isbn, $language);
+                if ($web) $method = $method ?: 'ISBN';
+            }
+            if (empty($web) && $name !== '') {
+                $web = $svc->resolveSources($name, $author, $language);
+                if ($web) $method = $method ?: 'title+author';
+            }
+            $results += $web; // keep catalogue key first
+
+            if ($name === '' && !$isbn) {
+                return response()->json(['success' => false, 'message' => 'لا يوجد عنوان أو ISBN للبحث.'], 422);
+            }
+            if (empty($results)) {
+                return response()->json(['success' => true, 'found' => false, 'message' => 'لم يتم العثور على بيانات في أي مصدر.']);
+            }
+
+            // Ordered list of every source's value for a field (default = first).
+            $priority = ['catalogue', 'bnf', 'google_books', 'open_library', 'wikipedia'];
+            $labels   = ['catalogue' => 'الكتالوج', 'bnf' => 'BNF', 'google_books' => 'Google Books', 'open_library' => 'Open Library', 'wikipedia' => 'Wikipedia'];
+            $options = function (string $field, ?callable $transform = null) use ($results, $priority, $labels) {
+                $out = [];
+                foreach ($priority as $src) {
+                    if (empty($results[$src]) || empty($results[$src][$field])) continue;
+                    $value = $transform ? $transform($results[$src][$field]) : $results[$src][$field];
+                    if ($value === null || $value === '' || $value === 0) continue;
+                    $out[] = ['source' => $src, 'label' => $labels[$src], 'value' => $value];
                 }
-            }
+                return $out;
+            };
 
-            if (empty($apiData['items'])) {
-                if ($name === '') {
-                    return response()->json(['success' => false, 'message' => 'لا يوجد عنوان أو ISBN للبحث.'], 422);
-                }
-                $apiData = $api->fetchBookDataByTitle($name, $author);
-                $method  = !empty($apiData['items']) ? 'title+author' : null;
-            }
-
-            if (empty($apiData['items'])) {
-                return response()->json(['success' => true, 'found' => false, 'message' => 'لم يتم العثور على بيانات في Google Books.']);
-            }
-
-            $info     = $apiData['items'][0]['volumeInfo'] ?? [];
-            $imageUrl = APIService::getBookCoverUrl($apiData);
-            $fields   = [];
-
-            if (!empty($info['description'])) {
-                $fields['description'] = ['current' => $staged->description, 'api' => trim(strip_tags($info['description']))];
-            }
-            if ($imageUrl) {
-                $fields['image'] = ['current' => null, 'api' => $imageUrl];
-            }
-            if (!empty($info['pageCount']) && is_numeric($info['pageCount'])) {
-                $fields['page_num'] = ['current' => $staged->page_num, 'api' => (int) $info['pageCount']];
-            }
-            if (!empty($info['publisher'])) {
-                $fields['publisher'] = ['current' => $staged->publisher, 'api' => trim($info['publisher'])];
-            }
-            if (!empty($info['language'])) {
-                $fields['language'] = ['current' => $staged->language, 'api' => $this->mapLanguage($info['language'])];
-            }
-            if (empty($isbnIn) && !empty($info['industryIdentifiers'])) {
-                foreach ($info['industryIdentifiers'] as $ident) {
-                    if (in_array($ident['type'] ?? '', ['ISBN_13', 'ISBN_10'], true)) {
-                        $fields['isbn'] = ['current' => $isbnIn, 'api' => $ident['identifier']];
-                        break;
-                    }
-                }
-            }
+            $fields = array_filter([
+                'description' => $options('description', fn($v) => trim(strip_tags($v))),
+                'image'       => $options('image_url'),
+                'page_num'    => $options('page_num', fn($v) => (int) $v > 0 ? (int) $v : null),
+                'publisher'   => $options('publisher', fn($v) => trim($v)),
+                'language'    => $options('language'),
+                'isbn'        => $options('isbn'),
+            ], fn($o) => !empty($o));
 
             return response()->json([
                 'success'       => true,
                 'found'         => !empty($fields),
                 'search_method' => $method,
+                'sources'       => array_values(array_map(fn($s) => $labels[$s] ?? $s, array_keys($results))),
+                'current'       => [
+                    'description' => $staged->description,
+                    'page_num'    => $staged->page_num,
+                    'publisher'   => $staged->publisher,
+                    'language'    => $staged->language,
+                    'isbn'        => $isbnIn,
+                ],
                 'fields'        => $fields,
             ]);
         } catch (\Throwable $e) {
-            return response()->json(['success' => false, 'message' => 'تعذّر الاتصال بـ API: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'تعذّر الاتصال بالمصادر: ' . $e->getMessage()], 500);
         }
     }
 
@@ -420,17 +428,6 @@ class ReaderImportController extends Controller
         $clean = preg_replace('/[^0-9X]/', '', strtoupper($isbn));
 
         return in_array(strlen($clean), [10, 13], true) ? $clean : null;
-    }
-
-    /** Map a Google Books language code to the catalogue's lowercase value. */
-    private function mapLanguage(string $code): string
-    {
-        return match (strtolower($code)) {
-            'en' => 'english',
-            'fr' => 'french',
-            'ar' => 'arabic',
-            default => strtolower($code),
-        };
     }
 
     /**
