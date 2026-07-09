@@ -2,29 +2,34 @@
 
 namespace App\Services;
 
+use App\Models\Category;
+use Illuminate\Support\Facades\Cache;
+
 /**
  * Turns the messy source-site labels of scraped "reader" books into clean
  * suggestions (category id, author name, language) for the review screen.
  *
  * The source `categories` array mixes four different things:
- *  - real genres            -> map to an existing DB category id
+ *  - real genres            -> map to an existing DB category (by NAME)
  *  - author names           -> fill the author field instead
  *  - merch (mugs/add-ons)   -> Accessories category
  *  - carousel/promo/series  -> ignored for categorization
  *
+ * Categories are resolved by NAME at runtime (category ids differ between the
+ * dev DB and the VPS), so a suggestion never points at a non-existent id.
  * All suggestions are only defaults; the admin confirms/overrides per book.
  */
 class ReaderImportMapper
 {
-    /** Source genre label => existing categories.id. */
+    /** Source genre label => existing category NAME. */
     public const CATEGORY_MAP = [
-        'كتب انجليزية'   => 82,  // كتب إنجليزية
-        'تنمية ذاتية'    => 3,   // تطوير الذات
-        'كتب دينية'      => 2,   // كتب دينية
-        'كتب فرنسية'     => 79,  // French
-        'رعب و فانتازيا' => 99,  // فانتازيا
-        'mugs'           => 80,  // Accessories
-        'ADD ONES'       => 80,  // Accessories
+        'كتب انجليزية'   => 'English Books',
+        'تنمية ذاتية'    => 'تطوير الذات',
+        'كتب دينية'      => 'كتب دينية',
+        'كتب فرنسية'     => 'French',
+        'رعب و فانتازيا' => 'فانتازيا',
+        'mugs'           => 'Accessories',
+        'ADD ONES'       => 'Accessories',
     ];
 
     /** Source labels that are really author names => normalized author name. */
@@ -45,11 +50,11 @@ class ReaderImportMapper
         'سلاسل', 'منتجاتنا', 'مملكة البلاغة', 'قواعد جارتين', 'ثلاثية ردني إليك',
     ];
 
-    /** Fallback primary category by language when nothing else maps. */
+    /** Fallback primary category NAME by language when nothing else maps. */
     public const LANGUAGE_FALLBACK = [
-        'arabic'  => 83, // كتب عربية
-        'english' => 82, // كتب إنجليزية
-        'french'  => 79, // French
+        'arabic'  => 'كتب عربية',
+        'english' => 'English Books',
+        'french'  => 'French',
     ];
 
     /** Normalize the source language string to the catalogue's lowercase value. */
@@ -64,18 +69,32 @@ class ReaderImportMapper
 
     /**
      * Best-guess primary category id from the source labels (first real genre wins),
-     * else merch -> Accessories, else a language fallback.
+     * else a language fallback. Names are resolved to this environment's ids, so
+     * the result is always an existing category (or null if even the fallback is
+     * absent).
      */
     public function suggestCategoryId(array $sourceCategories, string $language): ?int
     {
         foreach ($sourceCategories as $label) {
             $label = trim((string) $label);
-            if (isset(self::CATEGORY_MAP[$label])) {
-                return self::CATEGORY_MAP[$label];
+            if (isset(self::CATEGORY_MAP[$label]) && ($id = $this->idForName(self::CATEGORY_MAP[$label]))) {
+                return $id;
             }
         }
 
-        return self::LANGUAGE_FALLBACK[$language] ?? self::LANGUAGE_FALLBACK['arabic'];
+        $fallbackName = self::LANGUAGE_FALLBACK[$language] ?? self::LANGUAGE_FALLBACK['arabic'];
+
+        return $this->idForName($fallbackName) ?? $this->idForName(self::LANGUAGE_FALLBACK['arabic']);
+    }
+
+    /** Resolve a category name to this environment's id (cached), or null. */
+    private function idForName(string $name): ?int
+    {
+        $map = Cache::remember('category_name_to_id', 600, fn() => Category::pluck('id', 'name')
+            ->mapWithKeys(fn($id, $n) => [trim($n) => (int) $id])
+            ->all());
+
+        return $map[trim($name)] ?? null;
     }
 
     /**
