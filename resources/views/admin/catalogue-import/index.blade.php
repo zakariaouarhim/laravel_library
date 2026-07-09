@@ -101,10 +101,18 @@
         .esrc img { width: 46px; height: 64px; object-fit: cover; border-radius: 4px; }
         .esrc-ignore .esrc-label { color: #9ca3af; }
 
-        .cat-box { max-height: 230px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; margin-top: 4px; }
+        .cat-box { max-height: 260px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 8px; margin-top: 4px; }
         .cat-row { display: flex; align-items: center; gap: 6px; padding: 1px 0; font-size: .85rem; }
-        .cat-row.parent { font-weight: bold; margin-top: 3px; }
-        .cat-row.child { padding-right: 18px; }
+        .cat-row.child { padding-right: 22px; }
+        .cat-group { border-bottom: 1px solid #f3f4f6; }
+        .cat-group:last-child { border-bottom: none; }
+        .cat-parent-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; font-weight: 700; font-size: .85rem; }
+        .cat-toggle { width: 14px; text-align: center; color: #6b7280; transition: transform .15s; user-select: none; }
+        .cat-parent-row.open .cat-toggle { transform: rotate(90deg); }
+        .cat-parent-row.has-kids .cat-toggle, .cat-parent-row.has-kids .cat-pname { cursor: pointer; }
+        .cat-pname { flex: 1; }
+        .cat-count { color: #16a34a; font-weight: 600; font-size: .76rem; }
+        .cat-children { padding: 2px 0 6px; }
         .cat-star { cursor: pointer; color: #d1d5db; font-size: 1rem; width: 18px; text-align: center; }
         .cat-star.primary { color: #f59e0b; }
         .cat-hint { font-size: .72rem; color: #6b7280; margin-top: 4px; }
@@ -226,7 +234,7 @@
 
                 <label>التصنيفات <small style="font-weight:400">(اختر واحدة أو أكثر؛ النجمة = الفئة الرئيسية)</small></label>
                 <div class="cat-box" id="mCats"></div>
-                <div class="cat-hint">⭐ أول فئة تحددها تصبح الرئيسية. اضغط النجمة لتغييرها. (اقتراح تلقائي حسب العنوان واللغة)</div>
+                <div class="cat-hint">اضغط اسم الفئة الأمّ لعرض الفئات الفرعية. ⭐ أول فئة تحددها تصبح الرئيسية؛ اضغط النجمة لتغييرها. (اقتراح تلقائي حسب العنوان واللغة)</div>
             </div>
           </div>
         </div>
@@ -505,16 +513,49 @@
 
         const $ = id => document.getElementById(id);
 
+        // CATEGORIES is a flat, ordered list (each parent followed by its children).
+        // Group it into parent → children for the collapsible accordion.
+        function groupCategories() {
+            const groups = [];
+            let current = null;
+            CATEGORIES.forEach(c => {
+                if (c.parent) { current = { parent: c, children: [] }; groups.push(current); }
+                else { if (!current) { current = { parent: null, children: [] }; groups.push(current); } current.children.push(c); }
+            });
+            return groups;
+        }
+        function catRow(c, cls) {
+            const primary = modalCats.primary === c.id;
+            return `<div class="cat-row ${cls}">
+                <input type="checkbox" class="cat-cb" value="${c.id}" ${modalCats.ids.has(c.id) ? 'checked' : ''}>
+                <span class="cat-star ${primary ? 'primary' : ''}" data-id="${c.id}">${primary ? '★' : '☆'}</span>
+                <span>${esc(c.name)}</span>
+            </div>`;
+        }
         function buildCatBox() {
-            $('mCats').innerHTML = CATEGORIES.map(c => {
-                const checked = modalCats.ids.has(c.id);
-                const primary = modalCats.primary === c.id;
-                return `<div class="cat-row ${c.parent ? 'parent' : 'child'}">
-                    <input type="checkbox" class="cat-cb" value="${c.id}" ${checked ? 'checked' : ''}>
-                    <span class="cat-star ${primary ? 'primary' : ''}" data-id="${c.id}">${primary ? '★' : '☆'}</span>
-                    <span>${c.parent ? '' : '── '}${esc(c.name)}</span>
-                </div>`;
+            $('mCats').innerHTML = groupCategories().map(g => {
+                const p = g.parent;
+                const selCount = (p && modalCats.ids.has(p.id) ? 1 : 0) + g.children.filter(c => modalCats.ids.has(c.id)).length;
+                const open = selCount > 0; // reveal groups that already have a selection
+                const primary = p && modalCats.primary === p.id;
+                const hasKids = g.children.length > 0;
+                const parentRow = p ? `<div class="cat-parent-row ${open ? 'open' : ''} ${hasKids ? 'has-kids' : ''}">
+                    <span class="cat-toggle">${hasKids ? '▸' : ''}</span>
+                    <input type="checkbox" class="cat-cb" value="${p.id}" ${modalCats.ids.has(p.id) ? 'checked' : ''}>
+                    <span class="cat-star ${primary ? 'primary' : ''}" data-id="${p.id}">${primary ? '★' : '☆'}</span>
+                    <span class="cat-pname">${esc(p.name)}</span>
+                    <span class="cat-count">${selCount ? '(' + selCount + ')' : ''}</span>
+                </div>` : '';
+                const children = g.children.map(c => catRow(c, 'child')).join('');
+                return `<div class="cat-group">${parentRow}<div class="cat-children" ${open ? '' : 'style="display:none"'}>${children}</div></div>`;
             }).join('');
+        }
+        function updateGroupCount(el) {
+            const group = el.closest('.cat-group');
+            if (!group) return;
+            const n = group.querySelectorAll('.cat-cb:checked').length;
+            const badge = group.querySelector('.cat-count');
+            if (badge) badge.textContent = n ? '(' + n + ')' : '';
         }
         function refreshStars() {
             $('mCats').querySelectorAll('.cat-star').forEach(s => {
@@ -578,8 +619,21 @@
                 }
             }
             refreshStars();
+            updateGroupCount(cb);
         });
         $('mCats').addEventListener('click', (e) => {
+            // Expand / collapse a parent's children.
+            const toggle = e.target.closest('.cat-toggle, .cat-pname');
+            if (toggle) {
+                const group = toggle.closest('.cat-group');
+                const kids = group.querySelector('.cat-children');
+                if (!kids || !kids.children.length) return; // childless parent
+                const row = group.querySelector('.cat-parent-row');
+                const open = kids.style.display === 'none';
+                kids.style.display = open ? 'block' : 'none';
+                row.classList.toggle('open', open);
+                return;
+            }
             const star = e.target.closest('.cat-star');
             if (!star) return;
             const id = Number(star.dataset.id);
