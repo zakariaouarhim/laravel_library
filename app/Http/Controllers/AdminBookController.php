@@ -504,6 +504,38 @@ class AdminBookController extends Controller
         }
     }
 
+    /**
+     * Soft-delete a product (book). The DashboardProduct.js delete button issues
+     * DELETE /admin/products/api/{id} and expects { success: bool }. Book uses
+     * SoftDeletes, so the row is retained (recoverable) and Scout drops it from
+     * the search index automatically.
+     */
+    public function destroyProduct(Request $request, $id)
+    {
+        try {
+            $product = Book::findOrFail($id);
+            $product->delete();
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'تم حذف المنتج بنجاح']);
+            }
+            return redirect()->route('products.index')->with('success', 'تم حذف المنتج بنجاح');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'المنتج غير موجود.'], 404);
+            }
+            return redirect()->back()->withErrors(['error' => 'Product not found.']);
+
+        } catch (\Exception $e) {
+            \Log::error('Delete product error: ' . $e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف المنتج، يرجى المحاولة لاحقاً.'], 500);
+            }
+            return redirect()->back()->withErrors(['error' => 'An error occurred while deleting the product.']);
+        }
+    }
+
     public function searchBook(Request $request)
     {
         $request->validate(['q' => 'required|string|min:3|max:100']);

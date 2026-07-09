@@ -151,6 +151,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/products/api/stats', [AdminBookController::class, 'getProductsApiStats'])->name('products.api.stats');
     Route::get('/products/api/{id}', [AdminBookController::class, 'getProductById'])->name('products.api.show');
     Route::put('/products/api/{id}', [AdminBookController::class, 'updateProduct'])->name('products.api.update');
+    Route::delete('/products/api/{id}', [AdminBookController::class, 'destroyProduct'])->name('products.api.destroy');
 
     // Search helpers
     Route::get('/search-book', [AdminBookController::class, 'searchBook'])->name('search.book');
