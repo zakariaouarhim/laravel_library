@@ -160,6 +160,14 @@
                     </svg>
                     <span class="nav-text">استيراد كتب Reader</span>
                 </a>
+                <a href="{{ route('admin.catalogue-import.index') }}"
+                   class="sidebar-nav-item {{ request()->routeIs('admin.catalogue-import.*') ? 'active' : '' }}"
+                   title="استيراد من الكتالوج المرجعي">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    <span class="nav-text">الكتالوج المرجعي</span>
+                </a>
                 <a href="{{ route('admin.home-carousels.index') }}"
                    class="sidebar-nav-item {{ request()->routeIs('admin.home-carousels.*') ? 'active' : '' }}"
                    title="كاروسيلات الصفحة الرئيسية">

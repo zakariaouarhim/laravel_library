@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>مراجعة استيراد الكتب</title>
+    <title>استيراد من الكتالوج المرجعي</title>
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,8 +19,10 @@
         .stat { background: #fff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); font-size: .9rem; }
         .stat strong { color: #2563eb; }
 
-        .toolbar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .toolbar input { padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 6px; min-width: 220px; }
+        .toolbar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+        .toolbar input[type=search] { padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 6px; min-width: 240px; }
+        .toolbar select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; }
+        .toolbar .chk { display: flex; align-items: center; gap: 5px; font-size: .85rem; background: #fff; padding: 7px 12px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; }
         .filters button { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; background: #fff; margin: 0 3px; }
         .filters button.active { background: #2563eb; color: #fff; border-color: #2563eb; }
 
@@ -35,10 +37,9 @@
 
         .badges { margin-bottom: 6px; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .7rem; font-weight: 600; margin: 0 0 4px 4px; }
-        .badge-stock { background: #dbeafe; color: #1d4ed8; }
-        .badge-dupe { background: #fef2f2; color: #b91c1c; }
+        .badge-comp { background: #dbeafe; color: #1d4ed8; }
+        .badge-store { background: #fef3c7; color: #92400e; }
         .badge-seo { background: #ecfccb; color: #3f6212; }
-        .badge-src { background: #f3f4f6; color: #555; }
 
         label { font-size: .75rem; color: #6b7280; font-weight: 600; display: block; margin-top: 8px; }
         .field { width: 100%; padding: 6px 8px; border: 1px solid #e5e7eb; border-radius: 4px; font-size: .88rem; margin-top: 3px; font-family: inherit; }
@@ -89,12 +90,6 @@
 
         .enrich-panel { margin-top: 10px; border: 1px solid #bfdbfe; background: #f8fbff; border-radius: 8px; padding: 10px; display: none; }
         .enrich-panel.open { display: block; }
-        .enrich-row { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px dashed #e5e7eb; font-size: .82rem; }
-        .enrich-row:last-child { border-bottom: none; }
-        .enrich-row label { margin: 0; display: flex; gap: 6px; align-items: flex-start; cursor: pointer; flex: 1; color: #1a1a2e; font-weight: 500; }
-        .enrich-row .ekey { font-weight: 700; color: #2563eb; min-width: 64px; }
-        .enrich-row img { width: 46px; height: 64px; object-fit: cover; border-radius: 4px; }
-        /* Per-field, per-source picker: each field lists every source that has a value. */
         .enrich-field { padding: 7px 0; border-bottom: 1px dashed #e5e7eb; font-size: .82rem; }
         .enrich-field:last-of-type { border-bottom: none; }
         .enrich-field > .ekey { font-weight: 700; color: #2563eb; margin-bottom: 4px; }
@@ -114,7 +109,6 @@
         .cat-star.primary { color: #f59e0b; }
         .cat-hint { font-size: .72rem; color: #6b7280; margin-top: 4px; }
 
-        /* Author / publisher autocomplete */
         .ac-wrap { position: relative; }
         .ac-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 300; background: #fff;
                    border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 6px 6px;
@@ -130,10 +124,6 @@
         .mf-approve { background: #16a34a; color: #fff; }
         .mf-cancel { background: #f3f4f6; color: #6b7280; }
 
-        /* Offset content beside the fixed dashboard sidebar. Overrides the shared
-           rule (which only reserves the collapsed width) so the expanded 280px
-           sidebar never overlaps the cards; +12px keeps a gap. The sidebar JS
-           toggles .sidebar-collapsed on .main-content. */
         .main-content {
             margin-right: calc(var(--sidebar-width-expanded) + 12px);
             width: auto;
@@ -151,11 +141,29 @@
     @include('Dashbord_Admin.Sidebar')
     <div class="main-content">
     <div class="header">
-        <h1>مراجعة استيراد الكتب (Reader)</h1>
+        <h1>استيراد من الكتالوج المرجعي</h1>
         <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
         <div class="stats" id="stats"></div>
         <div class="toolbar">
-            <input type="search" id="searchBox" placeholder="ابحث بالعنوان أو المؤلف…">
+            <input type="search" id="searchBox" placeholder="ابحث بالعنوان أو المؤلف أو ISBN…">
+            <select id="fLang">
+                <option value="">كل اللغات</option>
+                <option value="arabic">العربية</option>
+                <option value="french">الفرنسية</option>
+                <option value="english">الإنجليزية</option>
+                <option value="spanish">الإسبانية</option>
+                <option value="german">الألمانية</option>
+            </select>
+            <select id="fComp">
+                <option value="8">الجودة = 8</option>
+                <option value="7" selected>الجودة ≥ 7</option>
+                <option value="5">الجودة ≥ 5</option>
+                <option value="0">كل الجودات</option>
+            </select>
+            <label class="chk"><input type="checkbox" id="fDesc"> بوصف فقط</label>
+            <label class="chk"><input type="checkbox" id="fStore" checked> إخفاء المتوفر بالمتجر</label>
+        </div>
+        <div class="toolbar">
             <div class="filters">
                 <button class="active" data-status="pending">قيد المراجعة</button>
                 <button data-status="imported">مستوردة</button>
@@ -166,7 +174,7 @@
     </div>
 
     <div class="grid" id="grid"></div>
-    <div class="empty" id="empty" style="display:none;">لا توجد كتب لعرضها.</div>
+    <div class="empty" id="empty" style="display:none;">لا توجد عناصر لعرضها.</div>
     <div class="center" id="moreWrap" style="display:none;">
         <button class="load-more" id="loadMore">تحميل المزيد</button>
     </div>
@@ -218,7 +226,7 @@
 
                 <label>التصنيفات <small style="font-weight:400">(اختر واحدة أو أكثر؛ النجمة = الفئة الرئيسية)</small></label>
                 <div class="cat-box" id="mCats"></div>
-                <div class="cat-hint">⭐ أول فئة تحددها تصبح الرئيسية. اضغط النجمة لتغييرها.</div>
+                <div class="cat-hint">⭐ أول فئة تحددها تصبح الرئيسية. اضغط النجمة لتغييرها. (اقتراح تلقائي حسب العنوان واللغة)</div>
             </div>
           </div>
         </div>
@@ -235,8 +243,8 @@
         const CAT_BY_ID = {};
         CATEGORIES.forEach(c => CAT_BY_ID[c.id] = c);
         const CSRF = document.querySelector('meta[name="csrf-token"]').content;
-        const BASE = '{{ url('admin/reader-import') }}';
-        const LIST_URL = '{{ route('admin.reader-import.list') }}';
+        const BASE = '{{ url('admin/catalogue-import') }}';
+        const LIST_URL = '{{ route('admin.catalogue-import.list') }}';
         const SEARCH_AUTHORS = '{{ route('admin.search.authors') }}';
         const SEARCH_PUBLISHERS = '{{ route('admin.search.publishers') }}';
         const LANGS = { arabic: 'العربية', english: 'الإنجليزية', french: 'الفرنسية' };
@@ -244,8 +252,9 @@
         let status = 'pending';
         let page = 1;
         let q = '';
+        let filters = { language: '', min_completeness: '7', has_description: false, hide_in_store: true };
         let loading = false;
-        const STATE = {};            // id -> book object (mutable working copy)
+        const STATE = {};            // id -> item object (mutable working copy)
 
         const grid = document.getElementById('grid');
         const empty = document.getElementById('empty');
@@ -259,8 +268,10 @@
                 `<option value="${v}" ${v === selected ? 'selected' : ''}>${l}</option>`
             ).join('');
         }
+        // Cover: an admin-replaced webp lives under public/; otherwise the remote catalogue cover.
         function imgSrc(b) {
-            return `${BASE}/${b.id}/image${b._imgv ? '?v=' + b._imgv : ''}`;
+            if (b._customImage) return `/${b._customImage}${b._imgv ? '?v=' + b._imgv : ''}`;
+            return b.cover_url || '';
         }
         function catSummary(b) {
             const primary = CAT_BY_ID[b.primary_category_id];
@@ -272,8 +283,9 @@
         }
 
         function cardHtml(b) {
-            const cover = b.image_exists
-                ? `<img class="cover" src="${imgSrc(b)}" loading="lazy" alt="">`
+            const src = imgSrc(b);
+            const cover = src
+                ? `<img class="cover" src="${esc(src)}" loading="lazy" alt="" onerror="this.classList.add('missing');this.replaceWith(Object.assign(document.createElement('div'),{className:'cover missing',textContent:'لا توجد صورة'}))">`
                 : `<div class="cover missing">لا توجد صورة</div>`;
 
             let footer;
@@ -293,8 +305,8 @@
                     ${cover}
                     <div class="info">
                         <div class="badges">
-                            <span class="badge badge-stock">مخزون: ${b.stock}</span>
-                            ${b.duplicate ? '<span class="badge badge-dupe">عنوان مكرر</span>' : ''}
+                            <span class="badge badge-comp">الجودة: ${b.completeness}</span>
+                            ${b.in_store ? '<span class="badge badge-store">متوفر بالمتجر</span>' : ''}
                             ${b.description_rewritten ? '<span class="badge badge-seo">SEO</span>' : ''}
                         </div>
                         <label>العنوان</label>
@@ -328,18 +340,29 @@
             if (card) card.outerHTML = cardHtml(STATE[id]);
         }
 
+        function listUrl(pageNum) {
+            const p = new URLSearchParams({
+                status, page: pageNum, q,
+                language: filters.language,
+                min_completeness: filters.min_completeness,
+                has_description: filters.has_description ? 1 : 0,
+                hide_in_store: filters.hide_in_store ? 1 : 0,
+            });
+            return `${LIST_URL}?${p.toString()}`;
+        }
+
         async function fetchPage(replace) {
             if (loading) return;
             loading = true;
             try {
-                const url = `${LIST_URL}?status=${status}&page=${page}&q=${encodeURIComponent(q)}`;
-                const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                const resp = await fetch(listUrl(page), { headers: { 'Accept': 'application/json' } });
                 const data = await resp.json();
 
                 if (replace) grid.innerHTML = '';
                 data.books.forEach(b => {
-                    b.quantity = b.quantity ?? b.stock;
+                    b.quantity = b.quantity ?? 1;
                     b.category_ids = b.category_ids || [];
+                    b._customImage = null;
                     STATE[b.id] = b;
                     grid.insertAdjacentHTML('beforeend', cardHtml(b));
                 });
@@ -397,6 +420,9 @@
                 publisher: b.publisher, language: b.language, price: b.price,
                 quantity: b.quantity, description: b.description,
                 category_ids: b.category_ids, primary_category_id: b.primary_category_id,
+                custom_image: b._customImage || null,
+                rewritten: !!b.description_rewritten,
+                original_description: b._originalDescription || null,
             };
         }
 
@@ -411,7 +437,7 @@
             let res = await post(`${BASE}/${id}/approve`, approvePayload(b));
             if (res.status === 409 && res.data.duplicate) {
                 card.classList.remove('busy');
-                if (!confirm('يوجد كتاب بنفس العنوان. هل تريد الاستيراد رغم ذلك؟')) return;
+                if (!confirm('يوجد كتاب بنفس العنوان أو ISBN. هل تريد الاستيراد رغم ذلك؟')) return;
                 card.classList.add('busy');
                 res = await post(`${BASE}/${id}/approve`, { ...approvePayload(b), force: true });
             }
@@ -423,7 +449,7 @@
             }
         }
 
-        // ---- card-level interactions (edit fields, approve, skip, open modal) ----
+        // ---- card-level interactions ----
         grid.addEventListener('input', (e) => {
             const el = e.target.closest('[data-f]');
             if (!el) return;
@@ -466,7 +492,7 @@
 
         async function fetchCountsOnly() {
             try {
-                const resp = await fetch(`${LIST_URL}?status=${status}&page=1&q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+                const resp = await fetch(listUrl(1), { headers: { 'Accept': 'application/json' } });
                 const data = await resp.json();
                 renderStats(data.counts);
             } catch (e) {}
@@ -501,7 +527,7 @@
         function openModal(id) {
             modalId = id;
             const b = STATE[id];
-            $('mCover').src = b.image_exists ? imgSrc(b) : '';
+            $('mCover').src = imgSrc(b);
             $('mName').value = b.name || '';
             $('mAuthor').value = b.author || '';
             $('mIsbn').value = b.isbn || '';
@@ -538,7 +564,6 @@
             b.primary_category_id = modalCats.primary;
         }
 
-        // category checkbox + primary-star handling
         $('mCats').addEventListener('change', (e) => {
             const cb = e.target.closest('.cat-cb');
             if (!cb) return;
@@ -563,7 +588,7 @@
             refreshStars();
         });
 
-        // image upload
+        // image upload -> returns a public webp path (not persisted; sent on approve)
         $('mFile').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -572,7 +597,7 @@
             const res = await postForm(`${BASE}/${modalId}/image`, fd);
             if (res.data.success) {
                 const b = STATE[modalId];
-                b.image_exists = true; b._imgv = res.data.image_version;
+                b._customImage = res.data.path; b._imgv = res.data.image_version;
                 $('mCover').src = imgSrc(b);
                 toast('تم تحديث الصورة');
             } else toast(res.data.message || 'فشل رفع الصورة');
@@ -588,19 +613,21 @@
             });
             btn.disabled = false; btn.textContent = 'إعادة صياغة (SEO)';
             if (res.data.success) {
+                const b = STATE[modalId];
+                if (!b._originalDescription) b._originalDescription = $('mDesc').value; // keep pre-rewrite text
                 $('mDesc').value = res.data.description;
-                STATE[modalId].description = res.data.description;
-                STATE[modalId].description_rewritten = true;
+                b.description = res.data.description;
+                b.description_rewritten = true;
                 toast('تمت إعادة الصياغة');
             } else toast(res.data.message || 'فشلت إعادة الصياغة');
         });
 
-        // API enrich preview
+        // API enrich preview (all sources per field)
         $('mEnrich').addEventListener('click', async () => {
             const btn = $('mEnrich');
             btn.disabled = true; btn.textContent = '... جارٍ البحث';
             const res = await post(`${BASE}/${modalId}/enrich-preview`, {
-                name: $('mName').value, author: $('mAuthor').value, isbn: $('mIsbn').value,
+                name: $('mName').value, author: $('mAuthor').value, isbn: $('mIsbn').value, language: $('mLang').value,
             });
             btn.disabled = false; btn.textContent = 'إثراء من API (معاينة)';
             const panel = $('mEnrichPanel');
@@ -655,7 +682,7 @@
                     const res = await post(`${BASE}/${modalId}/image-from-url`, { url: val });
                     if (res.data.success) {
                         const b = STATE[modalId];
-                        b.image_exists = true; b._imgv = res.data.image_version;
+                        b._customImage = res.data.path; b._imgv = res.data.image_version;
                         $('mCover').src = imgSrc(b);
                     }
                 }
@@ -693,6 +720,11 @@
             });
         });
 
+        $('fLang').addEventListener('change', e => { filters.language = e.target.value; reload(); });
+        $('fComp').addEventListener('change', e => { filters.min_completeness = e.target.value; reload(); });
+        $('fDesc').addEventListener('change', e => { filters.has_description = e.target.checked; reload(); });
+        $('fStore').addEventListener('change', e => { filters.hide_in_store = e.target.checked; reload(); });
+
         let searchTimer;
         document.getElementById('searchBox').addEventListener('input', (e) => {
             clearTimeout(searchTimer);
@@ -701,7 +733,7 @@
 
         document.getElementById('loadMore').addEventListener('click', () => fetchPage(false));
 
-        // ---- author / publisher autocomplete (reuses the admin search endpoints) ----
+        // ---- author / publisher autocomplete ----
         function attachAutocomplete(input, list, url) {
             let timer, items = [], active = -1;
 
@@ -740,7 +772,7 @@
             list.addEventListener('mousedown', (e) => {
                 const item = e.target.closest('.ac-item');
                 if (!item) return;
-                e.preventDefault();   // keep focus so blur doesn't close before the pick registers
+                e.preventDefault();
                 choose(Number(item.dataset.i));
             });
 

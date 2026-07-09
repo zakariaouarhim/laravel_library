@@ -39,6 +39,7 @@ use App\Http\Controllers\AdminOfferController;
 use App\Http\Controllers\AdminHomeCarouselController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\ReaderImportController;
+use App\Http\Controllers\CatalogueImportController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
 
@@ -93,6 +94,17 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/reader-import/{staged}/approve', [ReaderImportController::class, 'approve'])->name('reader-import.approve');
     Route::post('/reader-import/{staged}/skip',    [ReaderImportController::class, 'skip'])->name('reader-import.skip');
     Route::post('/reader-import/{staged}/unskip',  [ReaderImportController::class, 'unskip'])->name('reader-import.unskip');
+
+    // Catalogue import (browse the ~81k reference catalogue -> real catalogue)
+    Route::get('/catalogue-import',                    [CatalogueImportController::class, 'index'])->name('catalogue-import.index');
+    Route::get('/catalogue-import/list',               [CatalogueImportController::class, 'list'])->name('catalogue-import.list');
+    Route::post('/catalogue-import/{catalogue}/enrich-preview', [CatalogueImportController::class, 'enrichPreview'])->name('catalogue-import.enrich-preview');
+    Route::post('/catalogue-import/{catalogue}/rewrite', [CatalogueImportController::class, 'rewriteDescription'])->name('catalogue-import.rewrite');
+    Route::post('/catalogue-import/{catalogue}/image',  [CatalogueImportController::class, 'uploadImage'])->name('catalogue-import.image-upload');
+    Route::post('/catalogue-import/{catalogue}/image-from-url', [CatalogueImportController::class, 'imageFromUrl'])->name('catalogue-import.image-from-url');
+    Route::post('/catalogue-import/{catalogue}/approve', [CatalogueImportController::class, 'approve'])->name('catalogue-import.approve');
+    Route::post('/catalogue-import/{catalogue}/skip',   [CatalogueImportController::class, 'skip'])->name('catalogue-import.skip');
+    Route::post('/catalogue-import/{catalogue}/unskip', [CatalogueImportController::class, 'unskip'])->name('catalogue-import.unskip');
 
     // Home carousels (كاروسيلات الصفحة الرئيسية)
     Route::get('/home-carousels',                       [AdminHomeCarouselController::class, 'index'])->name('home-carousels.index');

@@ -32,4 +32,10 @@ class CatalogueReference extends Model
     public $timestamps = false;
 
     protected $guarded = [];
+
+    /** Review state for this row (imported/skipped); absent = pending. */
+    public function review()
+    {
+        return $this->hasOne(CatalogueReview::class, 'catalogue_reference_id');
+    }
 }

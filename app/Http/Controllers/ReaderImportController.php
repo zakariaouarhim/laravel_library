@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
-use App\Models\PublishingHouse;
 use App\Models\ReaderStagingBook;
+use App\Services\BookImportService;
 use App\Services\DescriptionRewriteService;
+use App\Services\EnrichPreviewService;
 use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Admin-only tool to review scraped "reader" books one by one and approve them
@@ -116,88 +115,23 @@ class ReaderImportController extends Controller
      * apply in the modal. Sources are ordered catalogue > BNF > Google > Open
      * Library > Wikipedia (only affects the default selection).
      */
-    public function enrichPreview(Request $request, ReaderStagingBook $staged): JsonResponse
+    public function enrichPreview(Request $request, ReaderStagingBook $staged, EnrichPreviewService $enricher): JsonResponse
     {
         // Use the admin's current (possibly unsaved) modal values for the search.
-        $name     = trim((string) $request->input('name', $staged->name));
-        $author   = trim((string) $request->input('author', $staged->author ?? ''));
+        $name     = (string) $request->input('name', $staged->name);
+        $author   = (string) $request->input('author', $staged->author ?? '');
         $isbnIn   = $request->input('isbn', $staged->isbn);
         $language = $request->input('language', $staged->language) ?: 'arabic';
 
-        try {
-            $results = [];
-            $method  = null;
+        $result = $enricher->preview($name, $author, $isbnIn, $language, [
+            'description' => $staged->description,
+            'page_num'    => $staged->page_num,
+            'publisher'   => $staged->publisher,
+            'language'    => $staged->language,
+            'isbn'        => $isbnIn,
+        ]);
 
-            // 1) Local reference catalogue — always, does its own isbn/title match.
-            if ($name !== '' || $this->cleanIsbn($isbnIn)) {
-                $cat = app(\App\Services\CatalogueLookupService::class)->lookup($isbnIn, $name, $author);
-                if ($cat) {
-                    $results['catalogue'] = $cat;
-                    $method = 'catalogue';
-                }
-            }
-
-            // 2) Web pipeline — prefer ISBN lookup, fall back to title+author.
-            $svc = app(\App\Services\BookIngestionService::class);
-            $web = [];
-            $isbn = $this->cleanIsbn($isbnIn);
-            if ($isbn) {
-                $web = $svc->resolveSourcesByIsbn($isbn, $language);
-                if ($web) $method = $method ?: 'ISBN';
-            }
-            if (empty($web) && $name !== '') {
-                $web = $svc->resolveSources($name, $author, $language);
-                if ($web) $method = $method ?: 'title+author';
-            }
-            $results += $web; // keep catalogue key first
-
-            if ($name === '' && !$isbn) {
-                return response()->json(['success' => false, 'message' => 'لا يوجد عنوان أو ISBN للبحث.'], 422);
-            }
-            if (empty($results)) {
-                return response()->json(['success' => true, 'found' => false, 'message' => 'لم يتم العثور على بيانات في أي مصدر.']);
-            }
-
-            // Ordered list of every source's value for a field (default = first).
-            $priority = ['catalogue', 'bnf', 'google_books', 'open_library', 'wikipedia'];
-            $labels   = ['catalogue' => 'الكتالوج', 'bnf' => 'BNF', 'google_books' => 'Google Books', 'open_library' => 'Open Library', 'wikipedia' => 'Wikipedia'];
-            $options = function (string $field, ?callable $transform = null) use ($results, $priority, $labels) {
-                $out = [];
-                foreach ($priority as $src) {
-                    if (empty($results[$src]) || empty($results[$src][$field])) continue;
-                    $value = $transform ? $transform($results[$src][$field]) : $results[$src][$field];
-                    if ($value === null || $value === '' || $value === 0) continue;
-                    $out[] = ['source' => $src, 'label' => $labels[$src], 'value' => $value];
-                }
-                return $out;
-            };
-
-            $fields = array_filter([
-                'description' => $options('description', fn($v) => trim(strip_tags($v))),
-                'image'       => $options('image_url'),
-                'page_num'    => $options('page_num', fn($v) => (int) $v > 0 ? (int) $v : null),
-                'publisher'   => $options('publisher', fn($v) => trim($v)),
-                'language'    => $options('language'),
-                'isbn'        => $options('isbn'),
-            ], fn($o) => !empty($o));
-
-            return response()->json([
-                'success'       => true,
-                'found'         => !empty($fields),
-                'search_method' => $method,
-                'sources'       => array_values(array_map(fn($s) => $labels[$s] ?? $s, array_keys($results))),
-                'current'       => [
-                    'description' => $staged->description,
-                    'page_num'    => $staged->page_num,
-                    'publisher'   => $staged->publisher,
-                    'language'    => $staged->language,
-                    'isbn'        => $isbnIn,
-                ],
-                'fields'        => $fields,
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json(['success' => false, 'message' => 'تعذّر الاتصال بالمصادر: ' . $e->getMessage()], 500);
-        }
+        return response()->json($result['body'], $result['status']);
     }
 
     /** AI-rewrite the description for SEO (keeps the original); persists to staging. */
@@ -272,11 +206,18 @@ class ReaderImportController extends Controller
     }
 
     /** Approve a staged book: create the real Book, then mark the row imported. */
-    public function approve(Request $request, ReaderStagingBook $staged, ImageService $imageService): JsonResponse
+    public function approve(Request $request, ReaderStagingBook $staged, BookImportService $importer): JsonResponse
     {
         if ($staged->status === 'imported') {
             return response()->json(['success' => false, 'message' => 'سبق استيراد هذا الكتاب.'], 409);
         }
+
+        // Clean enrich-sourced values so they can't hard-fail validation or
+        // overflow the books columns (isbn varchar 17, title varchar 191).
+        $request->merge([
+            'isbn' => BookImportService::normalizeIsbn($request->input('isbn')),
+            'name' => mb_substr(trim((string) $request->input('name')), 0, 191),
+        ]);
 
         $data = $request->validate([
             'name'                => 'required|string|max:500',
@@ -305,87 +246,27 @@ class ReaderImportController extends Controller
             }
         }
 
+        // Cover: an admin-replaced webp is already in public/; otherwise process
+        // the original reader_DB file.
+        $prefix = 'reader_' . substr($staged->external_id, 0, 8);
+        $cover  = ['prefix' => $prefix];
+        if ($staged->custom_image) {
+            $cover['webp'] = $staged->custom_image;
+        } elseif ($staged->local_image) {
+            $cover['file'] = base_path('reader_DB' . DIRECTORY_SEPARATOR . $staged->local_image);
+        }
+
         try {
-            // Keep model events (slug, observers) but don't hard-depend on Meilisearch
-            // being up during import; books are indexed later via `scout:import`.
-            $book = Book::withoutSyncingToSearch(fn() => DB::transaction(function () use ($data, $staged, $imageService) {
-                $authorId = null;
-                if (!empty($data['author'])) {
-                    $authorId = Author::firstOrCreate(
-                        ['name' => trim($data['author'])],
-                        ['status' => 'active']
-                    )->id;
-                }
-
-                $publisherId = null;
-                if (!empty($data['publisher'])) {
-                    $publisherId = PublishingHouse::firstOrCreate(
-                        ['name' => trim($data['publisher'])],
-                        ['status' => 'active']
-                    )->id;
-                }
-
-                // Cover: an admin-replaced webp is already in public/; otherwise
-                // process the original reader_DB file.
-                $imagePath = null;
-                if ($staged->custom_image && is_file(public_path($staged->custom_image))) {
-                    $imagePath = $staged->custom_image;
-                } else {
-                    $fullImage = base_path('reader_DB' . DIRECTORY_SEPARATOR . $staged->local_image);
-                    if ($staged->local_image && is_file($fullImage)) {
-                        $imagePath = $imageService->processLocalFile(
-                            $fullImage,
-                            'images/books',
-                            'reader_' . substr($staged->external_id, 0, 8)
-                        );
-                    }
-                }
-
-                $attrs = [
-                    'title'           => $data['name'],
-                    'type'            => 'book',
-                    'product_type'    => 'standard',
-                    'author_id'       => $authorId,
-                    'description'     => $data['description'] ?: null,
-                    'price'           => $data['price'],
-                    'discount'        => 0,
-                    'category_id'     => $data['primary_category_id'],
-                    'image'           => $imagePath,
-                    'page_num'        => $data['page_num'] ?? 0,
-                    'language'        => $data['language'],
-                    'publishing_house_id' => $publisherId,
-                    'isbn'            => $data['isbn'] ?: null,
-                    'quantity'        => (int) $data['quantity'],
-                    'api_data_status' => 'pending',
-                    'status'          => 'active',
-                ];
-
-                $book = Book::create($attrs);
-
-                // If the description was AI-rewritten, preserve the original and mark
-                // it so the nightly rewrite cron skips it. These columns aren't in
-                // Book::$fillable, so set them explicitly via forceFill.
-                if ($staged->description_rewritten) {
-                    $book->forceFill([
-                        'original_description' => $staged->original_description,
-                        'rewrite_status'       => 'rewritten',
-                        'rewritten_at'         => now(),
-                    ])->save();
-                }
-
-                if ($authorId) {
-                    $book->authors()->syncWithoutDetaching([$authorId => ['author_type' => 'primary']]);
-                }
-                $book->syncCategories($data['category_ids'], $data['primary_category_id']);
-
-                $staged->update([
+            $book = $importer->create(
+                $data,
+                $cover,
+                ['rewritten' => (bool) $staged->description_rewritten, 'original_description' => $staged->original_description],
+                fn(Book $book) => $staged->update([
                     'status'      => 'imported',
                     'book_id'     => $book->id,
                     'reviewed_at' => now(),
-                ]);
-
-                return $book;
-            }));
+                ])
+            );
 
             return response()->json([
                 'success' => true,
@@ -417,17 +298,6 @@ class ReaderImportController extends Controller
         $staged->update(['status' => 'pending', 'reviewed_at' => null]);
 
         return response()->json(['success' => true]);
-    }
-
-    /** Normalize an ISBN to 10/13 digits, or null if invalid. */
-    private function cleanIsbn(?string $isbn): ?string
-    {
-        if (empty($isbn)) {
-            return null;
-        }
-        $clean = preg_replace('/[^0-9X]/', '', strtoupper($isbn));
-
-        return in_array(strlen($clean), [10, 13], true) ? $clean : null;
     }
 
     /**
