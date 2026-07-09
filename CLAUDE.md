@@ -74,3 +74,46 @@ Here is the cleaned and properly reconstructed text from the image:
 * **Simplicity First**: Make every change as simple as possible. Minimal impact code.
 * **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 * **Minimal Impact**: Changes should only touch what’s necessary. Avoid introducing bugs.
+
+---
+
+# Deployment to the VPS
+
+"Push to the VPS" for this project means: **commit → push to GitHub → SSH to the
+server and `git pull` there** (plus migrations/cache rebuild). The server pulls
+from GitHub; it is never edited directly.
+
+## Coordinates
+* **Git remote**: `origin` → `https://github.com/zakariaouarhim/laravel_library.git`, branch **`main`**.
+* **VPS SSH**: `ssh root@178.104.100.242` (key auth via `~/.ssh/id_ed25519` in Windows Git Bash — no password).
+* **VPS project path**: `/var/www/library_fokara`
+
+## Steps
+1. `git push origin main` (from the local repo).
+2. Deploy on the server (single SSH command):
+   ```bash
+   ssh root@178.104.100.242 'cd /var/www/library_fokara && git pull origin main \
+     && php artisan migrate --force \
+     && php artisan config:clear && php artisan route:clear \
+     && php artisan view:clear && php artisan view:cache'
+   ```
+   * Run `migrate --force` only when the commit adds migrations.
+   * Blade-only changes: just `git pull` + `view:clear && view:cache`.
+3. Verify on the server (e.g. `php artisan route:list | grep <name>`, or a `tinker --execute` count).
+
+## Do NOT commit / never push
+* `.claude/settings.json` (contains credentials).
+* Book cover images `public/images/books/*.webp` (large, generated).
+* `reader_DB/` and `storage/app/catalogue_reference/*.sql` (git-ignored source data).
+* n8n workflow JSON files at the repo root.
+* The **low-stock WIP** while unfinished: `AdminBookController@updateStock`,
+  `resources/views/Dashbord_Admin/dashboard.blade.php`, and the
+  `products.update-stock` route in `routes/web.php`. Diff every file with
+  `git diff --cached` before committing.
+
+## Data not in git (manual, one-time per environment)
+* The reference catalogue lives in a git-ignored dump. To (re)load it on the VPS:
+  upload `storage/app/catalogue_reference/catalogue_reference.sql`, then
+  `php artisan catalogue:import`. It is already loaded (81,782 rows).
+* Category **ids differ between local and the VPS** — never hardcode category
+  ids in import/seed code; resolve by name at runtime.
