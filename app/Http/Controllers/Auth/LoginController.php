@@ -37,4 +37,14 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+
+    /**
+     * This app's login form lives at the `login2` route; the Laravel UI
+     * scaffolding's default `auth.login` view doesn't exist here, so GET /login
+     * (and any framework redirect to route('login')) must go to the real page.
+     */
+    public function showLoginForm()
+    {
+        return redirect()->route('login2.page');
+    }
 }
