@@ -301,6 +301,36 @@ class ReaderImportController extends Controller
     }
 
     /**
+     * Undo an import: send an imported row back to "pending" and soft-delete the
+     * Book that was created from it (recoverable, and Scout drops it from search),
+     * so the admin can review/re-import without leaving a duplicate behind.
+     */
+    public function restore(ReaderStagingBook $staged): JsonResponse
+    {
+        if ($staged->status !== 'imported') {
+            return response()->json(['success' => false, 'message' => 'هذا الكتاب ليس في قائمة المستوردة.'], 422);
+        }
+
+        if ($staged->book_id) {
+            $book = Book::find($staged->book_id);
+            if ($book) {
+                // Soft-delete without depending on Meilisearch being up (mirrors
+                // approve), then best-effort drop it from the search index.
+                Book::withoutSyncingToSearch(fn() => $book->delete());
+                try {
+                    $book->unsearchable();
+                } catch (\Throwable $e) {
+                    \Log::warning('reader-import restore: unsearchable failed: ' . $e->getMessage());
+                }
+            }
+        }
+
+        $staged->update(['status' => 'pending', 'book_id' => null, 'reviewed_at' => null]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Category list for the review screen, ordered as a tree: each top-level
      * parent (bold) immediately followed by its children (indented with ──) —
      * matching the dashboard's product filter select.

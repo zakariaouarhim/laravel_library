@@ -286,7 +286,7 @@
 
             let footer;
             if (b.status === 'imported') {
-                footer = `<div class="status-line imported">✔ تم الاستيراد</div>`;
+                footer = `<div class="status-line imported">✔ تم الاستيراد <a href="#" class="relink" data-act="restore">إرجاع للمراجعة</a></div>`;
             } else if (b.status === 'skipped') {
                 footer = `<div class="status-line skipped">✕ تم التخطّي <a href="#" class="relink" data-act="unskip">إرجاع</a></div>`;
             } else {
@@ -459,6 +459,14 @@
             if (act === 'unskip') {
                 const res = await post(`${BASE}/${id}/unskip`);
                 if (res.data.success) { toast('تمت الإعادة'); STATE[id].status = 'pending'; refreshAfterAction(card); }
+            }
+            if (act === 'restore') {
+                if (!confirm('سيُعاد الكتاب إلى قائمة المراجعة وسيُحذف المنتج الذي أُنشئ منه (يمكن استرجاعه لاحقًا). هل تريد المتابعة؟')) return;
+                card.classList.add('busy');
+                const res = await post(`${BASE}/${id}/restore`);
+                card.classList.remove('busy');
+                if (res.data.success) { toast('تم الإرجاع للمراجعة'); STATE[id].status = 'pending'; refreshAfterAction(card); }
+                else toast(res.data.message || 'تعذّر الإرجاع');
             }
         });
 

@@ -94,6 +94,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/reader-import/{staged}/approve', [ReaderImportController::class, 'approve'])->name('reader-import.approve');
     Route::post('/reader-import/{staged}/skip',    [ReaderImportController::class, 'skip'])->name('reader-import.skip');
     Route::post('/reader-import/{staged}/unskip',  [ReaderImportController::class, 'unskip'])->name('reader-import.unskip');
+    Route::post('/reader-import/{staged}/restore', [ReaderImportController::class, 'restore'])->name('reader-import.restore');
 
     // Catalogue import (browse the ~81k reference catalogue -> real catalogue)
     Route::get('/catalogue-import',                    [CatalogueImportController::class, 'index'])->name('catalogue-import.index');
