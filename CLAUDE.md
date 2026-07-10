@@ -90,16 +90,33 @@ from GitHub; it is never edited directly.
 
 ## Steps
 1. `git push origin main` (from the local repo).
-2. Deploy on the server (single SSH command):
+2. Deploy on the server. **Run every `artisan` command as `www-data`, NOT root** —
+   the web server (nginx/php-fpm) runs as `www-data`, and artisan run as root
+   creates root-owned files in `storage/` + `bootstrap/cache/` that php-fpm then
+   can't overwrite → site-wide 500s ("file_put_contents … cache/data/… Failed to
+   open stream: No such file or directory"). `git pull` as root is fine (source
+   files are only read).
    ```bash
    ssh root@178.104.100.242 'cd /var/www/library_fokara && git pull origin main \
-     && php artisan migrate --force \
-     && php artisan config:clear && php artisan route:clear \
-     && php artisan view:clear && php artisan view:cache'
+     && runuser -u www-data -- php artisan migrate --force \
+     && runuser -u www-data -- php artisan config:clear \
+     && runuser -u www-data -- php artisan route:clear \
+     && runuser -u www-data -- php artisan view:clear'
    ```
    * Run `migrate --force` only when the commit adds migrations.
-   * Blade-only changes: just `git pull` + `view:clear && view:cache`.
+   * Blade-only changes: just `git pull` + `runuser -u www-data -- php artisan view:clear`.
 3. Verify on the server (e.g. `php artisan route:list | grep <name>`, or a `tinker --execute` count).
+
+## If the site 500s with a `storage`/cache write error
+Ownership got broken (usually artisan run as root). Fix:
+```bash
+ssh root@178.104.100.242 'cd /var/www/library_fokara \
+  && chown -R www-data:www-data storage bootstrap/cache \
+  && find storage bootstrap/cache -type d -exec chmod 2775 {} \; \
+  && find storage bootstrap/cache -type f -exec chmod 664 {} \; \
+  && rm -rf storage/framework/cache/data/* storage/framework/views/*.php'
+```
+Check the cause in `storage/logs/laravel.log` (`grep production.ERROR`).
 
 ## Do NOT commit / never push
 * `.claude/settings.json` (contains credentials).
