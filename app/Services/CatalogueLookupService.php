@@ -98,7 +98,7 @@ class CatalogueLookupService
             'publisher'   => $c->edition ? trim($c->edition) : null, // `edition` holds the publisher
             'language'    => $this->mapLanguage($c->langue),
             'categories'  => [], // source category is noise ("Produits"), ignore
-            'image_url'   => $c->cover_url ?: null,
+            'image_url'   => $c->coverUrl(),
         ];
     }
 

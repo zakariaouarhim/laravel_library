@@ -128,7 +128,7 @@ class CatalogueImportController extends Controller
             'language'    => $language,
             'price'       => $this->parsePrice($r->price),
             'description' => $r->description,
-            'cover_url'   => $r->cover_url,
+            'cover_url'   => CatalogueReference::normalizeCoverUrl($r->cover_url),
             'completeness' => (int) $r->completeness,
             'category_ids'         => $suggested['category_ids'],
             'primary_category_id'  => $suggested['primary_category_id'],
@@ -265,8 +265,8 @@ class CatalogueImportController extends Controller
         $cover = ['prefix' => 'cat_' . $catalogue->id];
         if (!empty($data['custom_image'])) {
             $cover['webp'] = $data['custom_image'];
-        } elseif ($catalogue->cover_url) {
-            $cover['url'] = $catalogue->cover_url;
+        } elseif ($catalogue->coverUrl()) {
+            $cover['url'] = $catalogue->coverUrl();
         }
 
         try {

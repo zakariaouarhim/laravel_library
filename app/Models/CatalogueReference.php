@@ -38,4 +38,26 @@ class CatalogueReference extends Model
     {
         return $this->hasOne(CatalogueReview::class, 'catalogue_reference_id');
     }
+
+    /**
+     * almouggar.com changed its Odoo image endpoints after our scrape: the old
+     * `/web/image/product.template/{id}/image/300x300?unique=…` form now serves a
+     * generic placeholder for EVERY product, while `/image_1024` (same template
+     * id) serves the real cover. Rewrite stale URLs at read time so the stored
+     * dump stays untouched and re-imports keep working.
+     */
+    public static function normalizeCoverUrl(?string $url): ?string
+    {
+        if (!$url) {
+            return null;
+        }
+
+        return preg_replace('#/image/\d+x\d+(\?.*)?$#', '/image_1024', $url);
+    }
+
+    /** The usable cover URL (stale scrape-era pattern rewritten). */
+    public function coverUrl(): ?string
+    {
+        return self::normalizeCoverUrl($this->cover_url);
+    }
 }
