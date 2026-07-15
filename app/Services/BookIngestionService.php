@@ -352,15 +352,27 @@ class BookIngestionService
             ? $this->poolTitleAuthorRequests($sourcesToFetch, $title, $author, $language)
             : [];
 
+        if (in_array('google_books', $sourcesToFetch, true)) {
+            $responses['google_books'] = $this->retryGoogleBooks(
+                $responses['google_books'] ?? null,
+                $this->googleBooksTitleParams($title, $author, $language)
+            );
+        }
+
         foreach (['bnf', 'google_books', 'open_library'] as $source) {
             if (!in_array($source, $sourcesToFetch, true)) continue;
             try {
                 $response = $responses[$source] ?? null;
-                $parsed = $this->isOkResponse($response) ? match ($source) {
+                if (!$this->isOkResponse($response)) {
+                    // Transport failure (Google 503 etc.), not "book unknown":
+                    // don't cache it for 24h, let the next request try again.
+                    continue;
+                }
+                $parsed = match ($source) {
                     'bnf'          => $this->parseBnfResponse($response, $title),
                     'google_books' => $this->parseGoogleBooksResponse($response),
                     'open_library' => $this->parseOpenLibraryResponse($response, $title),
-                } : null;
+                };
                 Cache::put($this->ingestCacheKey($source, $title, $author, $language), ['v' => $parsed], now()->addHours(24));
                 if ($parsed) $apiResults[$source] = $parsed;
             } catch (\Throwable $e) {
@@ -371,11 +383,11 @@ class BookIngestionService
         if (in_array('wikipedia', $sourcesToFetch, true)) {
             try {
                 $searchResp = $responses['wikipedia'] ?? null;
-                $parsed = $this->isOkResponse($searchResp)
-                    ? $this->finishWikipediaLookup($searchResp, $title, $language)
-                    : null;
-                Cache::put($this->ingestCacheKey('wikipedia', $title, $author, $language), ['v' => $parsed], now()->addHours(24));
-                if ($parsed) $apiResults['wikipedia'] = $parsed;
+                if ($this->isOkResponse($searchResp)) {
+                    $parsed = $this->finishWikipediaLookup($searchResp, $title, $language);
+                    Cache::put($this->ingestCacheKey('wikipedia', $title, $author, $language), ['v' => $parsed], now()->addHours(24));
+                    if ($parsed) $apiResults['wikipedia'] = $parsed;
+                }
             } catch (\Throwable $e) {
                 Log::info("BookIngestion wikipedia lookup failed for '{$title}': " . $e->getMessage());
             }
@@ -419,14 +431,26 @@ class BookIngestionService
             ? $this->poolIsbnRequests($sourcesToFetch, $cleanIsbn)
             : [];
 
+        if (in_array('google_books', $sourcesToFetch, true)) {
+            $responses['google_books'] = $this->retryGoogleBooks(
+                $responses['google_books'] ?? null,
+                $this->googleBooksIsbnParams($cleanIsbn)
+            );
+        }
+
         foreach ($sourcesToFetch as $source) {
             try {
                 $response = $responses[$source] ?? null;
-                $parsed = $this->isOkResponse($response) ? match ($source) {
+                if (!$this->isOkResponse($response)) {
+                    // Transport failure (Google 503 etc.), not "book unknown":
+                    // don't cache it for 24h, let the next request try again.
+                    continue;
+                }
+                $parsed = match ($source) {
                     'bnf'          => $this->parseBnfIsbnResponse($response),
                     'google_books' => $this->parseGoogleBooksResponse($response),
                     'open_library' => $this->parseOpenLibraryIsbnResponse($response, $cleanIsbn),
-                } : null;
+                };
                 Cache::put($this->ingestIsbnCacheKey($source, $cleanIsbn), ['v' => $parsed], now()->addHours(24));
                 if ($parsed) $apiResults[$source] = $parsed;
             } catch (\Throwable $e) {
@@ -649,19 +673,9 @@ class BookIngestionService
             }
 
             if (in_array('google_books', $sources, true)) {
-                $apiKey = app(APIService::class)->getApiKey();
-                $params = [
-                    'q'          => $title . ($author !== '' ? ' ' . $author : ''),
-                    'key'        => $apiKey,
-                    'maxResults' => 10,
-                    'printType'  => 'books',
-                ];
-                if ($iso = APIService::isoLanguageCode($language)) {
-                    $params['langRestrict'] = $iso;
-                }
                 $reqs[] = $pool->as('google_books')
                     ->withOptions(['verify' => false, 'timeout' => 15, 'connect_timeout' => 10])
-                    ->get('https://www.googleapis.com/books/v1/volumes', $params);
+                    ->get('https://www.googleapis.com/books/v1/volumes', $this->googleBooksTitleParams($title, $author, $language));
             }
 
             if (in_array('open_library', $sources, true)) {
@@ -698,6 +712,54 @@ class BookIngestionService
     private function isOkResponse($r): bool
     {
         return $r instanceof \Illuminate\Http\Client\Response && $r->successful();
+    }
+
+    /** Query params for a Google Books title+author search (pool + retry). */
+    private function googleBooksTitleParams(string $title, string $author, string $language): array
+    {
+        $params = [
+            'q'          => $title . ($author !== '' ? ' ' . $author : ''),
+            'key'        => app(APIService::class)->getApiKey(),
+            'maxResults' => 10,
+            'printType'  => 'books',
+        ];
+        if ($iso = APIService::isoLanguageCode($language)) {
+            $params['langRestrict'] = $iso;
+        }
+
+        return $params;
+    }
+
+    /** Query params for a Google Books ISBN lookup (pool + retry). */
+    private function googleBooksIsbnParams(string $cleanIsbn): array
+    {
+        return [
+            'q'   => 'isbn:' . $cleanIsbn,
+            'key' => app(APIService::class)->getApiKey(),
+        ];
+    }
+
+    /**
+     * Google's Books API intermittently 503s (~half of all requests as of
+     * mid-2026), and pooled requests can't retry in this Laravel version — so
+     * when the pooled attempt failed, re-send it synchronously with retries.
+     * Returns the original response/exception if every attempt fails.
+     */
+    private function retryGoogleBooks($response, array $params)
+    {
+        if ($this->isOkResponse($response)) {
+            return $response;
+        }
+
+        try {
+            return Http::withOptions(['verify' => false, 'timeout' => 15, 'connect_timeout' => 10])
+                ->retry(3, 1000, fn($e) => true)
+                ->get('https://www.googleapis.com/books/v1/volumes', $params);
+        } catch (\Throwable $e) {
+            Log::info('BookIngestion google_books retry exhausted: ' . $e->getMessage());
+
+            return $response;
+        }
     }
 
     /**
@@ -741,13 +803,9 @@ class BookIngestionService
             }
 
             if (in_array('google_books', $sources, true)) {
-                $apiKey = app(APIService::class)->getApiKey();
                 $reqs[] = $pool->as('google_books')
                     ->withOptions(['verify' => false, 'timeout' => 15, 'connect_timeout' => 10])
-                    ->get('https://www.googleapis.com/books/v1/volumes', [
-                        'q'   => 'isbn:' . $cleanIsbn,
-                        'key' => $apiKey,
-                    ]);
+                    ->get('https://www.googleapis.com/books/v1/volumes', $this->googleBooksIsbnParams($cleanIsbn));
             }
 
             if (in_array('open_library', $sources, true)) {
