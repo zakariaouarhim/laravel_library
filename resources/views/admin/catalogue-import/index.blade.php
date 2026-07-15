@@ -79,7 +79,15 @@
         .mgrid { display: flex; gap: 20px; }
         .mleft { width: 200px; flex-shrink: 0; }
         .mright { flex: 1; min-width: 0; }
-        .mcover { width: 100%; height: 270px; object-fit: contain; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb; }
+        /* Zoom preview: .mcover-wrap shrink-wraps the displayed image and clips
+           the scaled overflow, so the visible area IS the center crop the server
+           makes at approve time. */
+        .mcover-box { width: 100%; height: 270px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .mcover-wrap { overflow: hidden; max-width: 100%; max-height: 100%; }
+        .mcover { display: block; max-width: 100%; max-height: 268px; transform-origin: center; }
+        .mzoom-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .mzoom-row input[type=range] { flex: 1; }
+        .mzoom-row span { font-size: .8rem; color: #6b7280; min-width: 40px; text-align: center; }
         .mleft .field { margin-top: 10px; }
         .mbtn { display: inline-block; width: 100%; margin-top: 8px; padding: 8px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: .85rem; }
         .mbtn:hover { background: #f1f5f9; }
@@ -204,7 +212,14 @@
         <div class="modal-body">
           <div class="mgrid">
             <div class="mleft">
-                <img class="mcover" id="mCover" alt="">
+                <div class="mcover-box">
+                    <div class="mcover-wrap"><img class="mcover" id="mCover" alt=""></div>
+                </div>
+                <div class="mzoom-row">
+                    <label style="margin:0">تكبير</label>
+                    <input type="range" id="mZoom" min="100" max="200" step="5" value="100">
+                    <span id="mZoomVal">100%</span>
+                </div>
                 <label>تغيير الصورة</label>
                 <input type="file" class="field" id="mFile" accept="image/*">
             </div>
@@ -435,6 +450,7 @@
                 quantity: b.quantity, description: b.description,
                 category_ids: b.category_ids, primary_category_id: b.primary_category_id,
                 custom_image: b._customImage || null,
+                image_zoom: b._imgZoom || 1,
                 rewritten: !!b.description_rewritten,
                 original_description: b._originalDescription || null,
             };
@@ -571,9 +587,21 @@
             });
         }
 
+        // Cover zoom (center crop): modal-local so إلغاء discards it like the
+        // other edits; copied into STATE only by harvestModalIntoState().
+        let modalZoom = 1;
+        function setZoom(z) {
+            modalZoom = z;
+            $('mCover').style.transform = z > 1.01 ? `scale(${z})` : '';
+            $('mZoom').value = Math.round(z * 100);
+            $('mZoomVal').textContent = Math.round(z * 100) + '%';
+        }
+        $('mZoom').addEventListener('input', e => setZoom(Number(e.target.value) / 100));
+
         function openModal(id) {
             modalId = id;
             const b = STATE[id];
+            setZoom(b._imgZoom || 1);
             $('mCover').src = imgSrc(b);
             $('mName').value = b.name || '';
             $('mAuthor').value = b.author || '';
@@ -598,6 +626,7 @@
 
         function harvestModalIntoState() {
             const b = STATE[modalId];
+            b._imgZoom = modalZoom;
             b.name = $('mName').value;
             b.author = $('mAuthor').value;
             b.isbn = $('mIsbn').value;
@@ -658,6 +687,8 @@
             if (res.data.success) {
                 const b = STATE[modalId];
                 b._customImage = res.data.path; b._imgv = res.data.image_version;
+                b._imgZoom = 1;
+                setZoom(1); // fresh image starts un-zoomed
                 $('mCover').src = imgSrc(b);
                 toast('تم تحديث الصورة');
             } else toast(res.data.message || 'فشل رفع الصورة');
@@ -743,6 +774,8 @@
                     if (res.data.success) {
                         const b = STATE[modalId];
                         b._customImage = res.data.path; b._imgv = res.data.image_version;
+                        b._imgZoom = 1;
+                        setZoom(1); // fresh image starts un-zoomed
                         $('mCover').src = imgSrc(b);
                     }
                 }

@@ -116,18 +116,27 @@ class BookImportService
     private function resolveCover(array $cover): ?string
     {
         $prefix = $cover['prefix'] ?? 'import';
+        // Admin-chosen zoom (center crop) from the review modal; 1.0 = as-is.
+        $zoom = (float) ($cover['zoom'] ?? 1.0);
 
         // Already-processed webp sitting in public/ (admin-replaced cover).
         if (!empty($cover['webp']) && is_file(public_path($cover['webp']))) {
+            // Zoomed: re-process the file so the crop (and its thumb/large
+            // variants) are regenerated; un-zoomed keeps the path as-is.
+            if ($zoom > 1.01) {
+                return $this->imageService->processLocalFile(public_path($cover['webp']), 'images/books', $prefix, $zoom)
+                    ?? $cover['webp'];
+            }
+
             return $cover['webp'];
         }
         // A local source file to process (webp + thumb + large).
         if (!empty($cover['file']) && is_file($cover['file'])) {
-            return $this->imageService->processLocalFile($cover['file'], 'images/books', $prefix);
+            return $this->imageService->processLocalFile($cover['file'], 'images/books', $prefix, $zoom);
         }
         // A remote cover URL to download + process.
         if (!empty($cover['url'])) {
-            return $this->imageService->downloadFromUrl($cover['url'], 'images/books', $prefix);
+            return $this->imageService->downloadFromUrl($cover['url'], 'images/books', $prefix, $zoom);
         }
 
         return null;

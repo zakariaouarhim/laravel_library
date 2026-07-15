@@ -18,7 +18,7 @@ class ImageService
      * Process raw image bytes (already fetched) into WebP + thumbnail. Used by
      * BookIngestionService after Http::pool downloads covers concurrently.
      */
-    public function processFromBytes(string $bytes, string $destinationDir, string $filenamePrefix): ?string
+    public function processFromBytes(string $bytes, string $destinationDir, string $filenamePrefix, float $zoom = 1.0): ?string
     {
         try {
             $filename = $filenamePrefix . '_' . time() . mt_rand(100, 999) . '.webp';
@@ -28,9 +28,10 @@ class ImageService
             if (!file_exists($fullDestination)) mkdir($fullDestination, 0755, true);
             if (!file_exists($thumbDir)) mkdir($thumbDir, 0755, true);
 
-            $this->saveLargeVariant($bytes, $destinationDir, $filename);
+            $this->saveLargeVariant($bytes, $destinationDir, $filename, $zoom);
 
             $image = Image::read($bytes);
+            $this->applyZoom($image, $zoom);
             $image->scale(width: 400);
             $image->toWebp(80)->save($fullDestination . '/' . $filename);
 
@@ -45,7 +46,7 @@ class ImageService
         }
     }
 
-    public function downloadFromUrl(string $url, string $destinationDir, string $filenamePrefix): ?string
+    public function downloadFromUrl(string $url, string $destinationDir, string $filenamePrefix, float $zoom = 1.0): ?string
     {
         try {
             // Try higher quality version first (Google Books specific)
@@ -72,10 +73,11 @@ class ImageService
                 mkdir($thumbDir, 0755, true);
             }
 
-            $this->saveLargeVariant($imageContent, $destinationDir, $filename);
+            $this->saveLargeVariant($imageContent, $destinationDir, $filename, $zoom);
 
             // Resize to 400px wide and convert to WebP
             $image = Image::read($imageContent);
+            $this->applyZoom($image, $zoom);
             $image->scale(width: 400);
             $image->toWebp(80)->save($fullDestination . '/' . $filename);
 
@@ -100,7 +102,7 @@ class ImageService
      * @param string $filenamePrefix Prefix for the generated filename
      * @return string|null           Relative path to the saved image, or null on failure
      */
-    public function processLocalFile(string $filePath, string $destinationDir, string $filenamePrefix): ?string
+    public function processLocalFile(string $filePath, string $destinationDir, string $filenamePrefix, float $zoom = 1.0): ?string
     {
         try {
             $filename = $filenamePrefix . '_' . time() . '_' . mt_rand(100, 999) . '.webp';
@@ -114,10 +116,11 @@ class ImageService
                 mkdir($thumbDir, 0755, true);
             }
 
-            $this->saveLargeVariant($filePath, $destinationDir, $filename);
+            $this->saveLargeVariant($filePath, $destinationDir, $filename, $zoom);
 
             // Resize to 400px wide and convert to WebP
             $image = Image::read($filePath);
+            $this->applyZoom($image, $zoom);
             $image->scale(width: 400);
             $image->toWebp(80)->save($fullDestination . '/' . $filename);
 
@@ -142,13 +145,14 @@ class ImageService
      *
      * @param  string|UploadedFile $source  Raw bytes, local file path, or an UploadedFile
      */
-    private function saveLargeVariant($source, string $destinationDir, string $filename): void
+    private function saveLargeVariant($source, string $destinationDir, string $filename, float $zoom = 1.0): void
     {
         try {
             $largeDir = public_path($destinationDir . '/large');
             if (!file_exists($largeDir)) mkdir($largeDir, 0755, true);
 
             $img = Image::read($source);
+            $this->applyZoom($img, $zoom);
             // Don't upscale — saves no information and bloats the file.
             if ($img->width() > 800) {
                 $img->scale(width: 800);
@@ -156,6 +160,22 @@ class ImageService
             $img->toWebp(82)->save($largeDir . '/' . $filename);
         } catch (\Throwable $e) {
             \Log::warning('ImageService::saveLargeVariant failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * "Zoom" = keep the central 1/zoom of both dimensions (the admin's live
+     * preview in the review modal shows exactly this center crop). Used to cut
+     * white margins off source covers before the usual resize.
+     */
+    private function applyZoom($image, float $zoom): void
+    {
+        if ($zoom > 1.01) {
+            $image->crop(
+                max(1, (int) round($image->width() / $zoom)),
+                max(1, (int) round($image->height() / $zoom)),
+                position: 'center'
+            );
         }
     }
 
