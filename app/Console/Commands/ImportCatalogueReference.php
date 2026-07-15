@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\DB;
  * by the dump (single source of truth) and the import is fully idempotent — run
  * it again to refresh. The .sql lives under storage/app/catalogue_reference and
  * is git-ignored (uploaded to the VPS separately).
+ *
+ * WARNING: the drop/recreate also wipes the booksondemand.ma rows (dedup_key
+ * "bod:…") that live in the same table — re-run `php artisan bod:scrape` after
+ * any re-import to restore them.
  */
 class ImportCatalogueReference extends Command
 {

@@ -120,8 +120,9 @@ class CatalogueLookupService
     /**
      * Approximate the dump's own normalization: lowercase, strip Latin accents,
      * fold Arabic letter variants, drop punctuation/diacritics, collapse spaces.
+     * Public static so scrapers (bod:scrape) write matching *_normalized columns.
      */
-    private function normalize(string $s): string
+    public static function normalize(string $s): string
     {
         $s = mb_strtolower(trim($s));
 

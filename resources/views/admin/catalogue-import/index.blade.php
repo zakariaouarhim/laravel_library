@@ -168,6 +168,11 @@
                 <option value="5">الجودة ≥ 5</option>
                 <option value="0">كل الجودات</option>
             </select>
+            <select id="fSource">
+                <option value="">كل المصادر</option>
+                <option value="almouggar">Almouggar</option>
+                <option value="bod">BooksOnDemand</option>
+            </select>
             <label class="chk"><input type="checkbox" id="fDesc"> بوصف فقط</label>
             <label class="chk"><input type="checkbox" id="fStore" checked> إخفاء المتوفر بالمتجر</label>
         </div>
@@ -260,7 +265,7 @@
         let status = 'pending';
         let page = 1;
         let q = '';
-        let filters = { language: '', min_completeness: '7', has_description: false, hide_in_store: true };
+        let filters = { language: '', min_completeness: '7', has_description: false, hide_in_store: true, source: '' };
         let loading = false;
         const STATE = {};            // id -> item object (mutable working copy)
 
@@ -352,6 +357,7 @@
             const p = new URLSearchParams({
                 status, page: pageNum, q,
                 language: filters.language,
+                source: filters.source,
                 min_completeness: filters.min_completeness,
                 has_description: filters.has_description ? 1 : 0,
                 hide_in_store: filters.hide_in_store ? 1 : 0,
@@ -776,6 +782,16 @@
 
         $('fLang').addEventListener('change', e => { filters.language = e.target.value; reload(); });
         $('fComp').addEventListener('change', e => { filters.min_completeness = e.target.value; reload(); });
+        $('fSource').addEventListener('change', e => {
+            filters.source = e.target.value;
+            // bod rows have no ISBN so they honestly score ~5-7: the default
+            // "quality >= 7" filter would hide most of them. Relax it.
+            if (filters.source === 'bod' && Number(filters.min_completeness) > 5) {
+                filters.min_completeness = '0';
+                $('fComp').value = '0';
+            }
+            reload();
+        });
         $('fDesc').addEventListener('change', e => { filters.has_description = e.target.checked; reload(); });
         $('fStore').addEventListener('change', e => { filters.hide_in_store = e.target.checked; reload(); });
 

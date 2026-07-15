@@ -29,10 +29,11 @@ class SecurityHeaders
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://www.google.com https://books.google.com https://www.googletagmanager.com https://*.google-analytics.com",
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
-            // almouggar.com: hot-linked covers in the admin catalogue-import browser.
+            // almouggar.com + cdn.shopify.com (booksondemand.ma): hot-linked covers
+            // in the admin catalogue-import browser.
             // covers.openlibrary.org + upload.wikimedia.org: enrich-preview images
             // (Open Library / BNF fallback / Wikipedia) in the import modals.
-            "img-src 'self' data: blob: https://books.google.com https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://almouggar.com https://covers.openlibrary.org https://upload.wikimedia.org",
+            "img-src 'self' data: blob: https://books.google.com https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://almouggar.com https://cdn.shopify.com https://covers.openlibrary.org https://upload.wikimedia.org",
             "connect-src 'self' https://www.google.com https://books.google.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net",
             "frame-src https://books.google.com https://www.google.com",
             "frame-ancestors 'self'",
