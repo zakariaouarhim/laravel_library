@@ -247,7 +247,8 @@ class CatalogueImportController extends Controller
             'category_ids.*'      => 'integer|exists:categories,id',
             'primary_category_id' => 'required|integer|in_array:category_ids.*',
             'custom_image'        => 'nullable|string|max:255',
-            'image_zoom'          => 'nullable|numeric|min:1|max:3',
+            'image_zoom_w'        => 'nullable|numeric|min:1|max:3',
+            'image_zoom_h'        => 'nullable|numeric|min:1|max:3',
             'rewritten'           => 'nullable|boolean',
             'original_description' => 'nullable|string',
             'force'               => 'nullable|boolean',
@@ -267,9 +268,13 @@ class CatalogueImportController extends Controller
         }
 
         // Cover: an admin-replaced webp is already in public/; else download the
-        // catalogue's remote cover. `zoom` center-crops white margins away
-        // (matches the live preview in the modal).
-        $cover = ['prefix' => 'cat_' . $catalogue->id, 'zoom' => (float) ($data['image_zoom'] ?? 1)];
+        // catalogue's remote cover. zoom_w/zoom_h center-crop white margins
+        // away, per axis (matches the live preview in the modal).
+        $cover = [
+            'prefix' => 'cat_' . $catalogue->id,
+            'zoom_w' => (float) ($data['image_zoom_w'] ?? 1),
+            'zoom_h' => (float) ($data['image_zoom_h'] ?? 1),
+        ];
         if (!empty($data['custom_image'])) {
             $cover['webp'] = $data['custom_image'];
         } elseif ($catalogue->coverUrl()) {
