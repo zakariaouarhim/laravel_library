@@ -42,6 +42,7 @@ use App\Http\Controllers\ReaderImportController;
 use App\Http\Controllers\CatalogueImportController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
+use App\Http\Controllers\CounterController;
 
 // Dual route-model bindings for book/author/category/publisher/series live in
 // app/Providers/RouteServiceProvider::boot() — registering them here breaks
@@ -148,6 +149,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/products', [AdminBookController::class, 'showproduct'])->name('products.index');
 
     // Product API (admin-only AJAX) — must be before /products/{id} wildcard
+    Route::post('/products/rewrite-description', [AdminBookController::class, 'rewriteDescription'])->name('products.rewrite-description');
     Route::get('/products/api', [AdminBookController::class, 'getProductsApi'])->name('products.api');
     Route::get('/products/api/stats', [AdminBookController::class, 'getProductsApiStats'])->name('products.api.stats');
     Route::get('/products/api/{id}', [AdminBookController::class, 'getProductById'])->name('products.api.show');
@@ -469,3 +471,14 @@ Route::get('/reset-password/{token}/{email}', [PasswordResetController::class, '
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
     ->name('password.update')
     ->middleware('guest');
+
+// ==================== COUNTER (back-to-school pickup orders, tablet UI) ====================
+
+Route::middleware(['auth', 'isAdmin'])->prefix('counter')->name('counter.')->group(function () {
+    Route::get('/',                   [CounterController::class, 'index'])->name('index');
+    Route::get('/search',             [CounterController::class, 'search'])->name('search');
+    Route::get('/add',                [CounterController::class, 'addForm'])->name('add');
+    Route::post('/add',               [CounterController::class, 'store'])->name('store');
+    Route::post('/{order}/collect',   [CounterController::class, 'collect'])->name('collect');
+    Route::post('/{order}/uncollect', [CounterController::class, 'uncollect'])->name('uncollect');
+});

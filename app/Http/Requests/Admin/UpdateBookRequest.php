@@ -35,6 +35,9 @@ class UpdateBookRequest extends FormRequest
             // Crop sliders (center crop per axis); apply to the existing cover too.
             'image_zoom_w'        => 'nullable|numeric|min:1|max:3',
             'image_zoom_h'        => 'nullable|numeric|min:1|max:3',
+            // AI rewrite bookkeeping (nightly cron skips 'rewritten' books).
+            'description_rewritten' => 'nullable|boolean',
+            'original_description'  => 'nullable|string',
             'series_id'           => 'nullable|exists:series,id',
             'volume_number'       => 'nullable|integer|min:1',
             // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.

@@ -32,6 +32,9 @@ class StoreBookProductRequest extends FormRequest
             // Crop sliders (center crop per axis) shown under the image preview.
             'image_zoom_w'           => 'nullable|numeric|min:1|max:3',
             'image_zoom_h'           => 'nullable|numeric|min:1|max:3',
+            // AI rewrite bookkeeping (nightly cron skips 'rewritten' books).
+            'description_rewritten'  => 'nullable|boolean',
+            'original_description'   => 'nullable|string',
             'auto_enrich'            => 'nullable|boolean',
             'series_id'              => 'nullable|exists:series,id',
             'volume_number'          => 'nullable|integer|min:1',

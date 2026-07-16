@@ -106,6 +106,42 @@ class AdminBookController extends Controller
         }
     }
 
+    /**
+     * AI-rewrite a product description for SEO (same service as the
+     * catalogue/reader import review screens). No persistence — returns the
+     * text; the modal sends description_rewritten=1 on save so the nightly
+     * books:rewrite-descriptions cron skips the book.
+     */
+    public function rewriteDescription(Request $request, \App\Services\DescriptionRewriteService $rewriter)
+    {
+        $data = $request->validate([
+            'name'        => 'nullable|string|max:500',
+            'author'      => 'nullable|string|max:300',
+            'description' => 'required|string',
+            'language'    => 'nullable|string|max:30',
+        ]);
+
+        // Unknown/free-text language → null: the service then asks the model
+        // to keep the language of the input text.
+        $language = strtolower(trim($data['language'] ?? ''));
+        if (!in_array($language, ['arabic', 'english', 'french', 'spanish', 'german'], true)) {
+            $language = null;
+        }
+
+        $result = $rewriter->rewrite(
+            trim($data['name'] ?? '') ?: '—',
+            $data['author'] ?? null,
+            trim($data['description']),
+            $language
+        );
+
+        if (!$result['ok']) {
+            return response()->json(['success' => false, 'message' => 'فشلت إعادة الصياغة: ' . $result['error']], 502);
+        }
+
+        return response()->json(['success' => true, 'description' => $result['text']]);
+    }
+
     public function addProduct(StoreBookProductRequest $request)
     {
         $validated = $request->validated();
@@ -159,6 +195,14 @@ class AdminBookController extends Controller
             $product->meta_title = $validated['meta_title'] ?? null;
             $product->meta_description = $validated['meta_description'] ?? null;
             $product->api_data_status = 'pending';
+
+            // Admin used the AI rewrite button: keep the pre-rewrite text and
+            // mark it so the nightly rewrite cron skips this book.
+            if ($request->boolean('description_rewritten')) {
+                $product->original_description = $request->input('original_description') ?: null;
+                $product->rewrite_status = 'rewritten';
+                $product->rewritten_at = now();
+            }
 
             // Handle Algolia/Scout crash gracefully
             try {
@@ -446,6 +490,14 @@ class AdminBookController extends Controller
             // MetaBuilder's auto-generated fallback.
             $product->meta_title = $validated['meta_title'] ?? null;
             $product->meta_description = $validated['meta_description'] ?? null;
+
+            // Admin used the AI rewrite button: keep the pre-rewrite text and
+            // mark it so the nightly rewrite cron skips this book.
+            if ($request->boolean('description_rewritten')) {
+                $product->original_description = $request->input('original_description') ?: null;
+                $product->rewrite_status = 'rewritten';
+                $product->rewritten_at = now();
+            }
 
             // Handle categories
             if (!empty($validated['categories'])) {

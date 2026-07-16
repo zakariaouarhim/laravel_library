@@ -248,6 +248,11 @@
                         <div class="mb-3">
                             <label class="form-label">الوصف</label>
                             <textarea class="form-control" name="productDescription" id="productDescription" rows="3" required></textarea>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="addRewriteBtn">
+                                <i class="fas fa-magic me-1"></i>إعادة صياغة (SEO)
+                            </button>
+                            <input type="hidden" name="description_rewritten" id="addRewrittenFlag" value="0">
+                            <input type="hidden" name="original_description" id="addOriginalDesc" value="">
                         </div>
 
                         <div class="row">
@@ -468,6 +473,11 @@
                         <div class="mb-3">
                             <label class="form-label">الوصف</label>
                             <textarea class="form-control" id="editProductDescription" name="description" rows="3" required></textarea>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="editRewriteBtn">
+                                <i class="fas fa-magic me-1"></i>إعادة صياغة (SEO)
+                            </button>
+                            <input type="hidden" name="description_rewritten" id="editRewrittenFlag" value="0">
+                            <input type="hidden" name="original_description" id="editOriginalDesc" value="">
                         </div>
 
                         <div class="row">
@@ -726,16 +736,64 @@
         if (f) { addCrop.reset(); addCrop.setSrc(URL.createObjectURL(f)); }
         else addCrop.hide();
     });
-    document.getElementById('addProductModal').addEventListener('show.bs.modal', () => addCrop.hide());
+
+    // ─────────────────────────────────────────────────────────────────────
+    // AI SEO rewrite (same DescriptionRewriteService as the catalogue-import
+    // screen). Replaces the textarea text; the hidden flag + original are
+    // sent on save so the nightly rewrite cron skips the book.
+    // ─────────────────────────────────────────────────────────────────────
+    function initSeoRewrite(o) {
+        const btn = document.getElementById(o.btn), desc = document.getElementById(o.desc),
+              flag = document.getElementById(o.flag), orig = document.getElementById(o.orig);
+        btn.addEventListener('click', async () => {
+            const text = desc.value.trim();
+            if (!text) { alert('لا يوجد وصف لإعادة صياغته.'); return; }
+            const old = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جارٍ إعادة الصياغة…';
+            try {
+                const res = await fetch('{{ route('admin.products.rewrite-description') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: (document.getElementById(o.name) || {}).value || '',
+                        author: (document.getElementById(o.author) || {}).value || '',
+                        description: text,
+                        language: (document.getElementById(o.lang) || {}).value || ''
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (flag.value !== '1') orig.value = text; // keep the first original
+                    desc.value = data.description;
+                    flag.value = '1';
+                } else {
+                    alert(data.message || 'فشلت إعادة الصياغة');
+                }
+            } catch (e) {
+                alert('فشل الاتصال بالخادم');
+            }
+            btn.disabled = false; btn.innerHTML = old;
+        });
+        return { reset() { flag.value = '0'; orig.value = ''; } };
+    }
+    const addRewrite = initSeoRewrite({ btn: 'addRewriteBtn', desc: 'productDescription', flag: 'addRewrittenFlag', orig: 'addOriginalDesc', name: 'productName', author: 'productauthor', lang: 'productLanguage' });
+    const editRewrite = initSeoRewrite({ btn: 'editRewriteBtn', desc: 'editProductDescription', flag: 'editRewrittenFlag', orig: 'editOriginalDesc', name: 'editProductName', author: 'editAuthor', lang: 'editProductLanguage' });
+
+    document.getElementById('addProductModal').addEventListener('show.bs.modal', () => { addCrop.hide(); addRewrite.reset(); });
 
     document.getElementById('editProductImage').addEventListener('change', function () {
         const f = this.files[0];
         if (f) { editCrop.reset(); editCrop.setSrc(URL.createObjectURL(f)); }
     });
-    // Fresh sliders + empty file input every time the edit modal opens.
+    // Fresh sliders + empty file input + rewrite flags every time the edit modal opens.
     document.getElementById('editProductModal').addEventListener('show.bs.modal', () => {
         document.getElementById('editProductImage').value = '';
         editCrop.reset();
+        editRewrite.reset();
     });
 
     // Override editProduct to also populate categories
