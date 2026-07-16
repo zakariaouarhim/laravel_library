@@ -15,9 +15,10 @@ class BookAdminService
 {
     /**
      * Process and store a book cover image as WebP with thumbnail.
-     * Optionally deletes the previous image.
+     * Optionally deletes the previous image. zoomW/zoomH center-crop white
+     * margins per axis (the admin modal's slider preview shows this crop).
      */
-    public function processBookImage($file, ?string $oldImagePath = null): string
+    public function processBookImage($file, ?string $oldImagePath = null, float $zoomW = 1.0, float $zoomH = 1.0): string
     {
         $imageName = time() . '_' . uniqid() . '.webp';
         $destinationPath = public_path('images/books');
@@ -30,11 +31,15 @@ class BookAdminService
             mkdir($thumbPath, 0755, true);
         }
 
+        // Read BEFORE deleting the old file: when re-cropping an existing
+        // cover, $file and $oldImagePath are the same file.
+        $image = Image::read($file instanceof \Illuminate\Http\UploadedFile ? $file->getRealPath() : $file);
+
         if ($oldImagePath && file_exists(public_path($oldImagePath))) {
             unlink(public_path($oldImagePath));
         }
 
-        $image = Image::read($file instanceof \Illuminate\Http\UploadedFile ? $file->getRealPath() : $file);
+        ImageService::centerCrop($image, $zoomW, $zoomH);
         $image->scale(width: 400);
         $image->toWebp(80)->save($destinationPath . '/' . $imageName);
 

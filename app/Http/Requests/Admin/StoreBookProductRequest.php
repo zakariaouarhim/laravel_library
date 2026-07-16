@@ -29,6 +29,9 @@ class StoreBookProductRequest extends FormRequest
             'primary_category_id'    => 'required|in_array:categories.*',
             'productQuantity'        => 'required|integer|min:0',
             'productImage'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
+            // Crop sliders (center crop per axis) shown under the image preview.
+            'image_zoom_w'           => 'nullable|numeric|min:1|max:3',
+            'image_zoom_h'           => 'nullable|numeric|min:1|max:3',
             'auto_enrich'            => 'nullable|boolean',
             'series_id'              => 'nullable|exists:series,id',
             'volume_number'          => 'nullable|integer|min:1',

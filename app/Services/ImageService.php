@@ -165,11 +165,12 @@ class ImageService
 
     /**
      * "Zoom" = keep the central 1/zoomW of the width and 1/zoomH of the height
-     * (the admin's live preview in the review modal shows exactly this center
-     * crop). Independent axes so white side bars can be cut harder than the
+     * (the admin's live preview in the modals shows exactly this center crop).
+     * Independent axes so white side bars can be cut harder than the
      * top/bottom, reshaping a squarish source into a rectangular cover.
+     * Public static so other image pipelines (BookAdminService) share the math.
      */
-    private function applyZoom($image, float $zoomW, float $zoomH): void
+    public static function centerCrop($image, float $zoomW, float $zoomH): void
     {
         if ($zoomW > 1.01 || $zoomH > 1.01) {
             $image->crop(
@@ -178,6 +179,11 @@ class ImageService
                 position: 'center'
             );
         }
+    }
+
+    private function applyZoom($image, float $zoomW, float $zoomH): void
+    {
+        self::centerCrop($image, $zoomW, $zoomH);
     }
 
     /**

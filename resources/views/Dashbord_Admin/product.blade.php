@@ -356,6 +356,24 @@
                             <label class="form-label">صورة المنتج</label>
                             <input type="file" class="form-control" name="productImage" id="productImage" accept="image/*" required>
                             <small class="text-muted">الصيغ المدعومة: JPG, PNG, GIF (الحد الأقصى 5MB)</small>
+                            <!-- Crop preview: the visible area is exactly what gets saved -->
+                            <div class="mt-2 d-none" id="addCropBox">
+                                <div class="d-flex justify-content-center align-items-center" style="height:240px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                                    <div id="addCropWrap" style="position:relative;overflow:hidden;"><img id="addCropImg" alt="" style="position:absolute;top:0;left:0;max-width:none;"></div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    <label class="form-label m-0 small" style="min-width:72px">قصّ العرض</label>
+                                    <input type="range" class="form-range" id="addZoomW" min="100" max="250" step="5" value="100">
+                                    <span class="small text-muted text-center" id="addZoomWVal" style="min-width:42px">100%</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <label class="form-label m-0 small" style="min-width:72px">قصّ الارتفاع</label>
+                                    <input type="range" class="form-range" id="addZoomH" min="100" max="250" step="5" value="100">
+                                    <span class="small text-muted text-center" id="addZoomHVal" style="min-width:42px">100%</span>
+                                </div>
+                            </div>
+                            <input type="hidden" name="image_zoom_w" id="addZoomWInput" value="1">
+                            <input type="hidden" name="image_zoom_h" id="addZoomHInput" value="1">
                         </div>
 
                         <!-- SEO override fields (optional). Empty = use auto-generated MetaBuilder fallback. -->
@@ -557,11 +575,27 @@
 
                         <div class="mb-3">
                             <label class="form-label">صورة المنتج</label>
-                            <div class="mb-2">
-                                <img id="editProductImagePreview" src="" alt="Product Image" style="max-width: 200px; border-radius: 8px; display: none;">
+                            <!-- Crop preview: works on the current image or a newly chosen file;
+                                 the visible area is exactly what gets saved -->
+                            <div class="mb-2 d-none" id="editCropBox">
+                                <div class="d-flex justify-content-center align-items-center" style="height:240px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                                    <div id="editCropWrap" style="position:relative;overflow:hidden;"><img id="editProductImagePreview" alt="" style="position:absolute;top:0;left:0;max-width:none;"></div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    <label class="form-label m-0 small" style="min-width:72px">قصّ العرض</label>
+                                    <input type="range" class="form-range" id="editZoomW" min="100" max="250" step="5" value="100">
+                                    <span class="small text-muted text-center" id="editZoomWVal" style="min-width:42px">100%</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <label class="form-label m-0 small" style="min-width:72px">قصّ الارتفاع</label>
+                                    <input type="range" class="form-range" id="editZoomH" min="100" max="250" step="5" value="100">
+                                    <span class="small text-muted text-center" id="editZoomHVal" style="min-width:42px">100%</span>
+                                </div>
                             </div>
+                            <input type="hidden" name="image_zoom_w" id="editZoomWInput" value="1">
+                            <input type="hidden" name="image_zoom_h" id="editZoomHInput" value="1">
                             <input type="file" class="form-control" id="editProductImage" name="image" accept="image/*">
-                            <small class="text-muted">اترك الحقل فارغاً للاحتفاظ بالصورة الحالية</small>
+                            <small class="text-muted">اترك الحقل فارغاً للاحتفاظ بالصورة الحالية — تحريك أشرطة القصّ يقصّ الصورة الحالية عند الحفظ</small>
                         </div>
 
                         <!-- SEO override fields. Populated by editProduct() JS from the product's stored values. -->
@@ -640,6 +674,70 @@
     setupCategoryCheckboxes('add');
     setupCategoryCheckboxes('edit');
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Cover crop sliders (same behaviour as the catalogue-import modal):
+    // the preview is a clipping window over the image sized to
+    // (displayed / zoom) per axis, uniformly scaled up to fit — exactly the
+    // center crop the server saves via ImageService::centerCrop().
+    // ─────────────────────────────────────────────────────────────────────
+    function initCoverCrop(ids) {
+        const img = document.getElementById(ids.img), wrap = document.getElementById(ids.wrap),
+              box = document.getElementById(ids.box),
+              sw = document.getElementById(ids.sw), sh = document.getElementById(ids.sh),
+              swVal = document.getElementById(ids.swVal), shVal = document.getElementById(ids.shVal),
+              iw = document.getElementById(ids.iw), ih = document.getElementById(ids.ih);
+        const PW = 220, PH = 238;
+        function apply() {
+            const zw = sw.value / 100, zh = sh.value / 100;
+            swVal.textContent = sw.value + '%'; shVal.textContent = sh.value + '%';
+            iw.value = zw; ih.value = zh;
+            if (!img.naturalWidth) return;
+            const r = Math.min(PW / img.naturalWidth, PH / img.naturalHeight);
+            const dw = img.naturalWidth * r, dh = img.naturalHeight * r;
+            const cw = dw / zw, ch = dh / zh;
+            img.style.width = dw + 'px'; img.style.height = dh + 'px';
+            img.style.left = (-(dw - cw) / 2) + 'px'; img.style.top = (-(dh - ch) / 2) + 'px';
+            wrap.style.width = cw + 'px'; wrap.style.height = ch + 'px';
+            const fit = Math.min(PW / cw, PH / ch);
+            wrap.style.transform = fit > 1.01 ? 'scale(' + fit + ')' : '';
+        }
+        sw.addEventListener('input', apply);
+        sh.addEventListener('input', apply);
+        // Self-arming: whatever code sets the img src (inline or
+        // DashboardProduct.js), the box unhides itself once the image loads.
+        img.addEventListener('load', () => { box.classList.remove('d-none'); apply(); });
+        return {
+            setSrc(src) { box.classList.remove('d-none'); img.src = src; apply(); },
+            reset() { sw.value = 100; sh.value = 100; apply(); },
+            hide() { box.classList.add('d-none'); img.removeAttribute('src'); sw.value = 100; sh.value = 100; iw.value = 1; ih.value = 1; swVal.textContent = shVal.textContent = '100%'; }
+        };
+    }
+
+    const addCrop = initCoverCrop({ img: 'addCropImg', wrap: 'addCropWrap', box: 'addCropBox',
+        sw: 'addZoomW', sh: 'addZoomH', swVal: 'addZoomWVal', shVal: 'addZoomHVal',
+        iw: 'addZoomWInput', ih: 'addZoomHInput' });
+    const editCrop = initCoverCrop({ img: 'editProductImagePreview', wrap: 'editCropWrap', box: 'editCropBox',
+        sw: 'editZoomW', sh: 'editZoomH', swVal: 'editZoomWVal', shVal: 'editZoomHVal',
+        iw: 'editZoomWInput', ih: 'editZoomHInput' });
+    window._editCrop = editCrop; // used by the editProduct() populate below
+
+    document.getElementById('productImage').addEventListener('change', function () {
+        const f = this.files[0];
+        if (f) { addCrop.reset(); addCrop.setSrc(URL.createObjectURL(f)); }
+        else addCrop.hide();
+    });
+    document.getElementById('addProductModal').addEventListener('show.bs.modal', () => addCrop.hide());
+
+    document.getElementById('editProductImage').addEventListener('change', function () {
+        const f = this.files[0];
+        if (f) { editCrop.reset(); editCrop.setSrc(URL.createObjectURL(f)); }
+    });
+    // Fresh sliders + empty file input every time the edit modal opens.
+    document.getElementById('editProductModal').addEventListener('show.bs.modal', () => {
+        document.getElementById('editProductImage').value = '';
+        editCrop.reset();
+    });
+
     // Override editProduct to also populate categories
     const _originalEditProduct = window.editProduct;
     window.editProduct = function(productId) {
@@ -676,10 +774,12 @@
             if (window._editAuthorAC) window._editAuthorAC.refreshHint();
             if (window._editPubAC)    window._editPubAC.refreshHint();
 
+            document.getElementById('editProductImage').value = '';
             if (product.image) {
-                const preview = document.getElementById('editProductImagePreview');
-                preview.src = `/${product.image}`;
-                preview.style.display = 'block';
+                window._editCrop.reset();
+                window._editCrop.setSrc(`/${product.image}`);
+            } else {
+                window._editCrop.hide();
             }
 
             // Populate categories from pivot
