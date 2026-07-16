@@ -114,7 +114,12 @@ class AdminBookController extends Controller
 
         if ($request->hasFile('productImage')) {
             try {
-                $imagePath = $this->adminService->processBookImage($request->file('productImage'));
+                $imagePath = $this->adminService->processBookImage(
+                    $request->file('productImage'),
+                    null,
+                    (float) $request->input('image_zoom_w', 1),
+                    (float) $request->input('image_zoom_h', 1)
+                );
             } catch (\Exception $e) {
                 \Log::error('Image upload failed: ' . $e->getMessage());
                 return response()->json(['success' => false, 'message' => 'Image upload failed'], 500);
@@ -449,15 +454,25 @@ class AdminBookController extends Controller
                 $product->category_id = $validated['category_id'];
             }
 
-            // Handle image upload
+            // Handle image upload. zoom_w/zoom_h = admin's crop sliders; they
+            // also apply to the EXISTING cover when no new file is chosen.
+            $zoomW = (float) $request->input('image_zoom_w', 1);
+            $zoomH = (float) $request->input('image_zoom_h', 1);
             if ($request->hasFile('image')) {
                 try {
-                    $product->image = $this->adminService->processBookImage($request->file('image'), $product->image);
+                    $product->image = $this->adminService->processBookImage($request->file('image'), $product->image, $zoomW, $zoomH);
                 } catch (\Exception $imageError) {
                     \Log::error('Image upload error: ' . $imageError->getMessage());
                     if ($request->ajax()) {
                         return response()->json(['success' => false, 'message' => 'Failed to upload image: ' . $imageError->getMessage()], 500);
                     }
+                }
+            } elseif (($zoomW > 1.01 || $zoomH > 1.01) && $product->image && file_exists(public_path($product->image))) {
+                // Re-crop the current cover in place (no new upload).
+                try {
+                    $product->image = $this->adminService->processBookImage(public_path($product->image), $product->image, $zoomW, $zoomH);
+                } catch (\Exception $imageError) {
+                    \Log::error('Image re-crop error: ' . $imageError->getMessage());
                 }
             }
 
@@ -544,4 +559,5 @@ class AdminBookController extends Controller
             $this->searchService->searchForAdmin($request->query('q'))
         );
     }
+
 }
