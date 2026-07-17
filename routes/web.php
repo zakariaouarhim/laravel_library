@@ -155,9 +155,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/products/api/{id}', [AdminBookController::class, 'updateProduct'])->name('products.api.update');
     Route::delete('/products/api/{id}', [AdminBookController::class, 'destroyProduct'])->name('products.api.destroy');
 
-    // Quick stock adjustment (dashboard low-stock panel)
-    Route::patch('/products/{id}/stock', [AdminBookController::class, 'updateStock'])->name('products.update-stock');
-
     // Search helpers
     Route::get('/search-book', [AdminBookController::class, 'searchBook'])->name('search.book');
     Route::get('/search-authors', [AuthorController::class, 'search'])->name('search.authors');
