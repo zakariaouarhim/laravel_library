@@ -42,7 +42,6 @@ use App\Http\Controllers\ReaderImportController;
 use App\Http\Controllers\CatalogueImportController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
-use App\Http\Controllers\CounterController;
 
 // Dual route-model bindings for book/author/category/publisher/series live in
 // app/Providers/RouteServiceProvider::boot() — registering them here breaks
@@ -155,6 +154,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/products/api/{id}', [AdminBookController::class, 'getProductById'])->name('products.api.show');
     Route::put('/products/api/{id}', [AdminBookController::class, 'updateProduct'])->name('products.api.update');
     Route::delete('/products/api/{id}', [AdminBookController::class, 'destroyProduct'])->name('products.api.destroy');
+
+    // Quick stock adjustment (dashboard low-stock panel)
+    Route::patch('/products/{id}/stock', [AdminBookController::class, 'updateStock'])->name('products.update-stock');
 
     // Search helpers
     Route::get('/search-book', [AdminBookController::class, 'searchBook'])->name('search.book');
@@ -472,13 +474,3 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
     ->name('password.update')
     ->middleware('guest');
 
-// ==================== COUNTER (back-to-school pickup orders, tablet UI) ====================
-
-Route::middleware(['auth', 'isAdmin'])->prefix('counter')->name('counter.')->group(function () {
-    Route::get('/',                   [CounterController::class, 'index'])->name('index');
-    Route::get('/search',             [CounterController::class, 'search'])->name('search');
-    Route::get('/add',                [CounterController::class, 'addForm'])->name('add');
-    Route::post('/add',               [CounterController::class, 'store'])->name('store');
-    Route::post('/{order}/collect',   [CounterController::class, 'collect'])->name('collect');
-    Route::post('/{order}/uncollect', [CounterController::class, 'uncollect'])->name('uncollect');
-});
