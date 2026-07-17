@@ -38,6 +38,8 @@ class UpdateBookRequest extends FormRequest
             // AI rewrite bookkeeping (nightly cron skips 'rewritten' books).
             'description_rewritten' => 'nullable|boolean',
             'original_description'  => 'nullable|string',
+            // Cover picked in the enrich panel (downloaded server-side on save).
+            'image_url'             => 'nullable|url|max:2048',
             'series_id'           => 'nullable|exists:series,id',
             'volume_number'       => 'nullable|integer|min:1',
             // SEO overrides: leave blank to fall back to MetaBuilder auto-generation.

@@ -251,8 +251,13 @@
                             <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="addRewriteBtn">
                                 <i class="fas fa-magic me-1"></i>إعادة صياغة (SEO)
                             </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="addEnrichBtn">
+                                <i class="fas fa-cloud-download-alt me-1"></i>إثراء من API
+                            </button>
+                            <div class="enrich-panel" id="addEnrichPanel"></div>
                             <input type="hidden" name="description_rewritten" id="addRewrittenFlag" value="0">
                             <input type="hidden" name="original_description" id="addOriginalDesc" value="">
+                            <input type="hidden" name="image_url" id="addImageUrl" value="">
                         </div>
 
                         <div class="row">
@@ -476,8 +481,13 @@
                             <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="editRewriteBtn">
                                 <i class="fas fa-magic me-1"></i>إعادة صياغة (SEO)
                             </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="editEnrichBtn">
+                                <i class="fas fa-cloud-download-alt me-1"></i>إثراء من API
+                            </button>
+                            <div class="enrich-panel" id="editEnrichPanel"></div>
                             <input type="hidden" name="description_rewritten" id="editRewrittenFlag" value="0">
                             <input type="hidden" name="original_description" id="editOriginalDesc" value="">
+                            <input type="hidden" name="image_url" id="editImageUrl" value="">
                         </div>
 
                         <div class="row">
@@ -643,6 +653,17 @@
             </div>
         </div>
     </div>
+    <!-- Enrich picker panel (add/edit product modals) -->
+    <style>
+        .enrich-panel { display: none; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; background: #f9fafb; max-height: 340px; overflow-y: auto; }
+        .enrich-panel.open { display: block; }
+        .enrich-field { margin-bottom: 10px; }
+        .enrich-field .ekey { font-weight: 700; font-size: .85rem; margin-bottom: 4px; }
+        .esrc { display: flex; gap: 6px; align-items: flex-start; font-size: .8rem; margin-bottom: 3px; cursor: pointer; }
+        .esrc img { max-width: 60px; border-radius: 4px; }
+        .esrc-label { font-weight: 600; min-width: 84px; color: #2563eb; }
+        .esrc-val { color: #374151; word-break: break-word; }
+    </style>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="{{ asset('js/DashboardProduct.js') }}" defer></script>
@@ -733,8 +754,12 @@
 
     document.getElementById('productImage').addEventListener('change', function () {
         const f = this.files[0];
-        if (f) { addCrop.reset(); addCrop.setSrc(URL.createObjectURL(f)); }
-        else addCrop.hide();
+        if (f) {
+            const u = document.getElementById('addImageUrl');
+            if (u) u.value = ''; // a chosen file beats a picked URL
+            addCrop.reset();
+            addCrop.setSrc(URL.createObjectURL(f));
+        } else addCrop.hide();
     });
 
     // ─────────────────────────────────────────────────────────────────────
@@ -783,17 +808,134 @@
     const addRewrite = initSeoRewrite({ btn: 'addRewriteBtn', desc: 'productDescription', flag: 'addRewrittenFlag', orig: 'addOriginalDesc', name: 'productName', author: 'productauthor', lang: 'productLanguage' });
     const editRewrite = initSeoRewrite({ btn: 'editRewriteBtn', desc: 'editProductDescription', flag: 'editRewrittenFlag', orig: 'editOriginalDesc', name: 'editProductName', author: 'editAuthor', lang: 'editProductLanguage' });
 
-    document.getElementById('addProductModal').addEventListener('show.bs.modal', () => { addCrop.hide(); addRewrite.reset(); });
+    // ─────────────────────────────────────────────────────────────────────
+    // Enrich from APIs (same EnrichPreviewService as the import screens):
+    // fetch every source's value per field, let the admin pick, apply into
+    // the form. A picked cover goes into the hidden image_url input (the
+    // server downloads it on save, honoring the crop sliders) and shows in
+    // the crop preview immediately.
+    // ─────────────────────────────────────────────────────────────────────
+    function initEnrich(o) {
+        const btn = document.getElementById(o.btn), panel = document.getElementById(o.panel);
+        const LABELS = { description: 'الوصف', image: 'الصورة', page_num: 'الصفحات', publisher: 'الناشر', language: 'اللغة', isbn: 'ISBN' };
+        const escE = s => (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const val = id => (document.getElementById(id) || {}).value || '';
+
+        btn.addEventListener('click', async () => {
+            const old = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جارٍ البحث…';
+            try {
+                const res = await fetch('{{ route('admin.products.enrich-preview') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ name: val(o.name), author: val(o.author), isbn: val(o.isbn), language: val(o.lang) })
+                });
+                const data = await res.json();
+                if (!data.success) { alert(data.message || 'فشل الإثراء'); }
+                else if (!data.found) { alert('لم يتم العثور على بيانات في أي مصدر'); }
+                else {
+                    const f = data.fields;
+                    let rows = '';
+                    for (const key in f) {
+                        let optsHtml = '';
+                        f[key].forEach((op, i) => {
+                            const preview = key === 'image'
+                                ? `<img src="${escE(op.value)}" alt="">`
+                                : escE(String(op.value).slice(0, 140));
+                            optsHtml += `<label class="esrc"><input type="radio" name="${o.panel}_${key}" data-idx="${i}" ${i === 0 ? 'checked' : ''}>
+                                <span class="esrc-label">${escE(op.label)}</span><span class="esrc-val">${preview}</span></label>`;
+                        });
+                        optsHtml += `<label class="esrc"><input type="radio" name="${o.panel}_${key}" data-idx="-1">
+                            <span class="esrc-label">تجاهل</span></label>`;
+                        rows += `<div class="enrich-field"><div class="ekey">${LABELS[key] || key}</div>${optsHtml}</div>`;
+                    }
+                    panel.dataset.fields = JSON.stringify(f);
+                    rows += `<button type="button" class="btn btn-primary btn-sm mt-1" data-apply="1">تطبيق المحدد</button>
+                        <div style="font-size:.72rem;color:#6b7280;margin-top:4px">المصادر: ${escE((data.sources || []).join('، ')) || '—'}</div>`;
+                    panel.innerHTML = rows;
+                    panel.classList.add('open');
+                }
+            } catch (e) {
+                alert('فشل الاتصال بالخادم');
+            }
+            btn.disabled = false; btn.innerHTML = old;
+        });
+
+        panel.addEventListener('click', (e) => {
+            if (!e.target.closest('[data-apply]')) return;
+            const f = JSON.parse(panel.dataset.fields || '{}');
+            for (const key in f) {
+                const checked = panel.querySelector(`input[name="${o.panel}_${key}"]:checked`);
+                if (!checked) continue;
+                const idx = parseInt(checked.dataset.idx, 10);
+                if (isNaN(idx) || idx < 0 || !f[key][idx]) continue; // تجاهل
+                const v = f[key][idx].value;
+                if (key === 'description') document.getElementById(o.desc).value = v;
+                else if (key === 'page_num') document.getElementById(o.pages).value = v;
+                else if (key === 'isbn') document.getElementById(o.isbn).value = v;
+                else if (key === 'publisher') {
+                    document.getElementById(o.publisher).value = v;
+                    const pubId = document.getElementById(o.publisherId);
+                    if (pubId) pubId.value = ''; // rebind/firstOrCreate by name on save
+                }
+                else if (key === 'language') {
+                    const sel = document.getElementById(o.lang);
+                    if (sel && [...sel.options].some(x => x.value === v)) sel.value = v;
+                }
+                else if (key === 'image') {
+                    document.getElementById(o.imgUrl).value = v;
+                    const fileInput = document.getElementById(o.fileInput);
+                    if (fileInput) {
+                        fileInput.value = '';       // URL replaces any chosen file
+                        fileInput.required = false; // picked URL satisfies the cover requirement
+                    }
+                    o.crop.reset();
+                    o.crop.setSrc(v); // CSP already allowlists the enrich hosts
+                }
+            }
+            panel.classList.remove('open');
+        });
+
+        return { reset() {
+            panel.classList.remove('open');
+            panel.innerHTML = '';
+            document.getElementById(o.imgUrl).value = '';
+            const fileInput = document.getElementById(o.fileInput);
+            if (fileInput && o.fileRequiredDefault) fileInput.required = true;
+        } };
+    }
+
+    const addEnrich = initEnrich({ btn: 'addEnrichBtn', panel: 'addEnrichPanel',
+        name: 'productName', author: 'productauthor', isbn: 'productIsbn', lang: 'productLanguage',
+        desc: 'productDescription', pages: 'productNumPages',
+        publisher: 'ProductPublishingHouse', publisherId: 'ProductPublishingHouse_id',
+        imgUrl: 'addImageUrl', fileInput: 'productImage', fileRequiredDefault: true, crop: addCrop });
+    const editEnrich = initEnrich({ btn: 'editEnrichBtn', panel: 'editEnrichPanel',
+        name: 'editProductName', author: 'editAuthor', isbn: 'editProductISBN', lang: 'editProductLanguage',
+        desc: 'editProductDescription', pages: 'editProductPageNum',
+        publisher: 'editProductPublishingHouse', publisherId: 'editProductPublishingHouse_id',
+        imgUrl: 'editImageUrl', fileInput: 'editProductImage', crop: editCrop });
+
+    document.getElementById('addProductModal').addEventListener('show.bs.modal', () => { addCrop.hide(); addRewrite.reset(); addEnrich.reset(); });
 
     document.getElementById('editProductImage').addEventListener('change', function () {
         const f = this.files[0];
-        if (f) { editCrop.reset(); editCrop.setSrc(URL.createObjectURL(f)); }
+        if (f) {
+            document.getElementById('editImageUrl').value = ''; // a chosen file beats a picked URL
+            editCrop.reset();
+            editCrop.setSrc(URL.createObjectURL(f));
+        }
     });
-    // Fresh sliders + empty file input + rewrite flags every time the edit modal opens.
+    // Fresh sliders + empty file input + rewrite/enrich state every time the edit modal opens.
     document.getElementById('editProductModal').addEventListener('show.bs.modal', () => {
         document.getElementById('editProductImage').value = '';
         editCrop.reset();
         editRewrite.reset();
+        editEnrich.reset();
     });
 
     // Override editProduct to also populate categories

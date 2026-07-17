@@ -142,24 +142,54 @@ class AdminBookController extends Controller
         return response()->json(['success' => true, 'description' => $result['text']]);
     }
 
+    /**
+     * Enrich preview from all sources (catalogue/BNF/Google Books/Open
+     * Library/Wikipedia) for the product modals — same service as the
+     * import review screens, but not bound to any import row.
+     */
+    public function enrichPreview(Request $request, \App\Services\EnrichPreviewService $enricher)
+    {
+        $data = $request->validate([
+            'name'     => 'nullable|string|max:500',
+            'author'   => 'nullable|string|max:300',
+            'isbn'     => 'nullable|string|max:30',
+            'language' => 'nullable|string|max:30',
+        ]);
+
+        $language = strtolower(trim($data['language'] ?? ''));
+        if (!in_array($language, ['arabic', 'english', 'french', 'spanish', 'german'], true)) {
+            $language = 'arabic';
+        }
+
+        $result = $enricher->preview(
+            (string) ($data['name'] ?? ''),
+            (string) ($data['author'] ?? ''),
+            $data['isbn'] ?? null,
+            $language,
+            []
+        );
+
+        return response()->json($result['body'], $result['status']);
+    }
+
     public function addProduct(StoreBookProductRequest $request)
     {
         $validated = $request->validated();
 
         $imagePath = null;
+        $zoomW = (float) $request->input('image_zoom_w', 1);
+        $zoomH = (float) $request->input('image_zoom_h', 1);
 
         if ($request->hasFile('productImage')) {
             try {
-                $imagePath = $this->adminService->processBookImage(
-                    $request->file('productImage'),
-                    null,
-                    (float) $request->input('image_zoom_w', 1),
-                    (float) $request->input('image_zoom_h', 1)
-                );
+                $imagePath = $this->adminService->processBookImage($request->file('productImage'), null, $zoomW, $zoomH);
             } catch (\Exception $e) {
                 \Log::error('Image upload failed: ' . $e->getMessage());
                 return response()->json(['success' => false, 'message' => 'Image upload failed'], 500);
             }
+        } elseif ($request->filled('image_url')) {
+            // Cover picked in the enrich panel: download it server-side.
+            $imagePath = $this->adminService->processBookImageFromUrl($request->input('image_url'), null, $zoomW, $zoomH);
         }
 
         try {
@@ -518,6 +548,12 @@ class AdminBookController extends Controller
                     if ($request->ajax()) {
                         return response()->json(['success' => false, 'message' => 'Failed to upload image: ' . $imageError->getMessage()], 500);
                     }
+                }
+            } elseif ($request->filled('image_url')) {
+                // Cover picked in the enrich panel: download it server-side.
+                $newPath = $this->adminService->processBookImageFromUrl($request->input('image_url'), $product->image, $zoomW, $zoomH);
+                if ($newPath) {
+                    $product->image = $newPath;
                 }
             } elseif (($zoomW > 1.01 || $zoomH > 1.01) && $product->image && file_exists(public_path($product->image))) {
                 // Re-crop the current cover in place (no new upload).

@@ -51,6 +51,22 @@ class BookAdminService
     }
 
     /**
+     * Download a cover from a URL (enrich picker) into the standard book-image
+     * pipeline (webp + thumb + large via ImageService, honoring the crop
+     * sliders), deleting the previous image on success.
+     */
+    public function processBookImageFromUrl(string $url, ?string $oldImagePath = null, float $zoomW = 1.0, float $zoomH = 1.0): ?string
+    {
+        $path = app(ImageService::class)->downloadFromUrl($url, 'images/books', 'book', $zoomW, $zoomH);
+
+        if ($path && $oldImagePath && $oldImagePath !== $path && file_exists(public_path($oldImagePath))) {
+            unlink(public_path($oldImagePath));
+        }
+
+        return $path;
+    }
+
+    /**
      * Find an author by name or create a new one.
      */
     public function findOrCreateAuthor(string $name): Author
