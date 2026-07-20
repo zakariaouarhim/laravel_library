@@ -259,6 +259,11 @@
                 <div class="enrich-panel" id="mEnrichPanel"></div>
 
                 <label>التصنيفات <small style="font-weight:400">(اختر واحدة أو أكثر؛ النجمة = الفئة الرئيسية)</small></label>
+                <div class="desc-tools" style="margin-bottom:6px">
+                    <button type="button" class="mbtn" id="mSuggestCat">اقترح التصنيف</button>
+                    <button type="button" class="mbtn ai" id="mSuggestCatAi" title="اقتراح بالذكاء الاصطناعي (يستهلك رصيد API)">✨ بالذكاء الاصطناعي</button>
+                    <small id="mSuggestCatStatus" style="color:#6b7280"></small>
+                </div>
                 <div class="cat-box" id="mCats"></div>
                 <div class="cat-hint">اضغط اسم الفئة الأمّ لعرض الفئات الفرعية. ⭐ أول فئة تحددها تصبح الرئيسية؛ اضغط النجمة لتغييرها. (اقتراح تلقائي حسب العنوان واللغة)</div>
             </div>
@@ -743,6 +748,35 @@
                 toast('تمت إعادة الصياغة');
             } else toast(res.data.message || 'فشلت إعادة الصياغة');
         });
+
+        // Category auto-suggest: keyword-match name+description+language + API
+        // subjects (local, free) or Claude over a shortlist (ai, opt-in). Reuses
+        // the generic admin.products.suggest-category endpoint (unbound to a row).
+        async function runCatSuggest(mode, btn) {
+            const label = btn.textContent;
+            $('mSuggestCat').disabled = true; $('mSuggestCatAi').disabled = true;
+            btn.textContent = '... جارٍ';
+            $('mSuggestCatStatus').textContent = '';
+            const res = await post('{{ route('admin.products.suggest-category') }}', {
+                name: $('mName').value, author: $('mAuthor').value, isbn: $('mIsbn').value,
+                description: $('mDesc').value, language: $('mLang').value, mode: mode,
+            });
+            btn.textContent = label;
+            $('mSuggestCat').disabled = false; $('mSuggestCatAi').disabled = false;
+            const d = res.data || {};
+            if (!d.success) { $('mSuggestCatStatus').textContent = d.message || 'تعذّر الاقتراح'; return; }
+            const ids = (d.category_ids || []).map(Number).filter(id => CAT_BY_ID[id]);
+            if (!ids.length) { $('mSuggestCatStatus').textContent = 'لم يُعثر على تصنيف مناسب — اختر يدويًا'; return; }
+            ids.forEach(id => modalCats.ids.add(id));
+            const pid = Number(d.primary_category_id);
+            if (pid && CAT_BY_ID[pid]) modalCats.primary = pid;
+            else if (!modalCats.primary) modalCats.primary = ids[0];
+            buildCatBox();
+            const nm = CAT_BY_ID[modalCats.primary] ? CAT_BY_ID[modalCats.primary].name : '';
+            $('mSuggestCatStatus').textContent = 'تم الاقتراح ✓' + (nm ? ' — ' + nm : '');
+        }
+        $('mSuggestCat').addEventListener('click', () => runCatSuggest('local', $('mSuggestCat')));
+        $('mSuggestCatAi').addEventListener('click', () => runCatSuggest('ai', $('mSuggestCatAi')));
 
         // API enrich preview (all sources per field)
         $('mEnrich').addEventListener('click', async () => {
