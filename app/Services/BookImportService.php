@@ -50,8 +50,9 @@ class BookImportService
     public function create(array $data, array $cover = [], array $rewrite = [], ?callable $afterCreate = null): Book
     {
         // Keep model events (slug, observers) but don't hard-depend on Meilisearch
-        // during import; books are indexed later via scout:import.
-        return Book::withoutSyncingToSearch(fn() => DB::transaction(function () use ($data, $cover, $rewrite, $afterCreate) {
+        // during the multi-step create: the intermediate saves shouldn't each hit
+        // the index. We index once, after commit, below.
+        $book = Book::withoutSyncingToSearch(fn() => DB::transaction(function () use ($data, $cover, $rewrite, $afterCreate) {
             $authorId = null;
             if (!empty($data['author'])) {
                 $authorId = Author::firstOrCreate(
@@ -110,6 +111,18 @@ class BookImportService
 
             return $book;
         }));
+
+        // Index the freshly-created book so public (Meilisearch) search finds it
+        // immediately — without this, imported books show in the admin (DB) but
+        // never in site search. Wrapped so a Meilisearch outage degrades to the
+        // old behaviour (book still created; recoverable via `scout:import`).
+        try {
+            $book->searchable();
+        } catch (\Throwable $e) {
+            \Log::warning("BookImportService: failed to index book {$book->id} to search: " . $e->getMessage());
+        }
+
+        return $book;
     }
 
     /** Resolve the cover to a public path, or null. */
