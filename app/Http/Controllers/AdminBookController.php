@@ -527,9 +527,12 @@ class AdminBookController extends Controller
 
         //get categories with children for dropdown/checkboxes
         $categories = Category::whereNull('parent_id')->with('children')->get();
-        // Get statistics for stats cards
-        $totalProducts = Book::count();
-        $availableProducts = Book::where('quantity', '>', 0)->count();
+        // Get statistics for stats cards. "Products" here means real standalone
+        // books: exclude accessories (type != 'book') and bundle combos
+        // (product_type = 'bundle'), which aren't individual book products.
+        $realBooks = Book::books()->standardOnly();
+        $totalProducts = (clone $realBooks)->count();
+        $availableProducts = (clone $realBooks)->where('quantity', '>', 0)->count();
         $totalCategories = DB::table('book_category')->distinct('category_id')->count('category_id');
 
         $allSeries = Series::orderBy('name')->get(['id', 'name']);
