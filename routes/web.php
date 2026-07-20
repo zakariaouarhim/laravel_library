@@ -150,6 +150,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     // Product API (admin-only AJAX) — must be before /products/{id} wildcard
     Route::post('/products/rewrite-description', [AdminBookController::class, 'rewriteDescription'])->name('products.rewrite-description');
     Route::post('/products/enrich-preview', [AdminBookController::class, 'enrichPreview'])->name('products.enrich-preview');
+    Route::post('/products/suggest-category', [AdminBookController::class, 'suggestCategory'])->name('products.suggest-category');
     Route::get('/products/api', [AdminBookController::class, 'getProductsApi'])->name('products.api');
     Route::get('/products/api/stats', [AdminBookController::class, 'getProductsApiStats'])->name('products.api.stats');
     Route::get('/products/api/{id}', [AdminBookController::class, 'getProductById'])->name('products.api.show');

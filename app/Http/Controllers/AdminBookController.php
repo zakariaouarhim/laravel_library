@@ -172,6 +172,75 @@ class AdminBookController extends Controller
         return response()->json($result['body'], $result['status']);
     }
 
+    /**
+     * Suggest a category for the product modals. Tier 1 (mode=local): keyword
+     * matching over title+description+language PLUS subjects pulled from the APIs
+     * (fired first). Tier 2 (mode=ai): opt-in Claude call over a shortlist of
+     * keyword candidates. Returns category ids to pre-check; the admin confirms.
+     */
+    public function suggestCategory(
+        Request $request,
+        \App\Services\EnrichPreviewService $enricher,
+        \App\Services\CategoryKeywordSuggester $suggester,
+        \App\Services\CategoryClassifierService $classifier
+    ) {
+        $data = $request->validate([
+            'name'        => 'nullable|string|max:500',
+            'author'      => 'nullable|string|max:300',
+            'isbn'        => 'nullable|string|max:30',
+            'language'    => 'nullable|string|max:30',
+            'description' => 'nullable|string',
+            'mode'        => 'nullable|in:local,ai',
+        ]);
+
+        $name        = trim($data['name'] ?? '');
+        $author      = trim($data['author'] ?? '');
+        $description = $data['description'] ?? null;
+        $mode        = $data['mode'] ?? 'local';
+
+        $language = strtolower(trim($data['language'] ?? ''));
+        if (!in_array($language, ['arabic', 'english', 'french', 'spanish', 'german'], true)) {
+            $language = 'arabic';
+        }
+
+        if ($name === '' && empty($data['isbn']) && trim((string) $description) === '') {
+            return response()->json(['success' => false, 'message' => 'لا توجد بيانات كافية للاقتراح (العنوان أو الوصف).'], 422);
+        }
+
+        // Fire the API-subjects lookup first (never fatal — falls back to []).
+        $subjects = $enricher->subjects($name, $author, $data['isbn'] ?? null, $language);
+
+        if ($mode === 'ai') {
+            $candidates = $suggester->candidateNames($name, $language, $description, $subjects);
+            $result = $classifier->classify($name, $description, $language, $candidates);
+            if (!$result['ok']) {
+                return response()->json(['success' => false, 'message' => 'تعذّر الاقتراح بالذكاء الاصطناعي: ' . $result['error']], 502);
+            }
+            $id = $result['name'] ? $suggester->idForName($result['name']) : null;
+
+            return response()->json([
+                'success'             => true,
+                'mode'                => 'ai',
+                'category_ids'        => $id ? [$id] : [],
+                'primary_category_id' => $id,
+                'matched_name'        => $result['name'],
+                'matched'             => (bool) $id,
+                'subjects'            => $subjects,
+            ]);
+        }
+
+        $s = $suggester->suggest($name, null, $language, $description, $subjects);
+
+        return response()->json([
+            'success'             => true,
+            'mode'                => 'local',
+            'category_ids'        => $s['category_ids'],
+            'primary_category_id' => $s['primary_category_id'],
+            'matched'             => !empty($s['category_ids']),
+            'subjects'            => $subjects,
+        ]);
+    }
+
     public function addProduct(StoreBookProductRequest $request)
     {
         $validated = $request->validated();

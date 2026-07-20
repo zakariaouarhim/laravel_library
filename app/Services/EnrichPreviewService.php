@@ -101,6 +101,58 @@ class EnrichPreviewService
         }
     }
 
+    /**
+     * Flat, deduped, lower-cased list of subject/genre strings merged from every
+     * source (catalogue + BNF/Google/Open Library/Wikipedia). Same lookup path as
+     * preview() — used by the category-suggestion endpoint to feed the keyword
+     * matcher. Returns [] on any failure (never throws to the caller).
+     *
+     * @return string[]
+     */
+    public function subjects(string $name, string $author, ?string $isbn, string $language): array
+    {
+        $name      = trim($name);
+        $author    = trim($author);
+        $language  = $language ?: 'arabic';
+        $cleanIsbn = $this->cleanIsbn($isbn);
+
+        if ($name === '' && !$cleanIsbn) {
+            return [];
+        }
+
+        try {
+            $results = [];
+
+            $cat = $this->catalogue->lookup($isbn, $name, $author);
+            if ($cat) {
+                $results['catalogue'] = $cat;
+            }
+
+            $web = [];
+            if ($cleanIsbn) {
+                $web = $this->ingestion->resolveSourcesByIsbn($cleanIsbn, $language);
+            }
+            if (empty($web) && $name !== '') {
+                $web = $this->ingestion->resolveSources($name, $author, $language);
+            }
+            $results += $web;
+
+            $subjects = [];
+            foreach ($results as $src) {
+                foreach ((array) ($src['categories'] ?? []) as $s) {
+                    $s = mb_strtolower(trim((string) $s));
+                    if ($s !== '') {
+                        $subjects[$s] = true; // dedupe
+                    }
+                }
+            }
+
+            return array_keys($subjects);
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
     /** Normalize an ISBN to 10/13 chars, or null. */
     private function cleanIsbn(?string $isbn): ?string
     {

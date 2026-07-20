@@ -335,6 +335,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الفئات <small class="text-muted">(اختر واحدة أو أكثر)</small></label>
+                                    <div class="cat-suggest-bar mb-1 d-flex align-items-center gap-2 flex-wrap">
+                                        <button type="button" class="btn btn-outline-success btn-sm" id="addSuggestCatBtn">
+                                            <i class="fas fa-lightbulb me-1"></i>اقترح التصنيف
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" id="addSuggestCatAiBtn" title="اقتراح بالذكاء الاصطناعي (يستهلك رصيد API)">
+                                            <i class="fas fa-magic me-1"></i>بالذكاء الاصطناعي
+                                        </button>
+                                        <small class="text-muted cat-suggest-status" id="addSuggestCatStatus"></small>
+                                    </div>
                                     <div class="category-checkbox-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px;">
                                         @foreach ($categories as $cat)
                                             @if($cat->parent_id == null)
@@ -566,6 +575,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الفئات <small class="text-muted">(اختر واحدة أو أكثر)</small></label>
+                                    <div class="cat-suggest-bar mb-1 d-flex align-items-center gap-2 flex-wrap">
+                                        <button type="button" class="btn btn-outline-success btn-sm" id="editSuggestCatBtn">
+                                            <i class="fas fa-lightbulb me-1"></i>اقترح التصنيف
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" id="editSuggestCatAiBtn" title="اقتراح بالذكاء الاصطناعي (يستهلك رصيد API)">
+                                            <i class="fas fa-magic me-1"></i>بالذكاء الاصطناعي
+                                        </button>
+                                        <small class="text-muted cat-suggest-status" id="editSuggestCatStatus"></small>
+                                    </div>
                                     <div class="category-checkbox-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px;">
                                         @foreach ($categories as $cat)
                                             @if($cat->parent_id == null)
@@ -919,6 +937,82 @@
         desc: 'editProductDescription', pages: 'editProductPageNum',
         publisher: 'editProductPublishingHouse', publisherId: 'editProductPublishingHouse_id',
         imgUrl: 'editImageUrl', fileInput: 'editProductImage', crop: editCrop });
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Category suggestion: pre-check a category from title+description+language
+    // + API subjects (local, free) or Claude (ai, opt-in). Admin confirms.
+    function initCategorySuggest(o) {
+        const prefix = o.prefix;
+        const btn = document.getElementById(o.btn);
+        const aiBtn = document.getElementById(o.aiBtn);
+        const status = document.getElementById(o.status);
+        const val = id => (document.getElementById(id) || {}).value || '';
+
+        function applyIds(ids, primaryId) {
+            let firstCb = null;
+            (ids || []).forEach(id => {
+                const cb = document.querySelector(`.${prefix}-category-cb[value="${id}"]`);
+                if (!cb) return;
+                if (!cb.checked) { cb.checked = true; cb.dispatchEvent(new Event('change', { bubbles: true })); }
+                if (!firstCb) firstCb = cb;
+            });
+            const pid = primaryId || (ids && ids[0]);
+            if (pid) {
+                const radio = document.querySelector(`.${prefix}-primary-radio[value="${pid}"]`);
+                if (radio) { radio.style.display = ''; radio.checked = true; }
+            }
+            if (firstCb) {
+                const label = firstCb.closest('label');
+                if (label) {
+                    label.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    const orig = label.style.backgroundColor;
+                    label.style.transition = 'background-color .3s';
+                    label.style.backgroundColor = '#fff3cd';
+                    setTimeout(() => { label.style.backgroundColor = orig; }, 1600);
+                }
+            }
+        }
+
+        async function run(mode, srcBtn) {
+            const old = srcBtn.innerHTML;
+            btn.disabled = true; if (aiBtn) aiBtn.disabled = true;
+            srcBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جارٍ الاقتراح…';
+            status.textContent = '';
+            try {
+                const res = await fetch('{{ route('admin.products.suggest-category') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: val(o.name), author: val(o.author), isbn: val(o.isbn),
+                        description: val(o.desc), language: val(o.lang), mode: mode
+                    })
+                });
+                const data = await res.json();
+                if (!data.success) { status.textContent = data.message || 'تعذّر الاقتراح'; }
+                else if (!data.matched || !(data.category_ids || []).length) { status.textContent = 'لم يُعثر على تصنيف مناسب — اختر يدويًا'; }
+                else {
+                    applyIds(data.category_ids, data.primary_category_id);
+                    status.textContent = 'تم الاقتراح ✓' + (data.matched_name ? ' — ' + data.matched_name : '');
+                }
+            } catch (e) {
+                status.textContent = 'فشل الاتصال بالخادم';
+            }
+            srcBtn.innerHTML = old;
+            btn.disabled = false; if (aiBtn) aiBtn.disabled = false;
+        }
+
+        btn.addEventListener('click', () => run('local', btn));
+        if (aiBtn) aiBtn.addEventListener('click', () => run('ai', aiBtn));
+    }
+
+    initCategorySuggest({ prefix: 'add', btn: 'addSuggestCatBtn', aiBtn: 'addSuggestCatAiBtn', status: 'addSuggestCatStatus',
+        name: 'productName', author: 'productauthor', isbn: 'productIsbn', desc: 'productDescription', lang: 'productLanguage' });
+    initCategorySuggest({ prefix: 'edit', btn: 'editSuggestCatBtn', aiBtn: 'editSuggestCatAiBtn', status: 'editSuggestCatStatus',
+        name: 'editProductName', author: 'editAuthor', isbn: 'editProductISBN', desc: 'editProductDescription', lang: 'editProductLanguage' });
 
     document.getElementById('addProductModal').addEventListener('show.bs.modal', () => { addCrop.hide(); addRewrite.reset(); addEnrich.reset(); });
 

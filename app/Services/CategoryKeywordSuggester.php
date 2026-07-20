@@ -51,6 +51,17 @@ class CategoryKeywordSuggester
         ['kw' => ['cooking', 'recipes'],                      'cat' => 'Cooking'],
         ['kw' => ['philosophy'],                              'cat' => 'Philosophy'],
         ['kw' => ['children', 'kids'],                        'cat' => 'Children'],
+
+        // API subject words (BNF dc:subject / Google Books categories / OL subjects).
+        // Kept AFTER the language-specific rules so an explicit title keyword wins;
+        // these catch books whose subjects come only from the enrichment sources.
+        ['kw' => ['juvenile', 'juvenile fiction', 'picture book'], 'cat' => 'Children'],
+        ['kw' => ['religion', 'islam', 'islamic', 'religieux'],    'cat' => 'كتب دينية'],
+        ['kw' => ['fiction'],                                      'cat' => 'Novels'],
+        ['kw' => ['biography', 'biographie', 'autobiography'],     'cat' => 'History'],
+        ['kw' => ['self-help', 'personal development'],            'cat' => 'تطوير الذات'],
+        ['kw' => ['business', 'economics', 'économie', 'finance'], 'cat' => 'علم المال'],
+        ['kw' => ['science'],                                      'cat' => 'Science'],
     ];
 
     /** Fallback category name per language when no keyword matches. */
@@ -63,12 +74,21 @@ class CategoryKeywordSuggester
     private const OTHER_DEFAULT = 'أدب عالمي';
 
     /**
+     * @param string[] $subjects  Subject/genre strings from the enrichment sources
+     *                            (BNF/Google Books/Open Library), matched alongside
+     *                            the title/publisher/description.
      * @return array{category_ids: int[], primary_category_id: ?int}
      */
-    public function suggest(?string $title, ?string $publisher, ?string $language): array
+    public function suggest(?string $title, ?string $publisher, ?string $language, ?string $description = null, array $subjects = []): array
     {
         $map = $this->nameToId();
-        $hay = ' ' . mb_strtolower(trim(($title ?? '') . ' ' . ($publisher ?? ''))) . ' ';
+        $parts = array_filter([
+            $title,
+            $publisher,
+            $description,
+            $subjects ? implode(' ', $subjects) : null,
+        ]);
+        $hay = ' ' . mb_strtolower(trim(implode(' ', $parts))) . ' ';
 
         foreach (self::RULES as $rule) {
             foreach ($rule['kw'] as $kw) {
@@ -93,6 +113,55 @@ class CategoryKeywordSuggester
     private function one(int $id): array
     {
         return ['category_ids' => [$id], 'primary_category_id' => $id];
+    }
+
+    /**
+     * Candidate category NAMES (that exist locally) for the AI-fallback shortlist:
+     * every keyword rule that matches the haystack, plus any subject string that is
+     * itself an exact local category name, plus the language default — deduped,
+     * preserving order. Bounded so the AI prompt stays small/cheap.
+     *
+     * @param string[] $subjects
+     * @return string[]
+     */
+    public function candidateNames(?string $title, ?string $language, ?string $description = null, array $subjects = [], int $limit = 12): array
+    {
+        $map = $this->nameToId();
+        $hay = ' ' . mb_strtolower(trim(($title ?? '') . ' ' . ($description ?? '') . ' ' . ($subjects ? implode(' ', $subjects) : ''))) . ' ';
+
+        $names = [];
+        foreach (self::RULES as $rule) {
+            if (!isset($map[$rule['cat']]) || in_array($rule['cat'], $names, true)) {
+                continue;
+            }
+            foreach ($rule['kw'] as $kw) {
+                if (mb_strpos($hay, mb_strtolower($kw)) !== false) {
+                    $names[] = $rule['cat'];
+                    break;
+                }
+            }
+        }
+
+        // Subjects that happen to be exact local category names.
+        foreach ($subjects as $s) {
+            $s = trim((string) $s);
+            if ($s !== '' && isset($map[$s]) && !in_array($s, $names, true)) {
+                $names[] = $s;
+            }
+        }
+
+        $default = self::LANG_DEFAULT[$language] ?? self::OTHER_DEFAULT;
+        if (isset($map[$default]) && !in_array($default, $names, true)) {
+            $names[] = $default;
+        }
+
+        return array_slice($names, 0, $limit);
+    }
+
+    /** Resolve a category name to its local id (or null), using the cached map. */
+    public function idForName(string $name): ?int
+    {
+        return $this->nameToId()[trim($name)] ?? null;
     }
 
     /** name => id, cached briefly (category taxonomy is stable). */
