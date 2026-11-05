@@ -26,7 +26,7 @@
         .filters button { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; background: #fff; margin: 0 3px; }
         .filters button.active { background: #2563eb; color: #fff; border-color: #2563eb; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; max-width: 1500px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 20px; max-width: 1500px; margin: 0 auto; }
         .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); overflow: hidden; }
         .card.done { opacity: .6; }
         .card.busy { opacity: .5; pointer-events: none; }
@@ -150,7 +150,26 @@
             margin-right: calc(var(--sidebar-width-collapsed) + 12px);
         }
         @media (max-width: 768px) {
+            body { padding: 12px; }
             .main-content { margin-right: 0; }
+
+            .toolbar input[type=search] { min-width: 0; width: 100%; } /* search on its own row */
+
+            /* Detail modal → full-width stacked sheet */
+            .overlay   { padding: 10px; }
+            .modal     { max-width: 100%; }
+            .modal-head, .modal-foot { padding: 12px 14px; }
+            .modal-body { padding: 14px; }
+            .mgrid     { flex-direction: column; gap: 14px; } /* cover column on top, fields below */
+            .mleft     { width: 100%; }
+            .mcover-box { height: 220px; }
+            .row2      { flex-wrap: wrap; }      /* 3-up fields wrap instead of crushing */
+            .row2 > div { flex: 1 1 120px; }
+            .desc-tools, .modal-foot { flex-wrap: wrap; }
+        }
+
+        @media (max-width: 420px) {
+            .row2 { flex-direction: column; gap: 8px; }
         }
     </style>
 </head>
