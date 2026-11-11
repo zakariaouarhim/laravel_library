@@ -340,6 +340,12 @@ Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.in
 // Recommendations
 Route::post('/recommendations/hide/{bookId}', [WishlistController::class, 'hideRecommendation'])->name('recommendations.hide');
 
+// ==================== TELEGRAM BOT WEBHOOK ====================
+// Receives inline-button taps (order-status changes). Public endpoint, guarded
+// by a secret path segment + Telegram's secret-token header (CSRF-exempt).
+Route::post('/telegram/webhook/{secret}', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])
+    ->name('telegram.webhook');
+
 // ==================== ACCOUNT / USER ====================
 
 Route::get('/account', [ProfileController::class, 'account'])->middleware('auth')->name('account.page');
