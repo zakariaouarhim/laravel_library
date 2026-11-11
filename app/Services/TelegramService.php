@@ -67,6 +67,82 @@ class TelegramService
         ]) !== null;
     }
 
+    /** Send a single photo (raw JPEG bytes) with an optional HTML caption. */
+    public function sendPhoto(string $photoData, ?string $caption = null, ?string $chatId = null): bool
+    {
+        $target = $chatId ?? config('services.telegram.admin_chat_id');
+        $token  = config('services.telegram.bot_token');
+
+        if (empty($target) || empty($token)) {
+            return false;
+        }
+
+        $params = ['chat_id' => $target];
+        if ($caption !== null) {
+            $params['caption']    = $caption;
+            $params['parse_mode'] = 'HTML';
+        }
+
+        try {
+            $response = Http::timeout(20)
+                ->attach('photo', $photoData, 'photo.jpg')
+                ->post("https://api.telegram.org/bot{$token}/sendPhoto", $params);
+
+            if (!$response->successful()) {
+                Log::error('Telegram sendPhoto failed', ['status' => $response->status(), 'body' => $response->body()]);
+                return false;
+            }
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Telegram sendPhoto exception', ['error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
+     * Send an album of photos (2–10). Each item: ['data' => jpegBytes, 'caption' => html].
+     * For a single photo use sendPhoto() — Telegram rejects a 1-item album.
+     */
+    public function sendMediaGroup(array $items, ?string $chatId = null): bool
+    {
+        $target = $chatId ?? config('services.telegram.admin_chat_id');
+        $token  = config('services.telegram.bot_token');
+
+        $items = array_slice($items, 0, 10);
+        if (empty($target) || empty($token) || count($items) < 2) {
+            return false;
+        }
+
+        $http  = Http::timeout(40);
+        $media = [];
+        foreach (array_values($items) as $i => $item) {
+            $name = "photo{$i}";
+            $http = $http->attach($name, $item['data'], "{$name}.jpg");
+            $entry = ['type' => 'photo', 'media' => "attach://{$name}"];
+            if (!empty($item['caption'])) {
+                $entry['caption']    = $item['caption'];
+                $entry['parse_mode'] = 'HTML';
+            }
+            $media[] = $entry;
+        }
+
+        try {
+            $response = $http->post("https://api.telegram.org/bot{$token}/sendMediaGroup", [
+                'chat_id' => $target,
+                'media'   => json_encode($media),
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Telegram sendMediaGroup failed', ['status' => $response->status(), 'body' => $response->body()]);
+                return false;
+            }
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Telegram sendMediaGroup exception', ['error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
     public function setWebhook(string $url, ?string $secretToken = null): ?array
     {
         $params = [

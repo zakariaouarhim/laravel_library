@@ -29,15 +29,25 @@
                     'returned': 'مرتجع'
                 };
 
-                let booksHtml = data.order_details.map(item => `
-                    <div class="book-item">
-                        <div class="book-info">
-                            <div class="book-title">${escapeHtml(item.book.title)}</div>
+                let booksHtml = data.order_details.map(item => {
+                    const book = item.book || {};
+                    const cover = book.image
+                        ? `<img src="/${book.image}" alt="" style="width:44px;height:62px;object-fit:cover;border-radius:4px;margin-left:10px;flex-shrink:0;" onerror="this.style.display='none'">`
+                        : '';
+                    const publisher = (book.publishing_house && book.publishing_house.name)
+                        ? `<div class="book-publisher" style="font-size:.8rem;color:#6b7280;">${escapeHtml(book.publishing_house.name)}</div>`
+                        : '';
+                    return `
+                    <div class="book-item" style="display:flex;align-items:center;">
+                        ${cover}
+                        <div class="book-info" style="flex:1;min-width:0;">
+                            <div class="book-title">${escapeHtml(book.title)}</div>
+                            ${publisher}
                             <div class="book-quantity">الكمية: ${parseInt(item.quantity)}</div>
                         </div>
                         <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} د.م</div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
 
                 let content = `
                     <div class="detail-row">

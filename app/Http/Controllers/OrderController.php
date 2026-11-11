@@ -46,7 +46,7 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['orderDetails.book', 'checkoutDetail'])->findOrFail($id);
+        $order = Order::with(['orderDetails.book.publishingHouse', 'checkoutDetail'])->findOrFail($id);
         return response()->json($order);
     }
 

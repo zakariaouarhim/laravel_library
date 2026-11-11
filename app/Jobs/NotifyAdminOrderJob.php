@@ -22,10 +22,20 @@ class NotifyAdminOrderJob implements ShouldQueue
 
     public function handle(TelegramService $telegram, OrderTelegramPresenter $presenter): void
     {
-        $order = Order::with(['orderDetails.book', 'checkoutDetail'])->find($this->orderId);
+        $order = Order::with(['orderDetails.book.publishingHouse', 'checkoutDetail'])->find($this->orderId);
 
         if (!$order) {
             return;
+        }
+
+        // Covers first (album for 2–10 books, single photo for one), then the
+        // summary + action buttons as the last message so the buttons sit at
+        // the bottom of the chat.
+        $album = $presenter->albumItems($order);
+        if (count($album) === 1) {
+            $telegram->sendPhoto($album[0]['data'], $album[0]['caption']);
+        } elseif (count($album) >= 2) {
+            $telegram->sendMediaGroup($album);
         }
 
         $telegram->sendMessage($presenter->text($order), null, $presenter->keyboard($order));

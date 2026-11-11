@@ -14,7 +14,7 @@ class OrderTelegramPresenter
 {
     public function text(Order $order): string
     {
-        $order->loadMissing(['orderDetails.book', 'checkoutDetail']);
+        $order->loadMissing(['orderDetails.book.publishingHouse', 'checkoutDetail']);
 
         $detail  = $order->checkoutDetail;
         $name    = $detail?->full_name ?? $order->customer_name  ?? 'عميل';
@@ -38,9 +38,11 @@ class OrderTelegramPresenter
 
         foreach ($order->orderDetails as $item) {
             $title = e($item->book?->title ?? '?');
+            $pub   = $item->book?->publishingHouse?->name;
             $qty   = (int) $item->quantity;
             $sub   = number_format((float) $item->price * $qty, 2);
-            $lines[] = "• {$title} × {$qty} — {$sub} د.م";
+            $pubTxt = $pub ? ' — <i>' . e($pub) . '</i>' : '';
+            $lines[] = "• {$title}{$pubTxt} × {$qty} — {$sub} د.م";
         }
 
         $lines[] = '';
@@ -86,6 +88,92 @@ class OrderTelegramPresenter
             [OrderStatus::Cancelled, OrderStatus::Failed, OrderStatus::Refunded, OrderStatus::Returned],
             true
         );
+    }
+
+    /**
+     * Cover photos for the order, as JPEG binaries with captions, ready for a
+     * Telegram album. Runs on the queue worker (not the web request). Telegram
+     * rejects .webp, so each local cover is converted to JPEG via GD. Books
+     * without a usable local cover are skipped; capped at Telegram's 10/album.
+     *
+     * @return array<int, array{data: string, caption: string}>
+     */
+    public function albumItems(Order $order): array
+    {
+        if (!function_exists('imagecreatefromwebp')) {
+            return [];
+        }
+
+        $order->loadMissing(['orderDetails.book.publishingHouse']);
+        $items = [];
+
+        foreach ($order->orderDetails as $detail) {
+            $book = $detail->book;
+            if (!$book || empty($book->image)) {
+                continue;
+            }
+
+            $path = public_path($book->image);
+            if (!is_file($path)) {
+                continue;
+            }
+
+            $jpeg = $this->toJpeg($path);
+            if ($jpeg === null) {
+                continue;
+            }
+
+            $pub     = $book->publishingHouse?->name;
+            $caption = '<b>' . e($book->title ?? '') . '</b>' . ($pub ? ' — ' . e($pub) : '');
+
+            $items[] = ['data' => $jpeg, 'caption' => $caption];
+
+            if (count($items) >= 10) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
+    /** Decode a local image (webp/png/jpg/gif), flatten onto white, downscale, return JPEG bytes. */
+    private function toJpeg(string $path, int $maxDim = 800): ?string
+    {
+        try {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $img = match ($ext) {
+                'webp'        => @imagecreatefromwebp($path),
+                'png'         => @imagecreatefrompng($path),
+                'jpg', 'jpeg' => @imagecreatefromjpeg($path),
+                'gif'         => @imagecreatefromgif($path),
+                default       => null,
+            };
+            if (!$img) {
+                return null;
+            }
+
+            $w = imagesx($img);
+            $h = imagesy($img);
+            $scale = min(1, $maxDim / max($w, $h));
+            $nw = max(1, (int) round($w * $scale));
+            $nh = max(1, (int) round($h * $scale));
+
+            $canvas = imagecreatetruecolor($nw, $nh);
+            $white  = imagecolorallocate($canvas, 255, 255, 255);
+            imagefilledrectangle($canvas, 0, 0, $nw, $nh, $white);
+            imagecopyresampled($canvas, $img, 0, 0, 0, 0, $nw, $nh, $w, $h);
+
+            ob_start();
+            imagejpeg($canvas, null, 85);
+            $data = ob_get_clean();
+
+            imagedestroy($img);
+            imagedestroy($canvas);
+
+            return $data ?: null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     private function emoji(OrderStatus $status): string
