@@ -51,17 +51,19 @@ class OrderTelegramPresenter
         return implode("\n", $lines);
     }
 
-    /** One button per allowed next status, plus a dashboard link. */
+    /** Buttons for every other status (two per row), plus a dashboard link. */
     public function keyboard(Order $order): array
     {
-        $rows = [];
+        $buttons = [];
 
         foreach ($order->status->allowedTransitions() as $st) {
-            $rows[] = [[
+            $buttons[] = [
                 'text'          => $this->emoji($st) . ' ' . $st->label(),
                 'callback_data' => "ord:{$order->id}:{$st->value}",
-            ]];
+            ];
         }
+
+        $rows = array_chunk($buttons, 2);
 
         $rows[] = [[
             'text' => '🔗 عرض في لوحة التحكم',

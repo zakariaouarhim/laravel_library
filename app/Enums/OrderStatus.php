@@ -29,16 +29,10 @@ enum OrderStatus: string
 
     public function allowedTransitions(): array
     {
-        return match ($this) {
-            self::Pending    => [self::Processing, self::Cancelled, self::Failed],
-            self::Processing => [self::Shipped, self::Cancelled, self::Failed],
-            self::Shipped    => [self::Delivered, self::Returned],
-            self::Delivered  => [self::Returned, self::Refunded],
-            self::Failed     => [self::Pending],
-            self::Returned   => [self::Refunded],
-            self::Cancelled,
-            self::Refunded   => [],
-        };
+        // Admin may move an order from any status straight to any other
+        // (e.g. pending → delivered for a same-day COD handoff). Customer-side
+        // cancellation stays restricted via isCancellable().
+        return array_values(array_filter(self::cases(), fn (self $s) => $s !== $this));
     }
 
     public function canTransitionTo(self $target): bool
