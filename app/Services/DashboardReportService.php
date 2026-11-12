@@ -11,13 +11,18 @@ use Illuminate\Support\Facades\DB;
 class DashboardReportService
 {
     /**
+     * Orders that never produced (or gave back) money — excluded from revenue.
+     */
+    private const LOST_STATUSES = ['cancelled', 'failed', 'refunded', 'returned'];
+
+    /**
      * Get all order stats for the admin dashboard (single query).
      */
     public function getOrderStats(): object
     {
         return Order::selectRaw("
             COUNT(*) as total,
-            SUM(total_price) as revenue,
+            SUM(CASE WHEN status NOT IN ('cancelled','failed','refunded','returned') THEN total_price ELSE 0 END) as revenue,
             SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
             SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
             SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing,
@@ -39,8 +44,8 @@ class DashboardReportService
         $m = Order::selectRaw("
             SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as orders_this,
             SUM(CASE WHEN created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as orders_last,
-            SUM(CASE WHEN created_at >= ? THEN total_price ELSE 0 END) as revenue_this,
-            SUM(CASE WHEN created_at BETWEEN ? AND ? THEN total_price ELSE 0 END) as revenue_last,
+            SUM(CASE WHEN status NOT IN ('cancelled','failed','refunded','returned') AND created_at >= ? THEN total_price ELSE 0 END) as revenue_this,
+            SUM(CASE WHEN status NOT IN ('cancelled','failed','refunded','returned') AND created_at BETWEEN ? AND ? THEN total_price ELSE 0 END) as revenue_last,
             SUM(CASE WHEN status = 'pending' AND created_at >= ? THEN 1 ELSE 0 END) as pending_this,
             SUM(CASE WHEN status = 'pending' AND created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as pending_last,
             SUM(CASE WHEN status = 'delivered' AND created_at >= ? THEN 1 ELSE 0 END) as delivered_this,
@@ -73,6 +78,7 @@ class DashboardReportService
                 DB::raw('DAYOFWEEK(created_at) as day'),
                 DB::raw('SUM(total_price) as total')
             )
+            ->whereNotIn('status', self::LOST_STATUSES)
             ->where('created_at', '>=', Carbon::now()->startOfWeek())
             ->groupBy('day')
             ->orderBy('day')
@@ -82,6 +88,7 @@ class DashboardReportService
                 DB::raw('MONTH(created_at) as month'),
                 DB::raw('SUM(total_price) as total')
             )
+            ->whereNotIn('status', self::LOST_STATUSES)
             ->whereYear('created_at', Carbon::now()->year)
             ->groupBy('month')
             ->orderBy('month')
@@ -91,6 +98,7 @@ class DashboardReportService
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('SUM(total_price) as total')
             )
+            ->whereNotIn('status', self::LOST_STATUSES)
             ->groupBy('year')
             ->orderBy('year')
             ->limit(5)
@@ -104,10 +112,20 @@ class DashboardReportService
      */
     public function getLowStockBooks(int $threshold = 5, int $limit = 10)
     {
+        // Books a customer just bought (stock decreased by a sale) come first:
+        // checkout writes order_details, so the latest order_details.created_at
+        // per book is the "last sold" moment. MySQL sorts NULLs last on DESC,
+        // so never-sold books sink to the bottom, then lowest quantity first.
         return Book::where('quantity', '<', $threshold)
+            ->select(['id', 'title', 'quantity', 'image'])
+            ->addSelect(['last_sold_at' => OrderDetail::select('created_at')
+                ->whereColumn('order_details.book_id', 'books.id')
+                ->latest()
+                ->limit(1)])
+            ->orderByDesc('last_sold_at')
             ->orderBy('quantity')
             ->limit($limit)
-            ->get(['id', 'title', 'quantity', 'image']);
+            ->get();
     }
 
     /**

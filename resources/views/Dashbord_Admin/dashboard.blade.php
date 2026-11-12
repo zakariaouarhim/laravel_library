@@ -54,9 +54,10 @@
                         </div>
                         <div class="stat-title">إجمالي الطلبات</div>
                         <div class="stat-value">{{ $totalOrders ?? 0 }}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i>
-                            +{{ $ordersIncrease ?? 0 }}% هذا الشهر
+                        @php $up = ($ordersIncrease ?? 0) >= 0; @endphp
+                        <div class="stat-change {{ $up ? 'positive' : 'negative' }}">
+                            <i class="fas fa-arrow-{{ $up ? 'up' : 'down' }}"></i>
+                            {{ $up ? '+' : '' }}{{ $ordersIncrease ?? 0 }}% هذا الشهر
                         </div>
                     </div>
 
@@ -66,9 +67,10 @@
                         </div>
                         <div class="stat-title">إجمالي الإيرادات</div>
                         <div class="stat-value">{{ number_format($totalRevenue ?? 0, 2) }} د.م</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i>
-                            +{{ $revenueIncrease ?? 0 }}% هذا الشهر
+                        @php $up = ($revenueIncrease ?? 0) >= 0; @endphp
+                        <div class="stat-change {{ $up ? 'positive' : 'negative' }}">
+                            <i class="fas fa-arrow-{{ $up ? 'up' : 'down' }}"></i>
+                            {{ $up ? '+' : '' }}{{ $revenueIncrease ?? 0 }}% هذا الشهر
                         </div>
                     </div>
 
@@ -78,9 +80,10 @@
                         </div>
                         <div class="stat-title">طلبات قيد الانتظار</div>
                         <div class="stat-value">{{ $pendingOrders ?? 0 }}</div>
-                        <div class="stat-change negative">
-                            <i class="fas fa-arrow-down"></i>
-                            -{{ $pendingDecrease ?? 0 }}% هذا الشهر
+                        @php $down = ($pendingDecrease ?? 0) >= 0; // pending falling is good @endphp
+                        <div class="stat-change {{ $down ? 'positive' : 'negative' }}">
+                            <i class="fas fa-arrow-{{ $down ? 'down' : 'up' }}"></i>
+                            {{ $down ? '-' : '+' }}{{ abs($pendingDecrease ?? 0) }}% هذا الشهر
                         </div>
                     </div>
 
@@ -90,9 +93,10 @@
                         </div>
                         <div class="stat-title">طلبات مكتملة</div>
                         <div class="stat-value">{{ $deliveredOrders ?? 0 }}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i>
-                            +{{ $deliveredIncrease ?? 0 }}% هذا الشهر
+                        @php $up = ($deliveredIncrease ?? 0) >= 0; @endphp
+                        <div class="stat-change {{ $up ? 'positive' : 'negative' }}">
+                            <i class="fas fa-arrow-{{ $up ? 'up' : 'down' }}"></i>
+                            {{ $up ? '+' : '' }}{{ $deliveredIncrease ?? 0 }}% هذا الشهر
                         </div>
                     </div>
                 </div>
@@ -150,7 +154,10 @@
                                             <img src="{{ asset($book->image) }}" alt="{{ $book->title }}" width="35" height="45" style="object-fit: cover; border-radius: 4px;" loading="lazy"
                                  onerror="this.onerror=null;this.src='{{ asset('images/book-placeholder.png') }}'">
                                             @endif
-                                            <span>{{ $book->title }}</span>
+                                            <div>
+                                                <span>{{ $book->title }}</span>
+                                                <div style="font-size: .75rem; color: #95a5a6;">آخر بيع: {{ $book->last_sold_at ? \Carbon\Carbon::parse($book->last_sold_at)->format('d-m-Y') : '—' }}</div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td><strong>{{ $book->quantity }}</strong></td>
