@@ -268,8 +268,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::patch('/quotes/{id}/toggle',    [AdminQuoteController::class, 'toggleApproval'])->name('quotes.toggle');
     Route::delete('/quotes/{id}',          [AdminQuoteController::class, 'destroy'])->name('quotes.destroy');
 
-    // Book import review
-    Route::get('/import/review', fn() => view('admin.import.review'))->name('import.review');
 });
 
 // ==================== CART & CHECKOUT ====================
