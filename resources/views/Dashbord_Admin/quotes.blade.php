@@ -239,15 +239,17 @@
         })
         .then(r => r.json())
         .then(q => {
+            // Customer-controlled values (name/email) must be escaped before innerHTML.
+            const esc = v => String(v ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
             const visibilityBadge = q.is_approved
                 ? '<span class="badge bg-success">ظاهرة للجمهور</span>'
                 : '<span class="badge bg-secondary">مخفية</span>';
             content.innerHTML = `
                 <div class="mb-3">
-                    <strong>الكتاب:</strong> ${q.book ? q.book.title : '—'}
+                    <strong>الكتاب:</strong> ${q.book ? esc(q.book.title) : '—'}
                 </div>
                 <div class="mb-3">
-                    <strong>المستخدم:</strong> ${q.user ? `${q.user.name} <small class="text-muted">(${q.user.email})</small>` : '—'}
+                    <strong>المستخدم:</strong> ${q.user ? `${esc(q.user.name)} <small class="text-muted">(${esc(q.user.email)})</small>` : '—'}
                 </div>
                 <div class="mb-3">
                     <strong>الحالة:</strong> ${visibilityBadge}

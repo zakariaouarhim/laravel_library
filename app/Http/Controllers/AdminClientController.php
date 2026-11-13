@@ -12,6 +12,19 @@ use Carbon\Carbon;
 
 class AdminClientController extends Controller
 {
+    /**
+     * The clients screen must not touch privileged accounts: only a
+     * super_admin may view or modify an admin / super_admin account.
+     * Prevents a plain admin from taking over the super-admin login.
+     */
+    private function guardPrivilegedTarget(UserModel $user): void
+    {
+        if (in_array($user->role, ['admin', 'super_admin'], true)
+            && auth()->user()->role !== 'super_admin') {
+            abort(403, 'غير مصرح');
+        }
+    }
+
     public function index()
     {
         $clients = UserModel::has('orders')->get();
@@ -56,12 +69,15 @@ class AdminClientController extends Controller
         ])
         ->findOrFail($id);
 
+        $this->guardPrivilegedTarget($user);
+
         return response()->json($user);
     }
 
     public function update(UpdateClientRequest $request, $id)
     {
         $user = UserModel::findOrFail($id);
+        $this->guardPrivilegedTarget($user);
         $user->update($request->validated());
 
         return response()->json([
@@ -73,8 +89,11 @@ class AdminClientController extends Controller
 
     public function resetPasswordAdmin(Request $request, $id)
     {
+        // Outside the try: abort(403) must reach the client as 403, not a generic 500.
+        $user = UserModel::findOrFail($id);
+        $this->guardPrivilegedTarget($user);
+
         try {
-            $user = UserModel::findOrFail($id);
             $request->validate(['method' => 'required|in:auto,manual']);
             $method = $request->input('method');
 

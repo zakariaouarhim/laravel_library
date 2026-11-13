@@ -15,11 +15,54 @@ use Illuminate\Support\Facades\DB;
 class BookImportController extends Controller
 {
     /**
+     * Fail-closed shared-secret check for every /api/import endpoint.
+     * Callers (n8n, the admin review page) must send X-Import-Token.
+     */
+    private function authorizeImport(Request $request): void
+    {
+        $token = (string) config('services.import.token');
+
+        if ($token === '' || !hash_equals($token, (string) $request->header('X-Import-Token'))) {
+            abort(401, 'Unauthorized');
+        }
+    }
+
+    /**
+     * Only allow file paths that the staging step itself produced
+     * (exact match against staged-books.json), with an image extension.
+     * Blocks arbitrary-file reads like file_path=/var/www/.../.env.
+     */
+    private function assertStagedPath(string $path): void
+    {
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            abort(422, 'Invalid file type');
+        }
+
+        $stagedFile = storage_path('app/staged-books.json');
+        $staged = file_exists($stagedFile) ? json_decode(file_get_contents($stagedFile), true) : null;
+
+        if (!is_array($staged)) {
+            abort(422, 'No staged data');
+        }
+
+        foreach ($staged as $entry) {
+            if (($entry['file_path'] ?? null) === $path) {
+                return;
+            }
+        }
+
+        abort(422, 'file_path is not part of the staged import');
+    }
+
+    /**
      * GET /api/import/staged
      * Return the staged books JSON for n8n to consume.
      */
-    public function staged(): JsonResponse
+    public function staged(Request $request): JsonResponse
     {
+        $this->authorizeImport($request);
+
         $path = storage_path('app/staged-books.json');
 
         if (!file_exists($path)) {
@@ -55,6 +98,8 @@ class BookImportController extends Controller
      */
     public function store(Request $request, ImageService $imageService): JsonResponse
     {
+        $this->authorizeImport($request);
+
         $validated = $request->validate([
             'title' => 'required|string|max:500',
             'author' => 'nullable|string|max:300',
@@ -68,6 +113,8 @@ class BookImportController extends Controller
             'file_path' => 'required|string',
             'source' => 'nullable|string',
         ]);
+
+        $this->assertStagedPath($validated['file_path']);
 
         // Check duplicate
         $existing = Book::where('title', $validated['title'])->first();
@@ -167,9 +214,17 @@ class BookImportController extends Controller
      */
     public function serveImage(Request $request): JsonResponse
     {
-        $path = $request->input('file_path');
+        $this->authorizeImport($request);
 
-        if (!$path || !file_exists($path)) {
+        $path = (string) $request->input('file_path');
+
+        if ($path === '') {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        $this->assertStagedPath($path);
+
+        if (!file_exists($path)) {
             return response()->json(['error' => 'File not found'], 404);
         }
 

@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 | Book Import API (for n8n workflow)
 |--------------------------------------------------------------------------
 */
-Route::prefix('import')->withoutMiddleware('throttle:api')->group(function () {
+Route::prefix('import')->group(function () {
     Route::post('/book', [\App\Http\Controllers\Api\BookImportController::class, 'store']);
     Route::get('/staged', [\App\Http\Controllers\Api\BookImportController::class, 'staged']);
     Route::post('/book/image', [\App\Http\Controllers\Api\BookImportController::class, 'serveImage']);

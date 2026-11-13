@@ -412,6 +412,9 @@
         }
 
         function viewReview(id) {
+            // textContent/getAttribute return DECODED text — re-escape before innerHTML,
+            // or a customer's review comment can run script in the admin's browser.
+            const esc = s => { const d = document.createElement('div'); d.textContent = s ?? ''; return d.innerHTML; };
             const row = document.getElementById('review-row-' + id);
             const user = row.querySelector('td:nth-child(2) strong').textContent;
             const book = row.querySelector('td:nth-child(3) a').textContent;
@@ -421,13 +424,13 @@
             const status = row.querySelector('td:nth-child(7) .status-badge').textContent.trim();
 
             document.getElementById('reviewModalBody').innerHTML = `
-                <div class="mb-3"><strong>المستخدم:</strong> ${user}</div>
-                <div class="mb-3"><strong>الكتاب:</strong> ${book}</div>
+                <div class="mb-3"><strong>المستخدم:</strong> ${esc(user)}</div>
+                <div class="mb-3"><strong>الكتاب:</strong> ${esc(book)}</div>
                 <div class="mb-3"><strong>التقييم:</strong> ${stars}</div>
-                <div class="mb-3"><strong>التاريخ:</strong> ${date}</div>
-                <div class="mb-3"><strong>الحالة:</strong> ${status}</div>
+                <div class="mb-3"><strong>التاريخ:</strong> ${esc(date)}</div>
+                <div class="mb-3"><strong>الحالة:</strong> ${esc(status)}</div>
                 <div class="mb-3"><strong>التعليق:</strong></div>
-                <div class="p-3 bg-light rounded">${comment}</div>
+                <div class="p-3 bg-light rounded">${esc(comment)}</div>
             `;
 
             new bootstrap.Modal(document.getElementById('reviewModal')).show();

@@ -139,18 +139,18 @@
             const content = `
                 <div class="client-info-section">
                     <div class="client-header">
-                        <div class="client-large-avatar">${initials}</div>
+                        <div class="client-large-avatar">${escapeHtml(initials)}</div>
                         <div class="client-basic-info">
                             <h3>${escapeHtml(data.name)}</h3>
                             <p>
-                                <a href="mailto:${data.email}" class="text-decoration-none">
-                                    <i class="fas fa-envelope me-2"></i>${data.email}
+                                <a href="mailto:${encodeURIComponent(data.email)}" class="text-decoration-none">
+                                    <i class="fas fa-envelope me-2"></i>${escapeHtml(data.email)}
                                 </a>
                             </p>
                             ${data.phone ? `
                                 <p>
                                     <i class="fas fa-phone me-2"></i>
-                                    <span style="direction: ltr; text-align: left;">${data.phone}</span>
+                                    <span style="direction: ltr; text-align: left;">${escapeHtml(data.phone)}</span>
                                 </p>
                             ` : ''}
                         </div>

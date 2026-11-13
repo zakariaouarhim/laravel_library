@@ -41,4 +41,9 @@ return [
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
     ],
 
+    'import' => [
+        // Shared secret for the /api/import endpoints (n8n + admin review page).
+        'token' => env('IMPORT_API_TOKEN'),
+    ],
+
 ];
