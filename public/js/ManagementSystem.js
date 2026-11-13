@@ -347,8 +347,9 @@ function updateProduct() {
         formData.append('image', imageFile);
     }
 
+    formData.append('_method', 'PUT'); // route is PUT /admin/products/api/{id}; FormData must ride a POST
     $.ajax({
-        url: `/admin/products/${productId}`,
+        url: `/admin/products/api/${productId}`,
         type: 'POST',
         data: formData,
         processData: false,
@@ -423,7 +424,7 @@ function confirmDelete() {
     if (!productToDelete) return;
 
     $.ajax({
-        url: `/admin/products/${productToDelete}`,
+        url: `/admin/products/api/${productToDelete}`,
         type: 'DELETE',
         success: function(response) {
             $('#deleteProductModal').modal('hide');
@@ -663,7 +664,7 @@ function bulkEnrichSelected() {
 
     showLoadingModal();
 
-    $.post('/admin/products/bulk-enrich', {
+    $.post('/admin/books/bulk-enrich', {
         product_ids: selectedProducts
     })
     .done(function(response) {
@@ -702,8 +703,10 @@ function hideLoadingModal() {
 // Add product form submission
 $('#addproductform').on('submit', function(e) {
     e.preventDefault();
-    
+
     const formData = new FormData(this);
+    // Single-select UI: the chosen category is also the primary one.
+    formData.set('primary_category_id', $('#Productcategorie').val());
 
     $.ajax({
         url: $(this).attr('action'),

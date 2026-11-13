@@ -19,11 +19,13 @@ class Order extends Model
         'customer_email',   // For guest orders
         'customer_phone',   // For guest orders
         'estimated_delivery_date',
+        'stock_restored_at',
     ];
 
     protected $casts = [
         'status' => OrderStatus::class,
         'estimated_delivery_date' => 'datetime',
+        'stock_restored_at' => 'datetime',
     ];
 
     public function orderDetails()

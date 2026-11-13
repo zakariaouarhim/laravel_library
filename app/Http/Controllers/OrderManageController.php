@@ -55,7 +55,10 @@ class OrderManageController extends Controller
             return redirect()->back()->with('error', 'لا يمكن إلغاء هذا الطلب');
         }
 
-        $order->update(['status' => 'cancelled']);
+        // Through the service so the cancellation restocks the books and
+        // writes status history + customer email like every other path.
+        app(\App\Services\OrderService::class)
+            ->updateStatus($order, \App\Enums\OrderStatus::Cancelled, 'ألغاه العميل عبر رابط إدارة الطلب');
 
         return redirect()->route('order.manage', ['token' => $token])
             ->with('success', 'تم إلغاء الطلب بنجاح');

@@ -197,7 +197,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">الفئة <span style="color: #e74c3c;">*</span></label>
-                                    <select name="Productcategorie" id="Productcategorie" class="form-select" required>
+                                    {{-- Validation expects categories[] + primary_category_id (mirrored in JS on submit) --}}
+                                    <select name="categories[]" id="Productcategorie" class="form-select" required>
                                         @foreach ($categories as $cat)
                                             @if($cat->parent_id == null)
                                                 <option value="{{ $cat->id }}" style="font-weight: bold;">{{ $cat->name }}</option>
@@ -226,7 +227,7 @@
                         
                         <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="autoEnrich" name="auto_enrich" checked>
+                                <input class="form-check-input" type="checkbox" id="autoEnrich" name="auto_enrich" value="1" checked>
                                 <label class="form-check-label" for="autoEnrich">
                                     إثراء تلقائي من API بعد الإضافة
                                 </label>

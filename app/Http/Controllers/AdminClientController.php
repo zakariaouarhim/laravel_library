@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\UpdateClientRequest;
 use Illuminate\Http\Request;
 use App\Models\UserModel;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -101,10 +102,26 @@ class AdminClientController extends Controller
                 $newPassword = Str::random(12);
                 $user->update(['password' => Hash::make($newPassword)]);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم توليد كلمة مرور عشوائية وإرسالها للزبون عبر البريد الإلكتروني'
-                ]);
+                // Actually send it (this message used to claim an email was
+                // sent without sending anything — the customer was locked out).
+                try {
+                    Mail::raw(
+                        "مرحباً {$user->name}،\n\nتم إعادة تعيين كلمة المرور الخاصة بحسابك في " . config('app.name') . ".\nكلمة المرور الجديدة: {$newPassword}\n\nننصحك بتغييرها بعد تسجيل الدخول.",
+                        fn ($message) => $message->to($user->email)->subject('كلمة المرور الجديدة - ' . config('app.name'))
+                    );
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'تم توليد كلمة مرور عشوائية وإرسالها للزبون عبر البريد الإلكتروني'
+                    ]);
+                } catch (\Throwable $e) {
+                    \Log::error('Password reset mail failed: ' . $e->getMessage());
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'تم تعيين كلمة المرور لكن تعذّر إرسال البريد. سلّمها للزبون يدوياً: ' . $newPassword,
+                    ]);
+                }
             } else {
                 $validated = $request->validate([
                     'password' => 'required|string|min:8|confirmed'

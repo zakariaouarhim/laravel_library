@@ -30,10 +30,11 @@ class ShipmentService
                     'processing_status' => 'completed'
                 ]);
 
-                // Update inventory
-                $this->updateInventory($book, $item->quantity_received);
+                // NOTE: no stock change here — quantities were already added
+                // when the shipment was created (ShipmentController@store);
+                // adding again here double-counted the stock.
 
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $item->update([
                     'processing_status' => 'failed',
                     'error_message' => $e->getMessage()
@@ -49,28 +50,18 @@ class ShipmentService
 
     protected function mapApiDataToBook($apiData, ShipmentItem $item)
     {
+        $coverUrl = APIService::getBookCoverUrl($apiData);
+
         return [
             'title' => $apiData['items'][0]['volumeInfo']['title'] ?? $item->title,
-            'author' => $apiData['items'][0]['volumeInfo']['authors'][0] ?? $item->author,
             'description' => $apiData['items'][0]['volumeInfo']['description'] ?? 'No description available',
-            'image' => (new ImageService())->downloadAndStoreImage(
-                APIService::getBookCoverUrl($apiData)
-            ),
-            'api_source' => $this->apiSource,
+            'image' => $coverUrl
+                ? (new ImageService())->downloadFromUrl($coverUrl, 'images/books', 'shipment_' . ($item->isbn ?: $item->id))
+                : null,
+            'api_source' => 'google_books',
             'api_id' => $apiData['items'][0]['id'] ?? null,
             'api_last_updated' => now(),
             'api_data_status' => 'enriched'
         ];
-    }
-
-    protected function updateInventory(Book $book, $quantity)
-    {
-        $book->increment('quantity', $quantity);
-        (new InventoryService())->logChange(
-            $book->id,
-            'stock_in',
-            $quantity,
-            'Shipment received'
-        );
     }
 }

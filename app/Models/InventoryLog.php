@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventoryLog extends Model
 {
+    /** The table has created_at only. */
+    public const UPDATED_AT = null;
+
     protected $fillable = [
         'book_id',
         'type',
