@@ -108,12 +108,12 @@
                                 <div class="order-detail-item">
                                     <span class="order-detail-label">طريقة الدفع</span>
                                     <span class="order-detail-value">
-                                        ${order.payment_method === 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان'}
+                                        ${({cod: 'الدفع عند الاستلام', credit_card: 'بطاقة ائتمان', bank_transfer: 'تحويل بنكي'}[order.payment_method] || order.payment_method)}
                                     </span>
                                 </div>
                                 <div class="order-detail-item">
                                     <span class="order-detail-label">تاريخ الطلب</span>
-                                    <span class="order-detail-value">${new Date(order.created_at).toLocaleDateString('ar-SA')}</span>
+                                    <span class="order-detail-value">${new Date(order.created_at).toLocaleDateString('ar-MA')}</span>
                                 </div>
                             </div>
 
@@ -163,7 +163,7 @@
                         </div>
                         <div class="detail-box">
                             <span class="detail-label">تاريخ التسجيل</span>
-                            <div class="detail-value">${new Date(data.created_at).toLocaleDateString('ar-SA')}</div>
+                            <div class="detail-value">${new Date(data.created_at).toLocaleDateString('ar-MA')}</div>
                         </div>
                         <div class="detail-box">
                             <span class="detail-label">عدد الطلبات</span>

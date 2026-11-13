@@ -38,7 +38,7 @@ function viewOrder(orderId) {
             booksHtml = data.order_details.map(item => `
                 <div class="book-item">
                     <div class="book-info">
-                        <div class="book-title">${escapeHtml(item.book.title)}</div>
+                        <div class="book-title">${escapeHtml(item.book?.title || 'كتاب محذوف')}</div>
                         <div class="book-quantity">الكمية: ${item.quantity}</div>
                     </div>
                     <div class="book-price">${parseFloat(item.price * item.quantity).toFixed(2)} د.م</div>
@@ -47,7 +47,7 @@ function viewOrder(orderId) {
         }
 
         // Format date
-        const orderDate = new Date(data.created_at).toLocaleDateString('ar-SA', {
+        const orderDate = new Date(data.created_at).toLocaleDateString('ar-MA', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -74,7 +74,7 @@ function viewOrder(orderId) {
                 <div>
                     <span class="detail-label">طريقة الدفع</span>
                     <div class="detail-value">
-                        ${data.payment_method === 'cod' ? '<span class="badge bg-warning text-dark">الدفع عند الاستلام</span>' : '<span class="badge bg-info">تحويل بنكي </span>'}
+                        ${data.payment_method === 'cod' ? '<span class="badge bg-warning text-dark">الدفع عند الاستلام</span>' : '<span class="badge bg-info">' + ({credit_card: 'بطاقة ائتمان', bank_transfer: 'تحويل بنكي'}[data.payment_method] || data.payment_method) + '</span>'}
                     </div>
                 </div>
             </div>

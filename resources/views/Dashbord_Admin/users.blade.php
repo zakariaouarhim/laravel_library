@@ -108,13 +108,15 @@
                                 <td>#{{ $user->id }}</td>
                                 <td>
                                     <div class="client-name">
-                                        <div class="client-avatar">{{ substr($user->name, 0, 1) }}</div>
+                                        <div class="client-avatar">{{ mb_substr($user->name, 0, 1) }}</div>
                                         {{ $user->name }}
                                     </div>
                                 </td>
                                 <td><a href="mailto:{{ $user->email }}" class="client-email">{{ $user->email }}</a></td>
                                 <td>
-                                    @if($user->role === 'admin')
+                                    @if($user->role === 'super_admin')
+                                        <span class="role-badge-admin"><i class="fas fa-crown me-1"></i>مشرف رئيسي</span>
+                                    @elseif($user->role === 'admin')
                                         <span class="role-badge-admin"><i class="fas fa-shield-alt me-1"></i>مشرف</span>
                                     @else
                                         <span class="role-badge-user"><i class="fas fa-user me-1"></i>زبون</span>
@@ -132,9 +134,6 @@
                                                 <i class="fas fa-arrow-down me-1"></i>تخفيض
                                             </button>
                                         @endif
-                                        <button class="btn-action btn-delete" onclick="deleteUser({{ $user->id }})" title="حذف">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -184,7 +183,13 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-let confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+// Bootstrap loads with defer, so it isn't defined yet while this inline script
+// runs — create the modal lazily at first use instead of at parse time.
+let confirmModal = null;
+function getConfirmModal() {
+    if (!confirmModal) confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    return confirmModal;
+}
 let pendingAction = null;
 
 function changeRole(userId, action) {
@@ -203,7 +208,7 @@ function changeRole(userId, action) {
         })
         .then(r => r.json())
         .then(data => {
-            confirmModal.hide();
+            getConfirmModal().hide();
             if (data.success) {
                 showAlert(data.message, 'success');
                 setTimeout(() => location.reload(), 1200);
@@ -214,34 +219,7 @@ function changeRole(userId, action) {
         .catch(() => showAlert('حدث خطأ، يرجى المحاولة لاحقاً', 'danger'));
     };
 
-    confirmModal.show();
-}
-
-function deleteUser(userId) {
-    document.getElementById('confirmTitle').textContent = 'حذف مستخدم';
-    document.getElementById('confirmBody').textContent  = 'هل تريد حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذه العملية.';
-    document.getElementById('confirmBtn').className = 'btn btn-danger';
-
-    pendingAction = () => {
-        fetch(`/admin/client/${userId}`, {
-            method: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
-        })
-        .then(r => r.json())
-        .then(data => {
-            confirmModal.hide();
-            if (data.success) {
-                showAlert(data.message, 'success');
-                const row = document.getElementById(`user-row-${userId}`);
-                if (row) row.remove();
-            } else {
-                showAlert(data.message, 'danger');
-            }
-        })
-        .catch(() => showAlert('حدث خطأ، يرجى المحاولة لاحقاً', 'danger'));
-    };
-
-    confirmModal.show();
+    getConfirmModal().show();
 }
 
 document.getElementById('confirmBtn').addEventListener('click', () => {

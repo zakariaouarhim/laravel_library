@@ -86,8 +86,11 @@
 
         /**
          * Edit Product - Load data
+         * SUPERSEDED: product.blade.php defines window.editProduct (it also fills
+         * categories/series/SEO). Renamed so this deferred declaration no longer
+         * overwrites that version — which silently erased those fields on save.
          */
-        function editProduct(productId) {
+        function legacyEditProduct(productId) {
             const editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
 
             fetch(`/admin/products/api/${productId}`, {

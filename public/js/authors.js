@@ -264,8 +264,8 @@ function renderAuthorDetails(author, booksByType) {
         booksHtml = '<p class="text-muted">لا توجد كتب مرتبطة</p>';
     }
 
-    const birthDate = author.birth_date ? new Date(author.birth_date).toLocaleDateString('ar-SA') : 'غير محدد';
-    const deathDate = author.death_date ? new Date(author.death_date).toLocaleDateString('ar-SA') : (author.birth_date ? 'على قيد الحياة' : 'غير محدد');
+    const birthDate = author.birth_date ? new Date(author.birth_date).toLocaleDateString('ar-MA') : 'غير محدد';
+    const deathDate = author.death_date ? new Date(author.death_date).toLocaleDateString('ar-MA') : (author.birth_date ? 'على قيد الحياة' : 'غير محدد');
 
     $('#viewAuthorContent').html(`
         <div class="author-profile-header">

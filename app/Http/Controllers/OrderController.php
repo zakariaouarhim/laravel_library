@@ -22,15 +22,18 @@ class OrderController extends Controller
 
         if ($request->has('search') && $request->search) {
             $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $request->search);
-            $query->where('id', 'like', '%' . $search . '%')
+            // Grouped so the OR cannot bypass the status filter below.
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
                   ->orWhere('tracking_number', 'like', '%' . $search . '%');
+            });
         }
 
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
         }
 
-        $orders = $query->latest()->paginate(15);
+        $orders = $query->latest()->paginate(15)->appends($request->only('search', 'status'));
 
         $statusCounts = $this->orderService->getStatusCounts();
 

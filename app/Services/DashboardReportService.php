@@ -94,15 +94,18 @@ class DashboardReportService
             ->orderBy('month')
             ->get();
 
+        // Latest 5 years, then re-sorted ascending for display.
         $yearly = Order::select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('SUM(total_price) as total')
             )
             ->whereNotIn('status', self::LOST_STATUSES)
             ->groupBy('year')
-            ->orderBy('year')
+            ->orderByDesc('year')
             ->limit(5)
-            ->get();
+            ->get()
+            ->sortBy('year')
+            ->values();
 
         return compact('weekly', 'monthly', 'yearly');
     }
@@ -133,15 +136,21 @@ class DashboardReportService
      */
     public function getReportData(Carbon $startDate, Carbon $endDate): array
     {
+        // total_orders counts everything (orders received); revenue and averages
+        // only count orders that kept their money (same rule as the dashboard).
         $summary = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(total_price), 0) as total_revenue, COALESCE(AVG(total_price), 0) as avg_order_value')
+            ->selectRaw("COUNT(*) as total_orders,
+                COALESCE(SUM(CASE WHEN status NOT IN ('cancelled','failed','refunded','returned') THEN total_price END), 0) as total_revenue,
+                COALESCE(AVG(CASE WHEN status NOT IN ('cancelled','failed','refunded','returned') THEN total_price END), 0) as avg_order_value")
             ->first();
 
-        $totalBooksSold = OrderDetail::whereHas('order', fn($q) => $q->whereBetween('created_at', [$startDate, $endDate]))
+        $totalBooksSold = OrderDetail::whereHas('order', fn($q) => $q->whereBetween('created_at', [$startDate, $endDate])
+                ->whereNotIn('status', self::LOST_STATUSES))
             ->sum('quantity');
 
         $topBooks = OrderDetail::select('book_id', DB::raw('SUM(quantity) as total_sold'), DB::raw('SUM(price * quantity) as total_revenue'))
-            ->whereHas('order', fn($q) => $q->whereBetween('created_at', [$startDate, $endDate]))
+            ->whereHas('order', fn($q) => $q->whereBetween('created_at', [$startDate, $endDate])
+                ->whereNotIn('status', self::LOST_STATUSES))
             ->groupBy('book_id')
             ->orderByDesc('total_sold')
             ->limit(10)
@@ -150,6 +159,7 @@ class DashboardReportService
 
         $topCustomers = Order::select('user_id', DB::raw('COUNT(*) as order_count'), DB::raw('SUM(total_price) as total_spent'))
             ->whereNotNull('user_id')
+            ->whereNotIn('status', self::LOST_STATUSES)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('user_id')
             ->orderByDesc('total_spent')
@@ -157,26 +167,33 @@ class DashboardReportService
             ->with('user:id,name,email')
             ->get();
 
+        // keyBy on the raw enum throws ("enum could not be converted to string"),
+        // which 500'd the whole reports page — key by the backing value instead.
         $ordersByStatus = Order::whereBetween('created_at', [$startDate, $endDate])
             ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
             ->get()
-            ->keyBy('status');
+            ->keyBy(fn ($row) => $row->status->value);
 
         $revenueByPayment = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotIn('status', self::LOST_STATUSES)
             ->select('payment_method', DB::raw('COUNT(*) as count'), DB::raw('SUM(total_price) as total'))
             ->groupBy('payment_method')
             ->get();
 
+        // Group by year AND month so a range spanning years doesn't merge e.g. both Januaries.
         $monthlySales = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(total_price) as total'), DB::raw('COUNT(*) as count'))
-            ->groupBy('month')
+            ->whereNotIn('status', self::LOST_STATUSES)
+            ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('SUM(total_price) as total'), DB::raw('COUNT(*) as count'))
+            ->groupBy('year', 'month')
+            ->orderBy('year')
             ->orderBy('month')
             ->get();
 
         $revenueByCity = DB::table('orders')
             ->join('checkout_details', 'orders.id', '=', 'checkout_details.order_id')
             ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->whereNotIn('orders.status', self::LOST_STATUSES)
             ->whereNotNull('checkout_details.city')
             ->where('checkout_details.city', '!=', '')
             ->select('checkout_details.city', DB::raw('COUNT(*) as order_count'), DB::raw('SUM(orders.total_price) as revenue'))
@@ -186,6 +203,7 @@ class DashboardReportService
             ->get();
 
         $dailyTrends = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotIn('status', self::LOST_STATUSES)
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as orders'), DB::raw('SUM(total_price) as revenue'))
             ->groupBy('date')
             ->orderBy('date')

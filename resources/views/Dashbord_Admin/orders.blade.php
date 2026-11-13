@@ -63,24 +63,20 @@
                 <div class="filter-section">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <input 
-                                type="text" 
-                                id="searchInput" 
-                                class="form-control" 
+                            <input
+                                type="text"
+                                id="searchInput"
+                                class="form-control"
                                 placeholder="بحث برقم الطلب أو رقم التتبع..."
+                                value="{{ request('search') }}"
                             >
                         </div>
                         <div class="col-md-3">
                             <select id="statusFilter" class="form-select">
                                 <option value="">كل الحالات</option>
-                                <option value="pending">قيد الانتظار</option>
-                                <option value="processing">قيد المعالجة</option>
-                                <option value="shipped">مشحون</option>
-                                <option value="delivered">تم التسليم</option>
-                                <option value="cancelled">ملغى</option>
-                                <option value="failed">فشل</option>
-                                <option value="refunded">مسترجع</option>
-                                <option value="returned">مرتجع</option>
+                                @foreach(\App\Enums\OrderStatus::cases() as $st)
+                                    <option value="{{ $st->value }}" {{ request('status') === $st->value ? 'selected' : '' }}>{{ $st->label() }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-3">

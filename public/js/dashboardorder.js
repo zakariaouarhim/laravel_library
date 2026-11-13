@@ -68,7 +68,7 @@
                         </div>
                         <div>
                             <div class="detail-label">طريقة الدفع</div>
-                            <div class="detail-value">${data.payment_method === 'cod' ? 'الدفع عند الاستلام' : 'تحويل بنكي '}</div>
+                            <div class="detail-value">${({cod: 'الدفع عند الاستلام', credit_card: 'بطاقة ائتمان', bank_transfer: 'تحويل بنكي'}[data.payment_method] || data.payment_method)}</div>
                         </div>
                     </div>
 
@@ -79,7 +79,7 @@
                         </div>
                         <div>
                             <div class="detail-label">تاريخ الطلب</div>
-                            <div class="detail-value">${new Date(data.created_at).toLocaleDateString('ar-SA')}</div>
+                            <div class="detail-value">${new Date(data.created_at).toLocaleDateString('ar-MA')}</div>
                         </div>
                     </div>
 

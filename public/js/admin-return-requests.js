@@ -19,7 +19,7 @@ function viewReturnRequest(id) {
 
         const customerName = (data.order && data.order.user) ? escapeHtml(data.order.user.name) : '—';
         const customerEmail = (data.order && data.order.user) ? escapeHtml(data.order.user.email) : '—';
-        const paymentLabel = data.payment_method === 'cod' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان';
+        const paymentLabel = {cod: 'الدفع عند الاستلام', credit_card: 'بطاقة ائتمان', bank_transfer: 'تحويل بنكي'}[data.payment_method] || data.payment_method;
 
         let booksHtml = '';
         if (data.order && data.order.order_details) {
@@ -38,7 +38,7 @@ function viewReturnRequest(id) {
             ? `<div class="detail-row">
                     <div>
                         <div class="detail-label">تاريخ المعالجة</div>
-                        <div class="detail-value">${new Date(data.resolved_at).toLocaleDateString('ar-SA')}</div>
+                        <div class="detail-value">${new Date(data.resolved_at).toLocaleDateString('ar-MA')}</div>
                     </div>
                     <div></div>
                </div>`
@@ -85,7 +85,7 @@ function viewReturnRequest(id) {
                 </div>
                 <div>
                     <div class="detail-label">تاريخ الطلب</div>
-                    <div class="detail-value">${new Date(data.created_at).toLocaleDateString('ar-SA')}</div>
+                    <div class="detail-value">${new Date(data.created_at).toLocaleDateString('ar-MA')}</div>
                 </div>
             </div>
 

@@ -319,21 +319,14 @@ class AdminBookController extends Controller
             ]);
             $product->syncCategories($validated['categories'], $validated['primary_category_id']);
 
-            // Notify followers
-            $notifyUserIds = collect();
-            $notifyUserIds = $notifyUserIds->merge(Follow::followersOf('author', $author->id));
-            if ($publishingHouseId) {
-                $notifyUserIds = $notifyUserIds->merge(Follow::followersOf('publisher', $publishingHouseId));
-            }
-            foreach ($notifyUserIds->unique() as $userId) {
-                UserNotification::newBook($userId, $product);
-            }
+            // Followers are notified by BookObserver::created() when the book is
+            // saved — notifying here again sent every follower a duplicate.
 
             // Enrichment (optional, non-blocking)
             $message = 'Product added successfully!';
             if ($request->boolean('auto_enrich')) {
                 try {
-                    $this->bookService->enrichBookFromAPI($product);
+                    $this->enrichmentService->enrichBookFromAPI($product);
                     $message = 'Product added and enriched successfully!';
                 } catch (\Exception $e) {
                     \Log::warning('Enrichment failed: ' . $e->getMessage());

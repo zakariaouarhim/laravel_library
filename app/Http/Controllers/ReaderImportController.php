@@ -43,7 +43,8 @@ class ReaderImportController extends Controller
             ->when($status !== 'all', fn($q) => $q->where('status', $status))
             ->when(!empty($data['q']), function ($q) use ($data) {
                 $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $data['q']) . '%';
-                $q->where('name', 'like', $like)->orWhere('author', 'like', $like);
+                // Grouped so the OR cannot leak rows past the status filter above.
+                $q->where(fn($qq) => $qq->where('name', 'like', $like)->orWhere('author', 'like', $like));
             })
             ->orderBy('id');
 

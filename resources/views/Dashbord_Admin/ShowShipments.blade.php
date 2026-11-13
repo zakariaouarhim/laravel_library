@@ -96,7 +96,7 @@
                 <!-- Processing Actions -->
                 @if($shipment->status === 'processing')
                     <div class="mt-4">
-                        <form method="POST" action="{{ route('shipments.bulk-enrich', $shipment->id) }}">
+                        <form method="POST" action="{{ route('admin.shipments.bulk-enrich', $shipment->id) }}">
                             @csrf
                             <button type="submit" class="btn btn-primary">
                                 تجميع بيانات الكتب من API
