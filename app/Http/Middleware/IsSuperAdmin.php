@@ -13,6 +13,10 @@ class IsSuperAdmin
             return $next($request);
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح - هذه الصفحة للمشرف العام فقط'], 403);
+        }
+
         return redirect('/')->with('error', 'غير مصرح - هذه الصفحة للمشرف العام فقط');
     }
 }

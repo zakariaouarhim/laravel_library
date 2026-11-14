@@ -17,7 +17,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/home';
+    public const HOME = '/'; // '/home' had no route: framework logins 404'd after redirect
 
     /**
      * The controller namespace for the application.

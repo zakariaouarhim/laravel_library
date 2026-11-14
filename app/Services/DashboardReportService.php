@@ -26,7 +26,11 @@ class DashboardReportService
             SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
             SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
             SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing,
-            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
+            SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) as shipped,
+            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+            SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) as refunded,
+            SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) as returned
         ")->first();
     }
 

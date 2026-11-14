@@ -448,7 +448,10 @@ Route::get('/search-results', [BookController::class, 'searchResults'])->name('s
 // has its own PasswordResetController routes below that own `password.request`,
 // `password.email`, `password.reset`, `password.update`. Without this flag,
 // route:cache fails with "Another route has already been assigned name [password.request]".
-Auth::routes(['reset' => false]);
+// register: false too — the framework /register pointed at a scaffold that
+// imports a nonexistent App\Models\User (fatal) and had no throttle; the real
+// signup is POST /adduser below.
+Auth::routes(['reset' => false, 'register' => false]);
 
 Route::get('/login2', [AuthController::class, 'showLogin2'])->name('login2.page');
 
@@ -475,5 +478,5 @@ Route::get('/reset-password/{token}/{email}', [PasswordResetController::class, '
 
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
     ->name('password.update')
-    ->middleware('guest');
+    ->middleware(['guest', 'throttle:5,1']);
 

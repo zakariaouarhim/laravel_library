@@ -27,12 +27,8 @@
                         <i class="fa-solid fa-feather-pointed"></i>
                         إدارة المؤلفين
                     </h1>
-                    <div class="header-actions">
-                        <button class="btn-action-header secondary" onclick="importFromBooks()" title="استيراد المؤلفين من الكتب">
-                            <i class="fas fa-file-import"></i>
-                            استيراد من الكتب
-                        </button>
-                    </div>
+                    {{-- "استيراد من الكتب" button removed: it posted to
+                         /admin/authors/import-from-books, a route that does not exist. --}}
                 </div>
 
                 <!-- Stats Cards -->

@@ -21,6 +21,10 @@ class AdminDashboardController extends Controller
         $deliveredOrders  = $orderStats->delivered;
         $processingOrders = $orderStats->processing;
         $cancelledOrders  = $orderStats->cancelled;
+        $shippedOrders    = $orderStats->shipped;
+        $failedOrders     = $orderStats->failed;
+        $refundedOrders   = $orderStats->refunded;
+        $returnedOrders   = $orderStats->returned;
 
         $recentOrders = Order::latest()->limit(5)->get();
 
@@ -39,7 +43,8 @@ class AdminDashboardController extends Controller
 
         return view('Dashbord_Admin.dashboard', compact(
             'totalOrders', 'totalRevenue', 'pendingOrders', 'deliveredOrders',
-            'processingOrders', 'cancelledOrders', 'recentOrders',
+            'processingOrders', 'cancelledOrders', 'shippedOrders',
+            'failedOrders', 'refundedOrders', 'returnedOrders', 'recentOrders',
             'ordersIncrease', 'revenueIncrease', 'pendingDecrease', 'deliveredIncrease',
             'weeklyRevenue', 'monthlyRevenue', 'yearlyRevenue',
             'lowStockBooks'

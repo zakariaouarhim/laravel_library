@@ -90,7 +90,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id'          => 'nullable|exists:users,id',
+            'user_id'          => 'nullable|exists:user,id',
             'status'           => 'required|in:pending,processing,shipped,delivered,cancelled,failed,refunded,returned',
             'total_price'      => 'required|numeric',
             'payment_method'   => 'required|in:cod,credit_card',

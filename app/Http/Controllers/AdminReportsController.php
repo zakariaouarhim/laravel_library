@@ -12,13 +12,28 @@ class AdminReportsController extends Controller
         private DashboardReportService $reportService,
     ) {}
 
+    /**
+     * Validated, parsed date range: bad input gets a 422 instead of a 500,
+     * and only clean Y-m-d strings reach views and the download filename.
+     *
+     * @return array{0: string, 1: string, 2: Carbon, 3: Carbon}
+     */
+    private function dateRange(Request $request): array
+    {
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to'   => 'nullable|date|after_or_equal:date_from',
+        ]);
+
+        $startDate = Carbon::parse($request->input('date_from', Carbon::now()->startOfMonth()->toDateString()))->startOfDay();
+        $endDate   = Carbon::parse($request->input('date_to', Carbon::now()->toDateString()))->endOfDay();
+
+        return [$startDate->toDateString(), $endDate->toDateString(), $startDate, $endDate];
+    }
+
     public function index(Request $request)
     {
-        $from = $request->input('date_from', Carbon::now()->startOfMonth()->toDateString());
-        $to   = $request->input('date_to', Carbon::now()->toDateString());
-
-        $startDate = Carbon::parse($from)->startOfDay();
-        $endDate   = Carbon::parse($to)->endOfDay();
+        [$from, $to, $startDate, $endDate] = $this->dateRange($request);
 
         $reportData = $this->reportService->getReportData($startDate, $endDate);
 
@@ -31,11 +46,7 @@ class AdminReportsController extends Controller
 
     public function export(Request $request)
     {
-        $from = $request->input('date_from', Carbon::now()->startOfMonth()->toDateString());
-        $to   = $request->input('date_to', Carbon::now()->toDateString());
-
-        $startDate = Carbon::parse($from)->startOfDay();
-        $endDate   = Carbon::parse($to)->endOfDay();
+        [$from, $to, $startDate, $endDate] = $this->dateRange($request);
 
         $headers = [
             'Content-Type'        => 'text/csv; charset=UTF-8',

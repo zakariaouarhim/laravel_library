@@ -277,8 +277,12 @@
             status: [
                 {{ $pendingOrders ?? 0 }},
                 {{ $processingOrders ?? 0 }},
+                {{ $shippedOrders ?? 0 }},
                 {{ $deliveredOrders ?? 0 }},
-                {{ $cancelledOrders ?? 0 }}
+                {{ $cancelledOrders ?? 0 }},
+                {{ $failedOrders ?? 0 }},
+                {{ $refundedOrders ?? 0 }},
+                {{ $returnedOrders ?? 0 }}
             ]
         };
 
@@ -379,10 +383,10 @@
             new Chart(statusCtx.getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['قيد الانتظار', 'قيد المعالجة', 'مكتمل', 'ملغي'],
+                    labels: ['قيد الانتظار', 'قيد المعالجة', 'مشحون', 'تم التسليم', 'ملغي', 'فشل', 'مسترجع', 'مرتجع'],
                     datasets: [{
                         data: chartData.status,
-                        backgroundColor: ['#f39c12', '#3498db', '#27ae60', '#e74c3c'],
+                        backgroundColor: ['#f39c12', '#3498db', '#9b59b6', '#27ae60', '#e74c3c', '#c0392b', '#7f8c8d', '#d35400'],
                         borderColor: '#fff',
                         borderWidth: 2
                     }]

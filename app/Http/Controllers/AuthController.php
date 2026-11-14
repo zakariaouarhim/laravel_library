@@ -111,7 +111,10 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::logout();
-        session()->flush();
+        // Invalidate the session id and rotate the CSRF token so the old
+        // cookie can't be replayed after logout.
+        session()->invalidate();
+        session()->regenerateToken();
         return redirect()->route('index.page')->with('success', 'Logged out successfully');
     }
 

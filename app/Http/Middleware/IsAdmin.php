@@ -13,6 +13,11 @@ class IsAdmin
             return $next($request);
         }
 
+        // AJAX callers need a 403, not a 302 redirect their fetch() can't follow usefully.
+        if ($request->expectsJson()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح'], 403);
+        }
+
         return redirect('/')->with('error', 'غير مصرح');
     }
 }
