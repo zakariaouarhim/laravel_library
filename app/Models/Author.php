@@ -67,6 +67,76 @@ class Author extends Model
         return $this->hasMany(Series::class);
     }
 
+    // ---- Canonical-author grouping (same author in multiple scripts) ----
+    // An "alias" row carries canonical_author_id pointing at the canonical row.
+    // Links are always flat (alias -> root, never chains) — enforced in
+    // AuthorController::linkCanonical().
+
+    public function canonical()
+    {
+        return $this->belongsTo(Author::class, 'canonical_author_id');
+    }
+
+    public function aliases()
+    {
+        return $this->hasMany(Author::class, 'canonical_author_id');
+    }
+
+    public function isAlias(): bool
+    {
+        return $this->canonical_author_id !== null;
+    }
+
+    // Books whose author_id points at one of this root's alias rows.
+    public function aliasBooks()
+    {
+        return $this->hasManyThrough(
+            Book::class,
+            Author::class,
+            'canonical_author_id', // FK on authors (alias -> this root)
+            'author_id',           // FK on books (book -> alias)
+            'id',
+            'id'
+        );
+    }
+
+    public function scopeCanonicalOnly($query)
+    {
+        return $query->whereNull('canonical_author_id');
+    }
+
+    // The group's canonical row; degrades to $this when the canonical row is
+    // soft-deleted/missing so alias pages can still render standalone.
+    public function groupRoot(): Author
+    {
+        if ($this->canonical_author_id === null) {
+            return $this;
+        }
+
+        return $this->canonical ?? $this;
+    }
+
+    // All author ids in this row's group (root + its aliases).
+    public function groupIds()
+    {
+        $root = $this->groupRoot();
+
+        return Author::where('id', $root->id)
+            ->orWhere('canonical_author_id', $root->id)
+            ->pluck('id');
+    }
+
+    // Every name the group's author is known by, root name first.
+    public function allNames()
+    {
+        $root = $this->groupRoot();
+
+        return $root->aliases->pluck('name')
+            ->prepend($root->name)
+            ->unique()
+            ->values();
+    }
+
     // Scope for active authors
     public function scopeActive($query)
     {

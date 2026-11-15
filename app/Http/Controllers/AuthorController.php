@@ -28,14 +28,19 @@ class AuthorController extends Controller
             'sort'        => 'nullable|in:name,books,newest',
         ]);
 
-        $query = Author::active()->withCount('primaryBooks');
+        // Alias rows (other-script names of a canonical author) are hidden from
+        // the listing; their books are counted on the canonical row instead.
+        $query = Author::active()->canonicalOnly()->withCount(['primaryBooks', 'aliasBooks']);
 
         // Search
         if ($request->filled('q')) {
             $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $request->input('q'));
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nationality', 'like', "%{$search}%");
+                  ->orWhere('nationality', 'like', "%{$search}%")
+                  ->orWhereHas('aliases', function ($alias) use ($search) {
+                      $alias->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -53,7 +58,7 @@ class AuthorController extends Controller
         $sort = $request->input('sort', 'name');
         switch ($sort) {
             case 'books':
-                $query->orderBy('primary_books_count', 'desc');
+                $query->orderByRaw('(primary_books_count + alias_books_count) desc');
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'desc');
@@ -102,24 +107,47 @@ class AuthorController extends Controller
         // Route-model binding already loaded by slug — re-fetch with active() scope to 404 inactive.
         $author = \App\Models\Author::active()->whereKey($author->id)->firstOrFail();
 
+        // Alias rows (same author in another script) 301 to the canonical page.
+        // If the canonical row is inactive/deleted, render the alias standalone.
+        if ($author->isAlias()) {
+            $canonical = \App\Models\Author::active()->find($author->canonical_author_id);
+            if ($canonical) {
+                return redirect()->route('author.show', $canonical, 301);
+            }
+        }
+
+        // All author ids of this group (the row itself + its alias rows), so
+        // books attached to any script's row appear on the one author page.
+        $groupIds = $author->groupIds()->all();
+
         // Non-primary roles come from the pivot only (these are tagged in book_authors).
-        $coAuthorBooks    = $author->booksByType('co-author')->with('bundles:id,title,price,image')->get();
-        $translatedBooks  = $author->booksByType('translator')->with('bundles:id,title,price,image')->get();
-        $editedBooks      = $author->booksByType('editor')->with('bundles:id,title,price,image')->get();
-        $illustratedBooks = $author->booksByType('illustrator')->with('bundles:id,title,price,image')->get();
+        $booksByTypeForGroup = function (string $type) use ($groupIds) {
+            $ids = \Illuminate\Support\Facades\DB::table('book_authors')
+                ->whereIn('author_id', $groupIds)
+                ->where('author_type', $type)
+                ->pluck('book_id');
+
+            return \App\Models\Book::whereIn('id', $ids)
+                ->with('bundles:id,title,price,image')
+                ->get();
+        };
+        $coAuthorBooks    = $booksByTypeForGroup('co-author');
+        $translatedBooks  = $booksByTypeForGroup('translator');
+        $editedBooks      = $booksByTypeForGroup('editor');
+        $illustratedBooks = $booksByTypeForGroup('illustrator');
 
         // "Primary" books come from BOTH the pivot (book_authors with
         // author_type='primary') AND the books.author_id foreign key. Union the IDs
         // and paginate the combined set — paginating only the pivot side and tacking
         // the FK books on top of every page would make pagination meaningless.
         $pivotPrimaryIds = \Illuminate\Support\Facades\DB::table('book_authors')
-            ->where('author_id', $author->id)
+            ->whereIn('author_id', $groupIds)
             ->where('author_type', 'primary')
             ->pluck('book_id');
 
         $fkPrimaryIds = \App\Models\Book::query()
             ->standardOnly()
-            ->where('author_id', $author->id)
+            ->whereIn('author_id', $groupIds)
             ->pluck('id');
 
         $primaryBookIds = $pivotPrimaryIds->merge($fkPrimaryIds)->unique()->values();
@@ -195,7 +223,8 @@ class AuthorController extends Controller
             'api_status' => 'nullable|in:enriched,pending',
         ]);
 
-        $query = Author::withCount('primaryBooks');
+        $query = Author::withCount(['primaryBooks', 'aliases'])
+            ->with('canonical:id,name');
 
         // Search
         if ($request->filled('search')) {
@@ -325,6 +354,15 @@ class AuthorController extends Controller
             ], 400);
         }
 
+        // Soft delete bypasses the FK's nullOnDelete, so aliases would be
+        // silently orphaned — require unlinking first.
+        if (Author::where('canonical_author_id', $id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا يمكن حذف المؤلف لأن لديه أسماء بديلة مرتبطة — فك الربط أولاً',
+            ], 400);
+        }
+
         // Remove pivot entries
         BookAuthor::where('author_id', $id)->delete();
         $author->delete();
@@ -332,6 +370,73 @@ class AuthorController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'تم حذف المؤلف بنجاح',
+        ]);
+    }
+
+    /**
+     * API: Link an author as an alias of another (canonical) author.
+     * Same real-world author written in another script/language.
+     */
+    public function linkCanonical(Request $request, $id)
+    {
+        $request->validate([
+            'canonical_id' => 'required|integer|exists:authors,id',
+        ]);
+
+        $alias = Author::findOrFail($id);
+        $target = Author::findOrFail($request->input('canonical_id'));
+
+        // Always link to the group's root so chains never form.
+        $root = $target->groupRoot();
+
+        if ($root->id === $alias->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا يمكن ربط المؤلف بنفسه أو بأحد أسمائه البديلة',
+            ], 400);
+        }
+
+        DB::transaction(function () use ($alias, $root) {
+            // Flatten: re-point the alias's own aliases to the new root.
+            Author::where('canonical_author_id', $alias->id)
+                ->update(['canonical_author_id' => $root->id]);
+
+            $alias->forceFill(['canonical_author_id' => $root->id])->save();
+        });
+
+        // Re-index the whole group's books so each gains the other names.
+        Book::whereIn('author_id', $root->groupIds())->searchable();
+
+        return response()->json([
+            'success' => true,
+            'message' => "تم ربط \"{$alias->name}\" كاسم بديل لـ \"{$root->name}\"",
+        ]);
+    }
+
+    /**
+     * API: Unlink an alias author back to a standalone author.
+     */
+    public function unlinkCanonical($id)
+    {
+        $alias = Author::findOrFail($id);
+
+        if (!$alias->isAlias()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'هذا المؤلف ليس اسماً بديلاً',
+            ], 400);
+        }
+
+        // Capture the group BEFORE clearing, so both sides get re-indexed.
+        $groupIds = $alias->groupIds();
+
+        $alias->forceFill(['canonical_author_id' => null])->save();
+
+        Book::whereIn('author_id', $groupIds)->searchable();
+
+        return response()->json([
+            'success' => true,
+            'message' => "تم فك ربط \"{$alias->name}\"",
         ]);
     }
 

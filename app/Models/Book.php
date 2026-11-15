@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasSlug;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -147,12 +148,30 @@ class Book extends Model
     }
     public function toSearchableArray()
     {
+        // author_aliases = the other names of this book's author group (same
+        // author in another script, e.g. "Albert Camus" / "ألبير كامو"), so a
+        // search in either script matches all the group's books.
+        $aliasNames = [];
+        if ($this->primaryAuthor) {
+            $own = $this->primaryAuthor->name;
+            $aliasNames = $this->primaryAuthor->allNames()
+                ->reject(fn ($name) => $name === $own)
+                ->values()
+                ->all();
+        }
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'author' => $this->getAuthorNameAttribute(),
+            'author_aliases' => $aliasNames,
             'description' => $this->description,
         ];
+    }
+
+    public function makeSearchableUsing(EloquentCollection $models): EloquentCollection
+    {
+        return $models->load(['primaryAuthor.aliases', 'primaryAuthor.canonical.aliases']);
     }
 
     public function inventoryLogs()

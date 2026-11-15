@@ -127,11 +127,28 @@ function renderAuthorsTable(authors) {
 
         const booksCount = author.primary_books_count || 0;
 
+        // Canonical-alias badges: an alias row names its canonical author;
+        // a canonical row shows how many alternate names it has.
+        let aliasBadge = '';
+        if (author.canonical) {
+            aliasBadge = `<br><span class="badge bg-info text-dark mt-1">اسم بديل لـ: ${escapeHtml(author.canonical.name)}</span>`;
+        } else if (author.aliases_count > 0) {
+            aliasBadge = `<br><span class="badge bg-secondary mt-1">${author.aliases_count} اسم بديل</span>`;
+        }
+
+        const linkBtn = author.canonical
+            ? `<button class="btn-action" style="color:#e67e22;" onclick="unlinkAuthor(${author.id}, '${escapeJs(author.name)}')" title="فك الربط">
+                   <i class="fas fa-unlink"></i>
+               </button>`
+            : `<button class="btn-action" style="color:#2980b9;" onclick="openLinkModal(${author.id}, '${escapeJs(author.name)}')" title="ربط كاسم بديل">
+                   <i class="fas fa-link"></i>
+               </button>`;
+
         tbody.append(`
             <tr>
                 <td>${((currentPage - 1) * 15) + index + 1}</td>
                 <td>${imageHtml}</td>
-                <td><strong>${escapeHtml(author.name)}</strong></td>
+                <td><strong>${escapeHtml(author.name)}</strong>${aliasBadge}</td>
                 <td>${escapeHtml(author.nationality || '-')}</td>
                 <td>${birthDate}</td>
                 <td><span class="books-count">${booksCount}</span></td>
@@ -147,6 +164,7 @@ function renderAuthorsTable(authors) {
                     <button class="btn-action enrich" onclick="enrichAuthor(${author.id})" title="معالجة API">
                         <i class="fas fa-magic"></i>
                     </button>
+                    ${linkBtn}
                     <button class="btn-action delete" onclick="deleteAuthor(${author.id}, '${escapeHtml(author.name)}')" title="حذف">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -416,6 +434,112 @@ function confirmDelete() {
     .fail(function (xhr) {
         bootstrap.Modal.getInstance(document.getElementById('deleteAuthorModal')).hide();
         showAlert(xhr.responseJSON?.message || 'فشل في حذف المؤلف', 'danger');
+    });
+}
+
+// =================== Canonical Author Linking ===================
+// Same author written in another script/language: link one row as an
+// "alias" of the canonical row so search and the author page merge them.
+function openLinkModal(id, name) {
+    $('#linkAliasAuthorId').val(id);
+    $('#linkAliasAuthorName').text(name);
+    $('#linkCanonicalSearch').val('');
+    $('#linkCanonicalResults').empty();
+    $('#linkSimilarSuggestions').empty();
+
+    new bootstrap.Modal(document.getElementById('linkAuthorModal')).show();
+
+    // Pre-fill similar-name suggestions (same-script duplicates; cross-script
+    // pairs won't appear here — use the search box for those).
+    $.get('/admin/authors/check-duplicates', { name: name, exclude_id: id })
+    .done(function (response) {
+        if (response.success && response.similar && response.similar.length > 0) {
+            let html = '<label class="form-label mt-2">أسماء مشابهة:</label><div class="list-group">';
+            response.similar.forEach(function (sim) {
+                html += `
+                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                            onclick="confirmLinkCanonical(${sim.id}, '${escapeJs(sim.name)}')">
+                        <span>${escapeHtml(sim.name)}</span>
+                        <span class="badge bg-warning text-dark">${sim.similarity}%</span>
+                    </button>`;
+            });
+            html += '</div>';
+            $('#linkSimilarSuggestions').html(html);
+        }
+    });
+}
+
+// Debounced autocomplete over the existing admin author search endpoint.
+let linkSearchTimeout;
+$(document).on('input', '#linkCanonicalSearch', function () {
+    const query = $(this).val().trim();
+    clearTimeout(linkSearchTimeout);
+
+    if (query.length < 2) {
+        $('#linkCanonicalResults').empty();
+        return;
+    }
+
+    linkSearchTimeout = setTimeout(function () {
+        $.get('/admin/search-authors', { q: query })
+        .done(function (authors) {
+            const aliasId = parseInt($('#linkAliasAuthorId').val(), 10);
+            const container = $('#linkCanonicalResults');
+            container.empty();
+
+            authors
+                .filter(a => a.id !== aliasId)
+                .forEach(function (a) {
+                    container.append(`
+                        <button type="button" class="list-group-item list-group-item-action"
+                                onclick="confirmLinkCanonical(${a.id}, '${escapeJs(a.name)}')">
+                            ${escapeHtml(a.name)}
+                            ${a.nationality ? `<small class="text-muted">(${escapeHtml(a.nationality)})</small>` : ''}
+                        </button>`);
+                });
+
+            if (container.children().length === 0) {
+                container.append('<div class="list-group-item text-muted">لا توجد نتائج</div>');
+            }
+        });
+    }, 350);
+});
+
+function confirmLinkCanonical(canonicalId, canonicalName) {
+    const aliasId = $('#linkAliasAuthorId').val();
+    const aliasName = $('#linkAliasAuthorName').text();
+
+    if (!confirm(`ربط "${aliasName}" كاسم بديل لـ "${canonicalName}"؟`)) return;
+
+    $.post(`/admin/authors/${aliasId}/link-canonical`, { canonical_id: canonicalId })
+    .done(function (response) {
+        bootstrap.Modal.getInstance(document.getElementById('linkAuthorModal')).hide();
+        if (response.success) {
+            showAlert(response.message, 'success');
+            loadAuthors(currentPage);
+        } else {
+            showAlert(response.message || 'حدث خطأ', 'danger');
+        }
+    })
+    .fail(function (xhr) {
+        showAlert(xhr.responseJSON?.message || 'فشل في ربط المؤلف', 'danger');
+    });
+}
+
+function unlinkAuthor(id, name) {
+    if (!confirm(`فك ربط "${name}" وإعادته كمؤلف مستقل؟`)) return;
+
+    $.post(`/admin/authors/${id}/unlink-canonical`)
+    .done(function (response) {
+        if (response.success) {
+            showAlert(response.message, 'success');
+            loadAuthors(currentPage);
+        } else {
+            showAlert(response.message || 'حدث خطأ', 'danger');
+        }
+    })
+    .fail(function (xhr) {
+        showAlert(xhr.responseJSON?.message || 'فشل في فك الربط', 'danger');
     });
 }
 

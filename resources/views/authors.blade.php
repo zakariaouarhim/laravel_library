@@ -76,7 +76,7 @@
                             </span>
                         @endif
                         <span class="author-card-books">
-                            <i class="fas fa-book"></i> {{ $author->primary_books_count }} كتاب
+                            <i class="fas fa-book"></i> {{ $author->primary_books_count + ($author->alias_books_count ?? 0) }} كتاب
                         </span>
                     </div>
                     @auth
@@ -184,7 +184,7 @@
                     ? `<span class="author-card-nationality"><i class="fas fa-globe-africa"></i> ${author.nationality}</span>`
                     : '';
 
-                const booksCount = author.primary_books_count || 0;
+                const booksCount = (author.primary_books_count || 0) + (author.alias_books_count || 0);
 
                 const followBtnHtml = isAuth
                     ? `<button class="follow-btn-card" onclick="toggleFollow('author', ${author.id}, this)" title="متابعة">

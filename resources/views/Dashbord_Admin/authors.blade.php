@@ -286,6 +286,39 @@
         </div>
     </div>
 
+    <!-- Link Author (canonical alias) Modal -->
+    <div class="modal fade" id="linkAuthorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-link me-2"></i>ربط اسم بديل</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="linkAliasAuthorId">
+                    <p class="mb-2">
+                        ربط <strong id="linkAliasAuthorName"></strong> كاسم بديل لمؤلف آخر
+                        (نفس المؤلف بلغة أو كتابة أخرى — مثال: "Albert Camus" و"ألبير كامو").
+                    </p>
+                    <p class="text-muted small mb-3">
+                        ستظهر كتب الاسمين معاً في البحث وفي صفحة المؤلف الرئيسي، وستُحوَّل صفحة
+                        الاسم البديل تلقائياً إلى صفحة المؤلف الرئيسي.
+                    </p>
+                    <div class="mb-2">
+                        <label class="form-label">المؤلف الرئيسي</label>
+                        <input type="text" class="form-control" id="linkCanonicalSearch"
+                               placeholder="ابحث عن اسم المؤلف الرئيسي..." autocomplete="off">
+                    </div>
+                    <div id="linkCanonicalResults" class="list-group mb-2"></div>
+                    <div id="linkSimilarSuggestions"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Enrichment Preview Modal -->
     <div class="modal fade" id="enrichPreviewModal" tabindex="-1">
         <div class="modal-dialog modal-lg">

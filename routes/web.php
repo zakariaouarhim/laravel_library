@@ -205,6 +205,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::delete('/authors/{id}', [AuthorController::class, 'destroy'])->name('authors.destroy');
     Route::get('/authors/{id}/preview-enrich', [AuthorController::class, 'previewEnrichment'])->name('authors.preview-enrich');
     Route::post('/authors/{id}/apply-enrich', [AuthorController::class, 'applyEnrichment'])->name('authors.apply-enrich');
+    // Canonical-author linking (same author in another script = alias row)
+    Route::post('/authors/{id}/link-canonical', [AuthorController::class, 'linkCanonical'])->name('authors.link');
+    Route::post('/authors/{id}/unlink-canonical', [AuthorController::class, 'unlinkCanonical'])->name('authors.unlink');
 
     // System settings (admin-only)
     Route::get('/settings', [SystemSettingsController::class, 'index'])->name('settings.index');
@@ -383,9 +386,14 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
 Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.index');
 Route::get('/مؤلف/{author}', [AuthorController::class, 'publicShow'])->name('author.show');
-// Legacy /author/{id} → 301
+// Legacy /author/{id} → 301 (alias ids go straight to the canonical page
+// to avoid a chained 301 through publicShow)
 Route::get('/author/{id}', function ($id) {
     $author = \App\Models\Author::findOrFail($id);
+    $root = $author->groupRoot();
+    if ($root->id !== $author->id && $root->status === 'active') {
+        $author = $root;
+    }
     return redirect()->route('author.show', $author, 301);
 })->where('id', '[0-9]+');
 
@@ -479,4 +487,3 @@ Route::get('/reset-password/{token}/{email}', [PasswordResetController::class, '
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
     ->name('password.update')
     ->middleware(['guest', 'throttle:5,1']);
-

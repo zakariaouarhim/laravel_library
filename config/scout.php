@@ -134,7 +134,8 @@ return [
         'key' => env('MEILISEARCH_KEY', null),
         'index-settings' => [
             \App\Models\Book::class => [
-                'searchableAttributes' => ['title', 'author', 'description'],
+                // Order = Meilisearch ranking priority.
+                'searchableAttributes' => ['title', 'author', 'author_aliases', 'description'],
             ],
         ],
     ],
