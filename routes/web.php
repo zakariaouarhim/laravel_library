@@ -208,6 +208,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     // Canonical-author linking (same author in another script = alias row)
     Route::post('/authors/{id}/link-canonical', [AuthorController::class, 'linkCanonical'])->name('authors.link');
     Route::post('/authors/{id}/unlink-canonical', [AuthorController::class, 'unlinkCanonical'])->name('authors.unlink');
+    // Plain-string spelling variants (no author row of their own)
+    Route::post('/authors/{id}/names', [AuthorController::class, 'addName'])->name('authors.names.add');
+    Route::delete('/authors/{id}/names/{nameId}', [AuthorController::class, 'deleteName'])->name('authors.names.delete');
 
     // System settings (admin-only)
     Route::get('/settings', [SystemSettingsController::class, 'index'])->name('settings.index');

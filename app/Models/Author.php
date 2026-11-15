@@ -82,6 +82,12 @@ class Author extends Model
         return $this->hasMany(Author::class, 'canonical_author_id');
     }
 
+    // Plain-string alternate spellings with no author row of their own.
+    public function nameVariants()
+    {
+        return $this->hasMany(AuthorName::class);
+    }
+
     public function isAlias(): bool
     {
         return $this->canonical_author_id !== null;
@@ -126,13 +132,17 @@ class Author extends Model
             ->pluck('id');
     }
 
-    // Every name the group's author is known by, root name first.
+    // Every name the group's author is known by, root name first:
+    // the root's name, its alias rows' names, and the plain-string
+    // variants attached to any row of the group.
     public function allNames()
     {
         $root = $this->groupRoot();
 
-        return $root->aliases->pluck('name')
+        return $root->aliases
+            ->flatMap(fn ($alias) => $alias->nameVariants->pluck('name')->prepend($alias->name))
             ->prepend($root->name)
+            ->concat($root->nameVariants->pluck('name'))
             ->unique()
             ->values();
     }

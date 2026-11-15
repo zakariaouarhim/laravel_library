@@ -227,6 +227,22 @@
                             <input type="url" class="form-control" id="editAuthorWebsite" placeholder="https://">
                         </div>
 
+                        <!-- Spelling variants (string aliases with no author row) -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                كتابات أخرى للاسم
+                                <small class="text-muted">(تُحسَب في البحث — مثال: "البير كامي")</small>
+                            </label>
+                            <div id="editAuthorVariantsList" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="editAuthorVariantInput"
+                                       placeholder="أضف كتابة أخرى للاسم..." autocomplete="off">
+                                <button type="button" class="btn btn-outline-primary" onclick="addNameVariant()">
+                                    <i class="fas fa-plus"></i> إضافة
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- SEO override fields. Empty = use auto-generated MetaBuilder fallback. -->
                         <div class="accordion mb-3" id="editAuthorSeoAccordion">
                             <div class="accordion-item">

@@ -60,6 +60,14 @@ function initializeEventListeners() {
         setEditAuthorImagePreview(editAuthorOriginalImage);
     });
 
+    // Enter in the variant input adds the variant instead of submitting the form
+    $(document).on('keydown', '#editAuthorVariantInput', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addNameVariant();
+        }
+    });
+
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -340,6 +348,10 @@ function editAuthor(id) {
             editAuthorOriginalImage = a.profile_image || null;
             setEditAuthorImagePreview(editAuthorOriginalImage);
 
+            // Spelling variants (string aliases)
+            $('#editAuthorVariantInput').val('');
+            renderNameVariants(a.name_variants || []);
+
             new bootstrap.Modal(document.getElementById('editAuthorModal')).show();
         }
     })
@@ -434,6 +446,75 @@ function confirmDelete() {
     .fail(function (xhr) {
         bootstrap.Modal.getInstance(document.getElementById('deleteAuthorModal')).hide();
         showAlert(xhr.responseJSON?.message || 'فشل في حذف المؤلف', 'danger');
+    });
+}
+
+// =================== Spelling Variants (string aliases) ===================
+// Extra ways the author's name is written, with no author row of their own.
+// Added/removed immediately (not on save); each change re-indexes the
+// author group's books so search picks the spelling up.
+function renderNameVariants(variants) {
+    const container = $('#editAuthorVariantsList');
+    container.empty();
+
+    if (!variants || variants.length === 0) {
+        container.append('<small class="text-muted">لا توجد كتابات أخرى</small>');
+        return;
+    }
+
+    variants.forEach(function (v) {
+        container.append(`
+            <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-2" style="font-size:0.85rem;">
+                ${escapeHtml(v.name)}
+                <button type="button" class="btn-close" style="font-size:0.6rem;"
+                        onclick="deleteNameVariant(${v.id})" title="حذف"></button>
+            </span>`);
+    });
+}
+
+function reloadNameVariants() {
+    const id = $('#editAuthorId').val();
+    $.get(`/admin/authors/${id}`).done(function (response) {
+        if (response.success) {
+            renderNameVariants(response.author.name_variants || []);
+        }
+    });
+}
+
+function addNameVariant() {
+    const id = $('#editAuthorId').val();
+    const name = $('#editAuthorVariantInput').val().trim();
+    if (!name) return;
+
+    $.post(`/admin/authors/${id}/names`, { name: name })
+    .done(function (response) {
+        if (response.success) {
+            $('#editAuthorVariantInput').val('');
+            showAlert(response.message, 'success');
+            reloadNameVariants();
+        } else {
+            showAlert(response.message || 'حدث خطأ', 'danger');
+        }
+    })
+    .fail(function (xhr) {
+        showAlert(xhr.responseJSON?.message || 'فشل في إضافة الاسم', 'danger');
+    });
+}
+
+function deleteNameVariant(nameId) {
+    const id = $('#editAuthorId').val();
+
+    $.ajax({ url: `/admin/authors/${id}/names/${nameId}`, method: 'DELETE' })
+    .done(function (response) {
+        if (response.success) {
+            showAlert(response.message, 'success');
+            reloadNameVariants();
+        } else {
+            showAlert(response.message || 'حدث خطأ', 'danger');
+        }
+    })
+    .fail(function (xhr) {
+        showAlert(xhr.responseJSON?.message || 'فشل في حذف الاسم', 'danger');
     });
 }
 

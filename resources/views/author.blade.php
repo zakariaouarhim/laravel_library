@@ -51,9 +51,9 @@
                         </button>
                         @endauth
                     </div>
-                    @if($author->aliases->isNotEmpty())
+                    @if($alsoKnownAs->isNotEmpty())
                         <p class="text-muted mb-0 mt-1" style="font-size: 0.95rem;">
-                            يُعرف أيضاً باسم: {{ $author->aliases->pluck('name')->implode('، ') }}
+                            يُعرف أيضاً باسم: {{ $alsoKnownAs->implode('، ') }}
                         </p>
                     @endif
                     <div class="hero-meta">

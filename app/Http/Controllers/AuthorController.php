@@ -40,6 +40,12 @@ class AuthorController extends Controller
                   ->orWhere('nationality', 'like', "%{$search}%")
                   ->orWhereHas('aliases', function ($alias) use ($search) {
                       $alias->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('nameVariants', function ($variant) use ($search) {
+                      $variant->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('aliases.nameVariants', function ($variant) use ($search) {
+                      $variant->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -120,6 +126,11 @@ class AuthorController extends Controller
         // books attached to any script's row appear on the one author page.
         $groupIds = $author->groupIds()->all();
 
+        // Alias-row names + string spelling variants, for "also known as".
+        $alsoKnownAs = $author->allNames()
+            ->reject(fn ($name) => $name === $author->name)
+            ->values();
+
         // Non-primary roles come from the pivot only (these are tagged in book_authors).
         $booksByTypeForGroup = function (string $type) use ($groupIds) {
             $ids = \Illuminate\Support\Facades\DB::table('book_authors')
@@ -178,6 +189,7 @@ class AuthorController extends Controller
 
         return view('author', compact(
             'author',
+            'alsoKnownAs',
             'primaryBooks',
             'coAuthorBooks',
             'translatedBooks',
@@ -283,7 +295,7 @@ class AuthorController extends Controller
     {
         $author = Author::with(['primaryBooks' => function ($q) {
             $q->select('id', 'title', 'image', 'price', 'author_id');
-        }])->withCount('primaryBooks')->findOrFail($id);
+        }, 'nameVariants'])->withCount('primaryBooks')->findOrFail($id);
 
         // Book count by type from pivot
         $booksByType = BookAuthor::where('author_id', $id)
@@ -437,6 +449,57 @@ class AuthorController extends Controller
         return response()->json([
             'success' => true,
             'message' => "تم فك ربط \"{$alias->name}\"",
+        ]);
+    }
+
+    /**
+     * API: Add a plain-string spelling variant to an author (no author row
+     * of its own, e.g. "البير كامي"). Feeds search via allNames().
+     */
+    public function addName(Request $request, $id)
+    {
+        $author = Author::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $name = trim($validated['name']);
+
+        if ($name === '' || $name === $author->name) {
+            return response()->json([
+                'success' => false,
+                'message' => 'هذا الاسم هو اسم المؤلف نفسه',
+            ], 400);
+        }
+
+        $variant = $author->nameVariants()->firstOrCreate(['name' => $name]);
+
+        // Re-index the whole group's books so they gain the new spelling.
+        Book::whereIn('author_id', $author->groupIds())->searchable();
+
+        return response()->json([
+            'success' => true,
+            'message' => "تمت إضافة الاسم البديل \"{$name}\"",
+            'variant' => $variant,
+        ]);
+    }
+
+    /**
+     * API: Remove a spelling variant.
+     */
+    public function deleteName($id, $nameId)
+    {
+        $author = Author::findOrFail($id);
+        $variant = $author->nameVariants()->findOrFail($nameId);
+
+        $variant->delete();
+
+        Book::whereIn('author_id', $author->groupIds())->searchable();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حذف الاسم البديل',
         ]);
     }
 

@@ -1,3 +1,20 @@
+# Author name variants (string aliases, no author row) — extension
+
+- [x] 1. Migration: `author_names` table (author_id FK cascade, name, unique per author)
+- [x] 2. `AuthorName` model + `Author::nameVariants()`; union variants into `allNames()`
+- [x] 3. `Book::makeSearchableUsing` eager-loads variants (toSearchableArray already uses allNames)
+- [x] 4. `publicIndex` q-search matches variants (own + aliases'); `publicShow` "also known as" uses allNames
+- [x] 5. Admin: add/delete variant endpoints (re-index group books) + UI in edit-author modal
+- [x] 6. Verify locally: variant search in Meili, listing search, author page display
+
+## Review (2026-11-15, variants extension)
+Verified locally with variant "البير كامي" on the Camus group: Meili search returns the
+group's books top-ranked; /authors?q= surfaces the canonical row; author page lists the
+variant under "يُعرف أيضاً باسم". Variants are added/removed live in the edit-author
+modal and each change re-indexes the group's books via the queue.
+Not yet deployed (needs: migrate --force + view/route/config clear + queue:restart;
+no scout:import needed — docs only change when variants are added).
+
 # Canonical Author Linking (multilingual author names)
 
 Plan: C:\Users\zakar\.claude\plans\i-have-an-ess-greedy-tome.md (approved 2026-11-15)

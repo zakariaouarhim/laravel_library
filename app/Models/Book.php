@@ -171,7 +171,12 @@ class Book extends Model
 
     public function makeSearchableUsing(EloquentCollection $models): EloquentCollection
     {
-        return $models->load(['primaryAuthor.aliases', 'primaryAuthor.canonical.aliases']);
+        return $models->load([
+            'primaryAuthor.nameVariants',
+            'primaryAuthor.aliases.nameVariants',
+            'primaryAuthor.canonical.nameVariants',
+            'primaryAuthor.canonical.aliases.nameVariants',
+        ]);
     }
 
     public function inventoryLogs()
