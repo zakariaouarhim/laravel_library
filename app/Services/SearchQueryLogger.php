@@ -32,17 +32,23 @@ class SearchQueryLogger
         $request ??= request();
         if ($request && $this->looksLikeBot((string) $request->userAgent())) return;
 
-        try {
-            SearchQuery::create([
-                'query'            => $query,
-                'normalized_query' => $this->normalize($query),
-                'result_count'     => max(0, $resultCount),
-                'source'           => $source === 'autocomplete' ? 'autocomplete' : 'page',
-                'user_id'          => $request?->user()?->id,
-            ]);
-        } catch (\Throwable $e) {
-            \Log::warning('SearchQueryLogger::log failed: ' . $e->getMessage());
-        }
+        $data = [
+            'query'            => $query,
+            'normalized_query' => $this->normalize($query),
+            'result_count'     => max(0, $resultCount),
+            'source'           => $source === 'autocomplete' ? 'autocomplete' : 'page',
+            'user_id'          => $request?->user()?->id,
+        ];
+
+        // Insert after the response is sent — search latency must never pay
+        // for analytics (this fires on every autocomplete keystroke pause).
+        dispatch(function () use ($data) {
+            try {
+                SearchQuery::create($data);
+            } catch (\Throwable $e) {
+                \Log::warning('SearchQueryLogger::log failed: ' . $e->getMessage());
+            }
+        })->afterResponse();
     }
 
     /**

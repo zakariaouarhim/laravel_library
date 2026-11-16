@@ -99,12 +99,17 @@ from GitHub; it is never edited directly.
    ```bash
    ssh root@178.104.100.242 'cd /var/www/library_fokara && git pull origin main \
      && runuser -u www-data -- php artisan migrate --force \
-     && runuser -u www-data -- php artisan config:clear \
-     && runuser -u www-data -- php artisan route:clear \
-     && runuser -u www-data -- php artisan view:clear'
+     && runuser -u www-data -- php artisan config:cache \
+     && runuser -u www-data -- php artisan route:cache \
+     && runuser -u www-data -- php artisan view:cache'
    ```
+   * Production runs WITH config/route/view caches (since 2026-11-16, for speed).
+     Always re-CACHE (not just clear) after a deploy, or the old cached values
+     keep being served. `route:cache` requires zero route closures in web.php —
+     legacy id-redirects live in `LegacyRedirectController` for this reason;
+     never add a `function ()` route.
    * Run `migrate --force` only when the commit adds migrations.
-   * Blade-only changes: just `git pull` + `runuser -u www-data -- php artisan view:clear`.
+   * Blade-only changes: just `git pull` + `runuser -u www-data -- php artisan view:cache`.
 3. Verify on the server (e.g. `php artisan route:list | grep <name>`, or a `tinker --execute` count).
 
 ## If the site 500s with a `storage`/cache write error

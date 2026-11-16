@@ -46,8 +46,10 @@ class AppServiceProvider extends ServiceProvider
         Series::observe(SeriesObserver::class);
 
         View::composer('header', function ($view) {
-           $navCategories = Cache::remember('header_nav_categories', 3600, function () {
-               return Category::parentWithChildren()->get();
+           // v2: eager-load children — the mega menu reads $category->children,
+           // which lazy-loaded one query per category on every page render.
+           $navCategories = Cache::remember('header_nav_categories_v2', 3600, function () {
+               return Category::parentWithChildren()->with('children')->get();
            });
            $view->with('navCategories', $navCategories);
 

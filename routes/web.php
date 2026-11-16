@@ -314,10 +314,7 @@ Route::post('/order/manage/return', [OrderManageController::class, 'returnReques
 // produces slug URLs because HasSlug::getRouteKey() returns the slug.
 Route::get('/كتاب/{book}', [BookController::class, 'showV2'])->name('moredetail2.page');
 // Legacy ID URL — 301 to the slug URL so Google-indexed links don't break.
-Route::get('/moredetail-v2/{id}', function ($id) {
-    $book = \App\Models\Book::findOrFail($id);
-    return redirect()->route('moredetail2.page', $book, 301);
-})->where('id', '[0-9]+');
+Route::get('/moredetail-v2/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'book'])->where('id', '[0-9]+');
 
 // ==================== REVIEWS ====================
 
@@ -373,10 +370,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/تصنيف/{category}', [BookController::class, 'byCategory'])->name('by-category');
 // Legacy /categories/{id} → 301
-Route::get('/categories/{id}', function ($id) {
-    $category = \App\Models\Category::findOrFail($id);
-    return redirect()->route('by-category', $category, 301);
-})->where('id', '[0-9]+');
+Route::get('/categories/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'category'])->where('id', '[0-9]+');
 
 Route::get('/accessories', [AccessoryController::class, 'index'])->name('accessories.index');
 
@@ -389,31 +383,17 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
 Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.index');
 Route::get('/مؤلف/{author}', [AuthorController::class, 'publicShow'])->name('author.show');
-// Legacy /author/{id} → 301 (alias ids go straight to the canonical page
-// to avoid a chained 301 through publicShow)
-Route::get('/author/{id}', function ($id) {
-    $author = \App\Models\Author::findOrFail($id);
-    $root = $author->groupRoot();
-    if ($root->id !== $author->id && $root->status === 'active') {
-        $author = $root;
-    }
-    return redirect()->route('author.show', $author, 301);
-})->where('id', '[0-9]+');
+// Legacy /author/{id} → 301
+Route::get('/author/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'author'])->where('id', '[0-9]+');
 
 Route::get('/publishers', [PublisherController::class, 'publicIndex'])->name('publishers.index');
 Route::get('/ناشر/{publisher}', [PublisherController::class, 'publicShow'])->name('publisher.show');
 // Legacy /publisher/{id} → 301
-Route::get('/publisher/{id}', function ($id) {
-    $publisher = \App\Models\PublishingHouse::findOrFail($id);
-    return redirect()->route('publisher.show', $publisher, 301);
-})->where('id', '[0-9]+');
+Route::get('/publisher/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'publisher'])->where('id', '[0-9]+');
 
 Route::get('/سلسلة/{series}', [AdminSeriesController::class, 'publicShow'])->name('series.show');
 // Legacy /series/{id} → 301
-Route::get('/series/{id}', function ($id) {
-    $series = \App\Models\Series::findOrFail($id);
-    return redirect()->route('series.show', $series, 301);
-})->where('id', '[0-9]+');
+Route::get('/series/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'series'])->where('id', '[0-9]+');
 
 // ==================== NOTIFICATIONS & FOLLOWS ====================
 
@@ -450,8 +430,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/', [BookController::class, 'index']);
 Route::get('/index', [BookController::class, 'index'])->name('index.page');
 Route::get('/books', [BookController::class, 'index']);
-Route::get('/search-books', [BookController::class, 'searchproductBooks'])->name('search.books');
-Route::get('/search-results', [BookController::class, 'searchResults'])->name('search.results');
+Route::get('/search-books', [BookController::class, 'searchproductBooks'])->name('search.books')->middleware('throttle:60,1');
+Route::get('/search-results', [BookController::class, 'searchResults'])->name('search.results')->middleware('throttle:60,1');
 
 // ==================== AUTH ROUTES ====================
 

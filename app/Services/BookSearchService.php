@@ -24,9 +24,28 @@ class BookSearchService
         }
 
         $builder = Book::search($query)
-            ->query(fn($qb) => $qb->with(['primaryAuthor', 'publishingHouse']));
+            ->query(fn($qb) => $qb
+                ->where('status', 'active')
+                ->with(['primaryAuthor:id,name', 'publishingHouse:id,name']));
 
         return $limit ? $builder->take($limit)->get() : $builder->get();
+    }
+
+    /**
+     * Shape search() results for public JSON (autocomplete dropdowns).
+     * Only the fields the dropdown renders — never serialize full Book
+     * models publicly (huge payload + internal columns like cost_price).
+     */
+    public function formatForDropdown($books): array
+    {
+        return collect($books)->map(fn($book) => [
+            'id'                    => $book->id,
+            'title'                 => $book->title,
+            'image'                 => $book->image,
+            'price'                 => $book->price,
+            'author_name'           => $book->author_name,
+            'publishing_house_name' => $book->publishing_house_name,
+        ])->values()->all();
     }
 
     /**
@@ -39,7 +58,7 @@ class BookSearchService
      * whereHas / whereIn / orderBy, which Scout's builder can't do for the
      * Meilisearch driver.
      */
-    public function searchQuery(?string $query): Builder
+    public function searchQuery(?string $query, bool $orderByRelevance = false): Builder
     {
         $base = Book::query()->where('status', 'active');
 
@@ -47,13 +66,25 @@ class BookSearchService
             return $base;
         }
 
-        $matchedIds = Book::search($query)->take(self::SEARCH_HIT_CAP)->keys();
+        // Ask Meilisearch for ids only — without attributesToRetrieve it
+        // returns full documents (descriptions included) for all 500 hits.
+        $matchedIds = Book::search($query, function ($meilisearch, $q, $options) {
+            $options['attributesToRetrieve'] = ['id'];
+            return $meilisearch->search($q, $options);
+        })->take(self::SEARCH_HIT_CAP)->keys()->map(fn($id) => (int) $id);
 
         if ($matchedIds->isEmpty()) {
             return $base->whereRaw('0 = 1');
         }
 
-        return $base->whereIn('id', $matchedIds);
+        $base->whereIn('id', $matchedIds);
+
+        if ($orderByRelevance) {
+            // Preserve Meilisearch's ranking (ids arrive best-first).
+            $base->orderByRaw('FIELD(id, ' . $matchedIds->implode(',') . ')');
+        }
+
+        return $base;
     }
 
     /**
@@ -93,12 +124,29 @@ class BookSearchService
         $excludedIds = $books->pluck('id')->toArray();
         $catIds      = $mainBook->categories->pluck('id')->toArray();
 
-        return Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $catIds ?: [$mainBook->category_id]))
+        // Pick random ids from a bounded recent pool instead of
+        // ORDER BY RAND() over full rows (table-wide scan).
+        $candidateIds = Book::whereHas('categories', fn($q) => $q->whereIn('book_category.category_id', $catIds ?: [$mainBook->category_id]))
             ->whereNotIn('id', $excludedIds)
+            ->where('status', 'active')
+            ->where('product_type', 'standard')
+            ->latest('id')
+            ->limit(200)
+            ->pluck('id')
+            ->shuffle()
+            ->take($limit);
+
+        if ($candidateIds->isEmpty()) {
+            return collect();
+        }
+
+        return Book::whereIn('id', $candidateIds)
             ->with(['primaryAuthor', 'publishingHouse'])
-            ->inRandomOrder()
-            ->take($limit)
-            ->get();
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating')
+            ->get()
+            ->shuffle()
+            ->values();
     }
 
     /**

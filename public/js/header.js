@@ -105,6 +105,9 @@ function removeFromCart(itemId) {
 
 // Debounce timers per container
 var _searchTimers = {};
+var _searchAborters = {};        // per-container AbortController for in-flight fetches
+var _searchCache = new Map();    // query -> books[], so retyping doesn't re-fetch
+var SEARCH_CACHE_MAX = 30;
 
 // Recent searches (stored in localStorage)
 function getRecentSearches() {
@@ -159,6 +162,8 @@ function searchBooksAutocomplete(query, containerId) {
 
     if (!resultsContainer) return;
 
+    query = query.trim();
+
     // Clear previous timer (debounce 300ms)
     if (_searchTimers[containerId]) {
         clearTimeout(_searchTimers[containerId]);
@@ -173,56 +178,83 @@ function searchBooksAutocomplete(query, containerId) {
         return;
     }
 
-    // Show loading spinner
-    resultsContainer.innerHTML = '<div class="search-loading"><div class="search-spinner"></div> جاري البحث...</div>';
-    resultsContainer.style.display = 'block';
+    // Serve repeats (backspacing, retyping) from the client cache instantly
+    if (_searchCache.has(query)) {
+        renderAutocompleteResults(_searchCache.get(query), query, resultsContainer);
+        return;
+    }
 
     _searchTimers[containerId] = setTimeout(function() {
-        fetch('/search-books?query=' + encodeURIComponent(query))
+        // Abort the previous in-flight request for this box — on a slow
+        // connection an older query's late response must not win.
+        if (_searchAborters[containerId]) {
+            _searchAborters[containerId].abort();
+        }
+        var aborter = new AbortController();
+        _searchAborters[containerId] = aborter;
+
+        // Show loading spinner only when a fetch actually starts
+        resultsContainer.innerHTML = '<div class="search-loading"><div class="search-spinner"></div> جاري البحث...</div>';
+        resultsContainer.style.display = 'block';
+
+        fetch('/search-books?query=' + encodeURIComponent(query), { signal: aborter.signal })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                if (data.success && data.books.length > 0) {
-                    var html = '<div class="search-results-list">';
-
-                    data.books.forEach(function(book) {
-                        var imageUrl = book.image ? book.image : '/default-book.png';
-                        var title = highlightMatch(book.title, query);
-                        var author = highlightMatch(book.author_name || '', query);
-                        var publisher = book.publishing_house_name ? highlightMatch(book.publishing_house_name, query) : '';
-
-                        html += '<a href="/moredetail-v2/' + book.id + '" class="search-result-item">';
-                        html += '<img src="/' + imageUrl + '" alt="' + (book.title || '') + '">';
-                        html += '<div class="search-result-info">';
-                        html += '<div class="search-result-title">' + title + '</div>';
-                        if (author) {
-                            html += '<div class="search-result-author"><i class="fas fa-user-edit"></i> ' + author + '</div>';
-                        }
-                        if (publisher) {
-                            html += '<div class="search-result-publisher"><i class="fas fa-building"></i> ' + publisher + '</div>';
-                        }
-                        if (book.price) {
-                            html += '<div class="search-result-price">' + book.price + ' د.م</div>';
-                        }
-                        html += '</div></a>';
-                    });
-
-                    html += '<a href="/search-results?query=' + encodeURIComponent(query) + '" class="search-view-all">';
-                    html += '<i class="fas fa-search"></i> عرض جميع النتائج';
-                    html += '</a></div>';
-
-                    resultsContainer.innerHTML = html;
-                    resultsContainer.style.display = 'block';
-                } else {
-                    resultsContainer.innerHTML = '<div class="search-no-results">' +
-                        '<i class="fas fa-search"></i> لم يتم العثور على نتائج لـ "' + query + '"' +
-                        '</div>';
-                    resultsContainer.style.display = 'block';
+                if (!data.success) {
+                    resultsContainer.style.display = 'none';
+                    return;
                 }
+                if (_searchCache.size >= SEARCH_CACHE_MAX) {
+                    _searchCache.delete(_searchCache.keys().next().value);
+                }
+                _searchCache.set(query, data.books);
+                renderAutocompleteResults(data.books, query, resultsContainer);
             })
-            .catch(function() {
+            .catch(function(err) {
+                if (err && err.name === 'AbortError') return; // superseded by a newer query
                 resultsContainer.style.display = 'none';
             });
     }, 300);
+}
+
+function renderAutocompleteResults(books, query, resultsContainer) {
+    if (books.length > 0) {
+        var html = '<div class="search-results-list">';
+
+        books.forEach(function(book) {
+            var imageUrl = book.image ? book.image : '/default-book.png';
+            var title = highlightMatch(book.title, query);
+            var author = highlightMatch(book.author_name || '', query);
+            var publisher = book.publishing_house_name ? highlightMatch(book.publishing_house_name, query) : '';
+
+            html += '<a href="/moredetail-v2/' + book.id + '" class="search-result-item">';
+            html += '<img src="/' + imageUrl + '" alt="' + (book.title || '') + '">';
+            html += '<div class="search-result-info">';
+            html += '<div class="search-result-title">' + title + '</div>';
+            if (author) {
+                html += '<div class="search-result-author"><i class="fas fa-user-edit"></i> ' + author + '</div>';
+            }
+            if (publisher) {
+                html += '<div class="search-result-publisher"><i class="fas fa-building"></i> ' + publisher + '</div>';
+            }
+            if (book.price) {
+                html += '<div class="search-result-price">' + book.price + ' د.م</div>';
+            }
+            html += '</div></a>';
+        });
+
+        html += '<a href="/search-results?query=' + encodeURIComponent(query) + '" class="search-view-all">';
+        html += '<i class="fas fa-search"></i> عرض جميع النتائج';
+        html += '</a></div>';
+
+        resultsContainer.innerHTML = html;
+        resultsContainer.style.display = 'block';
+    } else {
+        resultsContainer.innerHTML = '<div class="search-no-results">' +
+            '<i class="fas fa-search"></i> لم يتم العثور على نتائج لـ "' + query + '"' +
+            '</div>';
+        resultsContainer.style.display = 'block';
+    }
 }
 
 // Handle focus on search inputs — show recent searches

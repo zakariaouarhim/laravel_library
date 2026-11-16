@@ -1,3 +1,18 @@
+# Search latency fix (2026-11-16)
+
+- [x] 1.1 Slim autocomplete JSON (160,670 B → 2,101 B; cost_price leak closed; 3 queries)
+- [x] 1.2 Defer search_queries insert (verified row written after response via artisan serve)
+- [x] 1.3 header.js: AbortController, trim, client cache (Map, cap 30), spinner only on fetch
+- [x] 1.4 throttle:60,1 on /search-books + /search-results
+- [x] 2.1 withCount/withAvg reviews on results + related books (stars verified rendering)
+- [x] 2.2 Meili attributesToRetrieve=[id] for the 500-id fetch
+- [x] 2.3 relevance ordering (FIELD(id,...)) when no sort param — verified Harry Potter first
+- [x] 2.4 single COUNT (paginate), cached sidebar categories, popularCategories only when empty, RAND() → bounded id pool + shuffle
+- [x] 2.5 header mega-menu with('children'), cache key header_nav_categories_v2
+- [x] 3.1 all 5 legacy route closures → LegacyRedirectController; route:cache verified OK; CLAUDE.md deploy steps now use config/route/view:cache
+- [ ] 3.2 Cloudflare guide for user + verification
+- [ ] Deploy + verify VPS (results page local: 14 queries, was ~80)
+
 # Author name variants (string aliases, no author row) — extension
 
 - [x] 1. Migration: `author_names` table (author_id FK cascade, name, unique per author)

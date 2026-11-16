@@ -410,7 +410,10 @@ class BookController extends Controller
                 $request,
             );
 
-            return response()->json(['success' => true, 'books' => $books]);
+            return response()->json([
+                'success' => true,
+                'books'   => $this->searchService->formatForDropdown($books),
+            ]);
         } catch (\Exception $e) {
             \Log::error('Error in searchBooks:', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
@@ -436,12 +439,16 @@ class BookController extends Controller
         $categoryId = $request->input('category');
         $sort       = $request->input('sort');
 
-        $categories = Category::whereNull('parent_id')->with('children')->get();
+        $categories = Cache::remember('search_sidebar_categories', 3600,
+            fn() => Category::whereNull('parent_id')->with('children')->get());
         $publishingHouses = Cache::remember('active_publishers', 3600, fn() => PublishingHouse::active()->get());
 
-        // 1. Build search query (no execution yet)
-        $builder = $this->searchService->searchQuery($query);
-        $builder->with(['primaryAuthor', 'publishingHouse', 'categories', 'category', 'bundles:id,title,price,image']);
+        // 1. Build search query (no execution yet). With no explicit sort,
+        // keep Meilisearch's relevance ranking instead of created_at.
+        $builder = $this->searchService->searchQuery($query, orderByRelevance: $sort === null);
+        $builder->with(['primaryAuthor', 'publishingHouse', 'categories', 'category', 'bundles:id,title,price,image'])
+            ->withCount('reviews')
+            ->withAvg('reviews as reviews_avg_rating', 'rating');
 
         // 2. Apply DB-level filters
         $builder = $this->applySearchFilters($builder, $request);
@@ -452,10 +459,12 @@ class BookController extends Controller
             'price_asc'  => $builder->orderBy('price'),
             'price_desc' => $builder->orderByDesc('price'),
             'title'      => $builder->orderBy('title'),
-            default      => $builder->orderByDesc('created_at'),
+            default      => $query ? $builder : $builder->orderByDesc('created_at'),
         };
 
-        $totalSearchCount = $builder->count();
+        // 4. DB-level pagination (paginate() runs the COUNT — don't count twice)
+        $paginatedBooks = $builder->paginate(12)->appends($request->query());
+        $totalSearchCount = $paginatedBooks->total();
 
         app(\App\Services\SearchQueryLogger::class)->log(
             $query,
@@ -464,20 +473,19 @@ class BookController extends Controller
             $request,
         );
 
-        // 5. DB-level pagination
-        $paginatedBooks = $builder->paginate(12)->appends($request->query());
-
         // 6. Related books (from current page results)
         $relatedBooks = $this->searchService->getRelatedBooks($paginatedBooks->getCollection());
         $totalCount = $totalSearchCount + $relatedBooks->count();
 
-        // 7. Related categories
+        // 7. Related categories — only rendered in the no-results state.
         $relatedCategories = collect();
-        if ($categoryId) {
-            $relatedCategories = $this->searchService->relatedCategories($categoryId);
-        }
-        if ($relatedCategories->isEmpty()) {
-            $relatedCategories = $this->searchService->popularCategories();
+        if ($paginatedBooks->isEmpty()) {
+            if ($categoryId) {
+                $relatedCategories = $this->searchService->relatedCategories($categoryId);
+            }
+            if ($relatedCategories->isEmpty()) {
+                $relatedCategories = $this->searchService->popularCategories();
+            }
         }
 
         // 8. Detect primary category from current page and reorder sidebar
@@ -539,7 +547,10 @@ class BookController extends Controller
         try {
             $books = $this->searchService->search($request->input('query', ''), 5);
 
-            return response()->json(['success' => true, 'books' => $books]);
+            return response()->json([
+                'success' => true,
+                'books'   => $this->searchService->formatForDropdown($books),
+            ]);
         } catch (\Exception $e) {
             \Log::error('Error in searchBooks:', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'An error occurred'], 500);
