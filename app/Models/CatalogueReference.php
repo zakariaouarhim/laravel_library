@@ -45,11 +45,18 @@ class CatalogueReference extends Model
      * generic placeholder for EVERY product, while `/image_1024` (same template
      * id) serves the real cover. Rewrite stale URLs at read time so the stored
      * dump stays untouched and re-imports keep working.
+     *
+     * aseeralkotb.com: the API hands out a blurry 250x375 thumbnail; the CDN
+     * also serves a 1000x1500 conversion at the same path.
      */
     public static function normalizeCoverUrl(?string $url): ?string
     {
         if (!$url) {
             return null;
+        }
+
+        if (str_starts_with($url, 'https://cdn.aseeralkotb.com/')) {
+            return str_replace('-250x375-webp.webp', '-1000x1500-webp.webp', $url);
         }
 
         return preg_replace('#/image/\d+x\d+(\?.*)?$#', '/image_1024', $url);

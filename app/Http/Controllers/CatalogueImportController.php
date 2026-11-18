@@ -54,7 +54,7 @@ class CatalogueImportController extends Controller
             'min_completeness' => 'nullable|integer|min:0|max:8',
             'has_description'  => 'nullable|boolean',
             'hide_in_store'    => 'nullable|boolean',
-            'source'           => 'nullable|in:almouggar,bod',
+            'source'           => 'nullable|in:almouggar,bod,lm,ak',
         ]);
 
         $status = $data['status'] ?? 'pending';
@@ -67,10 +67,16 @@ class CatalogueImportController extends Controller
             ->when($status === 'pending',  fn($q) => $q->whereNull('catalogue_reviews.id'))
             ->when($status === 'imported', fn($q) => $q->where('catalogue_reviews.status', 'imported'))
             ->when($status === 'skipped',  fn($q) => $q->where('catalogue_reviews.status', 'skipped'))
-            // Source is encoded in the dedup_key prefix ("bod:…"), not a column:
-            // catalogue:import drop/recreates the table, a column wouldn't survive.
+            // Source is encoded in the dedup_key prefix ("bod:…"/"lm:…"), not a
+            // column: catalogue:import drop/recreates the table, a column wouldn't
+            // survive. almouggar rows carry no prefix.
             ->when(($data['source'] ?? '') === 'bod', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'bod:%'))
-            ->when(($data['source'] ?? '') === 'almouggar', fn($q) => $q->where('catalogue_reference.dedup_key', 'not like', 'bod:%'))
+            ->when(($data['source'] ?? '') === 'lm', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'lm:%'))
+            ->when(($data['source'] ?? '') === 'ak', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'ak:%'))
+            ->when(($data['source'] ?? '') === 'almouggar', fn($q) => $q
+                ->where('catalogue_reference.dedup_key', 'not like', 'bod:%')
+                ->where('catalogue_reference.dedup_key', 'not like', 'lm:%')
+                ->where('catalogue_reference.dedup_key', 'not like', 'ak:%'))
             ->when(!empty($data['language']), fn($q) => $q->where('catalogue_reference.langue', 'like', '%' . self::LANG_FILTER[$data['language']] . '%'))
             ->when(!empty($data['has_description']), fn($q) => $q->whereNotNull('catalogue_reference.description')->where('catalogue_reference.description', '<>', ''))
             ->when(!empty($data['q']), function ($q) use ($data) {

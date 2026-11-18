@@ -200,6 +200,8 @@
                 <option value="">كل المصادر</option>
                 <option value="almouggar">Almouggar</option>
                 <option value="bod">BooksOnDemand</option>
+                <option value="lm">Livremoi</option>
+                <option value="ak">أسير الكتب</option>
             </select>
             <label class="chk"><input type="checkbox" id="fDesc"> بوصف فقط</label>
             <label class="chk"><input type="checkbox" id="fStore" checked> إخفاء المتوفر بالمتجر</label>
@@ -901,9 +903,9 @@
         $('fComp').addEventListener('change', e => { filters.min_completeness = e.target.value; reload(); });
         $('fSource').addEventListener('change', e => {
             filters.source = e.target.value;
-            // bod rows have no ISBN so they honestly score ~5-7: the default
-            // "quality >= 7" filter would hide most of them. Relax it.
-            if (filters.source === 'bod' && Number(filters.min_completeness) > 5) {
+            // bod (no ISBN) and lm (no description) rows honestly score ~5-7: the
+            // default "quality >= 7" filter would hide most of them. Relax it.
+            if ((filters.source === 'bod' || filters.source === 'lm') && Number(filters.min_completeness) > 5) {
                 filters.min_completeness = '0';
                 $('fComp').value = '0';
             }

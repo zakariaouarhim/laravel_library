@@ -10,8 +10,18 @@
 - [x] 2.4 single COUNT (paginate), cached sidebar categories, popularCategories only when empty, RAND() → bounded id pool + shuffle
 - [x] 2.5 header mega-menu with('children'), cache key header_nav_categories_v2
 - [x] 3.1 all 5 legacy route closures → LegacyRedirectController; route:cache verified OK; CLAUDE.md deploy steps now use config/route/view:cache
-- [ ] 3.2 Cloudflare guide for user + verification
-- [ ] Deploy + verify VPS (results page local: 14 queries, was ~80)
+- [x] 3.2 Cloudflare guide given to user (DNS change is theirs to make; verify later with cf-ray header)
+- [x] Deploy + verify VPS (results page local: 14 queries, was ~80)
+
+## Review (2026-11-16, search latency)
+Deployed commit 60177aa. Verified on alfokara.com:
+- autocomplete: 2,108 B payload (was 160,670 B), 0.11s server-side, no cost_price leak
+- search-results: 200, 0.19s server-side, relevance-ordered, stars render
+- legacy /author/{id} + /moredetail-v2/{id} 301s work via LegacyRedirectController under route:cache
+- deferred search_queries insert confirmed under php-fpm (row written post-response)
+- config/route/view caches now BUILT in production — deploys must re-cache (CLAUDE.md updated)
+Remaining latency from Morocco (~1-2s cold TTFB) is network distance → Cloudflare
+onboarding is the user's next step; re-measure after nameserver switch.
 
 # Author name variants (string aliases, no author row) — extension
 
@@ -61,3 +71,29 @@ admin → المؤلفون (ربط button). All as www-data per CLAUDE.md.
 
 Known pre-existing gaps (unchanged): renaming an author doesn't re-index its books;
 Arabic letter filter doesn't fold alif variants.
+
+# Aseer Al Kotob scraper (2026-11-16)
+
+Found: aseeralkotb.com has an open JSON:API (no Cloudflare challenge on /api/*,
+robots.txt allows all). Single-book endpoint GET /api/v1/books/{id} returns
+title, description, ISBN, cover, pages, year, authors, publisher, categories.
+Ids are dense 1..~72,824 (404 on gaps). Listing endpoints don't paginate, so
+the scraper walks ids. Prices are USD (not our retail) → stored null.
+
+- [x] 1. `ak:scrape` command (id walk, chunked upserts, resume via max ak: id, --dry-run/--limit/--from/--to/--delay)
+- [x] 2. Controller: allow `source=ak` + dedup_key filter (and exclude from almouggar)
+- [x] 3. Blade: add Aseer Al Kotob to the source dropdown
+- [x] 4. Smoke test: dry-run, then real 20-row run; verify dashboard shows them
+
+## Review (2026-11-18, Aseer Al Kotob scrape)
+Full run finished: 69,488 ak rows (ids 1..72,826; ~3,300 ids missing/broken on their side).
+All have a description; 62,273 have a checksum-valid ISBN; 59,529 pass the default
+quality>=7 filter; 56,737 Arabic; only 131 ISBNs already in our store.
+Fixes made during the run:
+- skip isolated server errors (id 4827 always 500s); abort only after 10 in a row
+- CSP img-src += cdn.aseeralkotb.com (covers were blocked by our own CSP)
+- normalizeCoverUrl() upgrades 250x375 thumbnails to 1000x1500 at read time
+- memory: Ignition kept 200 queries w/ bindings (~45 MB) → unsetEventDispatcher();
+  Laravel 8 Http::pool() per batch leaked + wedged in a curl spin → one Guzzle client,
+  settle() promises, low-speed abort. Flat 28 MB for the whole run afterwards.
+Not yet committed/deployed; VPS DB has no ak rows yet.
