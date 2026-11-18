@@ -97,3 +97,17 @@ Fixes made during the run:
   Laravel 8 Http::pool() per batch leaked + wedged in a curl spin → one Guzzle client,
   settle() promises, low-speed abort. Flat 28 MB for the whole run afterwards.
 Not yet committed/deployed; VPS DB has no ak rows yet.
+
+### Deployed 2026-11-18 (commit 40da15d)
+Code: pull + config/route/view:cache on the VPS; `ak:scrape` + `lm:scrape` registered.
+Data: 69,488 ak rows transferred via a staging table (mysqldump of `ak_transfer`,
+md5-verified upload, INSERT…SELECT with explicit columns so local ids never
+travelled, ON DUPLICATE KEY UPDATE on the unique dedup_key → re-runnable).
+VPS catalogue_reference: 84,050 → 153,538. Verified on the VPS: all 69,488 have a
+description, 59,529 pass quality>=7, 56,737 Arabic, 24/24 covers on page 1 use
+1000x1500, and 0 suggested primary categories pointed at a non-existent id
+(suggester resolves by name, so the local/VPS id mismatch is a non-issue).
+Live CSP img-src confirmed to include cdn.aseeralkotb.com. Staging tables and
+dumps dropped on both sides.
+NOT deployed (still local WIP): low-stock panel (AdminBookController@updateStock,
+dashboard.blade.php, products.update-stock route) and the Counter feature.
