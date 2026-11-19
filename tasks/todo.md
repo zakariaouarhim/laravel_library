@@ -126,3 +126,50 @@ Verified on the VPS: 3 sample books each produce main+thumb+large. Repaired the
 one already-imported book (#1379) — its cover now serves 200 at alfokara.com.
 Open follow-up: approve() still reports success when the cover fails; it should
 warn the admin instead of silently creating an image-less book.
+
+# Fold API book search into catalogue-import (2026-11-19)
+
+- [x] 1. `CatalogueDraftService`: merge resolved sources -> one draft; assemble an
+      `api:` catalogue_reference row (stable dedup_key, honest completeness,
+      `langue` token, author de-crufting, junk-ISBN rejection)
+- [x] 2. Endpoints: `find` (store + unfiltered catalogue, free), `api-search`
+      (resolveSources*, read-only), `adopt` (persist + return a grid payload)
+- [x] 3. UI: "find this book" panel from the empty state + toolbar; 3 steps;
+      non-blocking; injects the card and opens the modal on adopt
+- [x] 4. `api` source filter + quality auto-relax (added `ak`, which was missed)
+- [x] 5. Author binding (hidden author_id, honoured when the name agrees) — both
+      import screens; new authors enriched AFTER commit, not inside it
+- [x] 6. Cross-source agreement (agree/conflict/unverified) in EnrichPreviewService,
+      rendered in both enrich panels; description/image left uncompared
+- [x] 7. `catalogue:import` preserves `api:` rows across its drop/recreate
+- [x] 8. `catalogue:prune-api-drafts` + nightly schedule (replaces staging:prune-images)
+- [x] 9. Retired the pending_books flow: controller, 3 views, 7 routes, 2 sidebar
+      links, PendingBook, PruneStagingImages, staging files; BookIngestionService
+      trimmed to the read-only lookup (resolveSources* + shared helpers kept)
+- [x] 10. `books:ingest` CSV repointed at `api:` rows; real --dry-run now
+- [x] 11. `pending:convert-to-catalogue` (idempotent, --dry-run); migration runs it
+      before dropping the table
+- [x] 12. Deployed; converted 19 rows locally and 5 on the VPS
+- [ ] 13. VPS: run the gated `migrate --force` to drop the now-unused pending_books
+      table (data already converted; backup at /root/backups/pending_books_*.sql)
+
+## Review (2026-11-19)
+Commits ec473de (feature + improvements) and e6b6140 (retirement). Verified:
+both import screens render with no dead links; enrich resolves through the
+trimmed service with agreement tags; approving a converted row creates the book
+with real cover variants (400x622/150x233), review row, categories and author;
+author binding reuses an existing author and correctly ignores a stale binding;
+old /admin/books/ingest and /books/pending now 404; homepage 200; no new errors
+in the VPS log. Catalogue on the VPS: 153,538 -> 153,543.
+
+Two data-quality bugs found and fixed while testing:
+- Open Library returns 200 + a 43-byte 1x1 GIF when it has no cover, so books
+  silently got a 1-pixel cover. Remote covers under 50px a side are now treated
+  as no cover, which makes the admin warning fire. 8 of 17 converted rows point
+  at Open Library covers.
+- Placeholder ISBNs ("0000000000") pass both ISBN checksums; since the ISBN is
+  the row's dedup_key, unrelated books would have merged. Now rejected.
+
+Still open: the A/B fork. catalogue-import and reader-import share ~400
+byte-identical JS lines with no shared partial, and every change here widens
+that gap. Extracting a shared partial + one JS asset is the next cleanup.
