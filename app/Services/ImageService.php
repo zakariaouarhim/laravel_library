@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -46,6 +47,50 @@ class ImageService
         }
     }
 
+    /**
+     * Fetch remote image bytes, or null.
+     *
+     * Uses the HTTP client (curl) instead of file_get_contents(): PHP's http
+     * wrapper puts the path into the request line verbatim, so a URL carrying
+     * raw UTF-8 — aseeralkotb.com names every cover file in Arabic — produces a
+     * malformed request and fails outright. Covers from every other source are
+     * plain ASCII, which is why this only ever showed up on أسير الكتب rows.
+     */
+    private function fetchImageBytes(string $url): ?string
+    {
+        try {
+            $response = Http::timeout(25)->get($this->encodeUrlPath($url));
+
+            return $response->successful() && $response->body() !== '' ? $response->body() : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Percent-encode a URL path that contains non-ASCII bytes, so the request is
+     * valid whatever client sends it. ASCII URLs (every other cover source, plus
+     * anything already encoded) are returned untouched — encoding those again
+     * would turn their "%" into "%25" and break them.
+     */
+    private function encodeUrlPath(string $url): string
+    {
+        if (!preg_match('/[^\x20-\x7E]/', $url)) {
+            return $url;
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false || empty($parts['host']) || empty($parts['path'])) {
+            return $url;
+        }
+
+        $encoded = ($parts['scheme'] ?? 'https') . '://' . $parts['host']
+            . (empty($parts['port']) ? '' : ':' . $parts['port'])
+            . implode('/', array_map('rawurlencode', explode('/', $parts['path'])));
+
+        return $encoded . (empty($parts['query']) ? '' : '?' . $parts['query']);
+    }
+
     public function downloadFromUrl(string $url, string $destinationDir, string $filenamePrefix, float $zoomW = 1.0, float $zoomH = 1.0): ?string
     {
         try {
@@ -53,13 +98,13 @@ class ImageService
             $highQualityUrl = str_replace('zoom=1', 'zoom=2', $url);
             $highQualityUrl = str_replace('&edge=curl', '', $highQualityUrl);
 
-            $imageContent = @file_get_contents($highQualityUrl);
-            if ($imageContent === false) {
-                $imageContent = @file_get_contents($url);
+            $imageContent = $this->fetchImageBytes($highQualityUrl);
+            if ($imageContent === null && $highQualityUrl !== $url) {
+                $imageContent = $this->fetchImageBytes($url);
             }
 
-            if ($imageContent === false) {
-                throw new \Exception('Failed to download image from URL');
+            if ($imageContent === null) {
+                throw new \Exception('Failed to download image from URL: ' . $url);
             }
 
             $filename = $filenamePrefix . '_' . time() . '.webp';
