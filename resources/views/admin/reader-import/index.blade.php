@@ -107,6 +107,16 @@
         .esrc-val { color: #374151; overflow: hidden; }
         .esrc img { width: 46px; height: 64px; object-fit: cover; border-radius: 4px; }
         .esrc-ignore .esrc-label { color: #9ca3af; }
+        /* How well the sources back a value up: green = 2+ sources agree,
+           amber = only one source had it, red = sources disagree. */
+        .esrc-agree { border-right: 3px solid #16a34a; }
+        .esrc-conflict { border-right: 3px solid #dc2626; }
+        .esrc-unverified { border-right: 3px solid #f59e0b; }
+        .esrc-badge { font-size: .66rem; font-weight: 700; margin-right: 4px; flex-shrink: 0; }
+        .esrc-agree .esrc-badge { color: #16a34a; }
+        .esrc-conflict .esrc-badge { color: #dc2626; }
+        .esrc-unverified .esrc-badge { color: #b45309; }
+        .enrich-legend { font-size: .7rem; color: #6b7280; margin-bottom: 6px; }
 
         .cat-box { max-height: 260px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 8px; margin-top: 4px; }
         .cat-row { display: flex; align-items: center; gap: 6px; padding: 1px 0; font-size: .85rem; }
@@ -203,6 +213,7 @@
                 <div class="row2">
                     <div><label>المؤلف</label>
                         <div class="ac-wrap"><input class="field" id="mAuthor" placeholder="غير معروف" autocomplete="off"><div class="ac-list" id="mAuthorAC"></div></div>
+                        <small id="mAuthorHint" style="font-size:.7rem;color:#6b7280"></small>
                     </div>
                     <div><label>ISBN</label><input class="field" id="mIsbn" placeholder="—"></div>
                 </div>
@@ -250,6 +261,12 @@
         const SEARCH_AUTHORS = '{{ route('admin.search.authors') }}';
         const SEARCH_PUBLISHERS = '{{ route('admin.search.publishers') }}';
         const LANGS = { arabic: 'العربية', english: 'الإنجليزية', french: 'الفرنسية' };
+        // How much the sources back a value up (set by EnrichPreviewService).
+        const AGREE_MARK = {
+            agree:      { icon: '✓✓', title: 'مصدران أو أكثر متفقان على هذه القيمة' },
+            conflict:   { icon: '≠',  title: 'المصادر غير متفقة — تحقّق قبل الاختيار' },
+            unverified: { icon: '!',  title: 'مصدر واحد فقط أورد هذه القيمة' },
+        };
 
         let status = 'pending';
         let page = 1;
@@ -406,7 +423,8 @@
 
         function approvePayload(b) {
             return {
-                name: b.name, author: b.author, isbn: b.isbn, page_num: b.page_num,
+                name: b.name, author: b.author, author_id: b.author_id || null,
+                isbn: b.isbn, page_num: b.page_num,
                 publisher: b.publisher, language: b.language, price: b.price,
                 quantity: b.quantity, description: b.description,
                 category_ids: b.category_ids, primary_category_id: b.primary_category_id,
@@ -447,6 +465,9 @@
             if (!el) return;
             const card = el.closest('.card');
             STATE[card.dataset.id][el.dataset.f] = el.value;
+            // The card's author field has no autocomplete, so typing here can't
+            // keep a binding made in the modal.
+            if (el.dataset.f === 'author') STATE[card.dataset.id].author_id = null;
         });
 
         grid.addEventListener('click', async (e) => {
@@ -502,6 +523,16 @@
         const overlay = document.getElementById('overlay');
         let modalId = null;
         let modalCats = { ids: new Set(), primary: null };
+        let modalAuthorId = null;   // set only by picking from the autocomplete
+
+        function updateAuthorHint() {
+            const el = $('mAuthorHint');
+            if (!el) return;
+            el.textContent = modalAuthorId
+                ? '🔗 مرتبط بمؤلف موجود — لن يُنشأ مؤلف جديد'
+                : 'اختر من القائمة لربطه بمؤلف موجود ومنع التكرار';
+            el.style.color = modalAuthorId ? '#16a34a' : '#6b7280';
+        }
 
         const $ = id => document.getElementById(id);
 
@@ -574,6 +605,9 @@
             $('mEnrichPanel').innerHTML = '';
             $('mFile').value = '';
 
+            modalAuthorId = b.author_id || null;
+            updateAuthorHint();
+
             modalCats.ids = new Set((b.category_ids || []).map(Number));
             modalCats.primary = b.primary_category_id || null;
             buildCatBox();
@@ -586,6 +620,7 @@
             const b = STATE[modalId];
             b.name = $('mName').value;
             b.author = $('mAuthor').value;
+            b.author_id = modalAuthorId;
             b.isbn = $('mIsbn').value;
             b.language = $('mLang').value;
             b.price = $('mPrice').value;
@@ -690,8 +725,11 @@
                     const preview = key === 'image'
                         ? `<img src="${esc(o.value)}" alt="">`
                         : esc(String(key === 'language' && LANGS[o.value] ? LANGS[o.value] : o.value).slice(0, 140));
-                    optsHtml += `<label class="esrc">
+                    // agreement is absent for description/image, which aren't compared.
+                    const mark = AGREE_MARK[o.agreement];
+                    optsHtml += `<label class="esrc ${o.agreement ? 'esrc-' + o.agreement : ''}">
                         <input type="radio" name="ef_${key}" data-key="${key}" data-idx="${i}" ${i === 0 ? 'checked' : ''}>
+                        ${mark ? `<span class="esrc-badge" title="${esc(mark.title)}">${mark.icon}</span>` : ''}
                         <span class="esrc-label">${esc(o.label)}</span><span class="esrc-val">${preview}</span></label>`;
                 });
                 optsHtml += `<label class="esrc esrc-ignore">
@@ -701,7 +739,8 @@
             }
             panel.dataset.fields = JSON.stringify(f);
             const srcList = (res.data.sources || []).join('، ');
-            panel.innerHTML = rows + `<button type="button" class="mbtn api" id="mApplyEnrich" style="margin-top:10px">تطبيق المحدد</button>
+            panel.innerHTML = `<div class="enrich-legend">✓✓ مصدران متفقان · ≠ المصادر مختلفة · ! مصدر واحد فقط</div>`
+                + rows + `<button type="button" class="mbtn api" id="mApplyEnrich" style="margin-top:10px">تطبيق المحدد</button>
                 <div style="font-size:.72rem;color:#6b7280;margin-top:4px">المصادر: ${esc(srcList) || '—'}</div>`;
             panel.classList.add('open');
         });
@@ -774,7 +813,9 @@
         document.getElementById('loadMore').addEventListener('click', () => fetchPage(false));
 
         // ---- author / publisher autocomplete (reuses the admin search endpoints) ----
-        function attachAutocomplete(input, list, url) {
+        // onPick(item|null): fires with the chosen row, or null the moment the
+        // admin types again — callers use it to bind/unbind a real record id.
+        function attachAutocomplete(input, list, url, onPick) {
             let timer, items = [], active = -1;
 
             const close = () => { list.classList.remove('open'); active = -1; };
@@ -785,10 +826,15 @@
                     `</div>`
                 ).join('');
             };
-            const choose = (i) => { if (items[i]) input.value = items[i].name; close(); };
+            const choose = (i) => {
+                if (items[i]) { input.value = items[i].name; if (onPick) onPick(items[i]); }
+                close();
+            };
 
             input.addEventListener('input', () => {
                 clearTimeout(timer);
+                // Typing breaks the binding: the text may no longer be that record.
+                if (onPick) onPick(null);
                 const term = input.value.trim();
                 if (term.length < 1) { close(); return; }
                 timer = setTimeout(async () => {
@@ -818,7 +864,12 @@
 
             input.addEventListener('blur', () => setTimeout(close, 150));
         }
-        attachAutocomplete($('mAuthor'), $('mAuthorAC'), SEARCH_AUTHORS);
+        // Binding the picked author by id is what stops a spelling variant from
+        // creating a second Author row at approve time.
+        attachAutocomplete($('mAuthor'), $('mAuthorAC'), SEARCH_AUTHORS, (item) => {
+            modalAuthorId = item ? item.id : null;
+            updateAuthorHint();
+        });
         attachAutocomplete($('mPublisher'), $('mPublisherAC'), SEARCH_PUBLISHERS);
 
         reload();

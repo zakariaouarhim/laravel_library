@@ -6,6 +6,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\PublishingHouse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Shared "create a real Book from a reviewed import row" logic, used by both the
@@ -52,13 +53,34 @@ class BookImportService
         // Keep model events (slug, observers) but don't hard-depend on Meilisearch
         // during the multi-step create: the intermediate saves shouldn't each hit
         // the index. We index once, after commit, below.
-        $book = Book::withoutSyncingToSearch(fn() => DB::transaction(function () use ($data, $cover, $rewrite, $afterCreate) {
-            $authorId = null;
-            if (!empty($data['author'])) {
-                $authorId = Author::firstOrCreate(
-                    ['name' => trim($data['author'])],
-                    ['status' => 'active']
-                )->id;
+        // By reference, so the post-commit enrichment below knows whether this
+        // import actually created a new author. A normal closure, not an arrow
+        // fn: arrow functions capture by value and the reference wouldn't carry.
+        $newAuthorId = null;
+
+        $book = Book::withoutSyncingToSearch(function () use ($data, $cover, $rewrite, $afterCreate, &$newAuthorId) {
+            return DB::transaction(function () use ($data, $cover, $rewrite, $afterCreate, &$newAuthorId) {
+            // An author_id means the admin picked an existing author from the
+            // autocomplete, which is the only thing that reliably prevents a
+            // spelling variant creating a second Author row — firstOrCreate
+            // below matches on the exact string. The name must still agree, so
+            // a stale binding (picked, then edited) falls back to the name.
+            $authorId   = null;
+            $authorName = trim((string) ($data['author'] ?? ''));
+            if ($authorName !== '' && !empty($data['author_id'])) {
+                $bound = Author::find($data['author_id']);
+                if ($bound && mb_strtolower(trim($bound->name)) === mb_strtolower($authorName)) {
+                    $authorId = $bound->id;
+                } else {
+                    Log::info("BookImportService: dropped author binding #{$data['author_id']} for '{$authorName}' (name mismatch)");
+                }
+            }
+            if (!$authorId && $authorName !== '') {
+                $author   = Author::firstOrCreate(['name' => $authorName], ['status' => 'active']);
+                $authorId = $author->id;
+                if ($author->wasRecentlyCreated) {
+                    $newAuthorId = $author->id;
+                }
             }
 
             $publisherId = null;
@@ -110,7 +132,20 @@ class BookImportService
             }
 
             return $book;
-        }));
+            });
+        });
+
+        // A brand-new author starts as just a name. Enrich it (bio, avatar,
+        // nationality) the way the retired API-ingest flow did — but AFTER the
+        // commit, not inside the transaction as that one did: enrichAuthor()
+        // makes external HTTP calls, which must never hold a transaction open.
+        if ($newAuthorId) {
+            try {
+                app(AuthorEnrichmentService::class)->enrichAuthor(Author::find($newAuthorId));
+            } catch (\Throwable $e) {
+                Log::warning("BookImportService: author enrichment failed for #{$newAuthorId}: " . $e->getMessage());
+            }
+        }
 
         // Index the freshly-created book so public (Meilisearch) search finds it
         // immediately — without this, imported books show in the admin (DB) but

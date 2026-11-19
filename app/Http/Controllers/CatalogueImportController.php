@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\CatalogueReference;
 use App\Models\CatalogueReview;
 use App\Services\BookImportService;
+use App\Services\BookIngestionService;
+use App\Services\CatalogueDraftService;
 use App\Services\CategoryKeywordSuggester;
 use App\Services\DescriptionRewriteService;
 use App\Services\EnrichPreviewService;
@@ -54,7 +56,7 @@ class CatalogueImportController extends Controller
             'min_completeness' => 'nullable|integer|min:0|max:8',
             'has_description'  => 'nullable|boolean',
             'hide_in_store'    => 'nullable|boolean',
-            'source'           => 'nullable|in:almouggar,bod,lm,ak',
+            'source'           => 'nullable|in:almouggar,bod,lm,ak,api',
         ]);
 
         $status = $data['status'] ?? 'pending';
@@ -73,10 +75,12 @@ class CatalogueImportController extends Controller
             ->when(($data['source'] ?? '') === 'bod', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'bod:%'))
             ->when(($data['source'] ?? '') === 'lm', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'lm:%'))
             ->when(($data['source'] ?? '') === 'ak', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'ak:%'))
+            ->when(($data['source'] ?? '') === 'api', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'api:%'))
             ->when(($data['source'] ?? '') === 'almouggar', fn($q) => $q
                 ->where('catalogue_reference.dedup_key', 'not like', 'bod:%')
                 ->where('catalogue_reference.dedup_key', 'not like', 'lm:%')
-                ->where('catalogue_reference.dedup_key', 'not like', 'ak:%'))
+                ->where('catalogue_reference.dedup_key', 'not like', 'ak:%')
+                ->where('catalogue_reference.dedup_key', 'not like', 'api:%'))
             ->when(!empty($data['language']), fn($q) => $q->where('catalogue_reference.langue', 'like', '%' . self::LANG_FILTER[$data['language']] . '%'))
             ->when(!empty($data['has_description']), fn($q) => $q->whereNotNull('catalogue_reference.description')->where('catalogue_reference.description', '<>', ''))
             ->when(!empty($data['q']), function ($q) use ($data) {
@@ -147,6 +151,172 @@ class CatalogueImportController extends Controller
             'status'      => $r->review_status ?: 'pending',
             'book_id'     => $r->review_book_id,
         ];
+    }
+
+    /**
+     * "Find this book" step 1: answer which kind of "not found" this is, before
+     * spending ~30s of API calls. The grid hides rows by default (hide_in_store
+     * and completeness >= 7), so a book the admin can't see may well be sitting
+     * in the store already, or in the catalogue just below the quality cut —
+     * and API-creating it in either case makes a duplicate.
+     */
+    public function find(Request $request, CategoryKeywordSuggester $suggester): JsonResponse
+    {
+        $data = $request->validate([
+            'q' => 'required|string|max:191',
+        ]);
+        $q    = trim($data['q']);
+        $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $q) . '%';
+        $isbn = BookImportService::normalizeIsbn($q);
+
+        // Deliberately a direct query rather than BookSearchService::searchForAdmin:
+        // that one needs Meilisearch up and selects cost_price, which must not
+        // reach the browser.
+        $inStore = Book::query()
+            ->when($isbn, fn($b) => $b->where('isbn', $isbn), fn($b) => $b->where('title', 'like', $like))
+            ->with('primaryAuthor:id,name')
+            ->limit(5)
+            ->get(['id', 'title', 'isbn', 'image', 'author_id', 'quantity'])
+            ->map(fn($b) => [
+                'id'       => $b->id,
+                'title'    => $b->title,
+                'isbn'     => $b->isbn,
+                'author'   => $b->primaryAuthor->name ?? null,
+                'image'    => $b->image,
+                'quantity' => $b->quantity,
+                // There is no per-product edit route; the products list pre-fills
+                // its search box from ?search= (product.blade.php:68).
+                'edit_url' => route('admin.products.index', ['search' => $b->isbn ?: $b->title]),
+            ]);
+
+        // The catalogue, with every dashboard filter deliberately OFF.
+        $rows = CatalogueReference::query()
+            ->leftJoin('catalogue_reviews', 'catalogue_reviews.catalogue_reference_id', '=', 'catalogue_reference.id')
+            ->select('catalogue_reference.*', 'catalogue_reviews.status as review_status', 'catalogue_reviews.book_id as review_book_id')
+            ->where(fn($w) => $w->where('catalogue_reference.title', 'like', $like)
+                ->orWhere('catalogue_reference.author', 'like', $like)
+                ->orWhere('catalogue_reference.isbn', 'like', $like))
+            ->orderByDesc('catalogue_reference.completeness')
+            ->limit(12)
+            ->get();
+
+        $inCatalogue = $rows->map(fn($r) => $this->present($r, [], $suggester) + [
+            'source' => $this->sourceOf($r->dedup_key),
+        ]);
+
+        return response()->json([
+            'success'       => true,
+            'query'         => $q,
+            'in_store'      => $inStore,
+            'in_catalogue'  => $inCatalogue,
+            // Only worth paying for the APIs when our own data has nothing.
+            'suggest_api'   => $inStore->isEmpty() && $inCatalogue->isEmpty(),
+        ]);
+    }
+
+    /**
+     * "Find this book" step 2: query the web sources and return ONE merged draft
+     * (they all describe the same book). Read-only — nothing is written until
+     * the admin adopts it. resolveSources* are the fetch-only variants, 24h
+     * cached, and they carry the Google 503 retry.
+     */
+    public function apiSearch(Request $request, BookIngestionService $ingestion, CatalogueDraftService $drafts): JsonResponse
+    {
+        $data = $request->validate([
+            'title'    => 'nullable|string|max:191',
+            'author'   => 'nullable|string|max:191',
+            'isbn'     => 'nullable|string|max:32',
+            'language' => 'required|in:arabic,english,french,spanish,german',
+        ]);
+
+        $title  = trim((string) ($data['title'] ?? ''));
+        $author = trim((string) ($data['author'] ?? ''));
+        $isbn   = BookImportService::normalizeIsbn($data['isbn'] ?? null);
+        $isbn   = $isbn && in_array(strlen($isbn), [10, 13], true) ? $isbn : null;
+
+        if ($title === '' && !$isbn) {
+            return response()->json(['success' => false, 'message' => 'أدخل عنوانًا أو ISBN للبحث.'], 422);
+        }
+
+        try {
+            $sources = $isbn
+                ? $ingestion->resolveSourcesByIsbn($isbn, $data['language'])
+                : $ingestion->resolveSources($title, $author, $data['language']);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => 'تعذّر الاتصال بالمصادر: ' . $e->getMessage()], 502);
+        }
+
+        if ($sources === []) {
+            return response()->json([
+                'success' => true,
+                'found'   => false,
+                'message' => 'لم يتم العثور على الكتاب في أي مصدر.',
+            ]);
+        }
+
+        $draft = $drafts->mergeSources($sources, $title, $author);
+
+        return response()->json([
+            'success'       => true,
+            'found'         => true,
+            'search_method' => $isbn ? 'ISBN' : 'title+author',
+            'sources'       => array_keys($sources),
+            'draft'         => $draft,
+            'language'      => $data['language'],
+        ]);
+    }
+
+    /**
+     * "Find this book" step 3: persist the draft as an `api:` catalogue row and
+     * hand back the same payload the grid uses, so the frontend can drop the
+     * card straight in — which also sidesteps the default completeness filter
+     * hiding a fresh row.
+     */
+    public function adopt(Request $request, CatalogueDraftService $drafts, CategoryKeywordSuggester $suggester): JsonResponse
+    {
+        $data = $request->validate([
+            'title'       => 'required|string|max:191',
+            'author'      => 'nullable|string|max:191',
+            'isbn'        => 'nullable|string|max:32',
+            'description' => 'nullable|string',
+            'publisher'   => 'nullable|string|max:191',
+            'pages'       => 'nullable|integer|min:0|max:100000',
+            'cover_url'   => 'nullable|url|max:2000',
+            'category'    => 'nullable|string|max:191',
+            'language'    => 'required|in:arabic,english,french,spanish,german',
+        ]);
+
+        try {
+            $row = $drafts->adopt($data, $data['language']);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        // Re-read through the same leftJoin the grid uses, so review state is present.
+        $presented = CatalogueReference::query()
+            ->leftJoin('catalogue_reviews', 'catalogue_reviews.catalogue_reference_id', '=', 'catalogue_reference.id')
+            ->select('catalogue_reference.*', 'catalogue_reviews.status as review_status', 'catalogue_reviews.book_id as review_book_id')
+            ->where('catalogue_reference.id', $row->id)
+            ->first();
+
+        $inStore = $row->isbn && Book::where('isbn', $row->isbn)->exists() ? [$row->isbn => true] : [];
+
+        return response()->json([
+            'success' => true,
+            'book'    => $this->present($presented, $inStore, $suggester),
+        ]);
+    }
+
+    /** dedup_key prefix -> the source key the dashboard filter uses. */
+    private function sourceOf(?string $dedupKey): string
+    {
+        foreach (['bod', 'lm', 'ak', 'api'] as $prefix) {
+            if (str_starts_with((string) $dedupKey, $prefix . ':')) {
+                return $prefix;
+            }
+        }
+
+        return 'almouggar';
     }
 
     /** Enrich preview from all sources (shared with reader-import). */
@@ -242,6 +412,7 @@ class CatalogueImportController extends Controller
         $data = $request->validate([
             'name'                => 'required|string|max:500',
             'author'              => 'nullable|string|max:300',
+            'author_id'           => 'nullable|integer|exists:authors,id',
             'isbn'                => 'nullable|string|max:20',
             'page_num'            => 'nullable|integer|min:0',
             'publisher'           => 'nullable|string|max:300',

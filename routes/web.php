@@ -99,6 +99,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     // Catalogue import (browse the ~81k reference catalogue -> real catalogue)
     Route::get('/catalogue-import',                    [CatalogueImportController::class, 'index'])->name('catalogue-import.index');
     Route::get('/catalogue-import/list',               [CatalogueImportController::class, 'list'])->name('catalogue-import.list');
+    // "Find this book": check our own data, then the web sources, then adopt the
+    // result as an `api:` catalogue row. Literal paths, so they must stay above
+    // the {catalogue} routes below.
+    Route::post('/catalogue-import/find',              [CatalogueImportController::class, 'find'])->name('catalogue-import.find');
+    Route::post('/catalogue-import/api-search',        [CatalogueImportController::class, 'apiSearch'])->name('catalogue-import.api-search');
+    Route::post('/catalogue-import/adopt',             [CatalogueImportController::class, 'adopt'])->name('catalogue-import.adopt');
     Route::post('/catalogue-import/{catalogue}/enrich-preview', [CatalogueImportController::class, 'enrichPreview'])->name('catalogue-import.enrich-preview');
     Route::post('/catalogue-import/{catalogue}/rewrite', [CatalogueImportController::class, 'rewriteDescription'])->name('catalogue-import.rewrite');
     Route::post('/catalogue-import/{catalogue}/image',  [CatalogueImportController::class, 'uploadImage'])->name('catalogue-import.image-upload');

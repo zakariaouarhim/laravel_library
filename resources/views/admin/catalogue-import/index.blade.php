@@ -62,6 +62,31 @@
         .status-line.skipped { color: #dc2626; background: #fef2f2; }
         .status-line a.relink { font-weight: 600; text-decoration: underline; margin-right: 6px; }
 
+        /* "Find this book": our own data first, then the web sources. */
+        .find-btn { padding: 7px 14px; border: 1px solid #c7d2fe; background: #eef2ff; color: #1d4ed8; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: .85rem; font-family: inherit; }
+        .find-btn:hover { background: #e0e7ff; }
+        .find-btn.big { margin-top: 14px; padding: 11px 22px; font-size: .95rem; }
+        .find-step { border-top: 1px solid #eef0f3; padding: 14px 0 0; margin-top: 14px; }
+        .find-step:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+        .find-step h4 { font-size: .95rem; margin-bottom: 8px; }
+        .find-note { font-size: .82rem; color: #6b7280; margin-bottom: 8px; }
+        .find-hit { display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 6px; background: #fff; }
+        .find-hit img, .find-hit .ph { width: 38px; height: 54px; object-fit: cover; border-radius: 4px; background: #e5e7eb; flex-shrink: 0; }
+        .find-hit .h-main { flex: 1; min-width: 0; font-size: .86rem; }
+        .find-hit .h-sub { color: #6b7280; font-size: .76rem; }
+        .find-hit a, .find-hit button { font-size: .78rem; font-weight: 700; white-space: nowrap; }
+        .find-verdict { padding: 9px 12px; border-radius: 8px; font-size: .86rem; font-weight: 600; margin-bottom: 10px; }
+        .fv-store { background: #fef3c7; color: #92400e; }
+        .fv-cat { background: #dbeafe; color: #1d4ed8; }
+        .fv-none { background: #f0fdf4; color: #15803d; }
+        .find-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+        .find-grid > div { flex: 1 1 150px; }
+        .draft-box { display: flex; gap: 14px; padding: 12px; border: 1px solid #bfdbfe; background: #f8fbff; border-radius: 8px; }
+        .draft-box img, .draft-box .ph { width: 92px; height: 132px; object-fit: cover; border-radius: 6px; background: #e5e7eb; flex-shrink: 0; }
+        .draft-f { font-size: .84rem; margin-bottom: 3px; }
+        .draft-f b { color: #1d4ed8; }
+        .draft-src { font-size: .74rem; color: #6b7280; margin-top: 6px; }
+
         .center { text-align: center; margin: 26px 0; }
         .load-more { padding: 10px 28px; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-weight: 700; cursor: pointer; }
         .empty { text-align: center; padding: 60px 20px; color: #6b7280; }
@@ -111,6 +136,16 @@
         .esrc-val { color: #374151; overflow: hidden; }
         .esrc img { width: 46px; height: 64px; object-fit: cover; border-radius: 4px; }
         .esrc-ignore .esrc-label { color: #9ca3af; }
+        /* How well the sources back a value up: green = 2+ sources agree,
+           amber = only one source had it, red = sources disagree. */
+        .esrc-agree { border-right: 3px solid #16a34a; }
+        .esrc-conflict { border-right: 3px solid #dc2626; }
+        .esrc-unverified { border-right: 3px solid #f59e0b; }
+        .esrc-badge { font-size: .66rem; font-weight: 700; margin-right: 4px; flex-shrink: 0; }
+        .esrc-agree .esrc-badge { color: #16a34a; }
+        .esrc-conflict .esrc-badge { color: #dc2626; }
+        .esrc-unverified .esrc-badge { color: #b45309; }
+        .enrich-legend { font-size: .7rem; color: #6b7280; margin-bottom: 6px; }
 
         .cat-box { max-height: 260px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 8px; margin-top: 4px; }
         .cat-row { display: flex; align-items: center; gap: 6px; padding: 1px 0; font-size: .85rem; }
@@ -204,9 +239,11 @@
                 <option value="bod">BooksOnDemand</option>
                 <option value="lm">Livremoi</option>
                 <option value="ak">أسير الكتب</option>
+                <option value="api">بحث API</option>
             </select>
             <label class="chk"><input type="checkbox" id="fDesc"> بوصف فقط</label>
             <label class="chk"><input type="checkbox" id="fStore" checked> إخفاء المتوفر بالمتجر</label>
+            <button type="button" class="find-btn" id="findBtn">🔎 لم تجد الكتاب؟</button>
         </div>
         <div class="toolbar">
             <div class="filters">
@@ -219,12 +256,65 @@
     </div>
 
     <div class="grid" id="grid"></div>
-    <div class="empty" id="empty" style="display:none;">لا توجد عناصر لعرضها.</div>
+    <div class="empty" id="empty" style="display:none;">
+        <p>لا توجد عناصر لعرضها.</p>
+        <button type="button" class="find-btn big" id="findBtnEmpty">🔎 ابحث عن الكتاب في المتجر والمصادر</button>
+    </div>
     <div class="center" id="moreWrap" style="display:none;">
         <button class="load-more" id="loadMore">تحميل المزيد</button>
     </div>
     </div><!-- /.main-content -->
     <div class="toast" id="toast"></div>
+
+    <!-- "Find this book" panel: our own data first, then the web sources -->
+    <div class="overlay" id="findOverlay">
+      <div class="modal" style="max-width:720px">
+        <div class="modal-head">
+            <h3>البحث عن كتاب</h3>
+            <button type="button" id="fClose">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="find-step">
+                <h4>١. ابحث في بياناتنا أولًا</h4>
+                <div class="find-note">مجاني وفوري — قبل استهلاك المصادر الخارجية.</div>
+                <div class="find-grid">
+                    <div style="flex:3 1 260px"><input class="field" id="fQuery" placeholder="العنوان أو ISBN"></div>
+                    <div><button type="button" class="mbtn" id="fLookup" style="margin-top:0">ابحث</button></div>
+                </div>
+                <div id="fLocal" style="margin-top:10px"></div>
+            </div>
+            <div class="find-step" id="fApiStep" style="display:none">
+                <h4>٢. ابحث في المصادر الخارجية</h4>
+                <div class="find-note">BNF و Google Books و Open Library و Wikipedia. قد يستغرق حتى ٣٠ ثانية.</div>
+                <div class="find-grid">
+                    <div><label>العنوان</label><input class="field" id="fTitle"></div>
+                    <div><label>المؤلف</label><input class="field" id="fAuthor" placeholder="اختياري"></div>
+                </div>
+                <div class="find-grid" style="margin-top:6px">
+                    <div><label>ISBN</label><input class="field" id="fIsbn" placeholder="اختياري — أدقّ نتيجة"></div>
+                    <div><label>اللغة</label><select class="field" id="fApiLang">
+                        <option value="arabic">العربية</option>
+                        <option value="french">الفرنسية</option>
+                        <option value="english">الإنجليزية</option>
+                        <option value="spanish">الإسبانية</option>
+                        <option value="german">الألمانية</option>
+                    </select></div>
+                </div>
+                <button type="button" class="mbtn api" id="fApiGo">ابحث في المصادر</button>
+                <div id="fApiStatus" class="find-note" style="margin-top:6px"></div>
+            </div>
+            <div class="find-step" id="fDraftStep" style="display:none">
+                <h4>٣. النتيجة</h4>
+                <div class="find-note">أضِفها للمراجعة ثم أكمل التصنيف والسعر والغلاف كالمعتاد.</div>
+                <div id="fDraft"></div>
+                <button type="button" class="mbtn api" id="fAdopt" style="margin-top:10px">➕ أضِف للمراجعة</button>
+            </div>
+            <div class="find-note" style="margin-top:14px;border-top:1px solid #eef0f3;padding-top:10px">
+                للإضافة الجماعية من ملف CSV: <code dir="ltr">php artisan books:ingest list.csv --language=arabic</code>
+            </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Detail modal -->
     <div class="overlay" id="overlay">
@@ -258,6 +348,7 @@
                 <div class="row2">
                     <div><label>المؤلف</label>
                         <div class="ac-wrap"><input class="field" id="mAuthor" placeholder="غير معروف" autocomplete="off"><div class="ac-list" id="mAuthorAC"></div></div>
+                        <small id="mAuthorHint" style="font-size:.7rem;color:#6b7280"></small>
                     </div>
                     <div><label>ISBN</label><input class="field" id="mIsbn" placeholder="—"></div>
                 </div>
@@ -307,9 +398,18 @@
         const CSRF = document.querySelector('meta[name="csrf-token"]').content;
         const BASE = '{{ url('admin/catalogue-import') }}';
         const LIST_URL = '{{ route('admin.catalogue-import.list') }}';
+        const FIND_URL = '{{ route('admin.catalogue-import.find') }}';
+        const API_SEARCH_URL = '{{ route('admin.catalogue-import.api-search') }}';
+        const ADOPT_URL = '{{ route('admin.catalogue-import.adopt') }}';
         const SEARCH_AUTHORS = '{{ route('admin.search.authors') }}';
         const SEARCH_PUBLISHERS = '{{ route('admin.search.publishers') }}';
         const LANGS = { arabic: 'العربية', english: 'الإنجليزية', french: 'الفرنسية' };
+        // How much the sources back a value up (set by EnrichPreviewService).
+        const AGREE_MARK = {
+            agree:      { icon: '✓✓', title: 'مصدران أو أكثر متفقان على هذه القيمة' },
+            conflict:   { icon: '≠',  title: 'المصادر غير متفقة — تحقّق قبل الاختيار' },
+            unverified: { icon: '!',  title: 'مصدر واحد فقط أورد هذه القيمة' },
+        };
 
         let status = 'pending';
         let page = 1;
@@ -482,7 +582,8 @@
 
         function approvePayload(b) {
             return {
-                name: b.name, author: b.author, isbn: b.isbn, page_num: b.page_num,
+                name: b.name, author: b.author, author_id: b.author_id || null,
+                isbn: b.isbn, page_num: b.page_num,
                 publisher: b.publisher, language: b.language, price: b.price,
                 quantity: b.quantity, description: b.description,
                 category_ids: b.category_ids, primary_category_id: b.primary_category_id,
@@ -528,6 +629,9 @@
             if (!el) return;
             const card = el.closest('.card');
             STATE[card.dataset.id][el.dataset.f] = el.value;
+            // The card's author field has no autocomplete, so typing here can't
+            // keep a binding made in the modal.
+            if (el.dataset.f === 'author') STATE[card.dataset.id].author_id = null;
         });
 
         grid.addEventListener('click', async (e) => {
@@ -575,6 +679,16 @@
         const overlay = document.getElementById('overlay');
         let modalId = null;
         let modalCats = { ids: new Set(), primary: null };
+        let modalAuthorId = null;   // set only by picking from the autocomplete
+
+        function updateAuthorHint() {
+            const el = $('mAuthorHint');
+            if (!el) return;
+            el.textContent = modalAuthorId
+                ? '🔗 مرتبط بمؤلف موجود — لن يُنشأ مؤلف جديد'
+                : 'اختر من القائمة لربطه بمؤلف موجود ومنع التكرار';
+            el.style.color = modalAuthorId ? '#16a34a' : '#6b7280';
+        }
 
         const $ = id => document.getElementById(id);
 
@@ -682,6 +796,9 @@
             $('mEnrichPanel').innerHTML = '';
             $('mFile').value = '';
 
+            modalAuthorId = b.author_id || null;
+            updateAuthorHint();
+
             modalCats.ids = new Set((b.category_ids || []).map(Number));
             modalCats.primary = b.primary_category_id || null;
             buildCatBox();
@@ -696,6 +813,7 @@
             b._imgZoomH = modalZoom.h;
             b.name = $('mName').value;
             b.author = $('mAuthor').value;
+            b.author_id = modalAuthorId;
             b.isbn = $('mIsbn').value;
             b.language = $('mLang').value;
             b.price = $('mPrice').value;
@@ -832,8 +950,11 @@
                     const preview = key === 'image'
                         ? `<img src="${esc(o.value)}" alt="">`
                         : esc(String(key === 'language' && LANGS[o.value] ? LANGS[o.value] : o.value).slice(0, 140));
-                    optsHtml += `<label class="esrc">
+                    // agreement is absent for description/image, which aren't compared.
+                    const mark = AGREE_MARK[o.agreement];
+                    optsHtml += `<label class="esrc ${o.agreement ? 'esrc-' + o.agreement : ''}">
                         <input type="radio" name="ef_${key}" data-key="${key}" data-idx="${i}" ${i === 0 ? 'checked' : ''}>
+                        ${mark ? `<span class="esrc-badge" title="${esc(mark.title)}">${mark.icon}</span>` : ''}
                         <span class="esrc-label">${esc(o.label)}</span><span class="esrc-val">${preview}</span></label>`;
                 });
                 optsHtml += `<label class="esrc esrc-ignore">
@@ -843,7 +964,8 @@
             }
             panel.dataset.fields = JSON.stringify(f);
             const srcList = (res.data.sources || []).join('، ');
-            panel.innerHTML = rows + `<button type="button" class="mbtn api" id="mApplyEnrich" style="margin-top:10px">تطبيق المحدد</button>
+            panel.innerHTML = `<div class="enrich-legend">✓✓ مصدران متفقان · ≠ المصادر مختلفة · ! مصدر واحد فقط</div>`
+                + rows + `<button type="button" class="mbtn api" id="mApplyEnrich" style="margin-top:10px">تطبيق المحدد</button>
                 <div style="font-size:.72rem;color:#6b7280;margin-top:4px">المصادر: ${esc(srcList) || '—'}</div>`;
             panel.classList.add('open');
         });
@@ -899,6 +1021,157 @@
             approveBook(id, card);
         });
 
+        // ================== "Find this book" ==================
+        // The grid hides rows by default (hide_in_store + quality >= 7), so
+        // "I can't find it" usually means it's in the store or just below the
+        // quality cut. Check ours first; only then pay for the web sources.
+        const findOverlay = $('findOverlay');
+        let findDraft = null;
+        let findHits = {};   // catalogue hits from step 1, kept out of STATE
+
+        // Drop a fully-presented row straight into the grid, bypassing the list
+        // filters — a fresh api: row scores ~7 and a relaxed search may not match.
+        function injectCard(b) {
+            b.quantity = b.quantity ?? 1;
+            b.category_ids = b.category_ids || [];
+            b._customImage = null;
+            STATE[b.id] = b;
+            const existing = grid.querySelector(`.card[data-id="${b.id}"]`);
+            if (existing) existing.outerHTML = cardHtml(b);
+            else grid.insertAdjacentHTML('afterbegin', cardHtml(b));
+            empty.style.display = 'none';
+        }
+
+        function openFind(prefill) {
+            findDraft = null;
+            $('fQuery').value = prefill || '';
+            $('fLocal').innerHTML = '';
+            $('fApiStep').style.display = 'none';
+            $('fDraftStep').style.display = 'none';
+            $('fApiStatus').textContent = '';
+            findOverlay.classList.add('open');
+            $('fQuery').focus();
+            if (prefill) runLocalFind();
+        }
+        function closeFind() { findOverlay.classList.remove('open'); }
+
+        function hitHtml(img, main, sub, action) {
+            const thumb = img ? `<img src="${esc(img)}" alt="">` : `<div class="ph"></div>`;
+            return `<div class="find-hit">${thumb}
+                <div class="h-main"><div>${esc(main)}</div><div class="h-sub">${esc(sub)}</div></div>
+                ${action}</div>`;
+        }
+
+        async function runLocalFind() {
+            const q = $('fQuery').value.trim();
+            if (q.length < 2) { $('fLocal').innerHTML = '<div class="find-note">أدخل حرفين على الأقل.</div>'; return; }
+            const btn = $('fLookup');
+            btn.disabled = true; btn.textContent = '... جارٍ';
+            const res = await post(FIND_URL, { q });
+            btn.disabled = false; btn.textContent = 'ابحث';
+            const d = res.data || {};
+            if (!d.success) { $('fLocal').innerHTML = `<div class="find-note">${esc(d.message || 'تعذّر البحث')}</div>`; return; }
+
+            const inStore = d.in_store || [], inCat = d.in_catalogue || [];
+            let html = '';
+            if (inStore.length) {
+                html += `<div class="find-verdict fv-store">⚠ موجود بالمتجر بالفعل — لا تُضِفه مرة أخرى.</div>`;
+                inStore.forEach(b => {
+                    html += hitHtml(b.image ? '/' + b.image : null, b.title,
+                        [b.author, b.isbn ? 'ISBN ' + b.isbn : '', 'الكمية: ' + b.quantity].filter(Boolean).join(' • '),
+                        `<a href="${esc(b.edit_url)}" target="_blank">تعديله ↗</a>`);
+                });
+            }
+            if (inCat.length) {
+                html += `<div class="find-verdict fv-cat">موجود في الكتالوج (قد تكون الفلاتر تخفيه).</div>`;
+                findHits = {};
+                inCat.forEach(b => {
+                    findHits[b.id] = b; // so "اعرضها" injects without another request
+                    const st = b.status === 'imported' ? ' • تم استيراده' : (b.status === 'skipped' ? ' • متخطّى' : '');
+                    html += hitHtml(b.cover_url, b.name,
+                        [b.author, b.isbn ? 'ISBN ' + b.isbn : '', 'الجودة ' + b.completeness, b.source].filter(Boolean).join(' • ') + st,
+                        `<button type="button" class="find-btn" data-show="${b.id}">اعرضها</button>`);
+                });
+            }
+            if (d.suggest_api) {
+                html += `<div class="find-verdict fv-none">لا يوجد في المتجر ولا في الكتالوج — ابحث في المصادر الخارجية بالأسفل.</div>`;
+            }
+            $('fLocal').innerHTML = html;
+
+            // Pre-fill step 2 from the query: digits-only -> ISBN, else title.
+            const digits = q.replace(/[^0-9Xx]/g, '');
+            const isIsbn = digits.length === 10 || digits.length === 13;
+            $('fIsbn').value = isIsbn ? digits : '';
+            $('fTitle').value = isIsbn ? '' : q;
+            $('fApiLang').value = filters.language || 'arabic';
+            $('fApiStep').style.display = 'block';
+            $('fDraftStep').style.display = 'none';
+        }
+
+        $('fLocal').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-show]');
+            if (!btn) return;
+            const b = findHits[btn.dataset.show];
+            if (!b) return;
+            injectCard(Object.assign({}, b));
+            closeFind();
+            toast('تم إظهار الكتاب في القائمة');
+        });
+
+        async function runApiSearch() {
+            const btn = $('fApiGo');
+            btn.disabled = true; btn.textContent = '... جارٍ البحث في المصادر';
+            $('fApiStatus').textContent = 'قد يستغرق حتى ٣٠ ثانية — الصفحة تبقى قابلة للاستخدام.';
+            const res = await post(API_SEARCH_URL, {
+                title: $('fTitle').value.trim(), author: $('fAuthor').value.trim(),
+                isbn: $('fIsbn').value.trim(), language: $('fApiLang').value,
+            });
+            btn.disabled = false; btn.textContent = 'ابحث في المصادر';
+            const d = res.data || {};
+            if (!d.success) { $('fApiStatus').textContent = d.message || 'فشل البحث'; $('fDraftStep').style.display = 'none'; return; }
+            if (!d.found) { $('fApiStatus').textContent = d.message || 'لم يتم العثور على الكتاب.'; $('fDraftStep').style.display = 'none'; return; }
+
+            findDraft = Object.assign({}, d.draft, { language: d.language });
+            $('fApiStatus').textContent = `تم العثور عليه عبر ${d.search_method}.`;
+            const f = d.draft;
+            const thumb = f.cover_url ? `<img src="${esc(f.cover_url)}" alt="">` : `<div class="ph"></div>`;
+            const line = (label, val) => val ? `<div class="draft-f"><b>${label}:</b> ${esc(val)}</div>` : '';
+            $('fDraft').innerHTML = `<div class="draft-box">${thumb}<div style="flex:1;min-width:0">
+                ${line('العنوان', f.title)}${line('المؤلف', f.author)}${line('ISBN', f.isbn)}
+                ${line('الناشر', f.publisher)}${line('الصفحات', f.pages)}${line('التصنيف', f.category)}
+                ${f.description ? `<div class="draft-f" style="color:#374151">${esc(String(f.description).slice(0, 220))}…</div>` : '<div class="draft-f" style="color:#b91c1c">لا يوجد وصف — يمكنك إضافته لاحقًا</div>'}
+                <div class="draft-src">المصادر: ${esc(d.sources.join('، '))}</div>
+            </div></div>`;
+            $('fDraftStep').style.display = 'block';
+        }
+
+        async function runAdopt() {
+            if (!findDraft) return;
+            const btn = $('fAdopt');
+            btn.disabled = true; btn.textContent = '... جارٍ الإضافة';
+            const res = await post(ADOPT_URL, findDraft);
+            btn.disabled = false; btn.textContent = '➕ أضِف للمراجعة';
+            const d = res.data || {};
+            if (!d.success) {
+                const errs = d.errors ? Object.values(d.errors).flat().join(' • ') : '';
+                toast(errs || d.message || 'تعذّرت الإضافة');
+                return;
+            }
+            injectCard(d.book);
+            closeFind();
+            toast('تمت الإضافة للمراجعة — أكمل التصنيف والسعر ثم اعتمده');
+            openModal(d.book.id); // straight into review, where the work actually happens
+        }
+
+        $('findBtn').addEventListener('click', () => openFind($('searchBox').value.trim()));
+        $('findBtnEmpty').addEventListener('click', () => openFind($('searchBox').value.trim()));
+        $('fClose').addEventListener('click', closeFind);
+        findOverlay.addEventListener('click', (e) => { if (e.target === findOverlay) closeFind(); });
+        $('fLookup').addEventListener('click', runLocalFind);
+        $('fQuery').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); runLocalFind(); } });
+        $('fApiGo').addEventListener('click', runApiSearch);
+        $('fAdopt').addEventListener('click', runAdopt);
+
         // ---- toolbar ----
         document.querySelectorAll('.filters button').forEach(b => {
             b.addEventListener('click', () => {
@@ -913,9 +1186,10 @@
         $('fComp').addEventListener('change', e => { filters.min_completeness = e.target.value; reload(); });
         $('fSource').addEventListener('change', e => {
             filters.source = e.target.value;
-            // bod (no ISBN) and lm (no description) rows honestly score ~5-7: the
-            // default "quality >= 7" filter would hide most of them. Relax it.
-            if ((filters.source === 'bod' || filters.source === 'lm') && Number(filters.min_completeness) > 5) {
+            // bod (no ISBN), lm (no description), ak and api (no price) rows
+            // honestly score ~5-7: the default "quality >= 7" filter would hide
+            // most of them. Relax it.
+            if (['bod', 'lm', 'ak', 'api'].includes(filters.source) && Number(filters.min_completeness) > 5) {
                 filters.min_completeness = '0';
                 $('fComp').value = '0';
             }
@@ -933,7 +1207,9 @@
         document.getElementById('loadMore').addEventListener('click', () => fetchPage(false));
 
         // ---- author / publisher autocomplete ----
-        function attachAutocomplete(input, list, url) {
+        // onPick(item|null): fires with the chosen row, or null the moment the
+        // admin types again — callers use it to bind/unbind a real record id.
+        function attachAutocomplete(input, list, url, onPick) {
             let timer, items = [], active = -1;
 
             const close = () => { list.classList.remove('open'); active = -1; };
@@ -944,10 +1220,15 @@
                     `</div>`
                 ).join('');
             };
-            const choose = (i) => { if (items[i]) input.value = items[i].name; close(); };
+            const choose = (i) => {
+                if (items[i]) { input.value = items[i].name; if (onPick) onPick(items[i]); }
+                close();
+            };
 
             input.addEventListener('input', () => {
                 clearTimeout(timer);
+                // Typing breaks the binding: the text may no longer be that record.
+                if (onPick) onPick(null);
                 const term = input.value.trim();
                 if (term.length < 1) { close(); return; }
                 timer = setTimeout(async () => {
@@ -977,7 +1258,12 @@
 
             input.addEventListener('blur', () => setTimeout(close, 150));
         }
-        attachAutocomplete($('mAuthor'), $('mAuthorAC'), SEARCH_AUTHORS);
+        // Binding the picked author by id is what stops a spelling variant from
+        // creating a second Author row at approve time.
+        attachAutocomplete($('mAuthor'), $('mAuthorAC'), SEARCH_AUTHORS, (item) => {
+            modalAuthorId = item ? item.id : null;
+            updateAuthorHint();
+        });
         attachAutocomplete($('mPublisher'), $('mPublisherAC'), SEARCH_PUBLISHERS);
 
         reload();

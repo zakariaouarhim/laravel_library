@@ -68,7 +68,7 @@ class EnrichPreviewService
                 return ['status' => 200, 'body' => ['success' => true, 'found' => false, 'message' => 'لم يتم العثور على بيانات في أي مصدر.']];
             }
 
-            $options = function (string $field, ?callable $transform = null) use ($results) {
+            $options = function (string $field, ?callable $transform = null, bool $compare = true) use ($results) {
                 $out = [];
                 foreach (self::PRIORITY as $src) {
                     if (empty($results[$src]) || empty($results[$src][$field])) continue;
@@ -76,12 +76,16 @@ class EnrichPreviewService
                     if ($value === null || $value === '' || $value === 0) continue;
                     $out[] = ['source' => $src, 'label' => self::LABELS[$src], 'value' => $value];
                 }
-                return $out;
+
+                return $compare ? $this->withAgreement($out) : $out;
             };
 
+            // description/image are not compared: free prose never matches across
+            // sources, and every source hosts its cover at its own URL — marking
+            // those "conflict" would be noise, not signal.
             $fields = array_filter([
-                'description' => $options('description', fn($v) => trim(strip_tags($v))),
-                'image'       => $options('image_url'),
+                'description' => $options('description', fn($v) => trim(strip_tags($v)), false),
+                'image'       => $options('image_url', null, false),
                 'page_num'    => $options('page_num', fn($v) => (int) $v > 0 ? (int) $v : null),
                 'publisher'   => $options('publisher', fn($v) => trim($v)),
                 'language'    => $options('language'),
@@ -151,6 +155,41 @@ class EnrichPreviewService
         } catch (\Throwable $e) {
             return [];
         }
+    }
+
+    /**
+     * Tag each option with how far the sources back it up, so the review UI can
+     * colour it: `agree` = at least two sources gave this same value, `conflict`
+     * = several sources answered and this one is the odd answer out,
+     * `unverified` = only one source had the field at all.
+     *
+     * @param  array<int,array{source:string,label:string,value:mixed}> $options
+     * @return array<int,array{source:string,label:string,value:mixed,agreement:string}>
+     */
+    private function withAgreement(array $options): array
+    {
+        $counts = [];
+        foreach ($options as $o) {
+            $counts[$this->comparable($o['value'])] = ($counts[$this->comparable($o['value'])] ?? 0) + 1;
+        }
+
+        $sources = count($options);
+
+        return array_map(function ($o) use ($counts, $sources) {
+            $shared = $counts[$this->comparable($o['value'])] ?? 1;
+            $o['agreement'] = $shared >= 2 ? 'agree' : ($sources >= 2 ? 'conflict' : 'unverified');
+
+            return $o;
+        }, $options);
+    }
+
+    /** Loose key for "is this the same value?" — case/space/punctuation-insensitive. */
+    private function comparable($value): string
+    {
+        $v = mb_strtolower(trim((string) $value));
+        $v = preg_replace('/[\s\p{P}]+/u', '', $v);
+
+        return (string) $v;
     }
 
     /** Normalize an ISBN to 10/13 chars, or null. */

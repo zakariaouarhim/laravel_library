@@ -223,6 +223,7 @@ class ReaderImportController extends Controller
         $data = $request->validate([
             'name'                => 'required|string|max:500',
             'author'              => 'nullable|string|max:300',
+            'author_id'           => 'nullable|integer|exists:authors,id',
             'isbn'                => 'nullable|string|max:20',
             'page_num'            => 'nullable|integer|min:0',
             'publisher'           => 'nullable|string|max:300',
