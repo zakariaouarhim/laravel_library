@@ -65,8 +65,10 @@
         .center { text-align: center; margin: 26px 0; }
         .load-more { padding: 10px 28px; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-weight: 700; cursor: pointer; }
         .empty { text-align: center; padding: 60px 20px; color: #6b7280; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity .25s; z-index: 200; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity .25s; z-index: 200; max-width: min(92vw, 560px); text-align: center; line-height: 1.45; }
         .toast.show { opacity: 1; }
+        /* Warnings must outlast a glance: the book WAS created, but needs a manual fix. */
+        .toast.warn { background: #b45309; font-weight: 600; }
 
         /* Detail modal */
         .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: none; align-items: flex-start; justify-content: center; padding: 24px; z-index: 100; overflow-y: auto; }
@@ -451,11 +453,14 @@
         function reload() { page = 1; fetchPage(true); }
 
         let toastTimer;
-        function toast(msg) {
+        function toast(msg, type) {
             const t = document.getElementById('toast');
-            t.textContent = msg; t.classList.add('show');
+            const warn = type === 'warn';
+            t.textContent = msg;
+            t.classList.toggle('warn', warn);
+            t.classList.add('show');
             clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+            toastTimer = setTimeout(() => t.classList.remove('show'), warn ? 9000 : 2500);
         }
 
         async function post(url, body) {
@@ -505,7 +510,12 @@
                 res = await post(`${BASE}/${id}/approve`, { ...approvePayload(b), force: true });
             }
             card.classList.remove('busy');
-            if (res.data.success) { toast('تم إنشاء الكتاب'); b.status = 'imported'; refreshAfterAction(card); }
+            if (res.data.success) {
+                // A missing cover doesn't fail the import — say so instead of a bare success.
+                toast(res.data.warning || 'تم إنشاء الكتاب', res.data.warning ? 'warn' : null);
+                b.status = 'imported';
+                refreshAfterAction(card);
+            }
             else {
                 const errs = res.data.errors ? Object.values(res.data.errors).flat().join(' • ') : '';
                 toast(errs || res.data.message || 'فشل الاستيراد');

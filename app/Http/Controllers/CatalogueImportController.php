@@ -298,7 +298,12 @@ class CatalogueImportController extends Controller
                 )
             );
 
-            return response()->json(['success' => true, 'book_id' => $book->id, 'message' => 'تم إنشاء الكتاب.']);
+            $response = ['success' => true, 'book_id' => $book->id, 'message' => 'تم إنشاء الكتاب.'];
+            if (BookImportService::coverMissing($book, $cover)) {
+                $response['warning'] = 'تم إنشاء الكتاب، لكن تعذّر تنزيل صورة الغلاف. أضِف الصورة يدويًا من تحرير الكتاب.';
+            }
+
+            return response()->json($response);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }

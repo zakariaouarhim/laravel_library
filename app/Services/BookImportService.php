@@ -125,6 +125,20 @@ class BookImportService
         return $book;
     }
 
+    /**
+     * Did this import ask for a cover and end up without one? resolveCover()
+     * returns null when the download or the webp conversion fails, and the book
+     * is still created — so callers use this to warn the admin rather than
+     * report a clean success and leave an image-less book behind. Keyed off the
+     * same $cover shape resolveCover() accepts, so the two stay in step.
+     */
+    public static function coverMissing(Book $book, array $cover): bool
+    {
+        $requested = !empty($cover['webp']) || !empty($cover['file']) || !empty($cover['url']);
+
+        return $requested && empty($book->image);
+    }
+
     /** Resolve the cover to a public path, or null. */
     private function resolveCover(array $cover): ?string
     {
