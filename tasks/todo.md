@@ -111,3 +111,18 @@ Live CSP img-src confirmed to include cdn.aseeralkotb.com. Staging tables and
 dumps dropped on both sides.
 NOT deployed (still local WIP): low-stock panel (AdminBookController@updateStock,
 dashboard.blade.php, products.update-stock route) and the Counter feature.
+
+## Fix 2026-11-19 — أسير الكتب covers never downloaded (commit 9e2f88c)
+Two independent faults, both found only when the user approved a real book:
+1. `ImageService::downloadFromUrl()` fetched with `@file_get_contents()`; PHP's
+   http wrapper sends the path verbatim, so these Arabic-named cover URLs
+   failed. Now fetched via the HTTP client with the path percent-encoded when
+   it holds non-ASCII; ASCII URLs pass through byte-identical (7 other callers
+   unaffected — verified Google-Books-style and pre-encoded URLs unchanged).
+2. On the VPS `public/images/books/large` was root:root, so www-data could not
+   write it — main + thumb appeared, large silently didn't. chowned to
+   www-data, along with 547 root-owned cover files in images/books.
+Verified on the VPS: 3 sample books each produce main+thumb+large. Repaired the
+one already-imported book (#1379) — its cover now serves 200 at alfokara.com.
+Open follow-up: approve() still reports success when the cover fails; it should
+warn the admin instead of silently creating an image-less book.

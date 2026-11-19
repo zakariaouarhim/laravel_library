@@ -30,3 +30,30 @@ never change the aspect ratio, so it couldn't solve the real problem.
 always a *target shape* (book-cover rectangle), not magnification. Ask "what
 should the final image look like?" before choosing the crop model, and prefer
 per-axis controls over a single uniform factor.
+
+## 2026-11-19 — Verify the real code path, not an equivalent call
+While adding the أسير الكتب source I checked covers would download by calling
+`Http::get($coverUrl)` in tinker, got 200 + bytes, and told the user the server
+could fetch them. The production path is `ImageService::downloadFromUrl()`,
+which used `@file_get_contents()` — and PHP's http wrapper writes the path into
+the request line verbatim, so these URLs (aseeralkotb.com names every cover
+file in Arabic) failed. The feature shipped broken and the user found it.
+
+**Rule:** to claim something works, exercise the function the app actually
+calls, end to end, and assert on its observable output (file on disk, DB row) —
+never a hand-rolled call that merely resembles it. "I fetched the URL" is not
+evidence that "the importer can fetch the URL".
+
+**Corollary — silent failures hide this.** `@`-suppression plus
+`catch { Log::error(); return null; }` let approve() create the book with no
+cover and report success, so nothing surfaced until a human looked. When a
+step can fail without blocking the operation, surface it in the response.
+
+## 2026-11-19 — Check per-directory ownership under public/, not just storage/
+`public/images/books/large` was root:root 755 while its siblings were
+www-data, so the large variant silently never wrote on the VPS (main + thumb
+did). CLAUDE.md's ownership remedy only covers `storage` + `bootstrap/cache`.
+
+**Rule:** after any image-pipeline change, verify EVERY destination directory
+is www-data-writable on the server (`find public -type d ! -user www-data`),
+not just the one the happy path touches.
