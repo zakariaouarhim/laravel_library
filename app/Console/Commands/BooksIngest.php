@@ -3,18 +3,27 @@
 namespace App\Console\Commands;
 
 use App\Services\BookIngestionService;
+use App\Services\CatalogueDraftService;
 use Illuminate\Console\Command;
 
+/**
+ * Bulk version of the catalogue-import "find this book" panel: look each CSV
+ * row up across the web sources and queue it as an `api:` catalogue row, which
+ * then appears in the normal review grid under the "بحث API" source filter.
+ *
+ * It used to write pending_books rows for a separate review screen; that queue
+ * and screen are retired.
+ */
 class BooksIngest extends Command
 {
     protected $signature = 'books:ingest
         {file : Path to a CSV file with two columns (title, author). Optional header.}
-        {--language=french : Default language for staged books}
-        {--dry-run : Look up each row and report findings without writing pending_books}';
+        {--language=french : Language to look the books up in}
+        {--dry-run : Look each row up and report what would be queued, write nothing}';
 
-    protected $description = 'Bulk-ingest books from a CSV of (title, author) pairs into the pending_books staging table';
+    protected $description = 'Bulk-queue books from a CSV of (title, author) pairs for review as api: catalogue rows';
 
-    public function handle(BookIngestionService $service): int
+    public function handle(BookIngestionService $sources, CatalogueDraftService $drafts): int
     {
         $path = $this->argument('file');
         if (!is_file($path)) {
@@ -31,9 +40,16 @@ class BooksIngest extends Command
         $language = $this->option('language');
         $dryRun   = (bool) $this->option('dry-run');
 
+        if (!isset(CatalogueDraftService::LANGUE_TOKEN[$language])) {
+            $this->error("Unsupported --language={$language}. Use one of: "
+                . implode(', ', array_keys(CatalogueDraftService::LANGUE_TOKEN)));
+
+            return self::FAILURE;
+        }
+
         $this->info(sprintf(
             '%s %d row(s) | language=%s | dry-run=%s',
-            $dryRun ? 'Would ingest' : 'Ingesting',
+            $dryRun ? 'Would queue' : 'Queueing',
             count($rows),
             $language,
             $dryRun ? 'yes' : 'no'
@@ -42,36 +58,34 @@ class BooksIngest extends Command
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
 
-        $counts = [
-            'enriched'  => 0,
-            'failed'    => 0,
-            'duplicate' => 0,
-            'reused'    => 0,   // idempotent hits
-            'errors'    => 0,
-        ];
+        $counts = ['queued' => 0, 'not_found' => 0, 'errors' => 0];
 
         foreach ($rows as [$title, $author]) {
             try {
-                if ($dryRun) {
-                    // We can't preview without writing — just report the input.
-                    // Real run uses the service which is idempotent anyway.
+                $resolved = $sources->resolveSources($title, $author, $language);
+                if ($resolved === []) {
+                    $counts['not_found']++;
                     $this->newLine();
-                    $this->line("  → {$title} | {$author}");
-                } else {
-                    $beforeCount = \App\Models\PendingBook::count();
-                    $pending = $service->stageFromTitleAuthor($title, $author, $language);
-                    $isNew = \App\Models\PendingBook::count() > $beforeCount;
-
-                    if (!$isNew) {
-                        $counts['reused']++;
-                    } else {
-                        $counts[$pending->status] = ($counts[$pending->status] ?? 0) + 1;
-                    }
+                    $this->warn("  - no source has: {$title} | {$author}");
+                    $bar->advance();
+                    continue;
                 }
+
+                if ($dryRun) {
+                    $draft = $drafts->mergeSources($resolved, $title, $author);
+                    $this->newLine();
+                    $this->line(sprintf('  would queue: %s | %s (%d source(s))',
+                        mb_substr($draft['title'], 0, 50), $draft['author'] ?: 'بدون مؤلف', count($resolved)));
+                } else {
+                    // Idempotent: the dedup_key is derived from the book's
+                    // identity, so re-running a CSV refreshes rather than duplicates.
+                    $drafts->adoptSources($resolved, $title, $author, $language);
+                }
+                $counts['queued']++;
             } catch (\Throwable $e) {
                 $counts['errors']++;
                 $this->newLine();
-                $this->error("  ✗ {$title} | {$author} → {$e->getMessage()}");
+                $this->error("  x {$title} | {$author} -> {$e->getMessage()}");
             }
 
             $bar->advance();
@@ -80,20 +94,20 @@ class BooksIngest extends Command
         $bar->finish();
         $this->newLine(2);
 
+        $this->table(['result', 'count'], [
+            [$dryRun ? 'would queue' : 'queued', $counts['queued']],
+            ['not found in any source',          $counts['not_found']],
+            ['errors',                           $counts['errors']],
+        ]);
+
         if ($dryRun) {
-            $this->info('Dry-run complete — no rows written.');
+            $this->info('Dry run — nothing written.');
+
             return self::SUCCESS;
         }
 
-        $this->table(['result', 'count'], [
-            ['enriched',  $counts['enriched']  ?? 0],
-            ['failed',    $counts['failed']    ?? 0],
-            ['duplicate', $counts['duplicate'] ?? 0],
-            ['reused',    $counts['reused']],
-            ['errors',    $counts['errors']],
-        ]);
+        $this->info('Review them under the "بحث API" source filter: ' . url('/admin/catalogue-import'));
 
-        $this->info('Review pending books: ' . url('/admin/books/pending'));
         return self::SUCCESS;
     }
 

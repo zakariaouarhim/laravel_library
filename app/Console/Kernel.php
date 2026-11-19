@@ -16,7 +16,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('interests:decay')->dailyAt('03:30');
-        $schedule->command('staging:prune-images')->dailyAt('04:00');
+        // Replaces staging:prune-images, which served the retired pending_books
+        // ingest queue. Clears api: catalogue rows adopted but never reviewed.
+        $schedule->command('catalogue:prune-api-drafts')->dailyAt('04:00');
     }
 
     /**

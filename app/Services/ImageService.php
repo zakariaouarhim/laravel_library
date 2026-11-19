@@ -10,6 +10,13 @@ use Intervention\Image\Laravel\Facades\Image;
 class ImageService
 {
     /**
+     * Smallest side a remote image must have to count as a real cover. Sources
+     * serve tiny placeholders (Open Library: a 1x1 GIF) instead of a 404, and
+     * no genuine book cover is anywhere near this small.
+     */
+    private const MIN_COVER_PX = 50;
+
+    /**
      * Download an image from a URL and save it locally.
      * Detects MIME type and uses appropriate extension.
      *
@@ -60,8 +67,23 @@ class ImageService
     {
         try {
             $response = Http::timeout(25)->get($this->encodeUrlPath($url));
+            if (!$response->successful() || $response->body() === '') {
+                return null;
+            }
 
-            return $response->successful() && $response->body() !== '' ? $response->body() : null;
+            // Open Library answers 200 with a 43-byte 1x1 GIF when it has no
+            // cover for an ISBN, so "downloaded fine" is not the same as "got a
+            // cover". Treat a placeholder as no cover: the caller then reports
+            // the miss and the admin is told to add one.
+            $size = @getimagesizefromstring($response->body());
+            if (!$size || $size[0] < self::MIN_COVER_PX || $size[1] < self::MIN_COVER_PX) {
+                \Log::info('ImageService: ignored a placeholder/undecodable cover at ' . $url
+                    . ($size ? " ({$size[0]}x{$size[1]})" : ''));
+
+                return null;
+            }
+
+            return $response->body();
         } catch (\Throwable $e) {
             return null;
         }

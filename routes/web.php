@@ -127,14 +127,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/client/{id}', [AdminClientController::class, 'update'])->name('client.update');
     Route::post('/client/{id}/reset-password', [AdminClientController::class, 'resetPasswordAdmin'])->name('client.reset-password');
 
-    // Book ingestion (title+author → API enrichment → review queue → approved Book)
-    Route::get('/books/ingest',                          [\App\Http\Controllers\AdminBookIngestionController::class, 'create'])->name('books.ingest.create');
-    Route::post('/books/ingest',                         [\App\Http\Controllers\AdminBookIngestionController::class, 'store'])->name('books.ingest.store');
-    Route::post('/books/ingest-isbn',                    [\App\Http\Controllers\AdminBookIngestionController::class, 'storeFromIsbn'])->name('books.ingest.isbn');
-    Route::get('/books/pending',                         [\App\Http\Controllers\AdminBookIngestionController::class, 'index'])->name('books.pending.index');
-    Route::get('/books/pending/{pendingBook}',           [\App\Http\Controllers\AdminBookIngestionController::class, 'show'])->name('books.pending.show');
-    Route::post('/books/pending/{pendingBook}/approve',  [\App\Http\Controllers\AdminBookIngestionController::class, 'approve'])->name('books.pending.approve');
-    Route::delete('/books/pending/{pendingBook}',        [\App\Http\Controllers\AdminBookIngestionController::class, 'discard'])->name('books.pending.discard');
+    // Book ingestion from the APIs used to live here (page -> pending_books ->
+    // a separate review screen). It is now a step inside catalogue-import:
+    // "find this book" writes an `api:` catalogue row reviewed like any other.
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

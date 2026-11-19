@@ -241,6 +241,13 @@ class CatalogueDraftService
         }
         $isbn = strtoupper($m[1]);
 
+        // Placeholder ISBNs ("0000000000") pass both checksums, and because the
+        // ISBN becomes this row's dedup_key they would merge unrelated books
+        // into one row — and falsely match books in the store by ISBN.
+        if (preg_match('/^(\d)\1+$/', $isbn)) {
+            return null;
+        }
+
         return (strlen($isbn) === 13 && $this->isbn13Valid($isbn)) || strlen($isbn) === 10 ? $isbn : null;
     }
 
