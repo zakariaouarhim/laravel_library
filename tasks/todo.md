@@ -173,3 +173,52 @@ Two data-quality bugs found and fixed while testing:
 Still open: the A/B fork. catalogue-import and reader-import share ~400
 byte-identical JS lines with no shared partial, and every change here widens
 that gap. Extracting a shared partial + one JS asset is the next cleanup.
+
+---
+
+# Products CSV export (2026-11-20)
+
+Goal: get the catalogue out of the app in a form another platform can import,
+with cover images that actually render there.
+
+- [x] 1. `BookExportService` streaming the file the way the orders report does
+      (closure for `response()->stream()`, UTF-8 BOM, `chunkById(500)`).
+- [x] 2. Narrow `select()` so `cost_price` / `profit_margin` / `api_*` /
+      `rewrite_*` are never hydrated into a payload that leaves the server.
+- [x] 3. Absolute cover URL on our own domain, guarded against the empty-image
+      case rather than taken from `$book->thumbnail` / `$book->large_image`.
+- [x] 4. `productFilterQuery()` shared by `showproduct()` and the export, so the
+      file always matches the rows on screen.
+- [x] 5. `admin.products.export` route above the `/products/{id}` wildcard.
+- [x] 6. "تصدير CSV" button beside the reset button in the products toolbar.
+
+## Review (2026-11-20)
+
+Commit aa368d3. Deployed; `route:cache` clean, homepage 200 in 0.22s, only one
+error in today's VPS log and it is from my own `tinker` call, not the export.
+
+Verified on production (1,122 records, 20 columns, every row the same width):
+all 1,122 image URLs and product URLs are `https://alfokara.com/...`; five cover
+URLs taken straight out of the file were fetched **with a foreign `Referer`** and
+all returned 200 with the right content type; two product URLs returned 200 HTML;
+no internal column in the header; final-price arithmetic correct on every row.
+Streaming 1,122 rows peaks at 34 MB.
+
+Locally: 633 records; every image URL resolves to a file that exists on disk;
+unauthenticated request 302s to login, admin request 200s with the right
+`Content-Disposition`; the refactor of `showproduct()` was proven behaviourally
+identical across 10 filter cases, including `search="0"` and a nonexistent
+category id; export row count matches the listing count on all 7 filter cases.
+
+Two things worth knowing, not defects:
+- Covers are mostly WebP. Google Merchant accepts WebP; Facebook/Instagram
+  catalogues historically do not. A JPEG variant pipeline would be a separate job.
+- The exported cover is the 400px main image, because that is the only variant
+  that reliably exists (VPS: 1,135 main, 642 thumbs, **53** large).
+  `php artisan books:reprocess-covers --from-base` backfills the 800px variant,
+  after which the image column could switch to `$book->large_image`.
+
+Deliberately not done: CSV formula-injection escaping. Zero cells in either
+environment start with `=`/`+`/`-`/`@`, and prefixing an apostrophe would corrupt
+titles for the receiving platform. Worth revisiting only if the file is ever
+handed to an untrusted recipient.
