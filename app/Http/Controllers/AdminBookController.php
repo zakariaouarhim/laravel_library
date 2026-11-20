@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Admin\StoreBookProductRequest;
 use App\Http\Requests\Admin\UpdateBookRequest;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
@@ -12,6 +13,7 @@ use App\Models\Series;
 use App\Models\UserNotification;
 use App\Services\BookAdminService;
 use App\Services\BookEnrichmentService;
+use App\Services\BookExportService;
 use App\Services\BookSearchService;
 use Illuminate\Support\Facades\DB;
 
@@ -21,6 +23,7 @@ class AdminBookController extends Controller
         private BookAdminService $adminService,
         private BookEnrichmentService $enrichmentService,
         private BookSearchService $searchService,
+        private BookExportService $exportService,
     ) {}
 
     public function getProductsApi(Request $request)
@@ -486,21 +489,24 @@ class AdminBookController extends Controller
         return redirect()->route('books.index')->with('success', 'Book created successfully!');
     }
 
-    public function showproduct(Request $request)
+    /**
+     * The products listing's search + category filters, kept in one place so
+     * the CSV export always covers exactly the rows the admin is looking at.
+     * Returns an unordered query with nothing selected or eager-loaded; each
+     * caller adds what it needs.
+     */
+    private function productFilterQuery(Request $request): Builder
     {
-        $search = $request->search;
-        $categoryId = $request->category;
+        $query = Book::query();
 
-        $query = Book::with(['category', 'primaryAuthor', 'publishingHouse']);
-
-        if ($search) {
+        if ($search = $request->search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                 ->orWhereHas('primaryAuthor', fn($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
 
-        if ($categoryId) {
+        if ($categoryId = $request->category) {
             $category = Category::with('parent', 'children')->find($categoryId);
 
             if ($category) {
@@ -514,7 +520,32 @@ class AdminBookController extends Controller
             }
         }
 
-        $products = $query->latest()
+        return $query;
+    }
+
+    /**
+     * CSV of the catalogue, scoped to whatever filter the page is showing.
+     * Streamed like the orders report so the row count never drives memory.
+     */
+    public function exportProducts(Request $request)
+    {
+        $filename = 'products-export-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->stream(
+            $this->exportService->streamBooksCsv($this->productFilterQuery($request)),
+            200,
+            [
+                'Content-Type'        => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]
+        );
+    }
+
+    public function showproduct(Request $request)
+    {
+        $products = $this->productFilterQuery($request)
+                        ->with(['category', 'primaryAuthor', 'publishingHouse'])
+                        ->latest()
                         ->paginate(15)
                         ->withQueryString();
 

@@ -147,6 +147,8 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/Dashbord_Admin/Product', [AdminBookController::class, 'showproduct'])->name('Dashbord_Admin.product');
     Route::post('/Dashbord_Admin/Product/add', [AdminBookController::class, 'addProduct'])->name('product.add');
     Route::get('/products', [AdminBookController::class, 'showproduct'])->name('products.index');
+    // Literal path, so it must stay above the /products/{id} wildcard below.
+    Route::get('/products/export', [AdminBookController::class, 'exportProducts'])->name('products.export');
 
     // Product API (admin-only AJAX) — must be before /products/{id} wildcard
     Route::post('/products/rewrite-description', [AdminBookController::class, 'rewriteDescription'])->name('products.rewrite-description');

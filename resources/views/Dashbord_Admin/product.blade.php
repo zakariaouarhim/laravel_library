@@ -89,9 +89,16 @@
                             </select>
                         </div>
 
-                        <div class="form-group" style="display: flex; align-items: end;">
+                        <div class="form-group" style="display: flex; align-items: end; gap: 10px;">
                             <a href="{{ route('admin.products.index') }}" class="btn-add" style="background: #95a5a6; text-decoration: none; padding: 8px 15px; display: inline-block;">
                                 <i class="fas fa-redo me-2"></i>إعادة تعيين
+                            </a>
+                            {{-- Exports exactly the rows the current filter shows; with no filter, the whole catalogue. --}}
+                            <a href="{{ route('admin.products.export', request()->only('search','category')) }}"
+                               class="btn-add"
+                               style="background: linear-gradient(135deg, #27ae60, #219a52); text-decoration: none; padding: 8px 15px; display: inline-block; white-space: nowrap;"
+                               title="تنزيل بيانات المنتجات بصيغة CSV مع روابط الصور">
+                                <i class="fas fa-file-csv me-2"></i>تصدير CSV
                             </a>
                         </div>
                     </form>
