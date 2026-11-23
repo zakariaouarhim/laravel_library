@@ -412,7 +412,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/about', [PageController::class, 'about'])->name('about.page');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact.page');
-Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store')->middleware('throttle:5,1');
+Route::post('/contact', [PageController::class, 'storeContact'])->name('contact.store')->middleware(['throttle:5,1', 'antispam']);
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy.page');
 Route::get('/terms', [PageController::class, 'terms'])->name('terms.page');
 Route::get('/sitemap', [PageController::class, 'sitemap'])->name('sitemap');
@@ -450,7 +450,7 @@ Auth::routes(['reset' => false, 'register' => false]);
 Route::get('/login2', [AuthController::class, 'showLogin2'])->name('login2.page');
 
 Route::post('/userlogin', [AuthController::class, 'userlogin'])->name('userlogin')->middleware('throttle:5,1');
-Route::post('/adduser', [AuthController::class, 'adduser'])->name('adduser')->middleware('throttle:3,1');
+Route::post('/adduser', [AuthController::class, 'adduser'])->name('adduser')->middleware(['throttle:3,1', 'antispam:turnstile']);
 
 // Logout via POST to prevent CSRF-based forced logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

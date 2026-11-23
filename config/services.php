@@ -41,4 +41,15 @@ return [
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
     ],
 
+    /*
+     * Cloudflare Turnstile — the captcha on the signup form. Leave both keys
+     * empty and the widget is never rendered and never checked; AntiSpam falls
+     * back to the honeypot and timing checks alone. Filling them in on the
+     * server switches the challenge on with no redeploy.
+     */
+    'turnstile' => [
+        'site_key'   => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];

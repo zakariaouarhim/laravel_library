@@ -52,6 +52,7 @@
 
                 <form action="{{ route('contact.store') }}" method="POST">
                     @csrf
+                    @include('partials.anti-spam-fields')
                     <div class="form-group">
                         <label for="name">
                             <i class="fas fa-user"></i> الاسم الكامل

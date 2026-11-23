@@ -113,6 +113,7 @@
             <!-- Register Form -->
             <form id="register-form" class="auth-form" style="display: none;" method="POST" action="{{ route('adduser') }}">
                 @csrf
+                @include('partials.anti-spam-fields')
 
                 <div class="input-group-custom">
                     <span class="input-icon"><i class="fas fa-user"></i></span>
@@ -141,6 +142,14 @@
                 </div>
                 <small id="passwordError" class="text-danger d-none" style="margin-top: -10px; display: block; margin-bottom: 10px;">كلمات المرور غير متطابقة</small>
 
+                {{-- Rendered only once Turnstile keys exist in .env; until then the
+                     honeypot and timing checks in AntiSpam stand alone. --}}
+                @if (config('services.turnstile.site_key'))
+                    <div class="cf-turnstile" style="margin-bottom: 12px;"
+                         data-sitekey="{{ config('services.turnstile.site_key') }}"
+                         data-language="ar"></div>
+                @endif
+
                 <button type="submit" class="btn-submit btn-submit-register">
                     <i class="fas fa-user-plus"></i>
                     إنشاء حساب
@@ -157,6 +166,9 @@
         </div>
     </div>
 
+    @if (config('services.turnstile.site_key'))
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+    @endif
     <script src="{{ asset('js/login.js') }}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
 </body>

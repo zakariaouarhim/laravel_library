@@ -26,7 +26,7 @@ class SecurityHeaders
         // pixel fallback fires from googletagmanager.com/google-analytics.com.
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://www.google.com https://books.google.com https://www.googletagmanager.com https://*.google-analytics.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://www.google.com https://books.google.com https://www.googletagmanager.com https://*.google-analytics.com https://challenges.cloudflare.com",
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
             // almouggar.com + cdn.shopify.com (booksondemand.ma) + images.epagine.fr
@@ -35,8 +35,10 @@ class SecurityHeaders
             // covers.openlibrary.org + upload.wikimedia.org: enrich-preview images
             // (Open Library / BNF fallback / Wikipedia) in the import modals.
             "img-src 'self' data: blob: https://books.google.com https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://almouggar.com https://cdn.shopify.com https://images.epagine.fr https://jackets.dmmserver.com https://cdn.aseeralkotb.com https://covers.openlibrary.org https://upload.wikimedia.org",
-            "connect-src 'self' https://www.google.com https://books.google.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net",
-            "frame-src https://books.google.com https://www.google.com",
+            "connect-src 'self' https://www.google.com https://books.google.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net https://challenges.cloudflare.com",
+            // challenges.cloudflare.com: the Turnstile widget renders in an iframe and
+            // posts back to its own origin, so it needs script-, connect- and frame-src.
+            "frame-src https://books.google.com https://www.google.com https://challenges.cloudflare.com",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self'",

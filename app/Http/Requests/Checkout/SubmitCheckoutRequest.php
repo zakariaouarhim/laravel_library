@@ -15,11 +15,15 @@ class SubmitCheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'full_name'      => 'required|string|max:255',
-            'email'          => 'nullable|email|max:255',
+            // varchar(191) columns, not 255 — Schema::defaultStringLength(191).
+            'full_name'      => 'required|string|max:191',
+            'email'          => 'nullable|email|max:191',
             'phone'          => 'required|string|regex:/^[0-9]{10}$/',
-            'address'        => 'required|string',
-            'city'           => 'required|string',
+            // address and notes are TEXT columns, so they need no tight bound.
+            'address'        => 'required|string|max:5000',
+            // city had no limit at all: a 192-char value reached a varchar(191)
+            // column and crashed checkout the same way a long name crashed signup.
+            'city'           => 'required|string|max:191',
             'notes'          => 'nullable|string|max:500',
             'payment_method' => 'required|in:cod,bank_transfer',
         ];
