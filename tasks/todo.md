@@ -280,3 +280,92 @@ Still open: the A/B fork. Everything above had to be written twice because
 `catalogue-import` and `reader-import` share ~400 byte-identical JS lines with
 no shared partial.
 
+---
+
+# Registration spam bots (2026-11-23)
+
+## Correction to the note above
+
+The entry under the series work said "Registration has no length rule on
+`name`". Wrong. It had `max:255`. The real cause is
+`AppServiceProvider.php:37` -> `Schema::defaultStringLength(191)`, so the column
+is `varchar(191)`: a 192-255 char name passed validation and then threw
+SQLSTATE 22001 on INSERT. `AuthController` caught it and logged
+"Error in user creation" — all 405 of those entries. **Verify column widths by
+measuring the live table, never by reading the migration.**
+
+Worse, those log lines were only the *failures*. Payloads short enough to fit
+191 chars succeeded, so **two spam accounts were live in production** (#24 from
+April, #72 from 22 Nov; promo links as display names, disposable email domains,
+zero orders).
+
+Attack shape: 4,452 POSTs to `/adduser`, 314 IPs (two bulk addresses = 88%, the
+rest mostly Tor exits), one spoofed UA, empty Referer, 1,862 on 22 Nov and 2,584
+on 23 Nov. `throttle:3,1` was already on the route and the bots paced just under
+it — so **no IP-based limit could have fixed this**, which is why every measure
+added is source-agnostic.
+
+- [x] 1. `AntiSpam` middleware: honeypot + minimum submit time (encrypted
+      timestamp, unforgeable without `APP_KEY`). On `/adduser` and `/contact`.
+      No per-request logging — a `spam_blocked:<date>` cache counter instead,
+      since filling the log is half the problem and production is `LOG_LEVEL=error`.
+- [x] 2. `not_regex` on the display name rejecting `<`, `>`, `://`, `http`, `www.`.
+- [x] 3. Turnstile, shipped dormant; opt-in per route (`antispam:turnstile`) so a
+      form without the widget cannot break when keys appear. Fails open on a
+      Cloudflare timeout **or 5xx**. CSP updated.
+- [x] 4. Lengths aligned to the real columns on register, contact and checkout
+      (`city` had no rule at all; `password` capped at bcrypt's real 72 bytes).
+- [x] 5. `JSON_HEX_TAG` in `json-ld.blade.php` — `SchemaBuilder:46` puts a review
+      author's name inside a `<script>` block.
+- [x] 6. Both spam accounts soft-deleted on production (recoverable).
+
+## Review (2026-11-23)
+
+Commit 545dc54. Deployed; homepage 200 in 0.27s, login2/contact 200, all six
+JSON-LD blocks still parse with zero raw angle brackets.
+
+The calibration test that matters: the name rule was run against **all 66 real
+production users** and rejects **exactly the two spam accounts, nobody else**.
+
+Local, through the real HTTP kernel: a normal signup still works, including a
+190-char Arabic name, apostrophes and accents; honeypot, instant submits, and
+missing / forged / stale / future-dated tokens are all blocked; a 4-second-old
+token passes; all four captured spam payloads 422 on `name`; the length cases
+422 with **zero** new "Error in user creation" entries. Turnstile verified both
+dormant and active using Cloudflare's documented always-pass / always-fail test
+secrets, and the payload sent to Cloudflare was captured to confirm it carries
+only `secret`, `response`, `remoteip` — never the visitor's name or email.
+
+On production after deploy: a real signup succeeds inside a rolled-back
+transaction (no row left behind), every bot payload is blocked, and in the first
+minutes **1 live bot attempt arrived, the counter incremented, and 0 new
+"Error in user creation" lines appeared** (previously ~200/day).
+
+Two test-harness traps worth remembering, neither a product bug:
+- The session Store and auth guards are container singletons, so they survive
+  between `kernel->handle()` calls in one process. A successful signup calls
+  `Auth::login()`, and `ThrottleRequests` keys on the user id when one exists —
+  so the harness tripped `throttle:3,1` on itself. Flush the session and
+  `forgetGuards()` between requests.
+- `Http::fake()` with a closure that throws **segfaults** this PHP build. To test
+  the fail-open path, swap the `Http\Client\Factory` container binding for a
+  stub instead.
+
+## Reported, not fixed — public write-surface audit (23 endpoints)
+
+- **`POST /checkout/apply-coupon`** — no validation, no throttle, and a distinct
+  message per failure reason: an unthrottled oracle for enumerating coupon codes
+  and their minimum-order amounts. The most exploitable item found.
+- **`POST /login`** still exists beside `/userlogin` and keys its 5/min limit on
+  *email + IP*, so one address can spray passwords past `/userlogin`'s per-IP cap.
+- **`POST /checkout/store-cart`** — unvalidated, unthrottled, writes arbitrary
+  JSON to a new session file per request. The value is never read anywhere: dead
+  code and pure disk-growth abuse.
+- `/remove-from-cart` and `/wishlist-session/*` with a non-numeric id raise
+  `TypeError`, which `catch (\Exception)` misses -> uncaught 500.
+- `CheckoutController:68-71` flashes the raw exception message to the visitor, so
+  a `QueryException` would print SQL and bound values regardless of `APP_DEBUG`.
+- `storage/logs/laravel.log` is **24 MB** and `LOG_CHANNEL=stack` never rotates
+  it. `LOG_CHANNEL=daily` is a one-line `.env` change.
+- ~17 admin form requests carry the same `max:255`-vs-`varchar(191)` mismatch.
+
