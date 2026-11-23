@@ -42,6 +42,7 @@ use App\Http\Controllers\ReaderImportController;
 use App\Http\Controllers\CatalogueImportController;
 use App\Http\Controllers\AdminPublishingHouseController;
 use App\Http\Controllers\AdminQuoteController;
+use App\Http\Controllers\CounterController;
 
 // Dual route-model bindings for book/author/category/publisher/series live in
 // app/Providers/RouteServiceProvider::boot() — registering them here breaks
@@ -476,3 +477,14 @@ Route::get('/reset-password/{token}/{email}', [PasswordResetController::class, '
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
     ->name('password.update')
     ->middleware(['guest', 'throttle:5,1']);
+
+// ==================== COUNTER (back-to-school pickup orders, tablet UI) ====================
+
+Route::middleware(['auth', 'isAdmin'])->prefix('counter')->name('counter.')->group(function () {
+    Route::get('/',                   [CounterController::class, 'index'])->name('index');
+    Route::get('/search',             [CounterController::class, 'search'])->name('search');
+    Route::get('/add',                [CounterController::class, 'addForm'])->name('add');
+    Route::post('/add',               [CounterController::class, 'store'])->name('store');
+    Route::post('/{order}/collect',   [CounterController::class, 'collect'])->name('collect');
+    Route::post('/{order}/uncollect', [CounterController::class, 'uncollect'])->name('uncollect');
+});
