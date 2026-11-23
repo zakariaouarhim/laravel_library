@@ -6,6 +6,7 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Models\CatalogueReference;
 use App\Models\CatalogueReview;
+use App\Models\Series;
 use App\Services\BookImportService;
 use App\Services\BookIngestionService;
 use App\Services\CatalogueDraftService;
@@ -42,6 +43,7 @@ class CatalogueImportController extends Controller
     {
         return view('admin.catalogue-import.index', [
             'categories' => $this->categoryOptions(),
+            'series'     => Series::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -416,6 +418,10 @@ class CatalogueImportController extends Controller
             'isbn'                => 'nullable|string|max:20',
             'page_num'            => 'nullable|integer|min:0',
             'publisher'           => 'nullable|string|max:300',
+            'series_id'           => 'nullable|integer|exists:series,id',
+            // volume_number is an unsigned SMALLINT, so without a ceiling a
+            // bigger number is a database error (500) instead of a 422.
+            'volume_number'       => 'nullable|integer|min:1|max:65535',
             'language'            => 'required|in:arabic,english,french',
             'price'               => 'required|numeric|min:0',
             'description'         => 'nullable|string',

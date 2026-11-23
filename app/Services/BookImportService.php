@@ -106,6 +106,11 @@ class BookImportService
                 'page_num'            => $data['page_num'] ?? 0,
                 'language'            => $data['language'],
                 'publishing_house_id' => $publisherId,
+                // Series: both columns are nullable and the review screens send
+                // them only when the admin picks a series, so ?? null both
+                // leaves a standalone book untouched and lets "no series" clear.
+                'series_id'           => $data['series_id'] ?? null,
+                'volume_number'       => $data['volume_number'] ?? null,
                 'isbn'                => ($data['isbn'] ?? null) ?: null,
                 'quantity'            => (int) $data['quantity'],
                 'api_data_status'     => 'pending',

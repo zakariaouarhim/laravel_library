@@ -228,6 +228,22 @@
                     </div>
                     <div><label>عدد الصفحات</label><input class="field" id="mPages" type="number" min="0"></div>
                 </div>
+                <div class="row2">
+                    <div style="flex:2"><label>السلسلة <small style="font-weight:400">(اختياري)</small></label>
+                        <select class="field" id="mSeries">
+                            <option value="">— بدون سلسلة —</option>
+                            @foreach($series ?? [] as $s)
+                                <option value="{{ $s->id }}">{{ $s->name }}</option>
+                            @endforeach
+                        </select>
+                        {{-- New tab on purpose: the modal is an unsaved working copy, so
+                             navigating away in this tab would discard the admin's edits. --}}
+                        <small style="font-size:.7rem;color:#6b7280">السلسلة غير موجودة؟
+                            <a href="{{ route('admin.series.index') }}" target="_blank" rel="noopener">أضِفها من إدارة السلاسل</a>
+                        </small>
+                    </div>
+                    <div><label>رقم الجزء</label><input class="field" id="mVolume" type="number" min="1" placeholder="مثال: 1"></div>
+                </div>
 
                 <label>الوصف</label>
                 <textarea class="field" id="mDesc" rows="5"></textarea>
@@ -427,6 +443,7 @@
                 isbn: b.isbn, page_num: b.page_num,
                 publisher: b.publisher, language: b.language, price: b.price,
                 quantity: b.quantity, description: b.description,
+                series_id: b.series_id || null, volume_number: b.volume_number || null,
                 category_ids: b.category_ids, primary_category_id: b.primary_category_id,
             };
         }
@@ -600,6 +617,8 @@
             $('mQty').value = b.quantity;
             $('mPublisher').value = b.publisher || '';
             $('mPages').value = b.page_num || '';
+            $('mSeries').value = b.series_id || '';
+            $('mVolume').value = b.volume_number || '';
             $('mDesc').value = b.description || '';
             $('mEnrichPanel').classList.remove('open');
             $('mEnrichPanel').innerHTML = '';
@@ -612,6 +631,7 @@
             modalCats.primary = b.primary_category_id || null;
             buildCatBox();
 
+            syncVolumeState();
             overlay.classList.add('open');
         }
         function closeModal() { overlay.classList.remove('open'); modalId = null; }
@@ -627,6 +647,8 @@
             b.quantity = $('mQty').value;
             b.publisher = $('mPublisher').value;
             b.page_num = $('mPages').value;
+            b.series_id = $('mSeries').value || null;
+            b.volume_number = $('mVolume').value || null;
             b.description = $('mDesc').value;
             b.category_ids = Array.from(modalCats.ids);
             b.primary_category_id = modalCats.primary;
@@ -778,6 +800,17 @@
         $('mClose').addEventListener('click', closeModal);
         $('mCancel').addEventListener('click', closeModal);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+        // volume_number is only ever read inside series-scoped queries
+        // (Series::books, the series page, the bundle builder), so a volume
+        // with no series is dead data. Keep the field unusable until a
+        // series is picked.
+        function syncVolumeState() {
+            const picked = !!$('mSeries').value;
+            $('mVolume').disabled = !picked;
+            if (!picked) { $('mVolume').value = ''; }
+        }
+        $('mSeries').addEventListener('change', syncVolumeState);
 
         $('mSave').addEventListener('click', () => {
             harvestModalIntoState();
