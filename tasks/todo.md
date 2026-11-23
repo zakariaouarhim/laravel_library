@@ -222,3 +222,61 @@ Deliberately not done: CSV formula-injection escaping. Zero cells in either
 environment start with `=`/`+`/`-`/`@`, and prefixing an apostrophe would corrupt
 titles for the receiving platform. Worth revisiting only if the file is ever
 handed to an untrusted recipient.
+
+---
+
+# Series picker in the import review modals (2026-11-23)
+
+The review modal had no series field, so every volume had to be approved and
+then edited from the products page just to set its series. `volume_number`
+orders a series on the series page, in the "other volumes" list on a book page,
+and in the bundle builder — production already has 73 series and 313 books in
+one, so the main import path was silently dropping a feature in heavy use.
+
+- [x] 1. `BookImportService::create()` passes `series_id` / `volume_number`
+      into `Book::create()`. They were missing from that whitelist, so the
+      columns would have been dropped even if the browser sent them. One edit,
+      both screens.
+- [x] 2. Both `approve()` actions validate them, with `max:65535` on the volume
+      because the column is an unsigned smallint.
+- [x] 3. Series dropdown + رقم الجزء input in both modals, copying
+      `product.blade.php:321-339`. No inline creation (a typo would create a
+      duplicate series); a link to إدارة السلاسل instead, `target="_blank"`
+      because the modal is an unsaved working copy.
+- [x] 4. The volume input stays disabled until a series is picked — a volume
+      with no series is only read by series-scoped queries, so it is dead data.
+      This is one deliberate improvement over the product modal.
+
+## Review (2026-11-23)
+
+Commit 4b8d5fa, 83 insertions and no deletions across 5 files. Deployed;
+`route:cache` clean, homepage 200 in 0.17s, no root-owned files under storage/.
+
+Verified end-to-end locally on **both** screens: a series + volume 3 survives
+approve, `isPartOfSeries()` is true, the relation resolves and the book appears
+in `Series->books()`; approving without a series still stores nulls and leaves
+cover, author, categories and the review row untouched; and an out-of-range
+volume, a volume of 0, a non-integer volume and an unknown `series_id` each
+return **422 and create nothing**. Also confirmed `BookObserver` busts
+`arabic_series_home` / `english_series_home`, so a book approved into a series
+reaches the homepage carousels with no manual cache clear. All test rows were
+removed afterwards (books back to 633, staging back to 493 pending).
+
+On production both screens render all 73 series, and the two invalid-input
+probes return 422 with the book count unchanged at 1,131.
+
+Noted, not changed: `StoreBookProductRequest:42` and `UpdateBookRequest:44`
+validate `volume_number` with `min:1` and **no max**, so the products page can
+still turn an oversized volume into a 500. Same class of bug as the one fixed
+here.
+
+Unrelated finding from the VPS log while verifying: **405 logged errors from
+spam bots posting a long promo payload into the registration `name` field**
+(SQLSTATE 22001, `user.name` too long), on and off since 2026-11-15 and 232 of
+them today. Registration has no length rule on `name`, so a bot gets a 500
+instead of a 422 and the log fills up. Worth a separate fix.
+
+Still open: the A/B fork. Everything above had to be written twice because
+`catalogue-import` and `reader-import` share ~400 byte-identical JS lines with
+no shared partial.
+
