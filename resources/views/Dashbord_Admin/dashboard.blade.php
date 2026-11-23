@@ -21,6 +21,17 @@
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        .stock-editor   { display:inline-flex;align-items:center;gap:.3rem; }
+        .stock-input    { width:64px;text-align:center;border:1px solid #d8dde6;border-radius:6px;padding:.25rem;font-family:inherit; }
+        .stock-step     { width:30px;height:30px;border:1px solid #d8dde6;background:#f7f9fc;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;color:#445; }
+        .stock-step:hover { background:#eef3ff; }
+        .stock-save     { width:32px;height:30px;border:none;background:#27ae60;color:#fff;border-radius:6px;cursor:pointer; }
+        .stock-save:hover { background:#219150; }
+        .stock-save:disabled { opacity:.5;cursor:default; }
+        .stock-editor.dirty .stock-save { box-shadow:0 0 0 3px rgba(39,174,96,.2); }
+        #dashToast { position:fixed;bottom:1.5rem;left:1.5rem;z-index:9999; }
+    </style>
 </head>
 <body>
     
@@ -37,12 +48,9 @@
                         لوحة القيادة
                     </h1>
                     <div class="header-actions">
-                        <button class="btn-header btn-share">
-                            <i class="fas fa-share-alt me-2"></i>مشاركة
-                        </button>
-                        <button class="btn-header btn-export" onclick="exportData()">
-                            <i class="fas fa-download me-2"></i>تصدير
-                        </button>
+                        <a href="{{ route('admin.products.index') }}" class="btn-header btn-export">
+                            <i class="fas fa-boxes-stacked me-2"></i>إدارة المخزون
+                        </a>
                     </div>
                 </div>
 
@@ -108,8 +116,8 @@
                             <i class="fas fa-chart-line"></i>
                             الإيرادات هذا <select name="date" id="date">
                             <option value="weeklyRevenue">الأسبوع</option>
-                            <option value="monthlyRevenue">month</option>
-                            <option value="yearlyRevenue">year</option>
+                            <option value="monthlyRevenue">الشهر</option>
+                            <option value="yearlyRevenue">السنة</option>
                             </select>
                         </h4>
                         <div class="chart-container">
@@ -130,24 +138,25 @@
 
                 <!-- Low Stock Alerts -->
                 @if(isset($lowStockBooks) && $lowStockBooks->count())
-                <div class="recent-orders" style="margin-bottom: 2rem;">
+                <div class="recent-orders" id="lowStockPanel" style="margin-bottom: 2rem;">
                     <h3 style="color: #e74c3c;">
                         <i class="fas fa-exclamation-triangle"></i>
                         تنبيه المخزون المنخفض
-                        <span class="badge bg-danger ms-2">{{ $lowStockBooks->count() }}</span>
+                        <span class="badge bg-danger ms-2" id="lowStockCount">{{ $lowStockBooks->count() }}</span>
                     </h3>
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover align-middle">
                             <thead>
                                 <tr>
                                     <th>الكتاب</th>
                                     <th>الكمية المتبقية</th>
                                     <th>الحالة</th>
+                                    <th>تعديل الكمية</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="lowStockBody">
                                 @foreach($lowStockBooks as $book)
-                                <tr>
+                                <tr id="low-stock-row-{{ $book->id }}" data-id="{{ $book->id }}">
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 10px;">
                                             @if($book->image)
@@ -160,18 +169,29 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td><strong>{{ $book->quantity }}</strong></td>
+                                    <td><strong class="stock-qty">{{ $book->quantity }}</strong></td>
                                     <td>
-                                        @if($book->quantity == 0)
-                                            <span class="status-badge" style="background: #e74c3c; color: #fff;">نفذ المخزون</span>
-                                        @else
-                                            <span class="status-badge" style="background: #f39c12; color: #fff;">مخزون منخفض</span>
-                                        @endif
+                                        <span class="status-badge stock-status" style="background: {{ $book->quantity == 0 ? '#e74c3c' : '#f39c12' }}; color: #fff;">
+                                            {{ $book->quantity == 0 ? 'نفذ المخزون' : 'مخزون منخفض' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="stock-editor">
+                                            <button type="button" class="stock-step" data-step="-1" aria-label="إنقاص">&minus;</button>
+                                            <input type="number" class="stock-input" min="0" value="{{ $book->quantity }}" aria-label="الكمية">
+                                            <button type="button" class="stock-step" data-step="1" aria-label="زيادة">+</button>
+                                            <button type="button" class="stock-save" title="حفظ"><i class="fas fa-check"></i></button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+                    <div style="text-align: center; margin-top: .5rem;">
+                        <a href="{{ route('admin.products.index') }}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-list me-1"></i> عرض كل المخزون
+                        </a>
                     </div>
                 </div>
                 @endif
@@ -263,6 +283,8 @@
         </div>
     </div>
 </div>
+    <div id="dashToast"></div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -285,10 +307,6 @@
                 {{ $returnedOrders ?? 0 }}
             ]
         };
-
-        function exportData() {
-            alert('سيتم تصدير البيانات قريباً');
-        }
 
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof Chart === 'undefined') return;
@@ -407,6 +425,97 @@
                 }
             });
         });
+    </script>
+    <script>
+        // ===== Inline low-stock editing =====
+        (function () {
+            const LOW_STOCK_THRESHOLD = 5; // matches DashboardReportService::getLowStockBooks()
+            const panel = document.getElementById('lowStockPanel');
+            if (!panel) return;
+
+            const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const stockUrl = id => "{{ url('admin/products') }}/" + id + "/stock";
+
+            function toast(msg, ok = true) {
+                const el = document.createElement('div');
+                el.style = `background:${ok ? '#27ae60' : '#e74c3c'};color:#fff;padding:.7rem 1.1rem;border-radius:8px;margin-top:.5rem;font-family:'Cairo',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.15);`;
+                el.textContent = msg;
+                document.getElementById('dashToast').appendChild(el);
+                setTimeout(() => el.remove(), 3200);
+            }
+
+            function refreshCount() {
+                const rows = panel.querySelectorAll('#lowStockBody tr').length;
+                const badge = document.getElementById('lowStockCount');
+                if (badge) badge.textContent = rows;
+                if (rows === 0) {
+                    panel.querySelector('.table-responsive').innerHTML =
+                        '<p class="text-center text-muted py-3 mb-0">لا توجد كتب بمخزون منخفض 🎉</p>';
+                }
+            }
+
+            panel.addEventListener('click', function (e) {
+                const editor = e.target.closest('.stock-editor');
+                if (!editor) return;
+                const input = editor.querySelector('.stock-input');
+
+                // +/- steppers
+                const step = e.target.closest('.stock-step');
+                if (step) {
+                    const next = Math.max(0, (parseInt(input.value, 10) || 0) + parseInt(step.dataset.step, 10));
+                    input.value = next;
+                    editor.classList.add('dirty');
+                    return;
+                }
+
+                // Save
+                const saveBtn = e.target.closest('.stock-save');
+                if (!saveBtn) return;
+
+                const row = e.target.closest('tr');
+                const id = row.dataset.id;
+                const qty = parseInt(input.value, 10);
+                if (isNaN(qty) || qty < 0) { toast('قيمة غير صحيحة', false); return; }
+
+                saveBtn.disabled = true;
+                fetch(stockUrl(id), {
+                    method: 'PATCH',
+                    headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: qty })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    saveBtn.disabled = false;
+                    if (!data.success) { toast(data.message || 'حدث خطأ', false); return; }
+                    editor.classList.remove('dirty');
+
+                    // Update displayed quantity + status badge
+                    row.querySelector('.stock-qty').textContent = data.quantity;
+                    const badge = row.querySelector('.stock-status');
+                    if (data.quantity == 0) {
+                        badge.style.background = '#e74c3c'; badge.textContent = 'نفذ المخزون';
+                    } else {
+                        badge.style.background = '#f39c12'; badge.textContent = 'مخزون منخفض';
+                    }
+                    toast(data.message);
+
+                    // No longer low stock → fade the row out of the panel
+                    if (data.quantity >= LOW_STOCK_THRESHOLD) {
+                        row.style.transition = 'opacity .4s';
+                        row.style.opacity = '0';
+                        setTimeout(() => { row.remove(); refreshCount(); }, 420);
+                    }
+                })
+                .catch(() => { saveBtn.disabled = false; toast('حدث خطأ في الاتصال', false); });
+            });
+
+            // Mark editor dirty when typing
+            panel.addEventListener('input', function (e) {
+                if (e.target.classList.contains('stock-input')) {
+                    e.target.closest('.stock-editor').classList.add('dirty');
+                }
+            });
+        })();
     </script>
 </body>
 </html>

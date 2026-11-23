@@ -744,4 +744,31 @@ class AdminBookController extends Controller
         );
     }
 
+    /**
+     * Quick stock adjustment (e.g. from the dashboard low-stock panel).
+     * Reuses the restock-notification behaviour of the full product edit.
+     */
+    public function updateStock(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:0|max:100000',
+        ]);
+
+        $product = Book::findOrFail($id);
+        $wasOutOfStock = ($product->quantity == 0);
+
+        $product->quantity = $validated['quantity'];
+        $product->saveQuietly();
+
+        // Notify waiting customers if the book just came back into stock.
+        if ($wasOutOfStock && $product->quantity > 0) {
+            $this->adminService->notifyStockSubscribers($product);
+        }
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'تم تحديث الكمية بنجاح.',
+            'quantity' => $product->quantity,
+        ]);
+    }
 }
