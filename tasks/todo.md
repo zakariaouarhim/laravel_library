@@ -369,3 +369,38 @@ Two test-harness traps worth remembering, neither a product bug:
   it. `LOG_CHANNEL=daily` is a one-line `.env` change.
 - ~17 admin form requests carry the same `max:255`-vs-`varchar(191)` mismatch.
 
+
+---
+
+## 2026-11-23 — Turnstile switched on
+
+Keys were added to the production `.env` by the owner. Two things followed.
+
+**Config cache.** Production runs cached, so the keys were inert until
+`config:cache` was rebuilt — the widget stayed absent for ~5h after the keys
+landed. Re-cached as part of the deploy below.
+
+**Explicit rendering (commit 70e6201).** `#register-form` is `display:none`
+until its tab is clicked, so the implicit `cf-turnstile` class would have built
+the widget inside a hidden container — undocumented by Cloudflare. A widget that
+produced no token would make `AntiSpam` reject *every genuine signup*, a failure
+the honeypot and timing checks would not have caused. Now rendered via
+`turnstile.render()` on first reveal, deferred one tick because `login.js` is
+itself deferred and its tab handler runs after the inline listener.
+
+### Verified
+* Markup (local, against Cloudflare's test site key): widget container present,
+  no implicit class, explicit render params, sitekey injected, secret absent.
+* Server-side against the real siteverify endpoint with Cloudflare's test
+  secrets: valid token → signup succeeds and the user row is created;
+  invalid token, missing token, and filled honeypot → all blocked, nothing
+  written. Rolled back; local user count unchanged.
+* Production secret validated without a browser: siteverify returned
+  `invalid-input-response`, not `invalid-input-secret` — the key is correct.
+* Live page carries the widget; users 64 visible / 66 with trashed.
+* Last `Error in user creation`: 16:54:34, before the 16:55 deploy. Zero since,
+  against a `spam_blocked` count of 610 for the day.
+
+### Not verifiable from here
+The widget rendering in a real browser (no browser tool in session). Owner to
+confirm: open /login2 → "إنشاء حساب" tab → widget appears → signup completes.
