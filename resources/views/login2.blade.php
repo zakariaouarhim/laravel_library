@@ -143,11 +143,11 @@
                 <small id="passwordError" class="text-danger d-none" style="margin-top: -10px; display: block; margin-bottom: 10px;">كلمات المرور غير متطابقة</small>
 
                 {{-- Rendered only once Turnstile keys exist in .env; until then the
-                     honeypot and timing checks in AntiSpam stand alone. --}}
+                     honeypot and timing checks in AntiSpam stand alone.
+                     Filled by turnstile.render() at the end of this file, not by
+                     the implicit `cf-turnstile` class -- see the note there. --}}
                 @if (config('services.turnstile.site_key'))
-                    <div class="cf-turnstile" style="margin-bottom: 12px;"
-                         data-sitekey="{{ config('services.turnstile.site_key') }}"
-                         data-language="ar"></div>
+                    <div id="turnstile-widget" style="margin-bottom: 12px;"></div>
                 @endif
 
                 <button type="submit" class="btn-submit btn-submit-register">
@@ -167,7 +167,48 @@
     </div>
 
     @if (config('services.turnstile.site_key'))
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+        {{--
+            Explicit rendering, not the implicit `cf-turnstile` class.
+
+            #register-form is display:none until its tab is clicked, and
+            Cloudflare documents automatic rendering for widgets present at page
+            load, recommending turnstile.render() for forms revealed later. A
+            widget that silently failed to produce a token would make AntiSpam
+            reject every genuine signup -- honeypot and timing would have let
+            them through -- so this path stays on documented ground and builds
+            the widget only once its container is actually visible.
+        --}}
+        <script>
+            (function () {
+                var SITE_KEY = @json(config('services.turnstile.site_key'));
+                var apiReady = false, wanted = false, rendered = false;
+
+                function render() {
+                    if (rendered || !apiReady || !wanted || !window.turnstile) { return; }
+                    var host = document.getElementById('turnstile-widget');
+                    if (!host) { return; }
+                    rendered = true;
+                    window.turnstile.render(host, { sitekey: SITE_KEY, language: 'ar' });
+                }
+
+                // Named in the api.js query string; Cloudflare calls it on load.
+                window.onTurnstileLoad = function () { apiReady = true; render(); };
+
+                // login.js is deferred, so its tab handler runs after this one:
+                // on click the form is still hidden. Yield a tick so the widget
+                // is built into a visible container.
+                function want() { wanted = true; setTimeout(render, 0); }
+
+                var tab = document.getElementById('tab-register');
+                if (tab) { tab.addEventListener('click', want); }
+
+                // Don't depend on the click alone -- the form may already be
+                // open (restored browser state, or a later deep link).
+                var form = document.getElementById('register-form');
+                if (form && form.style.display !== 'none') { want(); }
+            })();
+        </script>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" defer></script>
     @endif
     <script src="{{ asset('js/login.js') }}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
