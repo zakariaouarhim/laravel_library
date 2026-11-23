@@ -57,3 +57,26 @@ did). CLAUDE.md's ownership remedy only covers `storage` + `bootstrap/cache`.
 **Rule:** after any image-pipeline change, verify EVERY destination directory
 is www-data-writable on the server (`find public -type d ! -user www-data`),
 not just the one the happy path touches.
+
+## 2026-11-23 — Don't report a root cause you only inferred
+While verifying an unrelated deploy I noticed 405 logged "Error in user
+creation" entries and told the user "registration has no length rule on
+`name`". It had `max:255`. The real cause was
+`Schema::defaultStringLength(191)` in AppServiceProvider making the column
+`varchar(191)`, so 192-255 chars passed validation and died on INSERT. I had
+read the symptom and guessed the cause, then stated the guess as fact.
+
+The same guess appeared twice more in that investigation: the migrations say
+`$table->string('name')` (255) while every real column is 191, and an
+exploration agent reported 255 from the migration.
+
+**Rule:** before naming a cause in a report, run the one command that proves
+it. For a column it is `SHOW COLUMNS`, never the migration — a global
+`defaultStringLength` or an out-of-band `ALTER` makes migrations lie. If there
+is no time to verify, say "likely" and say what would confirm it.
+
+**Corollary:** a logged error is the failure path. Ask what the *success* path
+of the same attack looks like. Here the 405 errors were only the payloads too
+long to fit; the ones that fit created two real spam accounts nobody had
+noticed.
+
