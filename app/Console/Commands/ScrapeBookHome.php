@@ -53,9 +53,20 @@ class ScrapeBookHome extends Command
     private const USER_AGENT = 'LibraryFokara/1.0 (catalogue enrichment)';
     private const INSERT_CHUNK = 200;
 
-    /** The site's own double-encoding bug: "Andlaquo;" instead of "&laquo;". */
-    private const MANGLED_ENTITIES =
-        '/And(laquo|raquo|quot|amp|nbsp|hellip|mdash|ndash|rsquo|lsquo|ldquo|rdquo|apos|lt|gt);/';
+    /**
+     * The site's own double-encoding bug: "Andlaquo;" instead of "&laquo;".
+     *
+     * This matches the SHAPE, not a fixed list of names: an earlier allow-list
+     * of 15 entities silently let "Andbull;" through, and each new slice of the
+     * id range turns up another. repairEntities() converts a match only when
+     * "&name;" is a real HTML entity, so "Andrew;" is left alone.
+     *
+     * Names must be 3+ characters, because the HTML5 table also defines very
+     * short, word-like entities - "&or;" is a real entity (logical OR), so a
+     * 2-character rule would rewrite "Andor;" to "∨". The only 2-character
+     * names this source actually needs are lt and gt, allowed explicitly.
+     */
+    private const MANGLED_ENTITIES = '/And(lt|gt|[A-Za-z][A-Za-z0-9]{2,9});/';
 
     protected $signature = 'bh:scrape
         {--from= : First product id (default: highest already-scraped bh id + 1)}
@@ -330,6 +341,14 @@ class ScrapeBookHome extends Command
                 'User-Agent'      => self::USER_AGENT,
                 'Accept'          => 'text/html,application/xhtml+xml',
                 'Accept-Language' => 'ar,en;q=0.8',
+                // Measured: a product page is 159,591 bytes raw and 19,161
+                // gzipped - 8.3x. Guzzle only advertises gzip if we ask for it
+                // explicitly (its decode_content default sets CURLOPT_ENCODING
+                // but then strips the header curl adds), so without this line a
+                // full 68k-id backfill transfers ~9 GB instead of ~1.1 GB.
+                // Guzzle inflates it transparently: the parser sees the same
+                // 159,591 bytes either way.
+                'Accept-Encoding' => 'gzip',
             ],
             // This site is slow and uneven — a cold product page has been
             // measured at ~9s — so the ceilings are well above ak:scrape's.
@@ -521,7 +540,15 @@ class ScrapeBookHome extends Command
     /** "Andlaquo;" -> "&laquo;" -> "«". See MANGLED_ENTITIES. */
     private function repairEntities(string $text): string
     {
-        $text = preg_replace(self::MANGLED_ENTITIES, '&$1;', $text);
+        $text = preg_replace_callback(self::MANGLED_ENTITIES, function (array $m): string {
+            $entity = '&' . $m[1] . ';';
+            // html_entity_decode returns the input unchanged when the entity is
+            // not real, which is exactly the test we want: repair "Andbull;",
+            // leave a name like "Andrew;" ("&rew;" is nothing) as it stands.
+            $decoded = html_entity_decode($entity, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            return $decoded === $entity ? $m[0] : $decoded;
+        }, $text);
 
         return html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
