@@ -34,7 +34,9 @@ class SecurityHeaders
             // covers in the admin catalogue-import browser.
             // covers.openlibrary.org + upload.wikimedia.org: enrich-preview images
             // (Open Library / BNF fallback / Wikipedia) in the import modals.
-            "img-src 'self' data: blob: https://books.google.com https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://almouggar.com https://cdn.shopify.com https://images.epagine.fr https://jackets.dmmserver.com https://cdn.aseeralkotb.com https://covers.openlibrary.org https://upload.wikimedia.org",
+            // bookhomemaster.com: thebookhome.com serves its covers from that
+            // separate host, so "bh:" rows would show blank covers without it.
+            "img-src 'self' data: blob: https://books.google.com https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://almouggar.com https://cdn.shopify.com https://images.epagine.fr https://jackets.dmmserver.com https://cdn.aseeralkotb.com https://covers.openlibrary.org https://upload.wikimedia.org https://bookhomemaster.com",
             "connect-src 'self' https://www.google.com https://books.google.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net https://challenges.cloudflare.com",
             // challenges.cloudflare.com: the Turnstile widget renders in an iframe and
             // posts back to its own origin, so it needs script-, connect- and frame-src.

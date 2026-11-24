@@ -239,6 +239,7 @@
                 <option value="bod">BooksOnDemand</option>
                 <option value="lm">Livremoi</option>
                 <option value="ak">أسير الكتب</option>
+                <option value="bh">بيت الكتب</option>
                 <option value="api">بحث API</option>
             </select>
             <label class="chk"><input type="checkbox" id="fDesc"> بوصف فقط</label>

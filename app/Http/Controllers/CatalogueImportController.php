@@ -58,7 +58,7 @@ class CatalogueImportController extends Controller
             'min_completeness' => 'nullable|integer|min:0|max:8',
             'has_description'  => 'nullable|boolean',
             'hide_in_store'    => 'nullable|boolean',
-            'source'           => 'nullable|in:almouggar,bod,lm,ak,api',
+            'source'           => 'nullable|in:almouggar,bod,lm,ak,api,bh',
         ]);
 
         $status = $data['status'] ?? 'pending';
@@ -78,11 +78,13 @@ class CatalogueImportController extends Controller
             ->when(($data['source'] ?? '') === 'lm', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'lm:%'))
             ->when(($data['source'] ?? '') === 'ak', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'ak:%'))
             ->when(($data['source'] ?? '') === 'api', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'api:%'))
+            ->when(($data['source'] ?? '') === 'bh', fn($q) => $q->where('catalogue_reference.dedup_key', 'like', 'bh:%'))
             ->when(($data['source'] ?? '') === 'almouggar', fn($q) => $q
                 ->where('catalogue_reference.dedup_key', 'not like', 'bod:%')
                 ->where('catalogue_reference.dedup_key', 'not like', 'lm:%')
                 ->where('catalogue_reference.dedup_key', 'not like', 'ak:%')
-                ->where('catalogue_reference.dedup_key', 'not like', 'api:%'))
+                ->where('catalogue_reference.dedup_key', 'not like', 'api:%')
+                ->where('catalogue_reference.dedup_key', 'not like', 'bh:%'))
             ->when(!empty($data['language']), fn($q) => $q->where('catalogue_reference.langue', 'like', '%' . self::LANG_FILTER[$data['language']] . '%'))
             ->when(!empty($data['has_description']), fn($q) => $q->whereNotNull('catalogue_reference.description')->where('catalogue_reference.description', '<>', ''))
             ->when(!empty($data['q']), function ($q) use ($data) {
@@ -312,7 +314,7 @@ class CatalogueImportController extends Controller
     /** dedup_key prefix -> the source key the dashboard filter uses. */
     private function sourceOf(?string $dedupKey): string
     {
-        foreach (['bod', 'lm', 'ak', 'api'] as $prefix) {
+        foreach (['bod', 'lm', 'ak', 'api', 'bh'] as $prefix) {
             if (str_starts_with((string) $dedupKey, $prefix . ':')) {
                 return $prefix;
             }
