@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/product.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}"></script>
 
     
 </head>
@@ -801,11 +802,10 @@
             const old = btn.innerHTML;
             btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جارٍ إعادة الصياغة…';
             try {
-                const res = await fetch('{{ route('admin.products.rewrite-description') }}', {
+                const res = await csrfFetch('{{ route('admin.products.rewrite-description') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -850,11 +850,10 @@
             const old = btn.innerHTML;
             btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جارٍ البحث…';
             try {
-                const res = await fetch('{{ route('admin.products.enrich-preview') }}', {
+                const res = await csrfFetch('{{ route('admin.products.enrich-preview') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ name: val(o.name), author: val(o.author), isbn: val(o.isbn), language: val(o.lang) })
@@ -986,11 +985,10 @@
             srcBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جارٍ الاقتراح…';
             status.textContent = '';
             try {
-                const res = await fetch('{{ route('admin.products.suggest-category') }}', {
+                const res = await csrfFetch('{{ route('admin.products.suggest-category') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({

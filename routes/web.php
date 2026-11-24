@@ -16,6 +16,7 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\CsrfTokenController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\QuoteController;
@@ -392,6 +393,10 @@ Route::get('/authors', [AuthorController::class, 'publicIndex'])->name('authors.
 Route::get('/مؤلف/{author}', [AuthorController::class, 'publicShow'])->name('author.show');
 // Legacy /author/{id} → 301
 Route::get('/author/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'author'])->where('id', '[0-9]+');
+
+// Lets a long-open page fetch a fresh CSRF token for its own session instead of
+// dying on a 419 after the session rolled over. See CsrfTokenController.
+Route::get('/csrf-token', [CsrfTokenController::class, 'show'])->name('csrf-token');
 
 Route::get('/publishers', [PublisherController::class, 'publicIndex'])->name('publishers.index');
 Route::get('/ناشر/{publisher}', [PublisherController::class, 'publicShow'])->name('publisher.show');

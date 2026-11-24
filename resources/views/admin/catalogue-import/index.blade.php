@@ -408,11 +408,11 @@
       </div>
     </div>
 
+    <script src="{{ asset('js/csrf.js') }}"></script>
     <script>
         const CATEGORIES = @json($categories);
         const CAT_BY_ID = {};
         CATEGORIES.forEach(c => CAT_BY_ID[c.id] = c);
-        const CSRF = document.querySelector('meta[name="csrf-token"]').content;
         const BASE = '{{ url('admin/catalogue-import') }}';
         const LIST_URL = '{{ route('admin.catalogue-import.list') }}';
         const FIND_URL = '{{ route('admin.catalogue-import.find') }}';
@@ -580,20 +580,26 @@
             toastTimer = setTimeout(() => t.classList.remove('show'), warn ? 9000 : 2500);
         }
 
+        // csrfFetch (js/csrf.js) reads the token at call time and retries once on a
+        // 419, so leaving this screen open past SESSION_LIFETIME no longer breaks
+        // every action with "CSRF token mismatch".
         async function post(url, body) {
-            const resp = await fetch(url, {
+            const resp = await csrfFetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(body || {}),
             });
-            return { ok: resp.ok, status: resp.status, data: await resp.json().catch(() => ({})) };
+            return unwrap(resp);
         }
         async function postForm(url, formData) {
-            const resp = await fetch(url, {
+            const resp = await csrfFetch(url, {
                 method: 'POST',
-                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                headers: { 'Accept': 'application/json' },
                 body: formData,
             });
+            return unwrap(resp);
+        }
+        async function unwrap(resp) {
             return { ok: resp.ok, status: resp.status, data: await resp.json().catch(() => ({})) };
         }
 
