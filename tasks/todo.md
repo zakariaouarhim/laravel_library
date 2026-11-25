@@ -455,10 +455,12 @@ Every cover that remains is on `bookhomemaster.com`, already in the CSP
 `img-src` — 0 off-host covers, so the review grid has nothing to block.
 
 ### Still open (reported, not actioned — needs a decision)
-* **`catalogue:import` would destroy all 68,016 `bh:` rows.** It does
-  `DROP TABLE` + recreate from the July dump, and it already wiped livremoi to
-  0. It would now also orphan their `catalogue_reviews`. Worth a `--force`
-  guard before anyone runs it again.
+* ~~`catalogue:import` would destroy all 68,016 `bh:` rows.~~ **Fixed**
+  (`f451249`): the command now counts the 139,812 scraped rows the dump does
+  not contain, prints them with the command that rebuilds each plus the number
+  of review decisions that would be orphaned, and stops with exit 1 unless
+  `--force` is given. almouggar rows are not treated as at risk, including the
+  1,651 keyed `u:<sha1>` rather than unprefixed - the dump does contain those.
 * Prices are USD and stored null, so review these with the quality filter
   lowered: **49,196 of 68,016 rows score below 7** and the default `>= 7`
   filter hides them.
