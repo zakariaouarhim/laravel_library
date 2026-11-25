@@ -19,9 +19,10 @@
  * safe: VerifyCsrfToken rejects before the controller runs, so the first
  * attempt had no effect and nothing can be applied twice.
  *
- * WHAT IS DELIBERATELY NOT COVERED
- * jQuery uses XMLHttpRequest, not fetch, so it needs its own hook below. There
- * the recovery is only partial - see installJQuery().
+ * JQUERY
+ * jQuery uses XMLHttpRequest, not fetch, so the wrapper cannot see it and
+ * $.ajax is replaced instead - same guarantee, including $.get/$.post and
+ * promise-style .done()/.fail() callers. See installJQuery().
  */
 (function () {
     if (window.__csrfInstalled) { return; }
@@ -191,19 +192,39 @@
     }
 
     /**
-     * jQuery hook. PARTIAL BY NECESSITY, and the limit is worth knowing:
+     * jQuery hook. jQuery uses XMLHttpRequest, so the fetch wrapper above
+     * cannot see it and $.ajax needs replacing to get the same guarantee.
      *
-     *  - the prefilter fixes the common bug, which is a token captured once via
-     *    $.ajaxSetup at page load and then reused for the life of the page;
-     *  - on a 419 the token is refreshed, so the NEXT action works;
-     *  - the failed call itself is replayed only when its settings carry a
-     *    success callback. Calls written as $.ajax(...).done(...) keep their
-     *    handlers on the returned promise, not in settings, so replaying would
-     *    run on the server while the UI never heard about it. Overriding
-     *    $.ajax to return our own promise would cover those, but it would also
-     *    stop returning a real jqXHR, breaking any caller that uses .abort() or
-     *    reads responseText. Not worth it on admin screens, where the next
-     *    click now succeeds.
+     * Two parts:
+     *
+     *  1. a prefilter that sets X-CSRF-TOKEN from the meta tag at SEND time.
+     *     This alone fixes ManagementSystem.js, which captured a token via
+     *     $.ajaxSetup at init and then reused it for the life of the page. It
+     *     also means a replay needs no header handling of its own: the
+     *     prefilter runs again and picks up the refreshed token.
+     *
+     *  2. an $.ajax replacement that, on a same-origin 419, refreshes the
+     *     token and replays the request ONCE, resolving the caller's own
+     *     promise with the result of whichever attempt succeeded.
+     *
+     * Why replace $.ajax rather than retry from an ajaxError handler: a
+     * handler only sees `settings`, so it can only re-fire calls whose
+     * callbacks were passed IN settings. authors.js is written entirely as
+     * $.get(...).done(...) / $.post(...).fail(...), which keep their handlers
+     * on the returned promise - replaying those would run on the server while
+     * the UI never heard about it. $.get, $.post and $.getJSON all route
+     * through $.ajax, so replacing it covers them too.
+     *
+     * The returned object is a promise with the jqXHR surface proxied onto it
+     * (abort, header access), delegating to whichever attempt is live. Audited
+     * first: nothing in this codebase holds a jqXHR from $.ajax/$.get/$.post -
+     * every .abort() call is an AbortController belonging to a fetch - so no
+     * caller depends on the real jqXHR being returned.
+     *
+     * success/error/complete, when passed in settings, are stripped from what
+     * jQuery sees and fired by us on the FINAL outcome only. Otherwise a
+     * recovered call would run the caller's error handler for the 419 first
+     * and then its success handler, which is worse than the bug.
      */
     function installJQuery($) {
         if (!$ || !$.ajaxPrefilter || $.__csrfPatched) { return; }
@@ -214,16 +235,78 @@
             xhr.setRequestHeader('X-CSRF-TOKEN', currentToken());
         });
 
-        $(document).ajaxError(function (event, xhr, settings) {
-            if (xhr.status !== 419 || settings.__csrfRetried) { return; }
-            settings.__csrfRetried = true;
+        var nativeAjax = $.ajax;
 
-            refreshToken().then(function (fresh) {
-                if (fresh && typeof settings.success === 'function') {
-                    $.ajax(settings);
-                }
+        $.ajax = function (url, options) {
+            // jQuery accepts ajax(url, options) and ajax(options).
+            var settings = typeof url === 'string'
+                ? $.extend({}, options || {}, { url: url })
+                : $.extend({}, url || {});
+
+            // Held back so they fire once, on the outcome the caller should see.
+            var userSuccess = settings.success;
+            var userError = settings.error;
+            var userComplete = settings.complete;
+            delete settings.success;
+            delete settings.error;
+            delete settings.complete;
+
+            var deferred = $.Deferred();
+            var live = null;
+            var retried = false;
+
+            function succeed(context, data, textStatus, jqXHR) {
+                if (userSuccess) { userSuccess.apply(context, [data, textStatus, jqXHR]); }
+                if (userComplete) { userComplete.apply(context, [jqXHR, textStatus]); }
+                deferred.resolveWith(context, [data, textStatus, jqXHR]);
+            }
+
+            function giveUp(context, jqXHR, textStatus, errorThrown) {
+                if (userError) { userError.apply(context, [jqXHR, textStatus, errorThrown]); }
+                if (userComplete) { userComplete.apply(context, [jqXHR, textStatus]); }
+                deferred.rejectWith(context, [jqXHR, textStatus, errorThrown]);
+            }
+
+            function attempt() {
+                live = nativeAjax(settings);
+
+                live.done(function (data, textStatus, jqXHR) {
+                    succeed(this, data, textStatus, jqXHR);
+                });
+
+                live.fail(function (jqXHR, textStatus, errorThrown) {
+                    var context = this;
+                    if (jqXHR.status !== 419 || retried || settings.crossDomain) {
+                        giveUp(context, jqXHR, textStatus, errorThrown);
+                        return;
+                    }
+
+                    retried = true;
+                    refreshToken().then(function (fresh) {
+                        if (!fresh) {
+                            giveUp(context, jqXHR, textStatus, errorThrown);
+                            return;
+                        }
+                        // The prefilter attaches the refreshed token for us.
+                        attempt();
+                    });
+                });
+            }
+
+            attempt();
+
+            var api = deferred.promise();
+            ['abort', 'getAllResponseHeaders', 'getResponseHeader', 'setRequestHeader',
+             'overrideMimeType', 'statusCode'].forEach(function (name) {
+                api[name] = function () {
+                    return live && typeof live[name] === 'function'
+                        ? live[name].apply(live, arguments)
+                        : undefined;
+                };
             });
-        });
+
+            return api;
+        };
     }
 
     installJQuery(window.jQuery);
