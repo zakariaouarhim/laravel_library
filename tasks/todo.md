@@ -404,3 +404,61 @@ itself deferred and its tab handler runs after the inline listener.
 ### Not verifiable from here
 The widget rendering in a real browser (no browser tool in session). Owner to
 confirm: open /login2 → "إنشاء حساب" tab → widget appears → signup completes.
+
+---
+
+## Book Home backfill — complete and on production (2026-11-25)
+
+The fifth reference source is fully scraped and transferred. `catalogue_reference`
+on the VPS: **221,559 rows**, of which **68,016 are `bh:`** (almouggar 81,782,
+ak 69,488, bod 2,268, api 5).
+
+### The run
+62,846 books found over ids 1–77,999; 15,153 ids missing or unusable (a yield of
+80.6%, against the 87% a 30-id sample predicted). Added to the 5,170 from the
+first slice, that is 68,016 rows spanning ids 11–83,375.
+
+### Transfer (no migration, no git — these are rows, not files)
+Dump of the `bh:` rows (86 MB → 19.5 MB gzipped, md5 verified after upload) →
+`bh_staging` on the VPS → `INSERT IGNORE ... SELECT` with **`id` excluded** so
+the server assigned its own keys (223,322–286,167). Staging dropped and the
+upload deleted afterwards.
+
+* `ROW_COUNT()` = **62,846** — exactly the 68,016 staged minus the 5,170 already
+  held, so the unique `dedup_key` did the deduplicating and nothing was doubled.
+* 68,016 `bh:` rows = 68,016 distinct keys.
+* The 5,170 pre-existing rows were untouched: same fingerprint before and after,
+  all still on their original ids, and 0 differing from the local copy.
+  (`INSERT IGNORE` cannot update, which is the real guarantee; the first
+  fingerprint I took was silently truncated by the default
+  `group_concat_max_len`, so it was re-taken with the limit raised.)
+* The dashboard's almouggar count is still exactly 81,782 — the `NOT LIKE 'bh:%'`
+  guard holds, so no Book Home row is mislabelled.
+
+### Two defects the full run exposed (both fixed, both repaired in place)
+1. **Mangled numeric entities** (`ec9bf07`). The named-entity repair handles
+   `Andlaquo;`, but the site mangles numeric references the same way
+   (`And#8201;`, `And#39;`) and a name pattern cannot match `#8201`. 23 rows
+   affected. Decimal and hex branches added; `And#;` and `And#999999999;` are
+   still left alone, as is English prose like `and TOM SAWYER; 1896`.
+2. **The placeholder cover stored as a real cover** (`ff6f50d`). A book with no
+   artwork still carries an og:image: `/Content/images/siteDefult.jpg`.
+   **10,591 of 68,016 rows** (15.6%) held it. It is site-relative, so the review
+   grid resolved it against alfokara.com and showed a broken image, the importer
+   would have fetched that 404 as a cover at approve time, and it scored a
+   completeness point no cover had earned. Repaired to NULL with completeness
+   decremented, taking the bh average from 5.37 to an honest **5.22**.
+   `updated_at` preserved in both repairs, so a data fix does not read as a
+   re-scrape and the rows do not jump in a recency sort.
+
+Every cover that remains is on `bookhomemaster.com`, already in the CSP
+`img-src` — 0 off-host covers, so the review grid has nothing to block.
+
+### Still open (reported, not actioned — needs a decision)
+* **`catalogue:import` would destroy all 68,016 `bh:` rows.** It does
+  `DROP TABLE` + recreate from the July dump, and it already wiped livremoi to
+  0. It would now also orphan their `catalogue_reviews`. Worth a `--force`
+  guard before anyone runs it again.
+* Prices are USD and stored null, so review these with the quality filter
+  lowered: **49,196 of 68,016 rows score below 7** and the default `>= 7`
+  filter hides them.
