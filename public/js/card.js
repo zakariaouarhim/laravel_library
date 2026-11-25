@@ -1,5 +1,35 @@
+/**
+ * POST a wishlist toggle, surviving a stale CSRF token.
+ *
+ * js/csrf.js refreshes the token and retries once on a 419. That matters here
+ * because a visitor can leave a product page open past SESSION_LIFETIME and
+ * then lose the click: a real 419 on /wishlist-session/add was observed in the
+ * production access log. Falls back to a plain fetch when that helper is not on
+ * the page, so no view breaks by forgetting to include it.
+ *
+ * Accept: application/json is deliberate - without it Laravel answers a 419
+ * with an HTML error page, which both callers below would reject as an invalid
+ * response format instead of showing the real message.
+ */
+function wishlistPost(url) {
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+    };
+
+    if (window.csrfFetch) {
+        return window.csrfFetch(url, options);
+    }
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    options.headers['X-CSRF-TOKEN'] = meta ? meta.getAttribute('content') : '';
+    return fetch(url, options);
+}
+
 function toggleWishlist(bookId, buttonElement) {
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const icon = buttonElement.querySelector('i');
     
     // Check if already in wishlist by checking if icon is filled (fas)
@@ -12,13 +42,7 @@ function toggleWishlist(bookId, buttonElement) {
         // User is logged in - use database
         const route = isInWishlist ? `/wishlist/remove/${bookId}` : `/wishlist/add/${bookId}`;
         
-        fetch(route, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': token
-            }
-        })
+        wishlistPost(route)
         .then(response => {
             const contentType = response.headers.get('content-type');
             
@@ -59,18 +83,11 @@ function toggleWishlist(bookId, buttonElement) {
 }
 
 function handleGuestWishlist(bookId, buttonElement, icon, isInWishlist) {
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
     // Send to session via API
     const route = isInWishlist ? `/wishlist-session/remove/${bookId}` : `/wishlist-session/add/${bookId}`;
     
-    fetch(route, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': token
-        }
-    })
+    wishlistPost(route)
     .then(response => response.json())
     .then(data => {
         if (data.success) {

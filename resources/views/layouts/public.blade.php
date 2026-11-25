@@ -30,6 +30,7 @@
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     @auth
         <meta name="auth-user" content="true">
     @endauth

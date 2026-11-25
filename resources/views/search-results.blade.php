@@ -281,6 +281,7 @@
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script src="{{ asset('js/Index-searchbar.js') }}" defer></script>
     <script src="{{ asset('js/scripts.js') }}" defer></script>
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     <script src="{{ asset('js/card.js') }}" defer></script>
     <script>
         // Show more categories toggle
