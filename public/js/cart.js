@@ -1,5 +1,31 @@
+/**
+ * JSON POST with CSRF recovery.
+ *
+ * js/csrf.js refreshes a stale token and retries once on a 419. This file used
+ * to read the token ONCE at DOMContentLoaded, so a cart page left open past
+ * SESSION_LIFETIME could never recover - every quantity change and removal
+ * failed with a generic error until the page was reloaded.
+ *
+ * Degrades to a plain POST with the page token when csrf.js is absent, so the
+ * cart keeps working rather than breaking outright.
+ */
+function cartPost(url, body) {
+    if (window.csrfPostJson) { return window.csrfPostJson(url, body); }
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': meta ? meta.getAttribute('content') : '',
+        },
+    };
+    if (body !== undefined && body !== null) { options.body = JSON.stringify(body); }
+    return fetch(url, options);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     // Quantity increase buttons
     document.querySelectorAll('.qty-increase').forEach(function (btn) {
@@ -43,14 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateQuantityOnServer(itemId, newQuantity) {
-        fetch(window.routes.updateCartQuantity, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify({ id: parseInt(itemId), quantity: newQuantity })
-        })
+        cartPost(window.routes.updateCartQuantity, { id: parseInt(itemId), quantity: newQuantity })
         .then(function (response) { return response.json(); })
         .then(function (data) {
             if (data.success) {
@@ -71,14 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
             itemEl.classList.add('removing');
         }
 
-        fetch(window.routes.removeFromCart, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify({ id: parseInt(itemId) })
-        })
+        cartPost(window.routes.removeFromCart, { id: parseInt(itemId) })
         .then(function (response) { return response.json(); })
         .then(function (data) {
             if (data.success) {
@@ -123,14 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var chain = Promise.resolve();
         ids.forEach(function (id) {
             chain = chain.then(function () {
-                return fetch(window.routes.removeFromCart, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({ id: parseInt(id) })
-                });
+                return cartPost(window.routes.removeFromCart, { id: parseInt(id) });
             });
         });
 

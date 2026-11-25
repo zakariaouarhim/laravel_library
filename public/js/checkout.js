@@ -1,3 +1,29 @@
+/**
+ * JSON POST with CSRF recovery.
+ *
+ * js/csrf.js refreshes a stale token and retries once on a 419. That matters
+ * most here: a checkout page sits open while the customer fills in the form, so
+ * a lost coupon or quantity click costs a sale.
+ *
+ * Degrades to a plain POST with the page token when csrf.js is absent, so the
+ * page keeps working rather than breaking outright.
+ */
+function checkoutPost(url, body) {
+    if (window.csrfPostJson) { return window.csrfPostJson(url, body); }
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': meta ? meta.getAttribute('content') : '',
+        },
+    };
+    if (body !== undefined && body !== null) { options.body = JSON.stringify(body); }
+    return fetch(url, options);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Function to sync visible quantity input with hidden input
     function syncQuantityInputs(itemElement) {
@@ -10,17 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to update quantity on server
     function updateQuantityOnServer(itemId, newQuantity, callback) {
-        fetch('/cart/update-quantity', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                id: itemId,
-                quantity: newQuantity
-            })
-        })
+        checkoutPost('/cart/update-quantity', { id: itemId, quantity: newQuantity })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -159,13 +175,7 @@ $('input[name="payment_method"]').change(function() {
 });
 
 function removeFromCart2(itemId) {
-    fetch(`/remove-from-cart/${itemId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
+    checkoutPost(`/remove-from-cart/${itemId}`)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
@@ -403,14 +413,7 @@ function enableQuantityInput(itemId) {
         btn.disabled    = true;
         btn.textContent = '...';
 
-        fetch('/checkout/apply-coupon', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ code: code, subtotal: getSubtotal() })
-        })
+        checkoutPost('/checkout/apply-coupon', { code: code, subtotal: getSubtotal() })
         .then(function (res) { return res.json(); })
         .then(function (data) {
             if (data.success) {
@@ -442,13 +445,7 @@ function enableQuantityInput(itemId) {
         const msgEl = document.getElementById('couponMessage');
         const btn   = document.getElementById('applyCoupon');
 
-        fetch('/checkout/remove-coupon', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
+        checkoutPost('/checkout/remove-coupon')
         .then(function () {
             const discountEl = document.getElementById('discount');
             if (discountEl) discountEl.removeAttribute('data-coupon-discount');

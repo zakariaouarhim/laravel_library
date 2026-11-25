@@ -12,21 +12,17 @@
  * response format instead of showing the real message.
  */
 function wishlistPost(url) {
-    const options = {
+    if (window.csrfPostJson) { return window.csrfPostJson(url); }
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'X-CSRF-TOKEN': meta ? meta.getAttribute('content') : '',
         },
-    };
-
-    if (window.csrfFetch) {
-        return window.csrfFetch(url, options);
-    }
-
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    options.headers['X-CSRF-TOKEN'] = meta ? meta.getAttribute('content') : '';
-    return fetch(url, options);
+    });
 }
 
 function toggleWishlist(bookId, buttonElement) {

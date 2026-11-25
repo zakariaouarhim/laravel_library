@@ -208,20 +208,16 @@
     </script>
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script src="{{ asset('js/scripts.js') }}" defer></script>
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     <script src="{{ asset('js/cart.js') }}" defer></script>
     <script>
         // Remove a whole offer group, then reload to recompute totals.
         document.querySelectorAll('.remove-offer-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                fetch("{{ route('cart.offer.remove') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ uid: btn.dataset.uid }),
-                })
+                // cartPost (js/cart.js) recovers from a stale CSRF token. Safe to
+                // call from here even though cart.js is deferred: this only
+                // registers a listener, and the call happens on click.
+                cartPost("{{ route('cart.offer.remove') }}", { uid: btn.dataset.uid })
                 .then(r => r.json())
                 .then(d => { if (d.success) window.location.reload(); })
                 .catch(() => {});

@@ -84,7 +84,29 @@
         return expiredResponse();
     }
 
+    /**
+     * The canonical JSON POST for this app: correct headers, CSRF recovery, and
+     * Accept: application/json so a 419 comes back as JSON. Without that header
+     * Laravel answers with an HTML error page, which callers doing
+     * response.json() throw on - turning a recoverable session rollover into a
+     * generic "something went wrong".
+     *
+     * Pass no body for endpoints that take none.
+     */
+    function csrfPostJson(url, body) {
+        var options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        };
+        if (body !== undefined && body !== null) {
+            options.body = JSON.stringify(body);
+        }
+
+        return csrfFetch(url, options);
+    }
+
     window.csrfToken = currentToken;
+    window.csrfPostJson = csrfPostJson;
     window.refreshCsrfToken = refreshToken;
     window.csrfFetch = csrfFetch;
     window.CSRF_EXPIRED_MESSAGE = EXPIRED_MESSAGE;

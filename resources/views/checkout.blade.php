@@ -363,6 +363,7 @@
         };
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     <script src="{{ asset('js/checkout.js') }}" defer></script>
     <script src="{{ asset('js/header.js') }}" defer></script>
 </body>
