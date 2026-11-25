@@ -50,6 +50,8 @@ use Illuminate\Support\Facades\DB;
 class ScrapeBookHome extends Command
 {
     private const BASE = 'https://www.thebookhome.com';
+    /** The site's own "no cover" artwork, served as og:image. See encodeUrl(). */
+    private const PLACEHOLDER_COVER = 'siteDefult.jpg';
     private const USER_AGENT = 'LibraryFokara/1.0 (catalogue enrichment)';
     private const INSERT_CHUNK = 200;
 
@@ -571,9 +573,26 @@ class ScrapeBookHome extends Command
             return null;
         }
 
+        // A book with no artwork gets the site's placeholder as its og:image -
+        // 10,591 of the 68,016 rows in the full backfill. Keeping it is worse
+        // than keeping nothing: it is published as a site-RELATIVE path, so our
+        // review grid resolves it against alfokara.com and shows a broken
+        // image, the importer would fetch that 404 as a cover, and it counts
+        // toward completeness as though a real cover existed.
+        if (stripos($url, self::PLACEHOLDER_COVER) !== false) {
+            return null;
+        }
+
         $parts = parse_url($url);
-        if ($parts === false || empty($parts['host']) || empty($parts['path'])) {
-            return $url;
+        if ($parts === false || empty($parts['path'])) {
+            return null;
+        }
+
+        // Without a host the value is only usable if it is a rooted path.
+        // parse_url('not a url') yields a path too, and resolving THAT against
+        // the site produced "https://www.thebookhome.comnot%20a%20url".
+        if (empty($parts['host']) && $parts['path'][0] !== '/') {
+            return null;
         }
 
         $path = implode('/', array_map(
@@ -581,7 +600,12 @@ class ScrapeBookHome extends Command
             explode('/', $parts['path'])
         ));
 
-        return ($parts['scheme'] ?? 'https') . '://' . $parts['host'] . $path
+        // Any other relative og:image belongs to THIS site, so resolve it here
+        // rather than storing a path that would resolve against ours.
+        $scheme = $parts['scheme'] ?? (string) parse_url(self::BASE, PHP_URL_SCHEME);
+        $host   = $parts['host'] ?? (string) parse_url(self::BASE, PHP_URL_HOST);
+
+        return $scheme . '://' . $host . $path
             . (isset($parts['query']) ? '?' . $parts['query'] : '');
     }
 
