@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/dashboardCategories.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
 </head>
 <body>
 

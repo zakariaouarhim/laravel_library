@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     <style>
         .stock-editor   { display:inline-flex;align-items:center;gap:.3rem; }
         .stock-input    { width:64px;text-align:center;border:1px solid #d8dde6;border-radius:6px;padding:.25rem;font-family:inherit; }

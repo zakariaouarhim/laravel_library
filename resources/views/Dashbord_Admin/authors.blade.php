@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/authors.css') }}?v={{ filemtime(public_path('css/authors.css')) }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
 </head>
 <body>
     <div class="container-fluid">

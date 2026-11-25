@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/dashboardCategories.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     <style>
         .bundle-items-list { max-height: 260px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; background:#fafafa; }
         .bundle-item-row { display:flex; align-items:center; gap:8px; padding:6px 4px; border-bottom:1px dashed #eee; }

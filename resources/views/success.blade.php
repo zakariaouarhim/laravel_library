@@ -139,6 +139,8 @@
     @include('footer')
 
     
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     <script src="{{ asset('js/header.js') }}" defer></script>
     <script>
         // Add some interactive elements

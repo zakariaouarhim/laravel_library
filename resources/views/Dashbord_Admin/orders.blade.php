@@ -17,6 +17,7 @@
     
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     
 </head>
 <body>

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/sidebardaschboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/clients.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/csrf.js') }}" defer></script>
     <style>
         .role-badge-user       { background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600; }
         .role-badge-admin      { background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600; }
