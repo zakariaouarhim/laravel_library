@@ -65,8 +65,13 @@ class ScrapeBookHome extends Command
      * short, word-like entities - "&or;" is a real entity (logical OR), so a
      * 2-character rule would rewrite "Andor;" to "∨". The only 2-character
      * names this source actually needs are lt and gt, allowed explicitly.
+     *
+     * Numeric references are mangled the same way ("And#8201;" for a thin
+     * space, "And#39;" for an apostrophe) and need their own branches: a name
+     * pattern cannot match "#8201". They turned up in 23 rows of the full 68k
+     * backfill, all of them after the named-entity fix had already gone in.
      */
-    private const MANGLED_ENTITIES = '/And(lt|gt|[A-Za-z][A-Za-z0-9]{2,9});/';
+    private const MANGLED_ENTITIES = '/And(#x[0-9A-Fa-f]{1,5}|#[0-9]{1,6}|lt|gt|[A-Za-z][A-Za-z0-9]{2,9});/';
 
     protected $signature = 'bh:scrape
         {--from= : First product id (default: highest already-scraped bh id + 1)}
@@ -537,7 +542,7 @@ class ScrapeBookHome extends Command
         return trim(preg_replace('/\s+/u', ' ', $text));
     }
 
-    /** "Andlaquo;" -> "&laquo;" -> "«". See MANGLED_ENTITIES. */
+    /** "Andlaquo;" -> "&laquo;" -> "«"; "And#39;" -> "&#39;" -> ''. See MANGLED_ENTITIES. */
     private function repairEntities(string $text): string
     {
         $text = preg_replace_callback(self::MANGLED_ENTITIES, function (array $m): string {
