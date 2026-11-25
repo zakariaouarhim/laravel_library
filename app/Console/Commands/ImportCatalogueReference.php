@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\DB;
  * it again to refresh. The .sql lives under storage/app/catalogue_reference and
  * is git-ignored (uploaded to the VPS separately).
  *
- * WARNING: the drop/recreate also wipes the scraped rows that live in the same
- * table (dedup_key "bod:…", "lm:…", "ak:…") — re-run the matching scraper after
- * any re-import to restore them.
+ * The drop/recreate also wipes the scraped rows that live in the same table
+ * (dedup_key "bh:…", "ak:…", "bod:…", "lm:…"). Those come back only from a
+ * full re-scrape, so the command now REFUSES to run while any of them are
+ * present unless --force is given; see SCRAPED_SOURCES and guardScrapedRows().
+ * A bare warning in this comment was not enough: it had already cost the
+ * livremoi rows once, and there are now ~140k scraped rows to lose.
  *
  * `api:` rows are the exception: they are books an admin found through the
  * "find this book" search, so no command can regenerate them. They are copied
@@ -24,7 +27,24 @@ use Illuminate\Support\Facades\DB;
 class ImportCatalogueReference extends Command
 {
     protected $signature = 'catalogue:import
-        {--file= : Path to the mysqldump .sql (default: storage/app/catalogue_reference/catalogue_reference.sql)}';
+        {--file= : Path to the mysqldump .sql (default: storage/app/catalogue_reference/catalogue_reference.sql)}
+        {--force : Import anyway, destroying the scraped rows it lists without this flag}';
+
+    /**
+     * Sources this dump does not contain, and the command that rebuilds each.
+     *
+     * The dump carries DROP TABLE, so these rows are destroyed by an import
+     * and come back only from a full re-scrape - hours of traffic each. Every
+     * one of them resumes from id 1 once its rows are gone, so the bare
+     * command is the whole restore. `api:` rows are the other case, handled in
+     * handle(): no command can regenerate those, so they are copied aside.
+     */
+    private const SCRAPED_SOURCES = [
+        'bh:'  => ['Book Home',       'php artisan bh:scrape'],
+        'ak:'  => ['Aseer Al Kotob',  'php artisan ak:scrape'],
+        'bod:' => ['Books on Demand', 'php artisan bod:scrape'],
+        'lm:'  => ['Livremoi',        'php artisan lm:scrape'],
+    ];
 
     protected $description = 'Import the reference catalogue (used to enrich our books) from a mysqldump';
 
@@ -36,6 +56,10 @@ class ImportCatalogueReference extends Command
         if (!is_file($file)) {
             $this->error("Dump not found: {$file}");
             return 1;
+        }
+
+        if (($stop = $this->guardScrapedRows()) !== null) {
+            return $stop;
         }
 
         // Hold the admin-created `api:` rows in memory across the drop/recreate.
@@ -114,5 +138,69 @@ class ImportCatalogueReference extends Command
         $this->info("Done. {$statements} statements, {$inserts} INSERT batches → {$count} rows in catalogue_reference.");
 
         return 0;
+    }
+
+    /**
+     * Refuse to destroy scraped rows by accident.
+     *
+     * Returns null to carry on, or an exit code to stop with. Nothing has been
+     * written at the point this runs, so returning early is a clean abort.
+     */
+    private function guardScrapedRows(): ?int
+    {
+        $atRisk = [];
+        $total  = 0;
+
+        foreach (self::SCRAPED_SOURCES as $prefix => [$label, $restore]) {
+            $rows = DB::table('catalogue_reference')
+                ->where('dedup_key', 'like', $prefix . '%')
+                ->count();
+
+            if ($rows > 0) {
+                $atRisk[] = [$label, $prefix . '…', number_format($rows), $restore];
+                $total += $rows;
+            }
+        }
+
+        if ($total === 0) {
+            // A fresh database, or the scrapers have never run: the dump is the
+            // only thing in this table, so an import can destroy nothing.
+            return null;
+        }
+
+        // Reviews point at catalogue_reference.id, so dropping a reviewed row
+        // orphans the admin's decision about it with no way to match it back.
+        $orphanedReviews = DB::table('catalogue_reviews')
+            ->join('catalogue_reference', 'catalogue_reference.id', '=', 'catalogue_reviews.catalogue_reference_id')
+            ->where(function ($q) {
+                foreach (array_keys(self::SCRAPED_SOURCES) as $prefix) {
+                    $q->orWhere('catalogue_reference.dedup_key', 'like', $prefix . '%');
+                }
+            })
+            ->count();
+
+        $this->newLine();
+        $this->warn('This import DROPs and recreates catalogue_reference. The dump does not');
+        $this->warn('contain these ' . number_format($total) . ' scraped rows, so they would be destroyed:');
+        $this->newLine();
+        $this->table(['Source', 'dedup_key', 'Rows', 'Rebuilt only by'], $atRisk);
+
+        if ($orphanedReviews > 0) {
+            $this->warn($orphanedReviews . ' review decision(s) point at those rows and would be orphaned.');
+            $this->newLine();
+        }
+
+        if ($this->option('force')) {
+            $this->warn('--force given: proceeding, and destroying the rows above.');
+            $this->newLine();
+
+            return null;
+        }
+
+        $this->error('Refusing to run. Re-run with --force if that is really what you want.');
+        $this->line('  Re-scraping all of it is hours of traffic, so check first that the');
+        $this->line('  dump is actually the thing you need to reload.');
+
+        return 1;
     }
 }
