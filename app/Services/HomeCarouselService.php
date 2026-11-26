@@ -31,9 +31,13 @@ class HomeCarouselService
     public function resolveForHomepage(): Collection
     {
         $carousels = HomeCarousel::where('is_active', true)
-            // categories + author are what linkOf() reads to build the title's
-            // destination; without them it would issue two queries per carousel.
-            ->with(['categories:id,name,slug,parent_id', 'author:id,name,slug'])
+            // What linkOf() reads to build the title's destination; without these
+            // it would issue a query per carousel.
+            ->with([
+                'categories:id,name,slug,parent_id',
+                'author:id,name,slug',
+                'linkCategory:id,name,slug',
+            ])
             ->orderBy('sort_order')
             ->orderByDesc('id')
             ->get();
@@ -91,16 +95,43 @@ class HomeCarouselService
     /**
      * Where the carousel's title should link, or null to leave it plain text.
      *
-     * The title is admin-entered free text and nothing stores a destination, so
-     * it is derived from how the carousel is built. Null is a normal answer: a
-     * strip of hand-picked books, or of this month's bestsellers, has no page
-     * that lists "all" of it.
+     * The admin decides, per carousel, on the home-carousels screen: whether the
+     * title is a link at all (link_enabled), and what it points at (link_type).
+     * 'auto' - the default for every row - keeps deriving the destination from
+     * how the carousel is built, so a carousel nobody has configured behaves
+     * the way it always has.
+     */
+    private function linkOf(HomeCarousel $c): ?string
+    {
+        if (!$c->link_enabled) {
+            return null;
+        }
+
+        return match ($c->link_type) {
+            // A category chosen explicitly. If it was later deleted the FK is
+            // nulled, so fall back to the derived target rather than silently
+            // dropping a link the admin had asked for.
+            'category' => $c->linkCategory ? route('by-category', $c->linkCategory) : $this->autoLink($c),
+            // An internal path, validated on the way in to start with a single
+            // slash so a homepage title can never point off-site.
+            'path'     => $c->link_path ? url($c->link_path) : null,
+            default    => $this->autoLink($c),
+        };
+    }
+
+    /**
+     * The destination derived from how the carousel is built, used when the
+     * admin leaves link_type at 'auto'.
+     *
+     * Null is a normal answer: a strip of hand-picked books, or of this month's
+     * bestsellers, has no page that lists "all" of it. The admin can give those
+     * a destination explicitly if they want one.
      *
      * Models are passed to route() rather than ids on purpose - Category and
      * Series return their slug as the route key, and category ids differ between
      * environments, so an id would build a URL that is wrong elsewhere.
      */
-    private function linkOf(HomeCarousel $c): ?string
+    private function autoLink(HomeCarousel $c): ?string
     {
         if ($c->is_system) {
             $link = HomeCarousel::SYSTEM[$c->system_key]['link'] ?? null;

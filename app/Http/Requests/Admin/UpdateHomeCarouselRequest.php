@@ -16,13 +16,16 @@ class UpdateHomeCarouselRequest extends FormRequest
         // Built-in (system) carousels expose only presentation knobs — no source fields.
         $carousel = $this->route('home_carousel');
         if ($carousel && $carousel->is_system) {
+            // No source fields, but the title link IS admin-controlled here too:
+            // it is the only way to give وصل حديثا or الأكثر مبيعا a destination,
+            // since neither has one the code can derive.
             return [
                 'title'            => 'required|string|max:191',
                 'book_limit'       => 'required|integer|min:1|max:50',
                 'sort_order'       => 'nullable|integer',
                 'is_active'        => 'boolean',
                 'show_unavailable' => 'boolean',
-            ];
+            ] + \App\Models\HomeCarousel::linkRules($this);
         }
 
         return [
@@ -41,7 +44,7 @@ class UpdateHomeCarouselRequest extends FormRequest
 
             'book_ids'      => 'required_if:source_type,manual|array',
             'book_ids.*'    => 'integer|exists:books,id',
-        ];
+        ] + \App\Models\HomeCarousel::linkRules($this);
     }
 
     public function messages(): array
@@ -51,6 +54,6 @@ class UpdateHomeCarouselRequest extends FormRequest
             'category_ids.required_if' => 'يجب اختيار فئة واحدة على الأقل',
             'book_ids.required_if'     => 'يجب اختيار كتاب واحد على الأقل',
             'book_limit.max'           => 'الحد الأقصى لعدد الكتب هو 50',
-        ];
+        ] + \App\Models\HomeCarousel::linkMessages();
     }
 }

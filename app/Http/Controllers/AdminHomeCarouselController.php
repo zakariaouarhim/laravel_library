@@ -13,7 +13,7 @@ class AdminHomeCarouselController extends Controller
 {
     public function index()
     {
-        $carousels = HomeCarousel::with(['author:id,name', 'categories:id,name'])
+        $carousels = HomeCarousel::with(['author:id,name', 'categories:id,name', 'linkCategory:id,name'])
             ->withCount('books')
             ->orderBy('sort_order')
             ->orderByDesc('id')
@@ -42,14 +42,17 @@ class AdminHomeCarouselController extends Controller
     public function update(UpdateHomeCarouselRequest $request, HomeCarousel $home_carousel)
     {
         if ($home_carousel->is_system) {
-            // Built-in carousels: only presentation knobs are editable; source is code-driven.
+            // Built-in carousels: only presentation knobs are editable; source is
+            // code-driven. The title link is a presentation knob, so it is
+            // included - that is the only way to give a built-in like وصل حديثا
+            // a destination, since the code cannot derive one for it.
             $home_carousel->update([
                 'title'            => $request->input('title'),
                 'book_limit'       => $request->input('book_limit', $home_carousel->book_limit),
                 'sort_order'       => $request->input('sort_order', $home_carousel->sort_order),
                 'is_active'        => $request->boolean('is_active'),
                 'show_unavailable' => $request->boolean('show_unavailable'),
-            ]);
+            ] + $this->linkData($request));
         } else {
             $home_carousel->update($this->baseData($request));
             $this->syncSource($home_carousel, $request);
@@ -103,6 +106,23 @@ class AdminHomeCarouselController extends Controller
             'sort_order'  => $request->input('sort_order', 0),
             'is_active'   => $request->boolean('is_active'),
             'show_unavailable' => $request->boolean('show_unavailable'),
+        ] + $this->linkData($request);
+    }
+
+    /**
+     * The admin's choice for the title link. Only the field belonging to the
+     * chosen type is kept, so a target the admin switched away from cannot
+     * resurface if they switch back later without re-picking it.
+     */
+    private function linkData($request): array
+    {
+        $type = $request->input('link_type', 'auto');
+
+        return [
+            'link_enabled'     => $request->boolean('link_enabled'),
+            'link_type'        => $type,
+            'link_category_id' => $type === 'category' ? $request->input('link_category_id') : null,
+            'link_path'        => $type === 'path' ? $request->input('link_path') : null,
         ];
     }
 

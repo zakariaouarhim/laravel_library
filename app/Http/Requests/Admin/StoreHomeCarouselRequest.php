@@ -29,7 +29,7 @@ class StoreHomeCarouselRequest extends FormRequest
 
             'book_ids'      => 'required_if:source_type,manual|array',
             'book_ids.*'    => 'integer|exists:books,id',
-        ];
+        ] + \App\Models\HomeCarousel::linkRules($this);
     }
 
     public function messages(): array
@@ -39,6 +39,6 @@ class StoreHomeCarouselRequest extends FormRequest
             'category_ids.required_if' => 'يجب اختيار فئة واحدة على الأقل',
             'book_ids.required_if'     => 'يجب اختيار كتاب واحد على الأقل',
             'book_limit.max'           => 'الحد الأقصى لعدد الكتب هو 50',
-        ];
+        ] + \App\Models\HomeCarousel::linkMessages();
     }
 }

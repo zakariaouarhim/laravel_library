@@ -84,6 +84,58 @@
 </div>
 </div>{{-- /sourceSection --}}
 
+{{-- Title link. Deliberately OUTSIDE sourceSection: that block is hidden for
+     built-in carousels (their books are code-driven), but their title link is
+     still the admin's to set — it is the only way to give وصل حديثا or
+     الأكثر مبيعا a destination at all. --}}
+<hr class="my-3">
+<div class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" name="link_enabled" value="1" id="link_enabled_{{ $ctx }}"
+           {{ $ctx === 'create' ? 'checked' : '' }} onchange="onLinkChange('{{ $ctx }}')">
+    <label class="form-check-label fw-semibold" for="link_enabled_{{ $ctx }}">
+        <i class="fas fa-link me-1 text-primary"></i>اجعل عنوان الكاروسيل رابطاً
+    </label>
+    <small class="text-muted d-block">عند التفعيل يصبح العنوان في الصفحة الرئيسية قابلاً للنقر ويوجّه الزائر إلى القائمة الكاملة.</small>
+</div>
+
+<div id="linkTarget_{{ $ctx }}" class="mt-3">
+    <label class="form-label">يوجّه العنوان إلى</label>
+    <select name="link_type" id="link_type_{{ $ctx }}" class="form-select" onchange="onLinkChange('{{ $ctx }}')">
+        <option value="auto">تلقائي (حسب مصدر الكتب)</option>
+        <option value="category">فئة محددة</option>
+        <option value="path">مسار داخلي</option>
+    </select>
+
+    {{-- auto --}}
+    <div class="link-block" data-link="auto" id="linkBlock_auto_{{ $ctx }}">
+        <small class="text-muted d-block mt-1">
+            يُحدَّد الرابط تلقائياً: كاروسيل الفئات يوجّه إلى صفحة الفئة الرئيسية، وكاروسيل المؤلف إلى صفحة المؤلف.
+            إذا لم يكن هناك وجهة مناسبة يبقى العنوان نصاً عادياً.
+        </small>
+    </div>
+
+    {{-- category --}}
+    <div class="link-block mt-2" data-link="category" id="linkBlock_category_{{ $ctx }}" style="display:none;">
+        <select name="link_category_id" id="link_category_id_{{ $ctx }}" class="form-select">
+            <option value="">— اختر فئة —</option>
+            @foreach($categoryTree as $parent)
+                <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                @foreach($parent->children as $child)
+                    <option value="{{ $child->id }}">&nbsp;&nbsp;&nbsp;— {{ $child->name }}</option>
+                @endforeach
+            @endforeach
+        </select>
+        <small class="text-muted d-block mt-1">صفحة الفئة تعرض كتب الفئة وفئاتها الفرعية معاً.</small>
+    </div>
+
+    {{-- internal path --}}
+    <div class="link-block mt-2" data-link="path" id="linkBlock_path_{{ $ctx }}" style="display:none;">
+        <input type="text" name="link_path" id="link_path_{{ $ctx }}" class="form-control" dir="ltr"
+               placeholder="/offers">
+        <small class="text-muted d-block mt-1">مسار داخل الموقع يبدأ بشرطة مائلة واحدة، مثال: <code>/offers</code> أو <code>/series?language=arabic</code>. الروابط الخارجية غير مسموحة.</small>
+    </div>
+</div>
+
 <div class="row g-3">
     <div class="col-md-6">
         <label class="form-label">عدد الكتب المعروضة <span class="text-danger">*</span></label>

@@ -76,6 +76,7 @@
                                     <th>الترتيب</th>
                                     <th>العنوان</th>
                                     <th>المصدر</th>
+                                    <th>رابط العنوان</th>
                                     <th>عدد الكتب</th>
                                     <th>الحالة</th>
                                     <th>الإجراءات</th>
@@ -104,6 +105,17 @@
                                             @empty
                                                 <span class="text-muted">—</span>
                                             @endforelse
+                                        @endif
+                                    </td>
+                                    <td class="small">
+                                        @if(!$carousel->link_enabled)
+                                            <span class="text-muted"><i class="fas fa-unlink me-1"></i>بدون رابط</span>
+                                        @elseif($carousel->link_type === 'category')
+                                            <span class="source-pill"><i class="fas fa-folder me-1"></i>{{ optional($carousel->linkCategory)->name ?? '— فئة محذوفة —' }}</span>
+                                        @elseif($carousel->link_type === 'path')
+                                            <span class="source-pill" dir="ltr"><i class="fas fa-link me-1"></i>{{ $carousel->link_path }}</span>
+                                        @else
+                                            <span class="source-pill"><i class="fas fa-wand-magic-sparkles me-1"></i>تلقائي</span>
                                         @endif
                                     </td>
                                     <td>
@@ -135,6 +147,10 @@
                                                         'is_active' => $carousel->is_active,
                                                         'is_system' => $carousel->is_system,
                                                         'show_unavailable' => $carousel->show_unavailable,
+                                                        'link_enabled' => $carousel->link_enabled,
+                                                        'link_type' => $carousel->link_type,
+                                                        'link_category_id' => $carousel->link_category_id,
+                                                        'link_path' => $carousel->link_path,
                                                         'category_ids' => $carousel->categories->pluck('id'),
                                                         'books' => $carousel->books->map(fn($b) => ['id' => $b->id, 'title' => $b->title, 'author' => optional($b->primaryAuthor)->name]),
                                                     ]) }})">
@@ -149,7 +165,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="text-center text-muted py-4">لا توجد كاروسيلات بعد</td></tr>
+                                <tr><td colspan="7" class="text-center text-muted py-4">لا توجد كاروسيلات بعد</td></tr>
                             @endforelse
                             </tbody>
                         </table>
@@ -245,6 +261,18 @@ function onSourceChange(ctx) {
     // Language filter applies to author/categories sources only.
     const lang = document.getElementById(`langFilter_${ctx}`);
     if (lang) lang.style.display = (type === 'author' || type === 'categories') ? '' : 'none';
+}
+
+// Title link: hide the target picker entirely when the link is off, and show
+// only the block for the chosen target type.
+function onLinkChange(ctx) {
+    const enabled = document.getElementById(`link_enabled_${ctx}`).checked;
+    const target  = document.getElementById(`linkTarget_${ctx}`);
+    target.style.display = enabled ? '' : 'none';
+
+    const type = document.getElementById(`link_type_${ctx}`).value;
+    document.querySelectorAll(`#linkBlock_auto_${ctx}, #linkBlock_category_${ctx}, #linkBlock_path_${ctx}`)
+        .forEach(b => { b.style.display = (b.dataset.link === type) ? '' : 'none'; });
 }
 
 // ============ Book picker (manual source) ============
@@ -364,6 +392,9 @@ function resetCreateForm() {
     setTreeChecked('create', []);
     document.getElementById('sourceSection_create').style.display = '';
     onSourceChange('create');
+    // form.reset() restores the markup defaults (link on, type auto), so this
+    // only needs to re-sync which blocks are visible.
+    onLinkChange('create');
 }
 
 // ============ Edit ============
@@ -388,10 +419,17 @@ function openEdit(c) {
     picker._clear();
     (c.books || []).forEach(b => picker._addBook(b.id, b.title, b.author));
 
+    // Title link. Shown for built-in carousels too, unlike the source picker.
+    document.getElementById('link_enabled_edit').checked = !!c.link_enabled;
+    document.getElementById('link_type_edit').value      = c.link_type || 'auto';
+    document.getElementById('link_category_id_edit').value = c.link_category_id || '';
+    document.getElementById('link_path_edit').value       = c.link_path || '';
+
     // Built-in carousels: content is code-driven, so hide the source picker.
     document.getElementById('sourceSection_edit').style.display = c.is_system ? 'none' : '';
 
     onSourceChange('edit');
+    onLinkChange('edit');
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 
@@ -434,6 +472,7 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function (
 
 // Initial state
 onSourceChange('create');
+onLinkChange('create');
 </script>
 </body>
 </html>

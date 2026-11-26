@@ -12,6 +12,7 @@ class HomeCarousel extends Model
     protected $fillable = [
         'title', 'source_type', 'language', 'author_id', 'book_limit', 'is_active', 'sort_order',
         'system_key', 'show_unavailable',
+        'link_enabled', 'link_type', 'link_category_id', 'link_path',
     ];
 
     protected $casts = [
@@ -19,7 +20,60 @@ class HomeCarousel extends Model
         'is_active'        => 'boolean',
         'sort_order'       => 'integer',
         'show_unavailable' => 'boolean',
+        'link_enabled'     => 'boolean',
     ];
+
+    /** Where the title's link may point: see HomeCarouselService::linkOf(). */
+    public const LINK_TYPES = ['auto', 'category', 'path'];
+
+    /**
+     * Validation for the admin-controlled title link. Defined once here because
+     * three rule sets need it: store, update, and update's built-in branch -
+     * built-in carousels expose no source fields but DO expose these.
+     */
+    public static function linkRules(\Illuminate\Http\Request $request): array
+    {
+        // The target is only required when the link is actually switched ON and
+        // that type is selected. required_if on link_type alone would block the
+        // admin from turning a link OFF while the type still said "category"
+        // with nothing picked yet.
+        $enabled = $request->boolean('link_enabled');
+        $type    = $request->input('link_type');
+
+        return [
+            'link_enabled'     => 'boolean',
+            'link_type'        => 'required|in:' . implode(',', self::LINK_TYPES),
+            'link_category_id' => [
+                \Illuminate\Validation\Rule::requiredIf($enabled && $type === 'category'),
+                'nullable',
+                'integer',
+                'exists:categories,id',
+            ],
+            'link_path'        => [
+                \Illuminate\Validation\Rule::requiredIf($enabled && $type === 'path'),
+                'nullable',
+                'string',
+                // 191, not 255: the schema's default string length is 191, and a
+                // longer rule would accept input the column then truncates.
+                'max:191',
+                // One leading slash, and the next character may not be / or \ -
+                // browsers read "//evil.com" and "/\evil.com" as protocol-relative
+                // and would send a homepage title off-site.
+                'regex:/^\/(?![\/\\\\])\S*$/',
+            ],
+        ];
+    }
+
+    /** Arabic messages for the link rules above. */
+    public static function linkMessages(): array
+    {
+        return [
+            'link_category_id.required'    => 'يجب اختيار الفئة التي يوجّه إليها العنوان',
+            'link_path.required'           => 'يجب إدخال المسار الذي يوجّه إليه العنوان',
+            'link_path.regex'              => 'يجب أن يبدأ المسار بشرطة مائلة واحدة (مثال: /offers) وأن يكون داخل الموقع',
+            'link_path.max'                => 'المسار طويل جداً (الحد 191 حرفاً)',
+        ];
+    }
 
     /**
      * Registry of built-in carousels. Keyed by system_key; resolution logic lives
@@ -67,6 +121,16 @@ class HomeCarousel extends Model
     public function author()
     {
         return $this->belongsTo(Author::class, 'author_id');
+    }
+
+    /**
+     * The category an admin chose as the title's destination. Distinct from
+     * categories(), which is where the carousel's BOOKS come from - the two are
+     * usually the same tree but do not have to be.
+     */
+    public function linkCategory()
+    {
+        return $this->belongsTo(Category::class, 'link_category_id');
     }
 
     public function scopeActive($query)
