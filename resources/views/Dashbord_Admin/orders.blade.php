@@ -209,7 +209,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js" defer></script>
 
     
-    <script src="{{ asset('js/dashboard.js') }}" defer></script>
-      <script src="{{ asset('js/dashboardorder.js') }}" defer></script> 
+    <script src="{{ asset('js/dashboard.js') }}?v={{ filemtime(public_path('js/dashboard.js')) }}" defer></script>
+    <script src="{{ asset('js/dashboardorder.js') }}?v={{ filemtime(public_path('js/dashboardorder.js')) }}" defer></script>
 </body>
 </html>
