@@ -67,11 +67,20 @@ class PageController extends Controller
 
         ContactMessage::create($validated);
 
-        // Send auto-reply confirmation email
+        // Auto-reply confirmation email, QUEUED not sent.
+        //
+        // This was ->send(), i.e. a synchronous SMTP handshake inside the
+        // request, to an address the submitter supplied. The 9,437 bot rows
+        // purged on 2026-11-26 therefore each fired an outbound mail to a
+        // bot-chosen address while holding a php-fpm worker open -- backscatter
+        // that costs sender reputation and so threatens delivery of the mail
+        // that actually matters (order confirmations). A queue worker already
+        // runs under supervisor (QUEUE_CONNECTION=database), so handing this to
+        // it both frees the request and takes the mail off the hot path.
         try {
-            Mail::to($validated['email'])->send(new ContactAutoReply($validated['name'], $validated['subject']));
+            Mail::to($validated['email'])->queue(new ContactAutoReply($validated['name'], $validated['subject']));
         } catch (\Exception $e) {
-            \Log::error('Failed to send contact auto-reply:', ['error' => $e->getMessage()]);
+            \Log::error('Failed to queue contact auto-reply:', ['error' => $e->getMessage()]);
         }
 
         return back()->with('success', 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.');

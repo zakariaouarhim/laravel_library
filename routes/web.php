@@ -270,6 +270,11 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/contact-messages/{id}', [AdminContactController::class, 'show'])->name('contact-messages.show');
     Route::patch('/contact-messages/{id}/toggle-read', [AdminContactController::class, 'toggleRead'])->name('contact-messages.toggle-read');
     Route::delete('/contact-messages/{id}', [AdminContactController::class, 'destroy'])->name('contact-messages.destroy');
+    // POST, not DELETE, to match the other bulk actions in this group
+    // (books.bulk-enrich, shipments.bulk-enrich). A JSON body also rules out
+    // _method spoofing as a fallback, since Symfony reads _method from the
+    // request parameter bag, which is empty for application/json.
+    Route::post('/contact-messages/bulk-destroy', [AdminContactController::class, 'bulkDestroy'])->name('contact-messages.bulk-destroy');
 
     // Reviews moderation
     Route::get('/reviews', [ReviewController::class, 'adminIndex'])->name('reviews.index');

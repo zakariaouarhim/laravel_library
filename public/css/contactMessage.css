@@ -64,6 +64,13 @@ body {
     border-right-color: #48CAE4;
 }
 
+/* Without a variant a 4th card falls back to .stat-card's primary border and
+   looks identical to "إجمالي الرسائل". The grid itself needs no change:
+   repeat(auto-fit, minmax(200px, 1fr)) reflows on its own. */
+.stat-card.spam {
+    border-right-color: #f39c12;
+}
+
 .stat-card-icon {
     font-size: 2rem;
     margin-bottom: 0.5rem;
@@ -117,6 +124,28 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(44, 75, 121, 0.3);
     color: white;
+}
+
+/* Bulk selection toolbar — only visible once a row is checked */
+.bulk-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.9rem 1.25rem;
+    background: #fff8e6;
+    border-bottom: 1px solid #f1d9a0;
+}
+
+.bulk-bar .bulk-count {
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-inline-end: auto;
+}
+
+.bulk-bar .btn-link {
+    text-decoration: none;
+    color: #6c757d;
 }
 
 /* Table */

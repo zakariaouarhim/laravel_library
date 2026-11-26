@@ -50,6 +50,19 @@
                     </div>
                 @endif
 
+                {{-- AntiSpam flashes session('error') when the honeypot or the
+                     timing gate rejects a submission. Without this block a
+                     genuine visitor -- one who left the tab open past the 2h
+                     bound, say -- just saw the page reload with no explanation
+                     and no idea their message had not been sent. --}}
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
                 <form action="{{ route('contact.store') }}" method="POST">
                     @csrf
                     @include('partials.anti-spam-fields')

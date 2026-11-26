@@ -56,6 +56,14 @@
                         <div class="stat-card-title">رسائل اليوم</div>
                         <div class="stat-card-value">{{ $todayCount }}</div>
                     </div>
+                    {{-- Site-wide on purpose: AntiSpam guards the contact form
+                         AND the signup form and its counter has no per-route
+                         component. Do not relabel this as contact-only. --}}
+                    <div class="stat-card spam">
+                        <div class="stat-card-icon"><i class="fas fa-shield-alt text-warning"></i></div>
+                        <div class="stat-card-title">محاولات آلية محجوبة اليوم (كل النماذج)</div>
+                        <div class="stat-card-value">{{ $spamBlockedToday }}</div>
+                    </div>
                 </div>
 
                 <!-- Filter Section -->
@@ -86,10 +94,24 @@
                 <!-- Messages Table -->
                 <div class="table-section">
                     @if($messages->count() > 0)
+                    {{-- Hidden until something is selected. Deliberately its own
+                         bar rather than a column in .filter-section, whose
+                         col-md-5/4/3 row already sums to 12. --}}
+                    <div class="bulk-bar" id="bulkBar" hidden>
+                        <span class="bulk-count"><i class="fas fa-check-square"></i> <span id="bulkCount">0</span> رسالة محددة</span>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmBulkDelete()">
+                            <i class="fas fa-trash me-1"></i>حذف المحدد
+                        </button>
+                        <button type="button" class="btn btn-link btn-sm" onclick="clearSelection()">إلغاء التحديد</button>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-hover text-center align-middle mb-0">
                             <thead>
                                 <tr>
+                                    <th style="width:40px;">
+                                        <input type="checkbox" class="form-check-input" id="selectAll"
+                                               onchange="onSelectAll()" title="تحديد الكل">
+                                    </th>
                                     <th>الحالة</th>
                                     <th>المرسل</th>
                                     <th>الموضوع</th>
@@ -100,6 +122,10 @@
                             <tbody>
                                 @foreach($messages as $msg)
                                 <tr class="{{ !$msg->is_read ? 'unread-row' : '' }}">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input msg-checkbox"
+                                               value="{{ $msg->id }}" onchange="onRowSelect()">
+                                    </td>
                                     <td>
                                         <span class="status-dot {{ $msg->is_read ? 'read' : 'unread' }}"
                                               title="{{ $msg->is_read ? 'مقروءة' : 'غير مقروءة' }}"></span>
@@ -215,6 +241,28 @@
         </div>
     </div>
 
+    {{-- A second modal is required: #deleteModal above holds a real <form>
+         whose action confirmDelete(id) rewrites to a single-id URL, so it
+         cannot carry a batch. --}}
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content" style="border-radius: 15px;">
+                <div class="modal-body text-center p-4">
+                    <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2">حذف الرسائل المحددة</h5>
+                    <p class="text-muted">
+                        هل أنت متأكد من حذف <strong id="bulkModalCount">0</strong> رسالة؟
+                        لا يمكن التراجع عن هذا الإجراء.
+                    </p>
+                    <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button type="button" class="btn btn-danger px-4" id="bulkDeleteConfirm" onclick="doBulkDelete()">حذف</button>
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
         function viewMessage(id) {
@@ -269,6 +317,93 @@
             var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             modal.show();
         }
+
+        /* ---------- bulk selection + delete ---------- */
+
+        function selectedIds() {
+            return Array.prototype.map.call(
+                document.querySelectorAll('.msg-checkbox:checked'),
+                function (cb) { return Number(cb.value); }
+            );
+        }
+
+        function refreshBulkBar() {
+            var boxes = document.querySelectorAll('.msg-checkbox');
+            var n = selectedIds().length;
+
+            document.getElementById('bulkCount').textContent = n;
+            document.getElementById('bulkBar').hidden = (n === 0);
+
+            // Reflect partial selection on the header box.
+            var all = document.getElementById('selectAll');
+            if (all) {
+                all.checked = (n > 0 && n === boxes.length);
+                all.indeterminate = (n > 0 && n < boxes.length);
+            }
+        }
+
+        function onSelectAll() {
+            var checked = document.getElementById('selectAll').checked;
+            document.querySelectorAll('.msg-checkbox').forEach(function (cb) { cb.checked = checked; });
+            refreshBulkBar();
+        }
+
+        function onRowSelect() { refreshBulkBar(); }
+
+        function clearSelection() {
+            document.querySelectorAll('.msg-checkbox').forEach(function (cb) { cb.checked = false; });
+            refreshBulkBar();
+        }
+
+        function confirmBulkDelete() {
+            var n = selectedIds().length;
+            if (n === 0) { return; }
+            document.getElementById('bulkModalCount').textContent = n;
+            new bootstrap.Modal(document.getElementById('bulkDeleteModal')).show();
+        }
+
+        function doBulkDelete() {
+            var ids = selectedIds();
+            if (ids.length === 0) { return; }
+
+            var btn = document.getElementById('bulkDeleteConfirm');
+            btn.disabled = true;
+
+            /* csrfFetch (js/csrf.js), not a bare fetch: it attaches the token at
+               call time, so a long-open admin tab survives a session rollover.
+               The Accept header is not optional -- without it a 422 from
+               $request->validate() comes back as a 302 to an HTML page and
+               response.json() throws, so the admin would see nothing happen. */
+            csrfFetch('/admin/contact-messages/bulk-destroy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(function (res) {
+                return res.json()
+                    .catch(function () { return { success: false, message: 'حدث خطأ غير متوقع' }; })
+                    .then(function (data) { return { ok: res.ok, data: data }; });
+            })
+            .then(function (r) {
+                if (!r.ok || !r.data.success) {
+                    btn.disabled = false;
+                    alert(r.data.message || 'فشل حذف الرسائل المحددة');
+                    return;
+                }
+                /* Drop ?page= but keep the filters: deleting every row on page 40
+                   would otherwise reload an out-of-range page and show the
+                   "لا توجد رسائل" empty state, as though everything was wiped. */
+                var url = new URL(window.location.href);
+                url.searchParams.delete('page');
+                window.location.assign(url.toString());
+            })
+            .catch(function () {
+                btn.disabled = false;
+                alert('فشل الاتصال بالخادم. حاول مرة أخرى.');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', refreshBulkBar);
     </script>
 </body>
 </html>
