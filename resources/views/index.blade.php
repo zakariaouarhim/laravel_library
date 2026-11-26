@@ -23,11 +23,11 @@
         @foreach($homeCarousels as $c)
             <div id="{{ $c->dom_id }}">
                 @if($c->render === 'series')
-                    <x-series-carousel :series="$c->payload" :title="$c->title" />
+                    <x-series-carousel :series="$c->payload" :title="$c->title" :link="$c->link" />
                 @elseif($c->render === 'categories')
-                    @include('categories_carousel2', ['categorieIcons' => $c->payload, 'title' => $c->title])
+                    @include('categories_carousel2', ['categorieIcons' => $c->payload, 'title' => $c->title, 'link' => $c->link])
                 @else
-                    <x-book-carousel :books="$c->payload" :title="$c->title" />
+                    <x-book-carousel :books="$c->payload" :title="$c->title" :link="$c->link" />
                 @endif
             </div>
         @endforeach

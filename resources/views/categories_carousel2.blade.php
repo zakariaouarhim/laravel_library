@@ -1,6 +1,14 @@
 <!-- Category Carousel Section -->
     <section class="category-section2">
-        <h2>{{ $title ?? 'أشعر الآن وكأنني أريد...' }}</h2>
+        {{-- The <a> wraps only the text: the decorative gradient bar is an
+             ::after on the h2 itself, so wrapping the heading would move it. --}}
+        <h2>
+            @if($link ?? null)
+                <a href="{{ $link }}">{{ $title ?? 'أشعر الآن وكأنني أريد...' }}</a>
+            @else
+                {{ $title ?? 'أشعر الآن وكأنني أريد...' }}
+            @endif
+        </h2>
         
         <div class="carousel-container">
             <!-- Carousel Wrapper - Native scrollable -->

@@ -36,6 +36,22 @@
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
+    <url>
+        <loc>{{ route('series.index') }}</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    {{-- Series. These were missing from the sitemap entirely until the public
+         index existed to link them. --}}
+    @foreach($series as $s)
+    <url>
+        <loc>{{ route('series.show', $s) }}</loc>
+        <lastmod>{{ $s->updated_at->toAtomString() }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    @endforeach
 
     {{-- Books --}}
     @foreach($books as $book)

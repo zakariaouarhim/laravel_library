@@ -1,5 +1,13 @@
 <div class="related-books" data-carousel>
-    <h3>{{ $title ?? 'كتب ' }}</h3>
+    {{-- The <a> wraps only the text: the decorative gradient bar is an ::after
+         on the h3 itself, so wrapping the heading would move it. --}}
+    <h3>
+        @if($link ?? null)
+            <a href="{{ $link }}">{{ $title ?? 'كتب ' }}</a>
+        @else
+            {{ $title ?? 'كتب ' }}
+        @endif
+    </h3>
 
     @if($books && $books->count() > 0)
         <div class="carousel-container">

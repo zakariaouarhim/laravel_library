@@ -13,12 +13,16 @@ class BookCarousel extends Component
      */
     public $books;
     public $title;
+    public $link;
 
-    // Define what data the component accepts
-    public function __construct($books, $title)
+    // Define what data the component accepts. $link is where the title points
+    // (null = plain text), and must stay optional: moredetail2.blade.php renders
+    // four of these without one.
+    public function __construct($books, $title, $link = null)
     {
         $this->books = $books;
         $this->title = $title;
+        $this->link  = $link;
     }
     
 

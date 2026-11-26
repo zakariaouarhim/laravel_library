@@ -198,6 +198,7 @@
                 <li><a href="{{ route('index.page') }}#popular-books">الأكثر مبيعًا</a></li>
                 <li><a href="{{ route('index.page') }}#all-books">الإصدارات الحديثة</a></li>
                 <li><a href="{{ route('accessories.index') }}">الإكسسوارات</a></li>
+                <li><a href="{{ route('series.index') }}">السلاسل</a></li>
                 <li><a href="{{ route('authors.index') }}">المؤلفون</a></li>
                 <li><a href="{{ route('publishers.index') }}">دور النشر</a></li>
                 <li><a href="{{ route('about.page') }}">من نحن</a></li>
@@ -277,6 +278,7 @@
         <a href="{{ route('categories.index') }}"><i class="fas fa-th-large"></i> التصنيفات</a>
         <a href="{{ route('index.page') }}#popular-books"><i class="fas fa-fire"></i> الأكثر مبيعًا</a>
         <a href="{{ route('accessories.index') }}"><i class="fas fa-bookmark"></i> الإكسسوارات</a>
+        <a href="{{ route('series.index') }}"><i class="fas fa-layer-group"></i> السلاسل</a>
         <a href="{{ route('authors.index') }}"><i class="fas fa-pen-fancy"></i> المؤلفون</a>
         <a href="{{ route('publishers.index') }}"><i class="fas fa-building"></i> دور النشر</a>
         <a href="{{ route('about.page') }}"><i class="fas fa-info-circle"></i> من نحن</a>

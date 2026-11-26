@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Author;
 use App\Models\Category;
 use App\Models\PublishingHouse;
+use App\Models\Series;
 use App\Models\ContactMessage;
 use App\Mail\ContactAutoReply;
 use App\Services\Seo\MetaBuilder;
@@ -100,7 +101,12 @@ class PageController extends Controller
 
     public function sitemap()
     {
-        $sitemapData = Cache::remember('sitemap_data', 3600, function () {
+        // Key is versioned because the cached array's SHAPE changed when series
+        // were added: an entry written by the previous deploy has no 'series'
+        // key, and nothing invalidates this cache, so reusing the old key would
+        // have thrown "Undefined variable $series" in the view for up to an hour
+        // after release. Bump the suffix whenever a key is added or removed here.
+        $sitemapData = Cache::remember('sitemap_data_v2', 3600, function () {
             // slug is required — getRouteKey() returns slug; without it the URLs fall back to ID.
             return [
                 'books' => Book::where('type', 'book')
@@ -119,6 +125,12 @@ class PageController extends Controller
                     ->orderBy('updated_at', 'desc')
                     ->get(),
                 'publishers' => PublishingHouse::active()
+                    ->select('id', 'slug', 'updated_at')
+                    ->orderBy('updated_at', 'desc')
+                    ->get(),
+                // has('books') matches the public index, which hides series with
+                // no volumes - no point advertising a page with nothing on it.
+                'series' => Series::has('books')
                     ->select('id', 'slug', 'updated_at')
                     ->orderBy('updated_at', 'desc')
                     ->get(),

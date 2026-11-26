@@ -43,6 +43,25 @@
     position: relative;
 }
 
+/* A carousel title links to the full listing behind it (see
+   HomeCarouselService::linkOf). It must read as the same heading it was before,
+   so colour and decoration are inherited rather than restyled - font-size and
+   weight come from the h3/h2 automatically, including every breakpoint override
+   further down this file. The categories strip's h2 lives in homepage.css. */
+.related-books h3 a,
+.category-section2 h2 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.related-books h3 a:hover,
+.related-books h3 a:focus-visible,
+.category-section2 h2 a:hover,
+.category-section2 h2 a:focus-visible {
+    color: var(--color-secondary);
+    text-decoration: underline;
+}
+
 .related-books h3::after {
     content: '';
     position: absolute;

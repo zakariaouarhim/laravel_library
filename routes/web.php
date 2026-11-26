@@ -403,6 +403,9 @@ Route::get('/ناشر/{publisher}', [PublisherController::class, 'publicShow'])-
 // Legacy /publisher/{id} → 301
 Route::get('/publisher/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'publisher'])->where('id', '[0-9]+');
 
+// Public series index. Registered before the legacy /series/{id} redirect below;
+// that one is constrained to digits so it could not match /series anyway.
+Route::get('/series', [AdminSeriesController::class, 'publicIndex'])->name('series.index');
 Route::get('/سلسلة/{series}', [AdminSeriesController::class, 'publicShow'])->name('series.show');
 // Legacy /series/{id} → 301
 Route::get('/series/{id}', [\App\Http\Controllers\LegacyRedirectController::class, 'series'])->where('id', '[0-9]+');

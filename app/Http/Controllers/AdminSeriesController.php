@@ -81,6 +81,83 @@ class AdminSeriesController extends Controller
         return response()->json(['success' => true, 'message' => 'تم حذف السلسلة بنجاح.']);
     }
 
+    /**
+     * Public "all series in the store" index, optionally narrowed to one
+     * language. The homepage's سلاسل عربية / سلاسل إنجليزية carousel titles link
+     * here pre-filtered; visited bare it lists every series that has volumes.
+     *
+     * Ordered by volume count by default, which is the order
+     * HomeCarouselService::series() uses, so the full listing opens on the same
+     * series the strip was showing.
+     */
+    public function publicIndex(Request $request)
+    {
+        $request->validate([
+            'q'        => 'nullable|string|max:191',
+            // Lowercase: books.language is an enum of these exact values.
+            'language' => 'nullable|in:' . implode(',', Book::LANGUAGES),
+            'sort'     => 'nullable|in:name,books,newest',
+        ]);
+
+        // has('books') keeps series with no volumes out: there would be nothing
+        // to click through to, and the homepage carousel excludes them too.
+        $query = Series::has('books')
+            ->with(['author', 'bundle'])
+            ->withCount('books');
+
+        if ($request->filled('q')) {
+            // Escape the LIKE wildcards so a literal % or _ in a search box
+            // cannot turn into a match-everything query.
+            $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $request->input('q')) . '%';
+            $query->where(function ($q) use ($like) {
+                $q->where('name', 'like', $like)
+                  ->orWhereHas('author', fn($a) => $a->where('name', 'like', $like));
+            });
+        }
+
+        if ($request->filled('language')) {
+            // whereHas over the volumes - a series whose books are mixed shows
+            // under both languages, which is correct.
+            $query->inLanguage($request->input('language'));
+        }
+
+        switch ($request->input('sort', 'books')) {
+            case 'name':
+                $query->orderBy('name');
+                break;
+            case 'newest':
+                $query->orderByDesc('created_at');
+                break;
+            default:
+                $query->orderByDesc('books_count');
+        }
+
+        // withQueryString keeps the active filters on pages 2+.
+        $series = $query->paginate(24)->withQueryString();
+
+        // Facet list, mirroring the publishers page's country dropdown: only
+        // offer languages that some series actually has volumes in.
+        $languages = Book::standardOnly()
+            ->whereNotNull('series_id')
+            ->whereNotNull('language')
+            ->distinct()
+            ->pluck('language')
+            ->sort()
+            ->values();
+
+        $seo = app(MetaBuilder::class)->forStatic(
+            'السلاسل - مكتبة الفقراء',
+            'تصفح جميع السلاسل المتوفرة في مكتبة الفقراء، عربية وإنجليزية، واكتشف أجزاءها كاملة.',
+            route('series.index')
+        );
+        if ($series->currentPage() > 1) {
+            $seo['robots']    = 'noindex,follow';
+            $seo['canonical'] = route('series.index');
+        }
+
+        return view('series-index', compact('series', 'languages', 'seo'));
+    }
+
     public function publicShow(Series $series)
     {
         // Re-fetch with eager loading.

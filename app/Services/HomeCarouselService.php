@@ -26,11 +26,14 @@ class HomeCarouselService
     public function __construct(private RecommendationService $recommendations) {}
 
     /**
-     * @return Collection<int, object{id:int, dom_id:string, title:string, render:string, payload:Collection}>
+     * @return Collection<int, object{id:int, dom_id:string, title:string, render:string, payload:Collection, link:?string}>
      */
     public function resolveForHomepage(): Collection
     {
         $carousels = HomeCarousel::where('is_active', true)
+            // categories + author are what linkOf() reads to build the title's
+            // destination; without them it would issue two queries per carousel.
+            ->with(['categories:id,name,slug,parent_id', 'author:id,name,slug'])
             ->orderBy('sort_order')
             ->orderByDesc('id')
             ->get();
@@ -58,6 +61,11 @@ class HomeCarouselService
                 'title'   => $c->title,
                 'render'  => $this->renderOf($c),
                 'payload' => $payload,
+                // Deliberately outside the cached blob above: it is a handful of
+                // in-memory lookups on already eager-loaded relations, and keeping
+                // it out means entries cached before this existed cannot be served
+                // without a 'link'.
+                'link'    => $this->linkOf($c),
             ];
         })->filter(fn($c) => $c->payload instanceof Collection && $c->payload->isNotEmpty())
           ->values();
@@ -78,6 +86,51 @@ class HomeCarouselService
     private function domIdOf(HomeCarousel $c): string
     {
         return $c->is_system ? (HomeCarousel::SYSTEM[$c->system_key]['dom_id'] ?? 'home-carousel-' . $c->id) : 'home-carousel-' . $c->id;
+    }
+
+    /**
+     * Where the carousel's title should link, or null to leave it plain text.
+     *
+     * The title is admin-entered free text and nothing stores a destination, so
+     * it is derived from how the carousel is built. Null is a normal answer: a
+     * strip of hand-picked books, or of this month's bestsellers, has no page
+     * that lists "all" of it.
+     *
+     * Models are passed to route() rather than ids on purpose - Category and
+     * Series return their slug as the route key, and category ids differ between
+     * environments, so an id would build a URL that is wrong elsewhere.
+     */
+    private function linkOf(HomeCarousel $c): ?string
+    {
+        if ($c->is_system) {
+            $link = HomeCarousel::SYSTEM[$c->system_key]['link'] ?? null;
+
+            return $link ? route($link['route'], $link['params'] ?? []) : null;
+        }
+
+        return match ($c->source_type) {
+            'author'     => $c->author ? route('author.show', $c->author) : null,
+            'categories' => $this->categoryTreeLink($c),
+            // 'manual': a hand-picked set of books is not a listing.
+            default      => null,
+        };
+    }
+
+    /**
+     * A categories carousel holds a whole tree - one top-level parent plus its
+     * children (38 rows for روايات, 23 for أدب عالمي, and so on). byCategory()
+     * already includes child-category books, so linking the parent reproduces
+     * exactly what the strip was built from.
+     *
+     * Anything else - no top-level category attached, or several unrelated ones
+     * hand-picked - has no single destination, so the title stays plain text
+     * rather than sending the visitor somewhere that is only partly right.
+     */
+    private function categoryTreeLink(HomeCarousel $c): ?string
+    {
+        $roots = $c->categories->whereNull('parent_id');
+
+        return $roots->count() === 1 ? route('by-category', $roots->first()) : null;
     }
 
     // ----- global (cacheable) resolution -----

@@ -1,8 +1,16 @@
-@props(['series', 'title'])
+@props(['series', 'title', 'link' => null])
 
 @if($series && $series->count() > 0)
 <div class="related-books series-carousel" data-carousel>
-    <h3>{{ $title }}</h3>
+    {{-- The <a> wraps only the text: the decorative gradient bar is an ::after
+         on the h3 itself, so wrapping the heading would move it. --}}
+    <h3>
+        @if($link)
+            <a href="{{ $link }}">{{ $title }}</a>
+        @else
+            {{ $title }}
+        @endif
+    </h3>
 
     <div class="carousel-container">
         <div class="carousel-wrapper" data-carousel-wrapper>
