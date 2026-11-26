@@ -464,3 +464,77 @@ Every cover that remains is on `bookhomemaster.com`, already in the CSP
 * Prices are USD and stored null, so review these with the quality filter
   lowered: **49,196 of 68,016 rows score below 7** and the default `>= 7`
   filter hides them.
+
+---
+
+# Review - contact-message spam purge (2026-11-26)
+
+## What the inbox actually held
+
+9,443 rows, **6 genuine**. Breakdown: 9,024 from one bot posting random
+lowercase gibberish in name+subject+message across ~1,200 harvested addresses;
+~354 from named campaigns (IsaacBup, Robertviarf, CarlosSpoon, Samuelrop,
+RobertDeapy, ArturoLax) each posting 5 identical copies per burst; 79 from a
+single throwaway address that was **a vulnerability scanner** (SQLi,
+`waitfor delay`, `nslookup -q=cname`, path traversal) on 2026-06-26, stored
+harmlessly; ~60 SEO/dropship pitches and loan/investment scams.
+
+Kept: ids 1 (owner's own test), 207 (order cancellation), 8856-8858 (Hermann
+Hesse enquiry, 3 identical resends), 9455 (opening hours + two English titles).
+
+## Done
+
+* **Purged production**: dump written to root's home (mode 0600, 1.3 MB, keeper
+  ids verified present in it) then
+  `DELETE ... WHERE id <= 9468 AND id NOT IN (6 keepers)`. 9,437 deleted,
+  6 remain. Local DB untouched - it only ever had 3 of the owner's test rows.
+* **Predicate uses the PK, not `created_at`**: `created_at` is a nullable
+  TIMESTAMP, so its literal is read in session tz and a NULL row would be
+  silently spared. `id` is monotonic, never null, tz-free, and gives a bounded
+  range scan instead of a full scan that gap-locks concurrent inserts.
+* `contact.blade.php` now renders `session('error')` - AntiSpam flashes it, and
+  a genuine visitor blocked by the 2h timing bound previously saw nothing.
+* `StoreContactRequest`: `not_regex` on `name` (links/HTML) and on `message`
+  (anchor/BBCode only). `subject` deliberately untouched. **Array rule syntax
+  is mandatory** - the patterns contain `|`.
+* `PageController@storeContact`: auto-reply `->send()` -> `->queue()`. It was a
+  synchronous SMTP handshake to a submitter-supplied address, so all 9,437 bot
+  rows fired outbound mail while holding a php-fpm worker. Worker already runs
+  under supervisor.
+* Bulk delete: `POST admin/contact-messages/bulk-destroy` (POST matches
+  `books.bulk-enrich`), one `whereIn` delete, **no `exists` on `ids.*`** (a
+  SELECT per id, and one stale id would 422 the whole batch). Checkbox column,
+  hidden-until-selected toolbar, second modal, `csrfFetch` + `Accept: json`,
+  reload drops `?page=`.
+* `spam_blocked:<date>` surfaced as a 4th stat card, labelled site-wide
+  because AntiSpam also guards `/adduser`.
+
+## Verified
+
+13 throwaway feature tests, 37 assertions, all passing (file removed after):
+bulk-delete scoping and idempotency, 422 on bad input, 401 guest / 403
+non-admin, genuine Arabic submission stored, URL in body allowed, both spam
+payloads rejected, honeypot and instant submit blocked, flashed error visible.
+Deployed with `config:cache` + `route:cache` + `view:cache` as `www-data`;
+route live in the cached table, `/contact` 200, storage still www-data-owned.
+
+## Open - the honeypot is ~99.97%, not 100%
+
+**One bot got past AntiSpam on 2026-11-24** (Spanish AI/CRM marketing pitch).
+It was not stored only because it sent **invalid UTF-8** (CESU-8 surrogate
+pairs), which MySQL rejected - the table is already utf8mb4 and a real browser
+emoji is fine, so this is not a customer-facing bug. The new content rules
+would **not** have caught it: no link in the name, no anchor markup in the
+body. Note also that `preg_match` with `/u` returns `false` on invalid UTF-8,
+so `not_regex` silently passes such input.
+
+So roughly 1 attempt in ~8,000 beats honeypot + timing. The owner declined
+Turnstile (keys are already configured, `SecurityHeaders` already whitelists
+`challenges.cloudflare.com`); switching it on is the one-word change
+`antispam` -> `antispam:turnstile` on `routes/web.php:427` plus the widget div.
+
+Also found, not acted on: a spam **user account** (`user` id 72, display name
+`* * * SCAM SERVICE 24/7 ... * * *`, created 2026-11-22, a day before the
+middleware landed) - i.e. "sender has an account" is not a genuineness signal.
+The pre-purge dump holds 9,443 addresses and should be deleted once the 6
+remaining rows are confirmed good.
