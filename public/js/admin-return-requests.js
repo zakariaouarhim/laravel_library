@@ -187,8 +187,25 @@ function applyFilters() {
         url.searchParams.delete('status');
     }
 
+    // Same reason as dashboardorder.js: keeping page=N after a filter change
+    // renders an empty table even when the filter matched.
+    url.searchParams.delete('page');
+
     window.location.href = url.toString();
 }
+
+// Enter in the search box applies the filters; the input is not in a <form>.
+document.addEventListener('DOMContentLoaded', function () {
+    const box = document.getElementById('searchInput');
+    if (!box) { return; }
+
+    box.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            applyFilters();
+        }
+    });
+});
 
 function escapeHtml(text) {
     if (!text) return '';

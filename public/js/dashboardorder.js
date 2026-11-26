@@ -196,6 +196,28 @@
                 url.searchParams.delete('status');
             }
 
+            // Always restart at page 1. Without this a filter applied from
+            // page 3 keeps page=3, so a search that genuinely matched one
+            // order still renders the "لا توجد طلبات" empty state -- which reads
+            // as "the search button does nothing". There are 12 pages of
+            // orders in production, so this was the common case, not an edge.
+            url.searchParams.delete('page');
+
             window.location.href = url.toString();
         }
+
+        // Enter in the search box applies the filters too. The input is not
+        // inside a <form>, so without this the key does nothing at all and
+        // the only way to search is to find and click the button.
+        document.addEventListener('DOMContentLoaded', function () {
+            const box = document.getElementById('searchInput');
+            if (!box) { return; }
+
+            box.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    applyFilters();
+                }
+            });
+        });
     
